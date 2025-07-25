@@ -49,11 +49,17 @@ class ParametroConversao(models.Model):
 
 class EmissaoPassagem(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    programa = models.ForeignKey(ProgramaFidelidade, on_delete=models.CASCADE)
-    data_emissao = models.DateField()
-    pontos_utilizados = models.IntegerField()
-    valor_passagem = models.DecimalField(max_digits=10, decimal_places=2)  # Valor se fosse pago em dinheiro
-    economia_obtida = models.DecimalField(max_digits=10, decimal_places=2)
+    programa = models.ForeignKey(ProgramaFidelidade, on_delete=models.CASCADE, null=True, blank=True)
+    aeroporto_ida = models.CharField(max_length=100)
+    aeroporto_volta = models.CharField(max_length=100)
+    data_ida = models.DateField()
+    data_volta = data_volta = models.DateField(null=True, blank=True)
+    qtd_passageiros = models.PositiveIntegerField()
+    valor_referencia = models.DecimalField(max_digits=10, decimal_places=2)
+    valor_pago = models.DecimalField(max_digits=10, decimal_places=2)
+    pontos_utilizados = models.IntegerField(null=True, blank=True)
+    valor_referencia_pontos = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    economia_obtida = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     detalhes = models.TextField(blank=True)
 
     def __str__(self):
