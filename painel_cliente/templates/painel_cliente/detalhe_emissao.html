@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalhe Emissão</title>
+    <style>
+        body { background: #191a1d; color: #fff; font-family: Arial;}
+        .box { max-width: 400px; margin: 50px auto; background: #222; padding: 32px; border-radius: 10px;}
+        h2 { color: #09f;}
+        .info { margin-bottom: 12px;}
+        .voltar { display: block; margin-top: 25px; color: #4cf;}
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Detalhe da Emissão</h2>
+        <div class="info">Data: <strong>{{ emissao.data_emissao|date:"d/m/Y H:i" }}</strong></div>
+        <div class="info">Valor Pago: <strong>R$ {{ emissao.valor_pago|floatformat:2 }}</strong></div>
+        <div class="info">Valor Referência: <strong>R$ {{ emissao.valor_referencia|floatformat:2 }}</strong></div>
+        <div class="info">Economia Obtida: <strong>R$ {{ emissao.economia_obtida|floatformat:2 }}</strong></div>
+        <div class="info">Pontos Utilizados: <strong>{{ emissao.pontos_utilizados }}</strong></div>
+        <a href="{% url 'painel_dashboard' %}" class="voltar">Voltar para o painel</a>
+    </div>
+</body>
+</html>

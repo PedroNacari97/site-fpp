@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Painel</title>
+    <style>
+        body {
+            background: #181828;
+            color: #fff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-box {
+            background: #232347;
+            padding: 36px 32px;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px 0 #0008;
+            max-width: 350px;
+            width: 100%;
+        }
+        h2 { color: #5edfff; }
+        label { display: block; margin-bottom: 7px; color: #5edfff;}
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 18px;
+            background: #181828;
+            border: 1px solid #5edfff;
+            border-radius: 7px;
+            color: #fff;
+        }
+        button {
+            background: #5edfff;
+            color: #232347;
+            border: none;
+            padding: 11px 0;
+            border-radius: 7px;
+            font-size: 1rem;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .error { color: #ff6464; margin-bottom: 12px;}
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>Área de Login</h2>
+        {% if error_message %}
+            <div class="error">{{ error_message }}</div>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            {{ form.username.label_tag }}
+            {{ form.username }}
+            {{ form.password.label_tag }}
+            {{ form.password }}
+            <label for="tipo_acesso">Tipo de Acesso:</label>
+            <select name="tipo_acesso" id="tipo_acesso">
+                <option value="cliente">Cliente</option>
+                <option value="admin">Administrador</option>
+            </select>
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+</body>
+</html>

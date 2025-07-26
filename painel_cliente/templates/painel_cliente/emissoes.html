@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Emissões Detalhadas</title>
+    <style>
+        body { background: #181828; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }
+        h1 { color: #5edfff; margin-top: 32px; }
+        .container { max-width: 900px; margin: 0 auto; padding: 30px 10px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 32px 0;
+            background: #22223c;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 10px;
+            text-align: left;
+        }
+        th {
+            background: #353564;
+            color: #5edfff;
+            font-weight: 700;
+        }
+        tr:nth-child(even) { background: #232347; }
+        tr:hover { background: #2a2a56; }
+        .voltar { margin: 20px 0; display: block; color: #5edfff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="voltar" href="{% url 'painel_dashboard' %}">← Voltar para o Painel</a>
+        <h1>Emissões Detalhadas</h1>
+        <table>
+            <tr>
+                <th>Data</th>
+                <th>Pontos Utilizados</th>
+                <th>Valor Referência</th>
+                <th>Valor Pago</th>
+                <th>Economia Obtida</th>
+                <th>Detalhes</th>
+            </tr>
+            {% for emissao in emissoes %}
+            <tr>
+                <td>{{ emissao.data_emissao|date:"d/m/Y" }}</td>
+                <td>{{ emissao.pontos_utilizados }}</td>
+                <td>R$ {{ emissao.valor_referencia|floatformat:2 }}</td>
+                <td>R$ {{ emissao.valor_pago|floatformat:2 }}</td>
+                <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
+                <td>{{ emissao.detalhes|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center;">Nenhuma emissão encontrada.</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
