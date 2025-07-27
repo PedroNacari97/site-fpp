@@ -1,52 +1,180 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>Painel do Cliente</title>
+    <link rel="stylesheet" href="{% static 'gestao/styles.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background: #181828; color: #fff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }
-        .container { max-width: 800px; margin: 0 auto; padding: 30px 10px; }
-        h1 { color: #5edfff; }
-        .info-card { background: #232347; border-radius: 12px; margin: 14px 0; padding: 20px; box-shadow: 0 4px 24px 0 #0004; }
-        .label { color: #5edfff; font-weight: 700; }
-        .logout-area { text-align: right; margin-bottom: 12px; }
-        .btn-logout {
-            background: #111;
+        body {
+            background: #181c25;
             color: #fff;
-            border-radius: 5px;
-            padding: 7px 16px;
-            border: none;
-            cursor: pointer;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
-        .link-btn {
-            background: #5edfff; color: #232347; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 700; margin-right: 7px;
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 16px;
+        }
+        .painel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1, h2 {
+            color: #f8d16c;
+            margin-bottom: 0.7rem;
+        }
+        .painel-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: #23263a;
+            border-radius: 14px;
+            padding: 24px;
+            min-width: 220px;
+            flex: 1 1 240px;
+            box-shadow: 0 1px 8px #0002;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .valor {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #f8d16c;
+        }
+        .label {
+            font-size: 1.06rem;
+            color: #c6c7db;
+        }
+        .painel-actions {
+            margin-bottom: 32px;
+        }
+        .painel-actions a, .painel-actions button {
+            background: #23263a;
+            color: #f8d16c;
+            border: none;
+            padding: 9px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            margin-right: 14px;
+        }
+        .painel-actions a:hover, .painel-actions button:hover {
+            background: #313455;
+        }
+        #grafico-economia {
+            margin-top: 40px;
+            background: #23263a;
+            border-radius: 14px;
+            padding: 16px 28px;
+        }
+        .section-title {
+            margin-top: 2.2rem;
+            color: #f8d16c;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logout-area">
-            <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                {% csrf_token %}
-                <button class="btn-logout" type="submit">Sair</button>
+        <div class="painel-header">
+            <h1>Bem-vindo, {{ request.user.first_name|default:request.user.username }}!</h1>
+            <form action="{% url 'logout' %}" method="post">{% csrf_token %}
+                <button type="submit">Logout</button>
             </form>
         </div>
-        <h1>Painel do Cliente</h1>
 
-        <div class="info-card">
-            <p><span class="label">Saldo de pontos:</span> {{ saldo_pontos }}</p>
-            <p><span class="label">Valor total pago:</span> R$ {{ valor_total_pago }}</p>
-            <p><span class="label">Valor médio por 1.000 pontos:</span> R$ {{ valor_medio|floatformat:2 }}</p>
-        </div>
-        <div class="info-card">
-            <p><span class="label">Quantidade de emissões:</span> {{ qtd_emissoes }}</p>
-            <p><span class="label">Pontos totais utilizados:</span> {{ pontos_totais_utilizados }}</p>
-            <p><span class="label">Valor total de referência:</span> R$ {{ valor_total_referencia|floatformat:2 }}</p>
-            <p><span class="label">Valor total gasto (em dinheiro):</span> R$ {{ valor_total_gasto|floatformat:2 }}</p>
-            <p><span class="label">Valor total economizado:</span> R$ {{ valor_total_economizado|floatformat:2 }}</p>
+        <div class="painel-cards">
+            <div class="card">
+                <span class="label">Saldo de Pontos</span>
+                <span class="valor">{{ saldo_pontos|default:"0" }}</span>
+            </div>
+            <div class="card">
+                <span class="label">Valor Total Pago</span>
+                <span class="valor">R$ {{ valor_total_pago|floatformat:2 }}</span>
+            </div>
+            <div class="card">
+                <span class="label">Valor Médio por 1.000 pontos</span>
+                <span class="valor">R$ {{ valor_medio|floatformat:2 }}</span>
+            </div>
+            <div class="card">
+                <span class="label">Valor Mercado (milheiro)</span>
+                <span class="valor">R$ {{ valor_milheiro_mercado|floatformat:2 }}</span>
+            </div>
         </div>
 
-        <a class="link-btn" href="{% url 'painel_emissoes' %}">Ver emissões detalhadas</a>
+        <div class="painel-actions">
+            <a href="{% url 'painel_emissoes' %}">Ver emissões detalhadas</a>
+            <a href="{% url 'painel_movimentacoes' %}">Ver movimentações</a>
+        </div>
+
+        <h2 class="section-title">Resumo de Emissões</h2>
+        <div class="painel-cards">
+            <div class="card">
+                <span class="label">Quantidade de Emissões</span>
+                <span class="valor">{{ qtd_emissoes }}</span>
+            </div>
+            <div class="card">
+                <span class="label">Pontos Totais Utilizados</span>
+                <span class="valor">{{ pontos_totais_utilizados }}</span>
+            </div>
+            <div class="card">
+                <span class="label">Valor Total Referência</span>
+                <span class="valor">R$ {{ valor_total_referencia|floatformat:2 }}</span>
+            </div>
+            <div class="card">
+                <span class="label">Valor Total Gasto</span>
+                <span class="valor">R$ {{ valor_total_gasto|floatformat:2 }}</span>
+            </div>
+            <div class="card">
+                <span class="label">Valor Total Economizado</span>
+                <span class="valor">R$ {{ valor_total_economizado|floatformat:2 }}</span>
+            </div>
+        </div>
+
+        <div id="grafico-economia">
+            <h2 style="color:#f8d16c;">Economia por Mês</h2>
+            <canvas id="chartEconomia" width="600" height="160"></canvas>
+        </div>
     </div>
+
+    <script>
+        // Exemplo: você pode passar os dados do backend para o JS usando context
+        const economiaMeses = {{ economia_meses|safe }};
+        const labels = Object.keys(economiaMeses);
+        const valores = Object.values(economiaMeses);
+
+        new Chart(document.getElementById('chartEconomia'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Economia obtida (R$)',
+                    data: valores,
+                    backgroundColor: '#f8d16c'
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: "#fff" }
+                    },
+                    x: {
+                        ticks: { color: "#fff" }
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>

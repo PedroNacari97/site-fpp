@@ -1,7 +1,8 @@
 from django.contrib import admin
 from .models import (
     Cliente, ProgramaFidelidade,
-    ContaFidelidade, EmissaoPassagem, MovimentacaoPontos
+    ContaFidelidade, EmissaoPassagem, MovimentacaoPontos,
+    ValorMilheiro
 )
 
 admin.site.register(Cliente)
@@ -26,8 +27,6 @@ class ContaFidelidadeAdmin(admin.ModelAdmin):
         'pontos_clube_mes',
         'valor_assinatura_clube',
     )
-   
-
 
     fields = (
         'cliente',
@@ -86,3 +85,8 @@ class EmissaoPassagemAdmin(admin.ModelAdmin):
     )
 
 admin.site.register(EmissaoPassagem, EmissaoPassagemAdmin)
+
+@admin.register(ValorMilheiro)
+class ValorMilheiroAdmin(admin.ModelAdmin):
+    list_display = ('programa_nome', 'valor_mercado', 'atualizado_em')
+    search_fields = ('programa_nome',)

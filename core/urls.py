@@ -24,5 +24,7 @@ urlpatterns = [
     path('painel/', include('painel_cliente.urls')),
     path('accounts/login/', login_custom_view, name='login'),
     path('accounts/logout/', auth_views.LogoutView.as_view(next_page='/accounts/login/'), name='logout'),
+    path('', include('gestao.urls')),  # ou 'painel_cliente.urls' se preferir
 ]
+
 

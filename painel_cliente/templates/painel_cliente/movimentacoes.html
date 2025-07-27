@@ -3,7 +3,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Emissões Detalhadas</title>
+    <title>Movimentações de Pontos</title>
     <link rel="stylesheet" href="{% static 'gestao/styles.css' %}">
     <style>
         body {
@@ -12,7 +12,7 @@
             font-family: 'Segoe UI', Arial, sans-serif;
         }
         .container {
-            max-width: 1080px;
+            max-width: 900px;
             margin: 32px auto;
             padding: 0 16px;
         }
@@ -46,6 +46,14 @@
         td {
             color: #f2f2f2;
         }
+        .entrada {
+            color: #6fd088;
+            font-weight: bold;
+        }
+        .saida {
+            color: #f36969;
+            font-weight: bold;
+        }
         .back-link {
             color: #f8d16c;
             text-decoration: none;
@@ -60,41 +68,29 @@
 <body>
     <div class="container">
         <a class="back-link" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
-        <h1>Emissões Detalhadas</h1>
+        <h1>Extrato de Pontos</h1>
         <table>
             <thead>
                 <tr>
-                    <th>Data Ida</th>
-                    <th>Data Volta</th>
-                    <th>Aeroporto Ida</th>
-                    <th>Aeroporto Volta</th>
-                    <th>Passageiros</th>
-                    <th>Programa</th>
-                    <th>Valor Referência</th>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Pontos</th>
                     <th>Valor Pago</th>
-                    <th>Pontos Utilizados</th>
-                    <th>Economia Obtida</th>
-                    <th>Detalhes</th>
                 </tr>
             </thead>
             <tbody>
-                {% for emissao in emissoes %}
+                {% for mov in movimentacoes %}
                 <tr>
-                    <td>{{ emissao.data_ida|date:"d/m/Y" }}</td>
-                    <td>{% if emissao.data_volta %}{{ emissao.data_volta|date:"d/m/Y" }}{% endif %}</td>
-                    <td>{{ emissao.aeroporto_ida }}</td>
-                    <td>{{ emissao.aeroporto_volta }}</td>
-                    <td>{{ emissao.qtd_passageiros }}</td>
-                    <td>{{ emissao.programa.nome }}</td>
-                    <td>R$ {{ emissao.valor_referencia|floatformat:2 }}</td>
-                    <td>R$ {{ emissao.valor_pago|floatformat:2 }}</td>
-                    <td>{{ emissao.pontos_utilizados }}</td>
-                    <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
-                    <td>{{ emissao.detalhes|default:"—" }}</td>
+                    <td>{{ mov.data|date:"d/m/Y H:i" }}</td>
+                    <td>{{ mov.descricao|default:"—" }}</td>
+                    <td class="{% if mov.pontos >= 0 %}entrada{% else %}saida{% endif %}">
+                        {{ mov.pontos }}
+                    </td>
+                    <td>R$ {{ mov.valor_pago|floatformat:2 }}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="11" style="text-align:center;color:#f8d16c;">Nenhuma emissão encontrada.</td>
+                    <td colspan="4" style="text-align:center;color:#f8d16c;">Nenhuma movimentação encontrada.</td>
                 </tr>
                 {% endfor %}
             </tbody>
