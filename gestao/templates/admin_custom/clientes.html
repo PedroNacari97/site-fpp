@@ -3,7 +3,7 @@
 {% block header_title %}Clientes Cadastrados{% endblock %}
 {% block menu_clientes %}active{% endblock %}
 {% block content %}
-       <div style="margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center;">
+    <div style="margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center;">
         <form method="get" style="display:flex;gap:8px;">
             <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar por nome ou usuário..." style="flex:1;padding:7px 13px;border-radius:8px;border:none;">
             <button type="submit" style="padding:7px 18px;background:#b67cff;border:none;color:#232345;border-radius:8px;font-weight:bold;">Buscar</button>
@@ -35,7 +35,8 @@
                     <td>{{ cliente.get_perfil_display }}</td>
                     <td>{{ cliente.ativo|yesno:"Ativo,Inativo" }}</td>
                     <td>
-                        <a href="?toggle={{ cliente.id }}" style="color:#b67cff;">Alterar</a>
+                        <a href="{% url 'admin_editar_cliente' cliente.id %}" style="color:#b67cff;">Editar</a> |
+                        <a href="?toggle={{ cliente.id }}" style="color:#b67cff;">Ativar/Inativar</a>
                     </td>
                 </tr>
                 {% empty %}

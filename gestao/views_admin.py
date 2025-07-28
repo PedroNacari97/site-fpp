@@ -7,22 +7,26 @@ from .forms import (
     ContaFidelidadeForm,
     ProgramaFidelidadeForm,
     ClienteForm,
+    NovoClienteForm,
     AeroportoForm,
-    EmissaoPassagemForm,  # <-- Correto
+    EmissaoPassagemForm,
 )
-
-
+from django.contrib.auth.models import User
+from .models import Cliente, ContaFidelidade, ProgramaFidelidade, EmissaoPassagem, Aeroporto, ValorMilheiro
 import csv
-
-from .models import Cliente, ContaFidelidade, ProgramaFidelidade, EmissaoPassagem, Aeroporto
 
 def admin_required(user):
     return user.is_staff or user.is_superuser
 
+# --- CONTAS ---
+@login_required
+@user_passes_test(admin_required)
 def listar_contas(request):
     contas = ContaFidelidade.objects.all()
     return render(request, 'admin_custom/contas_list.html', {'contas': contas})
 
+@login_required
+@user_passes_test(admin_required)
 def criar_conta(request):
     if request.method == 'POST':
         form = ContaFidelidadeForm(request.POST)
@@ -33,18 +37,75 @@ def criar_conta(request):
         form = ContaFidelidadeForm()
     return render(request, 'admin_custom/contas_form.html', {'form': form})
 
-
-def criar_cliente(request):
+@login_required
+@user_passes_test(admin_required)
+def editar_conta(request, conta_id):
+    conta = ContaFidelidade.objects.get(id=conta_id)
     if request.method == 'POST':
-        form = ClienteForm(request.POST)
+        form = ContaFidelidadeForm(request.POST, instance=conta)
         if form.is_valid():
             form.save()
+            return redirect('admin_contas')
+    else:
+        form = ContaFidelidadeForm(instance=conta)
+    return render(request, 'admin_custom/contas_form.html', {'form': form})
+
+@login_required
+@user_passes_test(admin_required)
+def admin_contas(request):
+    busca = request.GET.get("busca", "")
+    contas = ContaFidelidade.objects.select_related("cliente__usuario", "programa")
+    if busca:
+        contas = contas.filter(
+            Q(cliente__usuario__username__icontains=busca) |
+            Q(cliente__usuario__first_name__icontains=busca) |
+            Q(programa__nome__icontains=busca)
+        )
+    paginator = Paginator(contas, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'admin_custom/contas.html', {
+        'page_obj': page_obj,
+        'busca': busca,
+        'total_contas': contas.count(),
+    })
+
+# --- CLIENTES ---
+@login_required
+@user_passes_test(admin_required)
+def criar_cliente(request):
+    if request.method == 'POST':
+        form = NovoClienteForm(request.POST)
+        if form.is_valid():
+            user = User.objects.create_user(
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password'],
+                first_name=form.cleaned_data.get('first_name', ''),
+                last_name=form.cleaned_data.get('last_name', ''),
+                email=form.cleaned_data.get('email', ''),
+            )
+            perfil = form.cleaned_data['perfil']
+            if perfil in ['admin', 'operador']:
+                user.is_staff = True
+            if perfil == 'admin':
+                user.is_superuser = True
+            user.save()
+            Cliente.objects.create(
+                usuario=user,
+                telefone=form.cleaned_data['telefone'],
+                data_nascimento=form.cleaned_data['data_nascimento'],
+                cpf=form.cleaned_data['cpf'],
+                perfil=perfil,
+                observacoes=form.cleaned_data['observacoes'],
+                ativo=form.cleaned_data['ativo'],
+            )
             return redirect('admin_clientes')
     else:
-        form = ClienteForm()
+        form = NovoClienteForm()
     return render(request, 'admin_custom/cliente_form.html', {'form': form})
 
-
+@login_required
+@user_passes_test(admin_required)
 def editar_cliente(request, cliente_id):
     cliente = Cliente.objects.get(id=cliente_id)
     if request.method == 'POST':
@@ -56,93 +117,6 @@ def editar_cliente(request, cliente_id):
         form = ClienteForm(instance=cliente)
     return render(request, 'admin_custom/cliente_form.html', {'form': form})
 
-from django.contrib.auth.decorators import login_required, user_passes_test
-
-@login_required
-@user_passes_test(lambda u: u.is_superuser)
-def admin_valor_milheiro(request):
-    # Apenas uma tela placeholder
-    return render(request, "admin_custom/valor_milheiro.html")
-
-
-@login_required
-@user_passes_test(admin_required)
-def admin_programas(request):
-    
-    if request.method == "POST":
-        form = ProgramaFidelidadeForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('admin_programas')
-    else:
-        form = ProgramaFidelidadeForm()
-    programas = ProgramaFidelidade.objects.all().order_by('nome')
-    return render(request, "admin_custom/programas.html", {
-        "programas": programas,
-        "form": form,
-    })
-
-
-@login_required
-@user_passes_test(admin_required)
-def editar_programa(request, programa_id):
-    programa = ProgramaFidelidade.objects.get(id=programa_id)
-    if request.method == "POST":
-        form = ProgramaFidelidadeForm(request.POST, instance=programa)
-        if form.is_valid():
-            form.save()
-            return redirect('admin_programas')
-    else:
-        form = ProgramaFidelidadeForm(instance=programa)
-    return render(request, "admin_custom/programas_form.html", {"form": form})
-
-
-@login_required
-@user_passes_test(admin_required)
-def admin_aeroportos(request):
-    if request.method == 'POST':
-        form = AeroportoForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('admin_aeroportos')
-    else:
-        form = AeroportoForm()
-    aeroportos = Aeroporto.objects.all()
-    return render(request, 'admin_custom/aeroportos.html', {
-        'form': form,
-        'aeroportos': aeroportos,
-    })
-
-
-@login_required
-@user_passes_test(admin_required)
-def editar_aeroporto(request, aeroporto_id):
-    aeroporto = Aeroporto.objects.get(id=aeroporto_id)
-    if request.method == 'POST':
-        form = AeroportoForm(request.POST, instance=aeroporto)
-        if form.is_valid():
-            form.save()
-            return redirect('admin_aeroportos')
-    else:
-        form = AeroportoForm(instance=aeroporto)
-    return render(request, 'admin_custom/aeroportos_form.html', {'form': form})
-
-# DASHBOARD ADMIN
-@login_required
-@user_passes_test(admin_required)
-def admin_dashboard(request):
-    total_clientes = Cliente.objects.count()
-    total_contas = ContaFidelidade.objects.count()
-    total_emissoes = EmissaoPassagem.objects.count()
-    total_pontos = sum([c.saldo_pontos for c in ContaFidelidade.objects.all()])
-    return render(request, 'admin_custom/dashboard.html', {
-        'total_clientes': total_clientes,
-        'total_contas': total_contas,
-        'total_emissoes': total_emissoes,
-        'total_pontos': total_pontos,
-    })
-
-# LISTA DE CLIENTES
 @login_required
 @user_passes_test(admin_required)
 def admin_clientes(request):
@@ -168,28 +142,101 @@ def admin_clientes(request):
         'total_clientes': clientes.count(),
     })
 
-# LISTA DE CONTAS FIDELIDADE
+# --- COTAÇÕES ---
 @login_required
 @user_passes_test(admin_required)
-def admin_contas(request):
-    busca = request.GET.get("busca", "")
-    contas = ContaFidelidade.objects.select_related("cliente__usuario", "programa")
-    if busca:
-        contas = contas.filter(
-            Q(cliente__usuario__username__icontains=busca) |
-            Q(cliente__usuario__first_name__icontains=busca) |
-            Q(programa__nome__icontains=busca)
-        )
-    paginator = Paginator(contas, 20)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-    return render(request, 'admin_custom/contas.html', {
-        'page_obj': page_obj,
-        'busca': busca,
-        'total_contas': contas.count(),
+def admin_cotacoes(request):
+    if request.method == "POST":
+        programa_nome = request.POST.get("programa_nome")
+        valor_mercado = request.POST.get("valor_mercado")
+        if programa_nome and valor_mercado:
+            ValorMilheiro.objects.update_or_create(
+                programa_nome=programa_nome,
+                defaults={'valor_mercado': valor_mercado}
+            )
+    cotacoes = ValorMilheiro.objects.all().order_by('programa_nome')
+    programas = ProgramaFidelidade.objects.all()
+    return render(request, "admin_custom/cotacoes.html", {
+        "cotacoes": cotacoes,
+        "programas": programas,
     })
 
-# LISTA DE EMISSÕES
+# --- PROGRAMAS ---
+@login_required
+@user_passes_test(admin_required)
+def admin_programas(request):
+    if request.method == "POST":
+        form = ProgramaFidelidadeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_programas')
+    else:
+        form = ProgramaFidelidadeForm()
+    programas = ProgramaFidelidade.objects.all().order_by('nome')
+    return render(request, "admin_custom/programas.html", {
+        "programas": programas,
+        "form": form,
+    })
+
+@login_required
+@user_passes_test(admin_required)
+def editar_programa(request, programa_id):
+    programa = ProgramaFidelidade.objects.get(id=programa_id)
+    if request.method == "POST":
+        form = ProgramaFidelidadeForm(request.POST, instance=programa)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_programas')
+    else:
+        form = ProgramaFidelidadeForm(instance=programa)
+    return render(request, "admin_custom/programas_form.html", {"form": form})
+
+# --- AEROPORTOS ---
+@login_required
+@user_passes_test(admin_required)
+def admin_aeroportos(request):
+    if request.method == 'POST':
+        form = AeroportoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_aeroportos')
+    else:
+        form = AeroportoForm()
+    aeroportos = Aeroporto.objects.all()
+    return render(request, 'admin_custom/aeroportos.html', {
+        'form': form,
+        'aeroportos': aeroportos,
+    })
+
+@login_required
+@user_passes_test(admin_required)
+def editar_aeroporto(request, aeroporto_id):
+    aeroporto = Aeroporto.objects.get(id=aeroporto_id)
+    if request.method == 'POST':
+        form = AeroportoForm(request.POST, instance=aeroporto)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_aeroportos')
+    else:
+        form = AeroportoForm(instance=aeroporto)
+    return render(request, 'admin_custom/aeroportos_form.html', {'form': form})
+
+# --- DASHBOARD ---
+@login_required
+@user_passes_test(admin_required)
+def admin_dashboard(request):
+    total_clientes = Cliente.objects.count()
+    total_contas = ContaFidelidade.objects.count()
+    total_emissoes = EmissaoPassagem.objects.count()
+    total_pontos = sum([c.saldo_pontos for c in ContaFidelidade.objects.all()])
+    return render(request, 'admin_custom/dashboard.html', {
+        'total_clientes': total_clientes,
+        'total_contas': total_contas,
+        'total_emissoes': total_emissoes,
+        'total_pontos': total_pontos,
+    })
+
+# --- EMISSÕES ---
 @login_required
 @user_passes_test(admin_required)
 def admin_emissoes(request):
@@ -217,7 +264,6 @@ def admin_emissoes(request):
     if data_fim:
         emissoes = emissoes.filter(data_volta__lte=data_fim)
 
-    # Exportar para CSV
     if request.GET.get("export") == "excel":
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="emissoes.csv"'
@@ -242,7 +288,6 @@ def admin_emissoes(request):
         "params": request.GET
     })
 
-
 @login_required
 @user_passes_test(admin_required)
 def nova_emissao(request):
@@ -257,7 +302,6 @@ def nova_emissao(request):
     else:
         form = EmissaoPassagemForm()
     return render(request, "admin_custom/emissoes_form.html", {"form": form})
-
 
 @login_required
 @user_passes_test(admin_required)
@@ -275,22 +319,8 @@ def editar_emissao(request, emissao_id):
         form = EmissaoPassagemForm(instance=emissao)
     return render(request, "admin_custom/emissoes_form.html", {"form": form})
 
-from .models import ValorMilheiro  # certifique-se de importar
-
 @login_required
 @user_passes_test(admin_required)
-def admin_cotacoes(request):
-    if request.method == "POST":
-        programa_nome = request.POST.get("programa_nome")
-        valor_mercado = request.POST.get("valor_mercado")
-        if programa_nome and valor_mercado:
-            ValorMilheiro.objects.update_or_create(
-                programa_nome=programa_nome,
-                defaults={'valor_mercado': valor_mercado}
-            )
+def admin_valor_milheiro(request):
     cotacoes = ValorMilheiro.objects.all().order_by('programa_nome')
-    programas = ProgramaFidelidade.objects.all()
-    return render(request, "admin_custom/cotacoes.html", {
-        "cotacoes": cotacoes,
-        "programas": programas,
-    })
+    return render(request, "admin_custom/valor_milheiro.html", {"cotacoes": cotacoes})

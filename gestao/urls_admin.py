@@ -8,6 +8,7 @@ from .views_admin import (
     nova_emissao,
     editar_emissao,
     criar_conta,   # <-- Adiciona aqui!
+    editar_conta,
     admin_programas,
     editar_programa,
     criar_cliente,
@@ -22,6 +23,7 @@ urlpatterns = [
     path('clientes/', admin_clientes, name='admin_clientes'),
     path('clientes/<int:cliente_id>/editar/', editar_cliente, name='admin_editar_cliente'),
     path('contas/', admin_contas, name='admin_contas'),
+    path('contas/<int:conta_id>/editar/', editar_conta, name='admin_editar_conta'),
     path('programas/', admin_programas, name='admin_programas'),
     path('programas/<int:programa_id>/editar/', editar_programa, name='admin_editar_programa'),
     path('aeroportos/', admin_aeroportos, name='admin_aeroportos'),

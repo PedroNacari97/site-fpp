@@ -16,13 +16,25 @@ class ContaFidelidadeForm(forms.ModelForm):
 class ProgramaFidelidadeForm(forms.ModelForm):
     class Meta:
         model = ProgramaFidelidade
-        fields = ['nome', 'descricao']
+        fields = ['nome', 'descricao', 'preco_medio_milheiro']
 
 
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = ['usuario', 'telefone', 'data_nascimento', 'cpf', 'perfil', 'observacoes', 'ativo']
+
+
+class NovoClienteForm(forms.ModelForm):
+    username = forms.CharField(max_length=150)
+    password = forms.CharField(widget=forms.PasswordInput)
+    first_name = forms.CharField(max_length=150, required=False)
+    last_name = forms.CharField(max_length=150, required=False)
+    email = forms.EmailField(required=False)
+
+    class Meta:
+        model = Cliente
+        fields = ['telefone', 'data_nascimento', 'cpf', 'perfil', 'observacoes', 'ativo']
 
 
 class AeroportoForm(forms.ModelForm):

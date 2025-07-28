@@ -3,8 +3,11 @@
 {% block header_title %}Contas de Fidelidade{% endblock %}
 {% block menu_contas %}active{% endblock %}
 {% block content %}
-    <div style="margin-bottom:1.2rem;">
-        <form method="get" style="display:flex;gap:8px;">
+    <div style="margin-bottom:1.2rem; display: flex; justify-content: space-between; align-items: center;">
+        <a href="{% url 'admin_nova_conta' %}" style="background:#b67cff;color:#232345;padding:8px 16px;border-radius:8px;font-weight:bold;text-decoration:none;">
+            + Nova Conta
+        </a>
+        <form method="get" style="display:flex;gap:8px;flex:1;margin-left:16px;">
             <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar usuário ou programa..." style="flex:1;padding:7px 13px;border-radius:8px;border:none;">
             <button type="submit" style="padding:7px 18px;background:#b67cff;border:none;color:#232345;border-radius:8px;font-weight:bold;">Buscar</button>
         </form>
@@ -28,6 +31,7 @@
                     <td>{{ conta.saldo_pontos }}</td>
                     <td>R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
                    <td>R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
+                    <td><a href="{% url 'admin_editar_conta' conta.id %}" style="color:#b67cff;">Editar</a></td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="5" style="color:#fa7070;text-align:center;padding:2rem 0;">Nenhuma conta encontrada.</td></tr>

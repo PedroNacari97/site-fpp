@@ -11,7 +11,7 @@ def custom_login(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            if perfil == "admin" and user.is_staff:
+            if perfil in ["admin", "operador"] and user.is_staff:
                 return redirect('/admin/')
             elif perfil == "cliente" and not user.is_staff:
                 return redirect('/painel/')
