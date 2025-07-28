@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
 from .models import ContaFidelidade
-from .forms import ContaFidelidadeForm
+from .forms import ContaFidelidadeForm, ProgramaFidelidadeForm, ClienteForm
 import csv
 
 from .models import Cliente, ContaFidelidade, ProgramaFidelidade, EmissaoPassagem
@@ -26,6 +26,17 @@ def criar_conta(request):
         form = ContaFidelidadeForm()
     return render(request, 'admin_custom/contas_form.html', {'form': form})
 
+
+def criar_cliente(request):
+    if request.method == 'POST':
+        form = ClienteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_clientes')
+    else:
+        form = ClienteForm()
+    return render(request, 'admin_custom/cliente_form.html', {'form': form})
+
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 @login_required
@@ -38,8 +49,32 @@ def admin_valor_milheiro(request):
 @login_required
 @user_passes_test(admin_required)
 def admin_programas(request):
-    # Implemente depois, agora pode só renderizar um template vazio
-    return render(request, "admin_custom/programas.html")
+    if request.method == "POST":
+        form = ProgramaFidelidadeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_programas')
+    else:
+        form = ProgramaFidelidadeForm()
+    programas = ProgramaFidelidade.objects.all().order_by('nome')
+    return render(request, "admin_custom/programas.html", {
+        "programas": programas,
+        "form": form,
+    })
+
+
+@login_required
+@user_passes_test(admin_required)
+def editar_programa(request, programa_id):
+    programa = ProgramaFidelidade.objects.get(id=programa_id)
+    if request.method == "POST":
+        form = ProgramaFidelidadeForm(request.POST, instance=programa)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_programas')
+    else:
+        form = ProgramaFidelidadeForm(instance=programa)
+    return render(request, "admin_custom/programas_form.html", {"form": form})
 
 # DASHBOARD ADMIN
 @login_required
@@ -60,6 +95,12 @@ def admin_dashboard(request):
 @login_required
 @user_passes_test(admin_required)
 def admin_clientes(request):
+    if 'toggle' in request.GET:
+        cli = Cliente.objects.get(id=request.GET['toggle'])
+        cli.ativo = not cli.ativo
+        cli.save()
+        return redirect('admin_clientes')
+
     busca = request.GET.get("busca", "")
     clientes = Cliente.objects.all().select_related("usuario")
     if busca:
