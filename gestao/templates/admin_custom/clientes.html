@@ -3,11 +3,12 @@
 {% block header_title %}Clientes Cadastrados{% endblock %}
 {% block menu_clientes %}active{% endblock %}
 {% block content %}
-    <div style="margin-bottom:1.2rem;">
+       <div style="margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center;">
         <form method="get" style="display:flex;gap:8px;">
             <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar por nome ou usuário..." style="flex:1;padding:7px 13px;border-radius:8px;border:none;">
             <button type="submit" style="padding:7px 18px;background:#b67cff;border:none;color:#232345;border-radius:8px;font-weight:bold;">Buscar</button>
         </form>
+        <a href="{% url 'admin_novo_cliente' %}" style="background:#2b2b6f;color:#b67cff;padding:7px 14px;border-radius:8px;text-decoration:none;font-weight:bold;">Novo Cliente</a>
     </div>
     <div style="background:#232345;border-radius:12px;padding:8px 20px;">
         <table style="width:100%;border-collapse:collapse;">
@@ -19,6 +20,8 @@
                     <th>CPF</th>
                     <th>Telefone</th>
                     <th>Perfil</th>
+                    <th>Status</th>
+                    <th>Ação</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,6 +33,10 @@
                     <td>{{ cliente.cpf }}</td>
                     <td>{{ cliente.telefone }}</td>
                     <td>{{ cliente.get_perfil_display }}</td>
+                    <td>{{ cliente.ativo|yesno:"Ativo,Inativo" }}</td>
+                    <td>
+                        <a href="?toggle={{ cliente.id }}" style="color:#b67cff;">Alterar</a>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="6" style="color:#fa7070;text-align:center;padding:2rem 0;">Nenhum cliente encontrado.</td></tr>
