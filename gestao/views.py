@@ -92,3 +92,4 @@ def painel_movimentacoes(request):
 def logout_view(request):
     logout(request)
     return redirect('/accounts/login/')
+

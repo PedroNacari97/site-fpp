@@ -26,6 +26,12 @@ class ProgramaFidelidade(models.Model):
 class ContaFidelidade(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     programa = models.ForeignKey(ProgramaFidelidade, on_delete=models.CASCADE)
+    @property
+    def valor_medio_por_mil(self):
+        saldo = self.saldo_pontos
+        if saldo > 0:
+            return float(self.valor_total_pago) / (saldo / 1000)
+        return 0
 
     PERIODICIDADE_CLUBE = (
         ('nenhum', 'Nenhum'),
@@ -89,3 +95,4 @@ class ValorMilheiro(models.Model):
 
     def __str__(self):
         return f'{self.programa_nome} (R$ {self.valor_mercado})'
+    

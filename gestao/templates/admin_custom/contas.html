@@ -1,0 +1,50 @@
+{% extends "admin_custom/base_admin.html" %}
+{% block title %}Contas de Fidelidade{% endblock %}
+{% block header_title %}Contas de Fidelidade{% endblock %}
+{% block menu_contas %}active{% endblock %}
+{% block content %}
+    <div style="margin-bottom:1.2rem;">
+        <form method="get" style="display:flex;gap:8px;">
+            <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar usuário ou programa..." style="flex:1;padding:7px 13px;border-radius:8px;border:none;">
+            <button type="submit" style="padding:7px 18px;background:#b67cff;border:none;color:#232345;border-radius:8px;font-weight:bold;">Buscar</button>
+        </form>
+    </div>
+    <div style="background:#232345;border-radius:12px;padding:8px 20px;">
+        <table style="width:100%;border-collapse:collapse;">
+            <thead>
+                <tr style="color:#b6a9ff;">
+                    <th style="padding:10px 4px;text-align:left;">Usuário</th>
+                    <th>Programa</th>
+                    <th>Saldo Pontos</th>
+                    <th>Valor Pago</th>
+                    <th>Valor Médio / mil</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for conta in page_obj %}
+                <tr>
+                    <td style="color:#ffe082;">{{ conta.cliente.usuario.username }}</td>
+                    <td>{{ conta.programa.nome }}</td>
+                    <td>{{ conta.saldo_pontos }}</td>
+                    <td>R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
+                   <td>R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="color:#fa7070;text-align:center;padding:2rem 0;">Nenhuma conta encontrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if page_obj.has_other_pages %}
+        <div style="margin:16px 0;display:flex;gap:6px;justify-content:center;">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}" style="background:#444a85;color:#fff;padding:4px 14px;border-radius:7px;">&lt;</a>
+            {% endif %}
+            <span style="color:#b6a9ff;padding:2px 11px;">Página {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}" style="background:#444a85;color:#fff;padding:4px 14px;border-radius:7px;">&gt;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    <div style="color:#aaa;font-size:0.97rem;margin-top:11px;">Total: {{ total_contas }} contas de fidelidade cadastradas.</div>
+{% endblock %}

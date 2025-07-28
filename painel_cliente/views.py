@@ -15,7 +15,7 @@ def login_custom_view(request):
             if tipo_acesso == 'admin':
                 if user.is_staff or user.is_superuser:
                     login(request, user)
-                    return redirect('/admin/')
+                    return redirect('admin_dashboard')  # <-- Aqui, faz o redirect certo!
                 else:
                     error_message = "Você não tem permissão de administrador."
             else:  # Cliente comum
@@ -29,6 +29,7 @@ def login_custom_view(request):
     else:
         form = AuthenticationForm()
     return render(request, 'registration/login.html', {'form': form, 'error_message': error_message})
+
 
 # LOGOUT
 @login_required
@@ -64,7 +65,6 @@ def dashboard(request):
         'valor_milheiros': valor_milheiros,
     }
     return render(request, 'painel_cliente/dashboard.html', context)
-
 
 # EMISSÕES DETALHADAS
 @login_required

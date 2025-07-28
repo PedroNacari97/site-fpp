@@ -16,15 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.contrib.auth import views as auth_views
-from painel_cliente.views import login_custom_view
+from gestao import views_admin
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('painel/', include('painel_cliente.urls')),
-    path('accounts/login/', login_custom_view, name='login'),
-    path('accounts/logout/', auth_views.LogoutView.as_view(next_page='/accounts/login/'), name='logout'),
-    path('', include('gestao.urls')),  # ou 'painel_cliente.urls' se preferir
+    path('admin/', admin.site.urls),          # Django admin padrão
+    path('adm/', include('gestao.urls_admin')),  # Painel admin customizado
+    path('', include('painel_cliente.urls')),    # Painel do cliente comum
+    path('adm/programas/', views_admin.admin_programas, name='admin_programas'),
+    path('adm/valor-milheiro/', views_admin.admin_valor_milheiro, name='admin_valor_milheiro'),
 ]
+
 
 

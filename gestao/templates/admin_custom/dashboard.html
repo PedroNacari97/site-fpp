@@ -1,0 +1,52 @@
+{% extends "admin_custom/base_admin.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block header_title %}Dashboard Administrativo{% endblock %}
+{% block menu_dashboard %}active{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-dark text-light">
+                <div class="card-body">
+                    <h5 class="card-title">Total Clientes</h5>
+                    <p class="card-text" style="font-size:2.2rem;font-weight:700;">{{ total_clientes }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-dark text-light">
+                <div class="card-body">
+                    <h5 class="card-title">Contas Fidelidade</h5>
+                    <p class="card-text" style="font-size:2.2rem;font-weight:700;">{{ total_contas }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-dark text-light">
+                <div class="card-body">
+                    <h5 class="card-title">Emissões</h5>
+                    <p class="card-text" style="font-size:2.2rem;font-weight:700;">{{ total_emissoes }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-dark text-light">
+                <div class="card-body">
+                    <h5 class="card-title">Pontos (total)</h5>
+                    <p class="card-text" style="font-size:2.2rem;font-weight:700;">{{ total_pontos }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mt-4" style="background:#232345;border-radius:12px;padding:16px;">
+        <h4 style="color:#b6a9ff;">Cotações do Milheiro</h4>
+        <ul style="margin:0;padding:0;list-style:none;">
+            {% for cotacao in cotacoes_mercado %}
+                <li>
+                    <strong>{{ cotacao.programa_nome }}</strong>: R$ {{ cotacao.valor_mercado|floatformat:2 }}
+                </li>
+            {% empty %}
+                <li><i>Nenhuma cotação cadastrada.</i></li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "admin_custom/base_admin.html" %}
+{% block title %}Clientes{% endblock %}
+{% block header_title %}Clientes Cadastrados{% endblock %}
+{% block menu_clientes %}active{% endblock %}
+{% block content %}
+    <div style="margin-bottom:1.2rem;">
+        <form method="get" style="display:flex;gap:8px;">
+            <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar por nome ou usuário..." style="flex:1;padding:7px 13px;border-radius:8px;border:none;">
+            <button type="submit" style="padding:7px 18px;background:#b67cff;border:none;color:#232345;border-radius:8px;font-weight:bold;">Buscar</button>
+        </form>
+    </div>
+    <div style="background:#232345;border-radius:12px;padding:8px 20px;">
+        <table style="width:100%;border-collapse:collapse;">
+            <thead>
+                <tr style="color:#b6a9ff;">
+                    <th style="padding:10px 4px;text-align:left;">Usuário</th>
+                    <th>Nome Completo</th>
+                    <th>E-mail</th>
+                    <th>CPF</th>
+                    <th>Telefone</th>
+                    <th>Perfil</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in page_obj %}
+                <tr>
+                    <td style="color:#ffe082;">{{ cliente.usuario.username }}</td>
+                    <td>{{ cliente.usuario.get_full_name }}</td>
+                    <td>{{ cliente.usuario.email }}</td>
+                    <td>{{ cliente.cpf }}</td>
+                    <td>{{ cliente.telefone }}</td>
+                    <td>{{ cliente.get_perfil_display }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" style="color:#fa7070;text-align:center;padding:2rem 0;">Nenhum cliente encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if page_obj.has_other_pages %}
+        <div style="margin:16px 0;display:flex;gap:6px;justify-content:center;">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}" style="background:#444a85;color:#fff;padding:4px 14px;border-radius:7px;">&lt;</a>
+            {% endif %}
+            <span style="color:#b6a9ff;padding:2px 11px;">Página {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}" style="background:#444a85;color:#fff;padding:4px 14px;border-radius:7px;">&gt;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    <div style="color:#aaa;font-size:0.97rem;margin-top:11px;">Total: {{ total_clientes }} clientes cadastrados.</div>
+{% endblock %}
