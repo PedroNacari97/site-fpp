@@ -72,8 +72,8 @@ class EmissaoPassagemAdmin(admin.ModelAdmin):
     list_display = (
         'cliente',
         'programa',
-        'aeroporto_ida',
-        'aeroporto_volta',
+        'aeroporto_partida',
+        'aeroporto_destino',
         'data_ida',
         'data_volta',
         'qtd_passageiros',

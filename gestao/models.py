@@ -24,6 +24,17 @@ class ProgramaFidelidade(models.Model):
     def __str__(self):
         return self.nome
 
+
+class Aeroporto(models.Model):
+    sigla = models.CharField(max_length=5, unique=True)
+    nome = models.CharField(max_length=100)
+
+    class Meta:
+        ordering = ['sigla']
+
+    def __str__(self):
+        return f"{self.sigla} - {self.nome}"
+
 class ContaFidelidade(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     programa = models.ForeignKey(ProgramaFidelidade, on_delete=models.CASCADE)
@@ -74,8 +85,8 @@ class MovimentacaoPontos(models.Model):
 class EmissaoPassagem(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     programa = models.ForeignKey(ProgramaFidelidade, on_delete=models.CASCADE, null=True, blank=True)
-    aeroporto_ida = models.CharField(max_length=100)
-    aeroporto_volta = models.CharField(max_length=100)
+    aeroporto_partida = models.ForeignKey(Aeroporto, on_delete=models.CASCADE, related_name='partidas', null=True, blank=True)
+    aeroporto_destino = models.ForeignKey(Aeroporto, on_delete=models.CASCADE, related_name='destinos', null=True, blank=True)
     data_ida = models.DateField()
     data_volta = models.DateField(null=True, blank=True)
     qtd_passageiros = models.PositiveIntegerField()

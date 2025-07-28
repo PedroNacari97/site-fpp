@@ -1,10 +1,11 @@
 from django import forms
-from .models import ContaFidelidade, ProgramaFidelidade, Cliente
+from .models import ContaFidelidade, ProgramaFidelidade, Cliente, Aeroporto
 
 class ContaFidelidadeForm(forms.ModelForm):
     class Meta:
         model = ContaFidelidade
         fields = ['cliente', 'programa', 'clube_periodicidade', 'pontos_clube_mes', 'valor_assinatura_clube', 'data_inicio_clube', 'validade']
+
 
 class ProgramaFidelidadeForm(forms.ModelForm):
     class Meta:
@@ -16,3 +17,9 @@ class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = ['usuario', 'telefone', 'data_nascimento', 'cpf', 'perfil', 'observacoes', 'ativo']
+
+
+class AeroportoForm(forms.ModelForm):
+    class Meta:
+        model = Aeroporto
+        fields = ['sigla', 'nome']

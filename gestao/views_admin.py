@@ -3,14 +3,26 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
-from .models import ContaFidelidade
-from .forms import ContaFidelidadeForm, ProgramaFidelidadeForm, ClienteForm
 import csv
 
-from .models import Cliente, ContaFidelidade, ProgramaFidelidade, EmissaoPassagem
+from .models import (
+    ContaFidelidade,
+    Cliente,
+    ProgramaFidelidade,
+    EmissaoPassagem,
+    Aeroporto
+)
+from .forms import (
+    ContaFidelidadeForm,
+    ProgramaFidelidadeForm,
+    ClienteForm,
+    AeroportoForm
+)
 
 def admin_required(user):
     return user.is_staff or user.is_superuser
+
+# ---- CRUD ContaFidelidade ----
 
 def listar_contas(request):
     contas = ContaFidelidade.objects.all()
@@ -26,6 +38,7 @@ def criar_conta(request):
         form = ContaFidelidadeForm()
     return render(request, 'admin_custom/contas_form.html', {'form': form})
 
+# ---- CRUD Cliente ----
 
 def criar_cliente(request):
     if request.method == 'POST':
@@ -37,14 +50,25 @@ def criar_cliente(request):
         form = ClienteForm()
     return render(request, 'admin_custom/cliente_form.html', {'form': form})
 
-from django.contrib.auth.decorators import login_required, user_passes_test
+def editar_cliente(request, cliente_id):
+    cliente = Cliente.objects.get(id=cliente_id)
+    if request.method == 'POST':
+        form = ClienteForm(request.POST, instance=cliente)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_clientes')
+    else:
+        form = ClienteForm(instance=cliente)
+    return render(request, 'admin_custom/cliente_form.html', {'form': form})
+
+# ---- Valor Milheiro ----
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def admin_valor_milheiro(request):
-    # Apenas uma tela placeholder
     return render(request, "admin_custom/valor_milheiro.html")
 
+# ---- Programas ----
 
 @login_required
 @user_passes_test(admin_required)
@@ -62,7 +86,6 @@ def admin_programas(request):
         "form": form,
     })
 
-
 @login_required
 @user_passes_test(admin_required)
 def editar_programa(request, programa_id):
@@ -76,7 +99,39 @@ def editar_programa(request, programa_id):
         form = ProgramaFidelidadeForm(instance=programa)
     return render(request, "admin_custom/programas_form.html", {"form": form})
 
-# DASHBOARD ADMIN
+# ---- Aeroportos ----
+
+@login_required
+@user_passes_test(admin_required)
+def admin_aeroportos(request):
+    if request.method == 'POST':
+        form = AeroportoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_aeroportos')
+    else:
+        form = AeroportoForm()
+    aeroportos = Aeroporto.objects.all()
+    return render(request, 'admin_custom/aeroportos.html', {
+        'form': form,
+        'aeroportos': aeroportos,
+    })
+
+@login_required
+@user_passes_test(admin_required)
+def editar_aeroporto(request, aeroporto_id):
+    aeroporto = Aeroporto.objects.get(id=aeroporto_id)
+    if request.method == 'POST':
+        form = AeroportoForm(request.POST, instance=aeroporto)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_aeroportos')
+    else:
+        form = AeroportoForm(instance=aeroporto)
+    return render(request, 'admin_custom/aeroportos_form.html', {'form': form})
+
+# ---- Dashboard ----
+
 @login_required
 @user_passes_test(admin_required)
 def admin_dashboard(request):
@@ -91,7 +146,8 @@ def admin_dashboard(request):
         'total_pontos': total_pontos,
     })
 
-# LISTA DE CLIENTES
+# ---- Lista de Clientes ----
+
 @login_required
 @user_passes_test(admin_required)
 def admin_clientes(request):
@@ -117,7 +173,8 @@ def admin_clientes(request):
         'total_clientes': clientes.count(),
     })
 
-# LISTA DE CONTAS FIDELIDADE
+# ---- Lista de Contas Fidelidade ----
+
 @login_required
 @user_passes_test(admin_required)
 def admin_contas(request):
@@ -126,39 +183,19 @@ def admin_contas(request):
     if busca:
         contas = contas.filter(
             Q(cliente__usuario__username__icontains=busca) |
-            Q(programa__nome__icontains=busca)
+            Q(cliente__usuario__first_name__icontains=busca)
         )
-    contas = contas.order_by("-id")
     paginator = Paginator(contas, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    return render(request, "admin_custom/contas.html", {
-        "page_obj": page_obj,
-        "busca": busca,
-        "total_contas": contas.count(),
+    return render(request, 'admin_custom/contas.html', {
+        'page_obj': page_obj,
+        'busca': busca,
+        'total_contas': contas.count(),
     })
 
-# GESTÃO DE COTAÇÕES
-@login_required
-@user_passes_test(admin_required)
-def admin_cotacoes(request):
-    from gestao.models import ValorMilheiro
-    if request.method == "POST":
-        programa_nome = request.POST.get("programa_nome")
-        valor_mercado = request.POST.get("valor_mercado")
-        if programa_nome and valor_mercado:
-            ValorMilheiro.objects.update_or_create(
-                programa_nome=programa_nome,
-                defaults={'valor_mercado': valor_mercado}
-            )
-    cotacoes = ValorMilheiro.objects.all().order_by('programa_nome')
-    programas = ProgramaFidelidade.objects.all()
-    return render(request, "admin_custom/cotacoes.html", {
-        "cotacoes": cotacoes,
-        "programas": programas,
-    })
+# ---- Lista de Emissões ----
 
-# LISTA DE EMISSÕES
 @login_required
 @user_passes_test(admin_required)
 def admin_emissoes(request):
@@ -168,15 +205,19 @@ def admin_emissoes(request):
     data_ini = request.GET.get("data_ini")
     data_fim = request.GET.get("data_fim")
 
-    emissoes = EmissaoPassagem.objects.all().select_related('cliente', 'programa')
+    emissoes = EmissaoPassagem.objects.all().select_related(
+        'cliente', 'programa', 'aeroporto_partida', 'aeroporto_destino'
+    )
     if programa_id:
         emissoes = emissoes.filter(programa_id=programa_id)
     if cliente_id:
         emissoes = emissoes.filter(cliente_id=cliente_id)
     if q:
         emissoes = emissoes.filter(
-            Q(aeroporto_ida__icontains=q) |
-            Q(aeroporto_volta__icontains=q) |
+            Q(aeroporto_partida__sigla__icontains=q) |
+            Q(aeroporto_destino__sigla__icontains=q) |
+            Q(aeroporto_partida__nome__icontains=q) |
+            Q(aeroporto_destino__nome__icontains=q) |
             Q(cliente__usuario__username__icontains=q)
         )
     if data_ini:
@@ -190,13 +231,14 @@ def admin_emissoes(request):
         response['Content-Disposition'] = 'attachment; filename="emissoes.csv"'
         writer = csv.writer(response)
         writer.writerow([
-            'Cliente', 'Programa', 'Aeroporto Ida', 'Aeroporto Volta', 'Data Ida', 'Data Volta',
+            'Cliente', 'Programa', 'Aeroporto Partida', 'Aeroporto Destino', 'Data Ida', 'Data Volta',
             'Qtd Passageiros', 'Valor Referência', 'Valor Pago', 'Pontos Usados', 'Economia', 'Detalhes'
         ])
         for e in emissoes:
             writer.writerow([
-                str(e.cliente), str(e.programa), e.aeroporto_ida, e.aeroporto_volta, e.data_ida, e.data_volta,
-                e.qtd_passageiros, e.valor_referencia, e.valor_pago, e.pontos_utilizados, e.economia_obtida, e.detalhes
+                str(e.cliente), str(e.programa), e.aeroporto_partida, e.aeroporto_destino,
+                e.data_ida, e.data_volta, e.qtd_passageiros, e.valor_referencia, e.valor_pago,
+                e.pontos_utilizados, e.economia_obtida, e.detalhes
             ])
         return response
 

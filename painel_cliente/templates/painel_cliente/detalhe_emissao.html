@@ -81,8 +81,8 @@
                     <td>{{ e.data_ida|date:"d/m/Y" }}</td>
                     <td>{% if e.data_volta %}{{ e.data_volta|date:"d/m/Y" }}{% else %}-{% endif %}</td>
                     <td>{{ e.programa.nome }}</td>
-                    <td>{{ e.aeroporto_ida }}</td>
-                    <td>{{ e.aeroporto_volta }}</td>
+                    <td>{{ e.aeroporto_partida }}</td>
+                    <td>{{ e.aeroporto_destino }}</td>
                     <td>{{ e.qtd_passageiros }}</td>
                     <td>{{ e.pontos_utilizados|default:"-" }}</td>
                     <td>R$ {{ e.valor_referencia|floatformat:2 }}</td>

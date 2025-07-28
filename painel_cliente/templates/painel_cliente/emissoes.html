@@ -82,8 +82,8 @@
                 <tr>
                     <td>{{ emissao.data_ida|date:"d/m/Y" }}</td>
                     <td>{% if emissao.data_volta %}{{ emissao.data_volta|date:"d/m/Y" }}{% endif %}</td>
-                    <td>{{ emissao.aeroporto_ida }}</td>
-                    <td>{{ emissao.aeroporto_volta }}</td>
+                    <td>{{ emissao.aeroporto_partida }}</td>
+                    <td>{{ emissao.aeroporto_destino }}</td>
                     <td>{{ emissao.qtd_passageiros }}</td>
                     <td>{{ emissao.programa.nome }}</td>
                     <td>R$ {{ emissao.valor_referencia|floatformat:2 }}</td>
