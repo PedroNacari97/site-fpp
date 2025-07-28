@@ -14,7 +14,7 @@
                     {{ c.usuario.get_full_name|default:c.usuario.username }}
                 </option>
                 {% endfor %}
-            </select>
+             </select>
         </div>
         <div>
             <label style="color:#aaa;">Programa</label>
@@ -39,6 +39,7 @@
         </div>
         <button style="background:#b67cff;color:#232345;font-weight:bold;padding:7px 22px;border-radius:8px;margin-bottom:3px;">Filtrar</button>
         <a href="?export=excel{% if params.q %}&q={{ params.q }}{% endif %}" style="background:#2b2b6f;color:#b67cff;padding:7px 17px;border-radius:8px;text-decoration:none;margin-left:7px;font-weight:600;">Exportar Excel</a>
+        <a href="{% url 'admin_nova_emissao' %}" style="background:#2b2b6f;color:#b67cff;padding:7px 14px;border-radius:8px;text-decoration:none;font-weight:bold;margin-left:7px;">Nova Emissão</a>
     </form>
     <div style="background:#232345;border-radius:12px;padding:18px 18px 5px 18px;">
         <table style="width:100%;border-collapse:collapse;">
@@ -56,6 +57,7 @@
                     <th>Pontos</th>
                     <th>Economia</th>
                     <th>Detalhes</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -73,9 +75,10 @@
                     <td>{{ e.pontos_utilizados }}</td>
                     <td>R$ {{ e.economia_obtida|floatformat:2 }}</td>
                     <td>{{ e.detalhes }}</td>
+                    <td><a href="{% url 'admin_editar_emissao' e.id %}" style="color:#b67cff;">Editar</a></td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="12" style="color:#ff7070;text-align:center;">Nenhuma emissão encontrada.</td></tr>
+                <tr><td colspan="13" style="color:#ff7070;text-align:center;">Nenhuma emissão encontrada.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

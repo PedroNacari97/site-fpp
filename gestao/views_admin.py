@@ -3,26 +3,21 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
-import csv
-
-from .models import (
-    ContaFidelidade,
-    Cliente,
-    ProgramaFidelidade,
-    EmissaoPassagem,
-    Aeroporto
-)
 from .forms import (
     ContaFidelidadeForm,
     ProgramaFidelidadeForm,
     ClienteForm,
-    AeroportoForm
+    AeroportoForm,
+    EmissaoPassagemForm,  # <-- Correto
 )
+
+
+import csv
+
+from .models import Cliente, ContaFidelidade, ProgramaFidelidade, EmissaoPassagem, Aeroporto
 
 def admin_required(user):
     return user.is_staff or user.is_superuser
-
-# ---- CRUD ContaFidelidade ----
 
 def listar_contas(request):
     contas = ContaFidelidade.objects.all()
@@ -38,7 +33,6 @@ def criar_conta(request):
         form = ContaFidelidadeForm()
     return render(request, 'admin_custom/contas_form.html', {'form': form})
 
-# ---- CRUD Cliente ----
 
 def criar_cliente(request):
     if request.method == 'POST':
@@ -49,6 +43,7 @@ def criar_cliente(request):
     else:
         form = ClienteForm()
     return render(request, 'admin_custom/cliente_form.html', {'form': form})
+
 
 def editar_cliente(request, cliente_id):
     cliente = Cliente.objects.get(id=cliente_id)
@@ -61,18 +56,19 @@ def editar_cliente(request, cliente_id):
         form = ClienteForm(instance=cliente)
     return render(request, 'admin_custom/cliente_form.html', {'form': form})
 
-# ---- Valor Milheiro ----
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def admin_valor_milheiro(request):
+    # Apenas uma tela placeholder
     return render(request, "admin_custom/valor_milheiro.html")
 
-# ---- Programas ----
 
 @login_required
 @user_passes_test(admin_required)
 def admin_programas(request):
+    
     if request.method == "POST":
         form = ProgramaFidelidadeForm(request.POST)
         if form.is_valid():
@@ -85,6 +81,7 @@ def admin_programas(request):
         "programas": programas,
         "form": form,
     })
+
 
 @login_required
 @user_passes_test(admin_required)
@@ -99,7 +96,6 @@ def editar_programa(request, programa_id):
         form = ProgramaFidelidadeForm(instance=programa)
     return render(request, "admin_custom/programas_form.html", {"form": form})
 
-# ---- Aeroportos ----
 
 @login_required
 @user_passes_test(admin_required)
@@ -117,6 +113,7 @@ def admin_aeroportos(request):
         'aeroportos': aeroportos,
     })
 
+
 @login_required
 @user_passes_test(admin_required)
 def editar_aeroporto(request, aeroporto_id):
@@ -130,8 +127,7 @@ def editar_aeroporto(request, aeroporto_id):
         form = AeroportoForm(instance=aeroporto)
     return render(request, 'admin_custom/aeroportos_form.html', {'form': form})
 
-# ---- Dashboard ----
-
+# DASHBOARD ADMIN
 @login_required
 @user_passes_test(admin_required)
 def admin_dashboard(request):
@@ -146,8 +142,7 @@ def admin_dashboard(request):
         'total_pontos': total_pontos,
     })
 
-# ---- Lista de Clientes ----
-
+# LISTA DE CLIENTES
 @login_required
 @user_passes_test(admin_required)
 def admin_clientes(request):
@@ -173,8 +168,7 @@ def admin_clientes(request):
         'total_clientes': clientes.count(),
     })
 
-# ---- Lista de Contas Fidelidade ----
-
+# LISTA DE CONTAS FIDELIDADE
 @login_required
 @user_passes_test(admin_required)
 def admin_contas(request):
@@ -183,7 +177,8 @@ def admin_contas(request):
     if busca:
         contas = contas.filter(
             Q(cliente__usuario__username__icontains=busca) |
-            Q(cliente__usuario__first_name__icontains=busca)
+            Q(cliente__usuario__first_name__icontains=busca) |
+            Q(programa__nome__icontains=busca)
         )
     paginator = Paginator(contas, 20)
     page_number = request.GET.get("page")
@@ -194,8 +189,7 @@ def admin_contas(request):
         'total_contas': contas.count(),
     })
 
-# ---- Lista de Emissões ----
-
+# LISTA DE EMISSÕES
 @login_required
 @user_passes_test(admin_required)
 def admin_emissoes(request):
@@ -205,9 +199,7 @@ def admin_emissoes(request):
     data_ini = request.GET.get("data_ini")
     data_fim = request.GET.get("data_fim")
 
-    emissoes = EmissaoPassagem.objects.all().select_related(
-        'cliente', 'programa', 'aeroporto_partida', 'aeroporto_destino'
-    )
+    emissoes = EmissaoPassagem.objects.all().select_related('cliente', 'programa', 'aeroporto_partida', 'aeroporto_destino')
     if programa_id:
         emissoes = emissoes.filter(programa_id=programa_id)
     if cliente_id:
@@ -236,9 +228,8 @@ def admin_emissoes(request):
         ])
         for e in emissoes:
             writer.writerow([
-                str(e.cliente), str(e.programa), e.aeroporto_partida, e.aeroporto_destino,
-                e.data_ida, e.data_volta, e.qtd_passageiros, e.valor_referencia, e.valor_pago,
-                e.pontos_utilizados, e.economia_obtida, e.detalhes
+                str(e.cliente), str(e.programa), e.aeroporto_partida, e.aeroporto_destino, e.data_ida, e.data_volta,
+                e.qtd_passageiros, e.valor_referencia, e.valor_pago, e.pontos_utilizados, e.economia_obtida, e.detalhes
             ])
         return response
 
@@ -249,4 +240,57 @@ def admin_emissoes(request):
         "programas": programas,
         "clientes": clientes,
         "params": request.GET
+    })
+
+
+@login_required
+@user_passes_test(admin_required)
+def nova_emissao(request):
+    if request.method == "POST":
+        form = EmissaoPassagemForm(request.POST)
+        if form.is_valid():
+            emissao = form.save(commit=False)
+            if emissao.valor_referencia and emissao.valor_pago:
+                emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
+            emissao.save()
+            return redirect('admin_emissoes')
+    else:
+        form = EmissaoPassagemForm()
+    return render(request, "admin_custom/emissoes_form.html", {"form": form})
+
+
+@login_required
+@user_passes_test(admin_required)
+def editar_emissao(request, emissao_id):
+    emissao = EmissaoPassagem.objects.get(id=emissao_id)
+    if request.method == "POST":
+        form = EmissaoPassagemForm(request.POST, instance=emissao)
+        if form.is_valid():
+            emissao = form.save(commit=False)
+            if emissao.valor_referencia and emissao.valor_pago:
+                emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
+            emissao.save()
+            return redirect('admin_emissoes')
+    else:
+        form = EmissaoPassagemForm(instance=emissao)
+    return render(request, "admin_custom/emissoes_form.html", {"form": form})
+
+from .models import ValorMilheiro  # certifique-se de importar
+
+@login_required
+@user_passes_test(admin_required)
+def admin_cotacoes(request):
+    if request.method == "POST":
+        programa_nome = request.POST.get("programa_nome")
+        valor_mercado = request.POST.get("valor_mercado")
+        if programa_nome and valor_mercado:
+            ValorMilheiro.objects.update_or_create(
+                programa_nome=programa_nome,
+                defaults={'valor_mercado': valor_mercado}
+            )
+    cotacoes = ValorMilheiro.objects.all().order_by('programa_nome')
+    programas = ProgramaFidelidade.objects.all()
+    return render(request, "admin_custom/cotacoes.html", {
+        "cotacoes": cotacoes,
+        "programas": programas,
     })
