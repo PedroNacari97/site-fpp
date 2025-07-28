@@ -1,0 +1,14 @@
+{% extends 'admin_custom/base_admin.html' %}
+{% block content %}
+<h2>Contas Fidelidade</h2>
+<a href="{% url 'admin_nova_conta' %}">Nova Conta</a>
+<table>
+    <tr><th>Nome</th><th>Valor do Milheiro</th></tr>
+    {% for conta in contas %}
+    <tr>
+        <td>{{ conta.nome }}</td>
+        <td>R$ {{ conta.valor_milheiro }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

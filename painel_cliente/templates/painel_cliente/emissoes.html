@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Emissões Detalhadas</title>
+    <link rel="stylesheet" href="{% static 'gestao/styles.css' %}">
+    <style>
+        body {
+            background: #181c25;
+            color: #fff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .container {
+            max-width: 1080px;
+            margin: 32px auto;
+            padding: 0 16px;
+        }
+        h1 {
+            color: #f8d16c;
+            margin-bottom: 24px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #23263a;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 8px #0002;
+        }
+        th, td {
+            padding: 14px 10px;
+            text-align: left;
+        }
+        th {
+            background: #23263a;
+            color: #f8d16c;
+        }
+        tr {
+            border-bottom: 1px solid #313455;
+        }
+        tr:last-child {
+            border-bottom: none;
+        }
+        td {
+            color: #f2f2f2;
+        }
+        .back-link {
+            color: #f8d16c;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
+        <h1>Emissões Detalhadas</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data Ida</th>
+                    <th>Data Volta</th>
+                    <th>Aeroporto Ida</th>
+                    <th>Aeroporto Volta</th>
+                    <th>Passageiros</th>
+                    <th>Programa</th>
+                    <th>Valor Referência</th>
+                    <th>Valor Pago</th>
+                    <th>Pontos Utilizados</th>
+                    <th>Economia Obtida</th>
+                    <th>Detalhes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emissao in emissoes %}
+                <tr>
+                    <td>{{ emissao.data_ida|date:"d/m/Y" }}</td>
+                    <td>{% if emissao.data_volta %}{{ emissao.data_volta|date:"d/m/Y" }}{% endif %}</td>
+                    <td>{{ emissao.aeroporto_ida }}</td>
+                    <td>{{ emissao.aeroporto_volta }}</td>
+                    <td>{{ emissao.qtd_passageiros }}</td>
+                    <td>{{ emissao.programa.nome }}</td>
+                    <td>R$ {{ emissao.valor_referencia|floatformat:2 }}</td>
+                    <td>R$ {{ emissao.valor_pago|floatformat:2 }}</td>
+                    <td>{{ emissao.pontos_utilizados }}</td>
+                    <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
+                    <td>{{ emissao.detalhes|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="11" style="text-align:center;color:#f8d16c;">Nenhuma emissão encontrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
