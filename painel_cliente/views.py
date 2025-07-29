@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
@@ -40,29 +40,48 @@ def sair(request):
 # DASHBOARD DO CLIENTE
 @login_required
 def dashboard(request):
-    conta = ContaFidelidade.objects.filter(cliente__usuario=request.user).first()
-    emissoes = EmissaoPassagem.objects.filter(cliente__usuario=request.user) if conta else []
+    contas = ContaFidelidade.objects.filter(cliente__usuario=request.user).select_related("programa")
+    emissoes = EmissaoPassagem.objects.filter(cliente__usuario=request.user)
     valor_milheiros = {v.programa_nome: v.valor_mercado for v in ValorMilheiro.objects.all()}
+
+    contas_info = []
+    for conta in contas:
+        saldo = conta.saldo_pontos
+        valor_medio = conta.valor_medio_por_mil
+        valor_total = (saldo / 1000) * valor_medio if saldo else 0
+        contas_info.append({
+            'id': conta.id,
+            'programa': conta.programa.nome,
+            'saldo_pontos': saldo,
+            'valor_total': valor_total,
+            'valor_medio': valor_medio,
+            'valor_referencia': valor_milheiros.get(conta.programa.nome, 0),
+        })
 
     qtd_emissoes = emissoes.count()
     pontos_totais_utilizados = sum(e.pontos_utilizados or 0 for e in emissoes)
     valor_total_referencia = sum(float(e.valor_referencia or 0) for e in emissoes)
-    valor_total_gasto = sum(float(e.valor_pago or 0) for e in emissoes)
-    valor_total_economizado = sum(float(e.economia_obtida or 0) for e in emissoes)
+    valor_total_pago = sum(float(e.valor_pago or 0) for e in emissoes)
+    valor_total_economizado = valor_total_referencia - valor_total_pago
 
     context = {
-        'conta': conta,
-        'saldo_pontos': conta.saldo_pontos if conta else 0,
-        'valor_total_pago': conta.valor_total_pago if conta else 0,
-        'valor_medio': conta.valor_total_pago / (conta.saldo_pontos / 1000) if conta and conta.saldo_pontos > 0 else 0,
+        'contas_info': contas_info,
         'qtd_emissoes': qtd_emissoes,
         'pontos_totais_utilizados': pontos_totais_utilizados,
         'valor_total_referencia': valor_total_referencia,
-        'valor_total_gasto': valor_total_gasto,
         'valor_total_economizado': valor_total_economizado,
-        'valor_milheiros': valor_milheiros,
     }
     return render(request, 'painel_cliente/dashboard.html', context)
+
+
+@login_required
+def movimentacoes_programa(request, conta_id):
+    conta = get_object_or_404(ContaFidelidade, id=conta_id, cliente__usuario=request.user)
+    movimentacoes = conta.movimentacoes.all().order_by('-data')
+    return render(request, 'painel_cliente/movimentacoes.html', {
+        'movimentacoes': movimentacoes,
+        'conta': conta,
+    })
 
 # EMISSÕES DETALHADAS
 @login_required
