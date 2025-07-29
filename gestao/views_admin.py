@@ -1,8 +1,13 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
+from django.contrib.admin.views.decorators import staff_member_required
+from gestao.models import ContaFidelidade, Movimentacao
+from django import forms
+from django.db import models
+
 from .forms import (
     ContaFidelidadeForm,
     ProgramaFidelidadeForm,
@@ -324,3 +329,69 @@ def editar_emissao(request, emissao_id):
 def admin_valor_milheiro(request):
     cotacoes = ValorMilheiro.objects.all().order_by('programa_nome')
     return render(request, "admin_custom/valor_milheiro.html", {"cotacoes": cotacoes})
+
+from django.db import models
+
+def programas_do_cliente(request, cliente_id):
+    cliente = Cliente.objects.get(pk=cliente_id)
+    contas = ContaFidelidade.objects.filter(cliente=cliente)
+
+    lista_contas = []
+    for conta in contas:
+        saldo_pontos = conta.movimentacoes.aggregate(total=models.Sum('pontos'))['total'] or 0
+        valor_pago = conta.movimentacoes.aggregate(total=models.Sum('valor_pago'))['total'] or 0
+
+        # Preço médio por milheiro
+        if saldo_pontos and valor_pago:
+            valor_medio_milheiro = (valor_pago / saldo_pontos) * 1000
+        else:
+            valor_medio_milheiro = 0
+
+        lista_contas.append({
+            'conta': conta,
+            'saldo_pontos': saldo_pontos,
+            'valor_pago': valor_pago,
+            'valor_medio_milheiro': valor_medio_milheiro,
+        })
+
+    return render(request, 'admin_custom/programas_do_cliente.html', {
+        'cliente': cliente,
+        'lista_contas': lista_contas,
+    })
+
+
+@login_required
+@user_passes_test(admin_required)
+def admin_movimentacoes(request, conta_id):
+    conta = get_object_or_404(ContaFidelidade, id=conta_id)
+    movimentacoes = conta.movimentacoes.all()  # Aqui está o segredo!
+    return render(request, "admin_custom/movimentacoes.html", {
+        "conta": conta,
+        "movimentacoes": movimentacoes,
+    })
+
+class NovaMovimentacaoForm(forms.ModelForm):
+    class Meta:
+        model = Movimentacao
+        fields = ['data', 'pontos', 'valor_pago', 'descricao']
+        widgets = {
+            'data': forms.DateInput(attrs={'type': 'date'}),
+            'descricao': forms.TextInput(attrs={'placeholder': 'Descrição'}),
+        }
+
+@staff_member_required
+def admin_nova_movimentacao(request, conta_id):
+    conta = get_object_or_404(ContaFidelidade, id=conta_id)
+    if request.method == 'POST':
+        form = NovaMovimentacaoForm(request.POST)
+        if form.is_valid():
+            mov = form.save(commit=False)
+            mov.conta = conta
+            mov.save()
+            return redirect('admin_movimentacoes', conta_id=conta.id)
+    else:
+        form = NovaMovimentacaoForm()
+    return render(request, 'admin_custom/nova_movimentacao.html', {
+        'form': form,
+        'conta': conta,
+    })

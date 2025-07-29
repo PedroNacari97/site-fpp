@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from gestao.models import ContaFidelidade, MovimentacaoPontos, EmissaoPassagem, ValorMilheiro
+from gestao.models import ContaFidelidade, EmissaoPassagem, ValorMilheiro
 
 # VIEW LOGIN CUSTOMIZADA
 def login_custom_view(request):
@@ -41,7 +41,6 @@ def sair(request):
 @login_required
 def dashboard(request):
     conta = ContaFidelidade.objects.filter(cliente__usuario=request.user).first()
-    movimentacoes = MovimentacaoPontos.objects.filter(conta=conta) if conta else []
     emissoes = EmissaoPassagem.objects.filter(cliente__usuario=request.user) if conta else []
     valor_milheiros = {v.programa_nome: v.valor_mercado for v in ValorMilheiro.objects.all()}
 
@@ -53,7 +52,6 @@ def dashboard(request):
 
     context = {
         'conta': conta,
-        'movimentacoes': movimentacoes,
         'saldo_pontos': conta.saldo_pontos if conta else 0,
         'valor_total_pago': conta.valor_total_pago if conta else 0,
         'valor_medio': conta.valor_total_pago / (conta.saldo_pontos / 1000) if conta and conta.saldo_pontos > 0 else 0,
@@ -73,9 +71,3 @@ def painel_emissoes(request):
     emissoes = EmissaoPassagem.objects.filter(cliente__usuario=request.user)
     return render(request, 'painel_cliente/emissoes.html', {'emissoes': emissoes, 'conta': conta})
 
-# MOVIMENTAÇÕES DE PONTOS
-@login_required
-def painel_movimentacoes(request):
-    conta = ContaFidelidade.objects.filter(cliente__usuario=request.user).first()
-    movimentacoes = MovimentacaoPontos.objects.filter(conta=conta) if conta else []
-    return render(request, 'painel_cliente/movimentacoes.html', {'movimentacoes': movimentacoes, 'conta': conta})

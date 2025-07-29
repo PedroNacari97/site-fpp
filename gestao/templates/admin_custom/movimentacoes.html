@@ -1,0 +1,42 @@
+{% extends "admin_custom/base_admin.html" %}
+
+{% block title %}Movimentações de {{ conta.programa.nome }}{% endblock %}
+{% block header_title %}Movimentações de {{ conta.programa.nome }}{% endblock %}
+
+{% block content %}
+<div style="background:#232345;padding:20px;border-radius:12px;">
+  <h3>Movimentações do Programa: {{ conta.programa.nome }} - Cliente: {{ conta.cliente.usuario.username }}</h3>
+  
+  <!-- Botão para nova movimentação -->
+  <a href="{% url 'admin_nova_movimentacao' conta.id %}" class="btn btn-primary" style="margin-bottom:16px;">
+      + Nova Movimentação
+  </a>
+  
+  <table style="width:100%;color:#fff;border-collapse:collapse;margin-bottom:20px;">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Pontos</th>
+        <th>Valor Pago</th>
+        <th>Descrição</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for mov in movimentacoes %}
+      <tr>
+        <td>{{ mov.data|date:"d/m/Y" }}</td>
+        <td>{{ mov.pontos }}</td>
+        <td>R$ {{ mov.valor_pago|floatformat:2 }}</td>
+        <td>{{ mov.descricao }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" style="color:#fa7070;text-align:center;">Nenhuma movimentação lançada.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+  <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="btn btn-secondary">
+    Voltar para Programas
+  </a>
+</div>
+{% endblock %}

@@ -6,5 +6,5 @@ urlpatterns = [
     path('logout/', views.sair, name='logout'),
     path('', views.dashboard, name='painel_dashboard'),
     path('emissoes/', views.painel_emissoes, name='painel_emissoes'),
-    path('movimentacoes/', views.painel_movimentacoes, name='painel_movimentacoes'),
+    
 ]

@@ -1,0 +1,40 @@
+body {
+    background-color: #1c1c3a;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+}
+
+th {
+    background-color: #232345;
+    color: #b6a9ff;
+}
+
+tr:nth-child(even) {
+    background-color: #2d2d50;
+}
+
+a {
+    color: #b67cff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.linha1 {
+    background-color: #f9f9f9;
+}
+
+.linha2 {
+    background-color: #ececec;
+}

@@ -1,19 +1,12 @@
 from django.contrib import admin
 from .models import (
     Cliente, ProgramaFidelidade,
-    ContaFidelidade, EmissaoPassagem, MovimentacaoPontos,
+    ContaFidelidade, EmissaoPassagem,
     ValorMilheiro
 )
 
 admin.site.register(Cliente)
 admin.site.register(ProgramaFidelidade)
-
-class MovimentacaoPontosInline(admin.TabularInline):
-    model = MovimentacaoPontos
-    extra = 1
-    readonly_fields = ['data']
-    fields = ['data', 'pontos', 'valor_pago', 'descricao']
-    ordering = ['-data']
 
 class ContaFidelidadeAdmin(admin.ModelAdmin):
     list_display = (
@@ -64,8 +57,7 @@ class ContaFidelidadeAdmin(admin.ModelAdmin):
         return f'{valor_medio:.2f}'
     get_valor_medio.short_description = 'Valor médio (por 1.000 pontos)'
 
-    inlines = [MovimentacaoPontosInline]
-
+   
 admin.site.register(ContaFidelidade, ContaFidelidadeAdmin)
 
 class EmissaoPassagemAdmin(admin.ModelAdmin):

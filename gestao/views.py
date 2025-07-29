@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from .models import ContaFidelidade, EmissaoPassagem, ValorMilheiro, ProgramaFidelidade, MovimentacaoPontos
+from .models import ContaFidelidade, EmissaoPassagem, ValorMilheiro, ProgramaFidelidade
 
 def login_custom_view(request):
     error_message = None
@@ -81,12 +81,6 @@ def painel_dashboard(request):
 def painel_emissoes(request):
     emissoes = EmissaoPassagem.objects.filter(cliente__usuario=request.user).order_by('-data_ida')
     return render(request, 'painel_cliente/emissoes_detalhadas.html', {'emissoes': emissoes})
-
-@login_required
-def painel_movimentacoes(request):
-    contas = ContaFidelidade.objects.filter(cliente__usuario=request.user)
-    movimentacoes = MovimentacaoPontos.objects.filter(conta__in=contas).order_by('-data')
-    return render(request, 'painel_cliente/movimentacoes.html', {'movimentacoes': movimentacoes})
 
 @login_required
 def logout_view(request):

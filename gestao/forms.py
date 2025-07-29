@@ -17,6 +17,13 @@ class ProgramaFidelidadeForm(forms.ModelForm):
     class Meta:
         model = ProgramaFidelidade
         fields = ['nome', 'descricao', 'preco_medio_milheiro']
+        widgets = {
+            'descricao': forms.Textarea(attrs={
+                'rows': 4,
+                'cols': 40,
+                'style': 'resize:vertical; max-height:100px;'
+            }),
+        }
 
 
 class ClienteForm(forms.ModelForm):

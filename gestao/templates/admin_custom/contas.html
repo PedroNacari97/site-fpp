@@ -21,20 +21,31 @@
                     <th>Saldo Pontos</th>
                     <th>Valor Pago</th>
                     <th>Valor Médio / mil</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for conta in page_obj %}
                 <tr>
-                    <td style="color:#ffe082;">{{ conta.cliente.usuario.username }}</td>
+                    <td style="color:#ffe082;">
+                        <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}"
+                           style="margin-right:12px; background:#b67cff; color:#fff; padding:3px 10px; border-radius:5px; font-size:12px; text-decoration:none; font-weight:500; vertical-align:middle;">
+                            Ver Programas
+                        </a>
+                        {{ conta.cliente.usuario.username }}
+                    </td>
                     <td>{{ conta.programa.nome }}</td>
                     <td>{{ conta.saldo_pontos }}</td>
                     <td>R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
-                   <td>R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
-                    <td><a href="{% url 'admin_editar_conta' conta.id %}" style="color:#b67cff;">Editar</a></td>
+                    <td>R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
+                    <td>
+                        <a href="{% url 'admin_editar_conta' conta.id %}" style="color:#b67cff;">Editar</a>
+                    </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" style="color:#fa7070;text-align:center;padding:2rem 0;">Nenhuma conta encontrada.</td></tr>
+                <tr>
+                    <td colspan="6" style="color:#fa7070;text-align:center;padding:2rem 0;">Nenhuma conta encontrada.</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>

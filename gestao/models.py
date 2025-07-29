@@ -5,7 +5,7 @@ class Cliente(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cliente_gestao')
     telefone = models.CharField(max_length=20, blank=True)
     data_nascimento = models.DateField(null=True, blank=True)
-    cpf = models.CharField(max_length=14, unique=True)
+    cpf = models.CharField(max_length=14, default='000.000.000-00')
     PERFIS = (
         ('admin', 'Administrador'),
         ('operador', 'Operador'),
@@ -28,8 +28,11 @@ class ProgramaFidelidade(models.Model):
 
 
 class Aeroporto(models.Model):
-    sigla = models.CharField(max_length=5, unique=True)
-    nome = models.CharField(max_length=100)
+    nome = models.CharField(max_length=200)
+    sigla = models.CharField(max_length=10)
+    cidade = models.CharField(max_length=200)
+    estado = models.CharField(max_length=100)
+
 
     class Meta:
         ordering = ['sigla']
@@ -55,7 +58,7 @@ class ContaFidelidade(models.Model):
         ('anual', 'Anual'),
     )
     clube_periodicidade = models.CharField(
-        max_length=12, choices=PERIODICIDADE_CLUBE, default='nenhum')
+    max_length=12, choices=PERIODICIDADE_CLUBE, default='nenhum')
     pontos_clube_mes = models.IntegerField(default=0)
     valor_assinatura_clube = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     data_inicio_clube = models.DateField(null=True, blank=True)
@@ -73,13 +76,6 @@ class ContaFidelidade(models.Model):
 
     def __str__(self):
         return f'{self.cliente} - {self.programa}'
-
-class MovimentacaoPontos(models.Model):
-    conta = models.ForeignKey(ContaFidelidade, on_delete=models.CASCADE, related_name='movimentacoes')
-    data = models.DateTimeField(auto_now_add=True)
-    pontos = models.IntegerField(help_text="Positivo para adicionar, negativo para remover")
-    descricao = models.CharField(max_length=200, blank=True)
-    valor_pago = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def __str__(self):
         return f'{self.conta} - {self.data:%d/%m/%Y} - {self.pontos}'
@@ -109,4 +105,12 @@ class ValorMilheiro(models.Model):
 
     def __str__(self):
         return f'{self.programa_nome} (R$ {self.valor_mercado})'
-    
+
+class Movimentacao(models.Model):
+    conta = models.ForeignKey(ContaFidelidade, on_delete=models.CASCADE, related_name='movimentacoes')
+    data = models.DateField()
+    pontos = models.IntegerField()
+    valor_pago = models.DecimalField(max_digits=10, decimal_places=2)
+    descricao = models.CharField(max_length=255)
+    def __str__(self):
+        return f"{self.conta} - {self.data} - {self.pontos}"

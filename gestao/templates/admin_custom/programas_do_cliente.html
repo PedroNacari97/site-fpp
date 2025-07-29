@@ -1,0 +1,44 @@
+{% extends "admin_custom/base_admin.html" %}
+{% block title %}Programas de {{ cliente.nome }}{% endblock %}
+{% block header_title %}Programas de {{ cliente.nome }}{% endblock %}
+
+{% block content %}
+  <div style="background:#232345;padding:20px;border-radius:12px;">
+    <h3>Contas Fidelidade</h3>
+    <table style="width:100%;color:#fff;border-collapse:collapse;">
+      <thead>
+        <tr>
+          <th>Programa</th>
+          <th>Saldo Pontos</th>
+          <th>Valor Pago</th>
+          <th>Valor Médio / mil</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in lista_contas %}
+        <tr>
+          <td>{{ c.conta.programa.nome }}</td>
+          <td>{{ c.saldo_pontos }}</td>
+          <td>R$ {{ c.valor_pago|floatformat:2 }}</td>
+          <td>R$ {{ c.valor_medio_milheiro|floatformat:2 }}</td>
+          <td>
+            <a href="{% url 'admin_movimentacoes' c.conta.id %}" 
+               class="btn btn-sm btn-success" 
+               style="margin-right:8px;background:#62e274;color:#232345;font-weight:bold;">
+              Movimentações
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5">Nenhum programa encontrado para este cliente.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <a href="{% url 'admin_contas' %}" class="btn btn-secondary" style="margin-top: 24px;">
+      Voltar para Contas
+    </a>
+  </div>
+{% endblock %}

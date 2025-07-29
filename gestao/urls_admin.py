@@ -1,4 +1,5 @@
 from django.urls import path
+from gestao import views_admin
 from .views_admin import (
     admin_dashboard,
     admin_clientes,
@@ -7,7 +8,7 @@ from .views_admin import (
     admin_emissoes,
     nova_emissao,
     editar_emissao,
-    criar_conta,   # <-- Adiciona aqui!
+    criar_conta,   
     editar_conta,
     admin_programas,
     editar_programa,
@@ -34,4 +35,9 @@ urlpatterns = [
     path('emissoes/<int:emissao_id>/editar/', editar_emissao, name='admin_editar_emissao'),
     path('contas/novo/', criar_conta, name='admin_nova_conta'),
     path('clientes/novo/', criar_cliente, name='admin_novo_cliente'),
+    path('clientes/<int:cliente_id>/programas/', views_admin.programas_do_cliente, name='admin_programas_do_cliente'),
+    path('contas/<int:conta_id>/movimentacoes/', views_admin.admin_movimentacoes, name='admin_movimentacoes'),
+    path('contas/<int:conta_id>/movimentacoes/nova/', views_admin.admin_nova_movimentacao, name='admin_nova_movimentacao'),
+
+
 ]
