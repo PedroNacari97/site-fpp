@@ -15,9 +15,11 @@ from .forms import (
     NovoClienteForm,
     AeroportoForm,
     EmissaoPassagemForm,
+    EmissaoHotelForm,
 )
 from django.contrib.auth.models import User
 from .models import Cliente, ContaFidelidade, ProgramaFidelidade, EmissaoPassagem, Aeroporto, ValorMilheiro
+from .models import EmissaoHotel
 import csv
 
 def admin_required(user):
@@ -323,6 +325,46 @@ def editar_emissao(request, emissao_id):
     else:
         form = EmissaoPassagemForm(instance=emissao)
     return render(request, "admin_custom/emissoes_form.html", {"form": form})
+
+
+@login_required
+@user_passes_test(admin_required)
+def admin_hoteis(request):
+    emissoes = EmissaoHotel.objects.all().select_related('cliente')
+    return render(request, 'admin_custom/hoteis.html', {'emissoes': emissoes})
+
+
+@login_required
+@user_passes_test(admin_required)
+def nova_emissao_hotel(request):
+    if request.method == "POST":
+        form = EmissaoHotelForm(request.POST)
+        if form.is_valid():
+            emissao = form.save(commit=False)
+            if emissao.valor_referencia and emissao.valor_pago:
+                emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
+            emissao.save()
+            return redirect('admin_hoteis')
+    else:
+        form = EmissaoHotelForm()
+    return render(request, "admin_custom/hoteis_form.html", {"form": form})
+
+
+@login_required
+@user_passes_test(admin_required)
+def editar_emissao_hotel(request, emissao_id):
+    emissao = EmissaoHotel.objects.get(id=emissao_id)
+    if request.method == "POST":
+        form = EmissaoHotelForm(request.POST, instance=emissao)
+        if form.is_valid():
+            emissao = form.save(commit=False)
+            if emissao.valor_referencia and emissao.valor_pago:
+                emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
+            emissao.save()
+            return redirect('admin_hoteis')
+    else:
+        form = EmissaoHotelForm(instance=emissao)
+    return render(request, "admin_custom/hoteis_form.html", {"form": form})
 
 @login_required
 @user_passes_test(admin_required)

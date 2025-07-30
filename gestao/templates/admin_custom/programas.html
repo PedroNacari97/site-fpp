@@ -15,6 +15,7 @@
                 <tr style="color:#b6a9ff;">
                     <th>Nome</th>
                     <th>Descrição</th>
+                    <th>Valor Referência</th>
                     <th></th>
                 </tr>
             </thead>
@@ -23,10 +24,11 @@
                 <tr>
                     <td>{{ p.nome }}</td>
                     <td>{{ p.descricao }}</td>
+                    <td>R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
                     <td><a href="{% url 'admin_editar_programa' p.id %}" style="color:#b67cff;">Editar</a></td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="3" style="color:#ff7070;text-align:center;">Nenhum programa cadastrado.</td></tr>
+                <tr><td colspan="4" style="color:#ff7070;text-align:center;">Nenhum programa cadastrado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

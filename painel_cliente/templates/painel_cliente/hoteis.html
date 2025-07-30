@@ -3,7 +3,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Emissões Detalhadas</title>
+    <title>Emissões de Hotéis</title>
     <link rel="stylesheet" href="{% static 'gestao/styles.css' %}">
     <style>
         body {
@@ -40,72 +40,45 @@
         tr {
             border-bottom: 1px solid #313455;
         }
-        tr:last-child {
-            border-bottom: none;
-        }
         td {
             color: #f2f2f2;
-        }
-        .back-link {
-            color: #f8d16c;
-            text-decoration: none;
-            margin-bottom: 20px;
-            display: inline-block;
-        }
-        .back-link:hover {
-            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <a class="back-link" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
-        <h1>Emissões Detalhadas</h1>
+        <h1>Emissões de Hotéis</h1>
         <table>
             <thead>
                 <tr>
-                    <th>Data Ida</th>
-                    <th>Data Volta</th>
-                    <th>Aeroporto Ida</th>
-                    <th>Aeroporto Volta</th>
-                    <th>Passageiros</th>
-                    <th>Companhia</th>
-                    <th>Localizador</th>
-                    <th>Programa</th>
+                    <th>Hotel</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
                     <th>Valor Referência</th>
                     <th>Valor Pago</th>
-                    <th>Pontos Utilizados</th>
-                    <th>Economia Obtida</th>
-                    <th>Detalhes</th>
+                    <th>Economia</th>
                 </tr>
             </thead>
             <tbody>
                 {% for emissao in emissoes %}
                 <tr>
-                    <td>{{ emissao.data_ida|date:"d/m/Y" }}</td>
-                    <td>{% if emissao.data_volta %}{{ emissao.data_volta|date:"d/m/Y" }}{% endif %}</td>
-                    <td>{{ emissao.aeroporto_partida }}</td>
-                    <td>{{ emissao.aeroporto_destino }}</td>
-                    <td>{{ emissao.qtd_passageiros }}</td>
-                    <td>{{ emissao.companhia_aerea }}</td>
-                    <td>{{ emissao.localizador }}</td>
-                    <td>{{ emissao.programa.nome }}</td>
+                    <td>{{ emissao.nome_hotel }}</td>
+                    <td>{{ emissao.check_in|date:"d/m/Y" }}</td>
+                    <td>{{ emissao.check_out|date:"d/m/Y" }}</td>
                     <td>R$ {{ emissao.valor_referencia|floatformat:2 }}</td>
                     <td>R$ {{ emissao.valor_pago|floatformat:2 }}</td>
-                    <td>{{ emissao.pontos_utilizados }}</td>
                     <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
-                    <td>{{ emissao.detalhes|default:"—" }}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="13" style="text-align:center;color:#f8d16c;">Nenhuma emissão encontrada.</td>
+                    <td colspan="6" style="text-align:center;color:#f8d16c;">Nenhuma emissão encontrada.</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="9" style="text-align:right;color:#f8d16c;">Total Pago:</td>
-                    <td colspan="4" style="color:#f8d16c;">R$ {{ total_pago|floatformat:2 }}</td>
+                    <td colspan="4" style="text-align:right;color:#f8d16c;">Total Pago:</td>
+                    <td colspan="2" style="color:#f8d16c;">R$ {{ total_pago|floatformat:2 }}</td>
                 </tr>
             </tfoot>
         </table>
