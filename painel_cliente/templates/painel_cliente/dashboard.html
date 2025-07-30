@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <title>Painel do Cliente</title>
     <link rel="stylesheet" href="{% static 'gestao/styles.css' %}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             background: #181c25;
@@ -44,7 +43,7 @@
             gap: 8px;
         }
         .valor {
-            font-size: 2rem;
+            font-size: 1.6rem;
             font-weight: bold;
             color: #f8d16c;
         }
@@ -52,28 +51,17 @@
             font-size: 1.06rem;
             color: #c6c7db;
         }
-        .painel-actions {
-            margin-bottom: 32px;
-        }
-        .painel-actions a, .painel-actions button {
-            background: #23263a;
-            color: #f8d16c;
-            border: none;
-            padding: 9px 24px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            margin-right: 14px;
-        }
-        .painel-actions a:hover, .painel-actions button:hover {
+        .card a {
             background: #313455;
+            color: #f8d16c;
+            padding: 6px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            margin-top: 8px;
         }
-        #grafico-economia {
-            margin-top: 40px;
-            background: #23263a;
-            border-radius: 14px;
-            padding: 16px 28px;
+        .card a:hover {
+            background: #3d4063;
         }
         .section-title {
             margin-top: 2.2rem;
@@ -82,99 +70,48 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="painel-header">
-            <h1>Bem-vindo, {{ request.user.first_name|default:request.user.username }}!</h1>
-            <form action="{% url 'logout' %}" method="post">{% csrf_token %}
-                <button type="submit">Logout</button>
-            </form>
-        </div>
-
-        <div class="painel-cards">
-            <div class="card">
-                <span class="label">Saldo de Pontos</span>
-                <span class="valor">{{ saldo_pontos|default:"0" }}</span>
-            </div>
-            <div class="card">
-                <span class="label">Valor Total Pago</span>
-                <span class="valor">R$ {{ valor_total_pago|floatformat:2 }}</span>
-            </div>
-            <div class="card">
-                <span class="label">Valor Médio por 1.000 pontos</span>
-                <span class="valor">R$ {{ valor_medio|floatformat:2 }}</span>
-            </div>
-            <div class="card">
-                <span class="label">Valor Mercado (milheiro)</span>
-                <span class="valor">R$ {{ valor_milheiro_mercado|floatformat:2 }}</span>
-            </div>
-        </div>
-
-        <div class="painel-actions">
-            <a href="{% url 'painel_emissoes' %}">Ver emissões detalhadas</a>
-            <a href="{% url 'painel_movimentacoes' %}">Ver movimentações</a>
-        </div>
-
-        <h2 class="section-title">Resumo de Emissões</h2>
-        <div class="painel-cards">
-            <div class="card">
-                <span class="label">Quantidade de Emissões</span>
-                <span class="valor">{{ qtd_emissoes }}</span>
-            </div>
-            <div class="card">
-                <span class="label">Pontos Totais Utilizados</span>
-                <span class="valor">{{ pontos_totais_utilizados }}</span>
-            </div>
-            <div class="card">
-                <span class="label">Valor Total Referência</span>
-                <span class="valor">R$ {{ valor_total_referencia|floatformat:2 }}</span>
-            </div>
-            <div class="card">
-                <span class="label">Valor Total Gasto</span>
-                <span class="valor">R$ {{ valor_total_gasto|floatformat:2 }}</span>
-            </div>
-            <div class="card">
-                <span class="label">Valor Total Economizado</span>
-                <span class="valor">R$ {{ valor_total_economizado|floatformat:2 }}</span>
-            </div>
-        </div>
-
-        <div id="grafico-economia">
-            <h2 style="color:#f8d16c;">Economia por Mês</h2>
-            <canvas id="chartEconomia" width="600" height="160"></canvas>
-        </div>
+<div class="container">
+    <div class="painel-header">
+        <h1>Bem-vindo, {{ request.user.first_name|default:request.user.username }}!</h1>
+        <form action="{% url 'logout' %}" method="post">{% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
     </div>
 
-    <script>
-        // Exemplo: você pode passar os dados do backend para o JS usando context
-        const economiaMeses = {{ economia_meses|safe }};
-        const labels = Object.keys(economiaMeses);
-        const valores = Object.values(economiaMeses);
+    <h2 class="section-title">Programas de Fidelidade</h2>
+    <div class="painel-cards">
+        {% for c in contas_info %}
+        <div class="card">
+            <strong style="color:#f8d16c;">{{ c.programa }}</strong>
+            <span class="label">Pontos acumulados</span>
+            <span class="valor">{{ c.saldo_pontos }}</span>
+            <span class="label">Valor total dos pontos</span>
+            <span class="valor">R$ {{ c.valor_total|floatformat:2 }}</span>
+            <span class="label">Valor médio por 1.000 pontos</span>
+            <span class="valor">R$ {{ c.valor_medio|floatformat:2 }}</span>
+            <span class="label">Valor de referência</span>
+            <span class="valor">R$ {{ c.valor_referencia|floatformat:2 }}</span>
+            <a href="{% url 'movimentacoes_programa' c.id %}">Ver movimentações</a>
+        </div>
+        {% empty %}
+        <p style="color:#f8d16c;">Nenhum programa cadastrado.</p>
+        {% endfor %}
+    </div>
 
-        new Chart(document.getElementById('chartEconomia'), {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Economia obtida (R$)',
-                    data: valores,
-                    backgroundColor: '#f8d16c'
-                }]
-            },
-            options: {
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { color: "#fff" }
-                    },
-                    x: {
-                        ticks: { color: "#fff" }
-                    }
-                }
-            }
-        });
-    </script>
+    <h2 class="section-title">Emissões</h2>
+    <div class="painel-cards">
+        <div class="card">
+            <span class="label">Quantidade total de emissões</span>
+            <span class="valor">{{ qtd_emissoes }}</span>
+            <span class="label">Valor total gasto em pontos</span>
+            <span class="valor">{{ pontos_totais_utilizados }}</span>
+            <span class="label">Valor de referência acumulado</span>
+            <span class="valor">R$ {{ valor_total_referencia|floatformat:2 }}</span>
+            <span class="label">Valor total economizado</span>
+            <span class="valor">R$ {{ valor_total_economizado|floatformat:2 }}</span>
+            <a href="{% url 'painel_emissoes' %}">Ver detalhes</a>
+        </div>
+    </div>
+</div>
 </body>
 </html>
