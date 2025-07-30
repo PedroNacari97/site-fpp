@@ -78,7 +78,7 @@
         </form>
     </div>
 
-        <h2 class="section-title">Programas de Fidelidade</h2>
+    <h2 class="section-title">Programas de Fidelidade</h2>
     <div class="painel-cards">
         {% for c in contas_info %}
         <div class="card">
@@ -97,23 +97,26 @@
         <p style="color:#f8d16c;">Nenhum programa cadastrado.</p>
         {% endfor %}
     </div>
-        
-        <h2 class="section-title">Emissões</h2>
+
+    <h2 class="section-title">Emissões e Hotéis</h2>
     <div class="painel-cards">
         <div class="card">
+            <strong style="color:#f8d16c; font-size: 1.2rem;">Emissões</strong>
             <span class="label">Quantidade total de emissões</span>
             <span class="valor">{{ qtd_emissoes }}</span>
             <span class="label">Valor total gasto em pontos</span>
             <span class="valor">{{ pontos_totais_utilizados }}</span>
-            <span class="label">Valor total pago</span>
-            <span class="valor">R$ {{ valor_total_pago|floatformat:2 }}</span>
             <span class="label">Valor de referência acumulado</span>
             <span class="valor">R$ {{ valor_total_referencia|floatformat:2 }}</span>
+            <span class="label">Valor total pago</span>
+            <span class="valor">R$ {{ valor_total_pago|floatformat:2 }}</span>
             <span class="label">Valor total economizado</span>
             <span class="valor">R$ {{ valor_total_economizado|floatformat:2 }}</span>
             <a href="{% url 'painel_emissoes' %}">Ver detalhes</a>
         </div>
+
         <div class="card">
+            <strong style="color:#f8d16c; font-size: 1.2rem;">Hotéis</strong>
             <span class="label">Quantidade de reservas de hotéis</span>
             <span class="valor">{{ qtd_hoteis }}</span>
             <span class="label">Valor de referência acumulado</span>
@@ -124,6 +127,7 @@
             <span class="valor">R$ {{ valor_total_hoteis_economia|floatformat:2 }}</span>
             <a href="{% url 'painel_hoteis' %}">Ver detalhes</a>
         </div>
+    </div>
 </div>
 </body>
 </html>
