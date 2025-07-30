@@ -88,6 +88,8 @@ class EmissaoPassagem(models.Model):
     data_ida = models.DateField()
     data_volta = models.DateField(null=True, blank=True)
     qtd_passageiros = models.PositiveIntegerField()
+    companhia_aerea = models.CharField(max_length=100, blank=True)
+    localizador = models.CharField(max_length=100, blank=True)
     valor_referencia = models.DecimalField(max_digits=10, decimal_places=2)
     valor_pago = models.DecimalField(max_digits=10, decimal_places=2)
     pontos_utilizados = models.IntegerField(null=True, blank=True)
@@ -114,3 +116,16 @@ class Movimentacao(models.Model):
     descricao = models.CharField(max_length=255)
     def __str__(self):
         return f"{self.conta} - {self.data} - {self.pontos}"
+
+
+class EmissaoHotel(models.Model):
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    nome_hotel = models.CharField(max_length=200)
+    check_in = models.DateField()
+    check_out = models.DateField()
+    valor_referencia = models.DecimalField(max_digits=10, decimal_places=2)
+    valor_pago = models.DecimalField(max_digits=10, decimal_places=2)
+    economia_obtida = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.cliente} - {self.nome_hotel}"

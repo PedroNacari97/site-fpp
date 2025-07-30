@@ -5,6 +5,7 @@ from .models import (
     Cliente,
     Aeroporto,
     EmissaoPassagem,
+    EmissaoHotel,
 )
 
 class ContaFidelidadeForm(forms.ModelForm):
@@ -67,8 +68,28 @@ class EmissaoPassagemForm(forms.ModelForm):
             'valor_referencia_pontos',
             'economia_obtida',
             'detalhes',
+            'companhia_aerea',
+            'localizador',
         ]
         widgets = {
             'data_ida': forms.DateInput(attrs={'type': 'date'}),
             'data_volta': forms.DateInput(attrs={'type': 'date'}),
         }
+        
+
+class EmissaoHotelForm(forms.ModelForm):
+    class Meta:
+        model = EmissaoHotel
+        fields = [
+            'cliente',
+            'nome_hotel',
+            'check_in',
+            'check_out',
+            'valor_referencia',
+            'valor_pago',
+            'economia_obtida',
+        ]
+        widgets = {
+            'check_in': forms.DateInput(attrs={'type': 'date'}),
+            'check_out': forms.DateInput(attrs={'type': 'date'}),
+                  }
