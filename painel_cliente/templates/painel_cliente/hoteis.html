@@ -18,7 +18,7 @@
         }
         h1 {
             color: #f8d16c;
-             margin-bottom: 24px;
+            margin-bottom: 24px;
         }
         table {
             width: 100%;
@@ -43,20 +43,10 @@
         td {
             color: #f2f2f2;
         }
-        .back-link {
-            color: #f8d16c;
-            text-decoration: none;
-            margin-bottom: 20px;
-            display: inline-block;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <a class="back-link" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
         <h1>Emissões de Hotéis</h1>
         <table>
             <thead>
@@ -86,6 +76,11 @@
                 {% endfor %}
             </tbody>
             <tfoot>
+                <tr>
+                    <td colspan="4" style="text-align:right;color:#f8d16c;">Total Pago:</td>
+                    <td colspan="2" style="color:#f8d16c;">R$ {{ total_pago|floatformat:2 }}</td>
+                </tr>
+            </tfoot>
         </table>
     </div>
 </body>
