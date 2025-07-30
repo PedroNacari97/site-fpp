@@ -69,6 +69,8 @@
                     <th>Aeroporto Ida</th>
                     <th>Aeroporto Volta</th>
                     <th>PAX</th>
+                    <th>Companhia</th>
+                    <th>Localizador</th>
                     <th>Pontos Usados</th>
                     <th>Valor Referência</th>
                     <th>Valor Pago</th>
@@ -84,6 +86,8 @@
                     <td>{{ e.aeroporto_partida }}</td>
                     <td>{{ e.aeroporto_destino }}</td>
                     <td>{{ e.qtd_passageiros }}</td>
+                    <td>{{ e.companhia_aerea }}</td>
+                    <td>{{ e.localizador }}</td>
                     <td>{{ e.pontos_utilizados|default:"-" }}</td>
                     <td>R$ {{ e.valor_referencia|floatformat:2 }}</td>
                     <td>R$ {{ e.valor_pago|floatformat:2 }}</td>
@@ -91,7 +95,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="10" style="text-align:center;">Nenhuma emissão registrada</td>
+                    <td colspan="12" style="text-align:center;">Nenhuma emissão registrada</td>
                 </tr>
                 {% endfor %}
             </tbody>

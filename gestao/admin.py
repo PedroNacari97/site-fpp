@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     Cliente, ProgramaFidelidade,
     ContaFidelidade, EmissaoPassagem,
-    ValorMilheiro
+    EmissaoHotel, ValorMilheiro
 )
 
 admin.site.register(Cliente)
@@ -74,9 +74,25 @@ class EmissaoPassagemAdmin(admin.ModelAdmin):
         'pontos_utilizados',
         'valor_referencia_pontos',
         'economia_obtida',
+        'companhia_aerea',
+        'localizador',
     )
 
 admin.site.register(EmissaoPassagem, EmissaoPassagemAdmin)
+
+
+class EmissaoHotelAdmin(admin.ModelAdmin):
+    list_display = (
+        'cliente',
+        'nome_hotel',
+        'check_in',
+        'check_out',
+        'valor_referencia',
+        'valor_pago',
+        'economia_obtida',
+    )
+
+admin.site.register(EmissaoHotel, EmissaoHotelAdmin)
 
 @admin.register(ValorMilheiro)
 class ValorMilheiroAdmin(admin.ModelAdmin):

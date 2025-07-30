@@ -52,6 +52,8 @@
                     <th>Data Ida</th>
                     <th>Data Volta</th>
                     <th>Qtd</th>
+                    <th>Companhia</th>
+                    <th>Localizador</th>
                     <th>Valor Ref.</th>
                     <th>Pago</th>
                     <th>Pontos</th>
@@ -70,6 +72,8 @@
                     <td>{{ e.data_ida|date:"d/m/Y" }}</td>
                     <td>{{ e.data_volta|date:"d/m/Y" }}</td>
                     <td>{{ e.qtd_passageiros }}</td>
+                    <td>{{ e.companhia_aerea }}</td>
+                    <td>{{ e.localizador }}</td>
                     <td>R$ {{ e.valor_referencia|floatformat:2 }}</td>
                     <td>R$ {{ e.valor_pago|floatformat:2 }}</td>
                     <td>{{ e.pontos_utilizados }}</td>
@@ -78,7 +82,7 @@
                     <td><a href="{% url 'admin_editar_emissao' e.id %}" style="color:#b67cff;">Editar</a></td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="13" style="color:#ff7070;text-align:center;">Nenhuma emissão encontrada.</td></tr>
+                <tr><td colspan="15" style="color:#ff7070;text-align:center;">Nenhuma emissão encontrada.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

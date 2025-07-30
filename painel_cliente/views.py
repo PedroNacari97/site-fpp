@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from gestao.models import ContaFidelidade, EmissaoPassagem, ValorMilheiro
+from gestao.models import ContaFidelidade, EmissaoPassagem, EmissaoHotel, ValorMilheiro
 
 # VIEW LOGIN CUSTOMIZADA
 def login_custom_view(request):
@@ -88,5 +88,20 @@ def movimentacoes_programa(request, conta_id):
 def painel_emissoes(request):
     conta = ContaFidelidade.objects.filter(cliente__usuario=request.user).first()
     emissoes = EmissaoPassagem.objects.filter(cliente__usuario=request.user)
-    return render(request, 'painel_cliente/emissoes.html', {'emissoes': emissoes, 'conta': conta})
+    total_pago = sum(float(e.valor_pago or 0) for e in emissoes)
+    return render(request, 'painel_cliente/emissoes.html', {
+        'emissoes': emissoes,
+        'conta': conta,
+        'total_pago': total_pago,
+    })
+
+
+@login_required
+def painel_hoteis(request):
+    emissoes = EmissaoHotel.objects.filter(cliente__usuario=request.user)
+    total_pago = sum(float(e.valor_pago or 0) for e in emissoes)
+    return render(request, 'painel_cliente/hoteis.html', {
+        'emissoes': emissoes,
+        'total_pago': total_pago,
+    })
 
