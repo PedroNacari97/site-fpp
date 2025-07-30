@@ -62,6 +62,8 @@ class EmissaoPassagemForm(forms.ModelForm):
             'data_ida',
             'data_volta',
             'qtd_passageiros',
+            'companhia_aerea',
+            'localizador',
             'valor_referencia',
             'valor_pago',
             'pontos_utilizados',
@@ -75,7 +77,11 @@ class EmissaoPassagemForm(forms.ModelForm):
             'data_ida': forms.DateInput(attrs={'type': 'date'}),
             'data_volta': forms.DateInput(attrs={'type': 'date'}),
         }
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> dc8bb7d0f6d16a3cf1b645b0cfa9f1ad1d83a070
 
 class EmissaoHotelForm(forms.ModelForm):
     class Meta:
@@ -92,4 +98,8 @@ class EmissaoHotelForm(forms.ModelForm):
         widgets = {
             'check_in': forms.DateInput(attrs={'type': 'date'}),
             'check_out': forms.DateInput(attrs={'type': 'date'}),
+<<<<<<< HEAD
                   }
+=======
+        }
+>>>>>>> dc8bb7d0f6d16a3cf1b645b0cfa9f1ad1d83a070

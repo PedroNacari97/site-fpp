@@ -128,4 +128,8 @@ class EmissaoHotel(models.Model):
     economia_obtida = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
+<<<<<<< HEAD
         return f"{self.cliente} - {self.nome_hotel}"
+=======
+        return f"{self.cliente} - {self.nome_hotel}"
+>>>>>>> dc8bb7d0f6d16a3cf1b645b0cfa9f1ad1d83a070

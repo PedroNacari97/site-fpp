@@ -16,6 +16,7 @@
                     <th>Nome</th>
                     <th>Valor Referência</th>
                     <th>Descrição</th>
+                    <th>Valor Referência</th>
                     <th></th>
                 </tr>
             </thead>
@@ -25,6 +26,7 @@
                     <td>{{ p.nome }}</td>
                     <td>R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
                     <td>{{ p.descricao }}</td>
+                    <td>R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
                     <td><a href="{% url 'admin_editar_programa' p.id %}" style="color:#b67cff;">Editar</a></td>
                 </tr>
                 {% empty %}

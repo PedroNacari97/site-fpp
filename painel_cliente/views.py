@@ -2,7 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
+<<<<<<< HEAD
 from gestao.models import ContaFidelidade, EmissaoPassagem, ValorMilheiro
+=======
+>>>>>>> dc8bb7d0f6d16a3cf1b645b0cfa9f1ad1d83a070
 from gestao.models import ContaFidelidade, EmissaoPassagem, EmissaoHotel, ValorMilheiro
 
 # VIEW LOGIN CUSTOMIZADA
