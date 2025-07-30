@@ -97,8 +97,7 @@
         <p style="color:#f8d16c;">Nenhum programa cadastrado.</p>
         {% endfor %}
     </div>
-        </div>
-
+        
         <h2 class="section-title">Emissões</h2>
     <div class="painel-cards">
         <div class="card">
@@ -106,11 +105,24 @@
             <span class="valor">{{ qtd_emissoes }}</span>
             <span class="label">Valor total gasto em pontos</span>
             <span class="valor">{{ pontos_totais_utilizados }}</span>
+            <span class="label">Valor total pago</span>
+            <span class="valor">R$ {{ valor_total_pago|floatformat:2 }}</span>
             <span class="label">Valor de referência acumulado</span>
             <span class="valor">R$ {{ valor_total_referencia|floatformat:2 }}</span>
             <span class="label">Valor total economizado</span>
             <span class="valor">R$ {{ valor_total_economizado|floatformat:2 }}</span>
             <a href="{% url 'painel_emissoes' %}">Ver detalhes</a>
+        </div>
+        <div class="card">
+            <span class="label">Quantidade de reservas de hotéis</span>
+            <span class="valor">{{ qtd_hoteis }}</span>
+            <span class="label">Valor de referência acumulado</span>
+            <span class="valor">R$ {{ valor_total_hoteis_referencia|floatformat:2 }}</span>
+            <span class="label">Valor total pago</span>
+            <span class="valor">R$ {{ valor_total_hoteis|floatformat:2 }}</span>
+            <span class="label">Valor total economizado</span>
+            <span class="valor">R$ {{ valor_total_hoteis_economia|floatformat:2 }}</span>
+            <a href="{% url 'painel_hoteis' %}">Ver detalhes</a>
         </div>
 </div>
 </body>

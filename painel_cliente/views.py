@@ -2,10 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-<<<<<<< HEAD
 from gestao.models import ContaFidelidade, EmissaoPassagem, ValorMilheiro
-=======
->>>>>>> dc8bb7d0f6d16a3cf1b645b0cfa9f1ad1d83a070
 from gestao.models import ContaFidelidade, EmissaoPassagem, EmissaoHotel, ValorMilheiro
 
 # VIEW LOGIN CUSTOMIZADA
@@ -46,6 +43,7 @@ def sair(request):
 def dashboard(request):
     contas = ContaFidelidade.objects.filter(cliente__usuario=request.user).select_related("programa")
     emissoes = EmissaoPassagem.objects.filter(cliente__usuario=request.user)
+    hoteis = EmissaoHotel.objects.filter(cliente__usuario=request.user)
     valor_milheiros = {v.programa_nome: v.valor_mercado for v in ValorMilheiro.objects.all()}
 
     contas_info = []
@@ -59,7 +57,7 @@ def dashboard(request):
             'saldo_pontos': saldo,
             'valor_total': valor_total,
             'valor_medio': valor_medio,
-            'valor_referencia': valor_milheiros.get(conta.programa.nome, 0),
+            'valor_referencia': conta.programa.preco_medio_milheiro,
         })
 
     qtd_emissoes = emissoes.count()
@@ -67,6 +65,10 @@ def dashboard(request):
     valor_total_referencia = sum(float(e.valor_referencia or 0) for e in emissoes)
     valor_total_pago = sum(float(e.valor_pago or 0) for e in emissoes)
     valor_total_economizado = valor_total_referencia - valor_total_pago
+    qtd_hoteis = hoteis.count()
+    valor_total_hoteis = sum(float(h.valor_pago or 0) for h in hoteis)
+    valor_total_hoteis_referencia = sum(float(h.valor_referencia or 0) for h in hoteis)
+    valor_total_hoteis_economia = sum(float(h.economia_obtida or (h.valor_referencia - h.valor_pago)) for h in hoteis)
 
     context = {
         'contas_info': contas_info,
@@ -74,6 +76,11 @@ def dashboard(request):
         'pontos_totais_utilizados': pontos_totais_utilizados,
         'valor_total_referencia': valor_total_referencia,
         'valor_total_economizado': valor_total_economizado,
+        'valor_total_pago': valor_total_pago,
+        'qtd_hoteis': qtd_hoteis,
+        'valor_total_hoteis': valor_total_hoteis,
+        'valor_total_hoteis_referencia': valor_total_hoteis_referencia,
+        'valor_total_hoteis_economia': valor_total_hoteis_economia,
     }
     return render(request, 'painel_cliente/dashboard.html', context)
 
@@ -99,13 +106,16 @@ def painel_emissoes(request):
         'total_pago': total_pago,
     })
 
-
 @login_required
 def painel_hoteis(request):
     emissoes = EmissaoHotel.objects.filter(cliente__usuario=request.user)
     total_pago = sum(float(e.valor_pago or 0) for e in emissoes)
+    total_referencia = sum(float(e.valor_referencia or 0) for e in emissoes)
+    total_economia = sum(float(e.economia_obtida or (e.valor_referencia - e.valor_pago)) for e in emissoes)
     return render(request, 'painel_cliente/hoteis.html', {
         'emissoes': emissoes,
         'total_pago': total_pago,
+        'total_referencia': total_referencia,
+        'total_economia': total_economia,
     })
 

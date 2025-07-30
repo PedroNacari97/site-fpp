@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Emissões de Hotéis</title>
+    <link rel="stylesheet" href="{% static 'gestao/styles.css' %}">
+    <style>
+        body {
+            background: #181c25;
+            color: #fff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .container {
+            max-width: 1080px;
+            margin: 32px auto;
+            padding: 0 16px;
+        }
+        h1 {
+            color: #f8d16c;
+             margin-bottom: 24px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #23263a;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 8px #0002;
+        }
+        th, td {
+            padding: 14px 10px;
+            text-align: left;
+        }
+        th {
+            background: #23263a;
+            color: #f8d16c;
+        }
+        tr {
+            border-bottom: 1px solid #313455;
+        }
+        td {
+            color: #f2f2f2;
+        }
+        .back-link {
+            color: #f8d16c;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
+        <h1>Emissões de Hotéis</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hotel</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Valor Referência</th>
+                    <th>Valor Pago</th>
+                    <th>Economia</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emissao in emissoes %}
+                <tr>
+                    <td>{{ emissao.nome_hotel }}</td>
+                    <td>{{ emissao.check_in|date:"d/m/Y" }}</td>
+                    <td>{{ emissao.check_out|date:"d/m/Y" }}</td>
+                    <td>R$ {{ emissao.valor_referencia|floatformat:2 }}</td>
+                    <td>R$ {{ emissao.valor_pago|floatformat:2 }}</td>
+                    <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align:center;color:#f8d16c;">Nenhuma emissão encontrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" style="text-align:right;color:#f8d16c;">Valor Referência:</td>
+                    <td colspan="2" style="color:#f8d16c;">R$ {{ total_referencia|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="text-align:right;color:#f8d16c;">Total Pago:</td>
+                    <td colspan="2" style="color:#f8d16c;">R$ {{ total_pago|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="text-align:right;color:#f8d16c;">Economia Total:</td>
+                    <td colspan="2" style="color:#f8d16c;">R$ {{ total_economia|floatformat:2 }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</body>
+</html>

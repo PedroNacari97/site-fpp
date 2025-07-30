@@ -11,11 +11,7 @@ from .views_admin import (
     admin_hoteis,
     nova_emissao_hotel,
     editar_emissao_hotel,
-<<<<<<< HEAD
-    criar_conta, 
-=======
     criar_conta,
->>>>>>> dc8bb7d0f6d16a3cf1b645b0cfa9f1ad1d83a070
     editar_conta,
     admin_programas,
     editar_programa,
