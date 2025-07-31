@@ -28,6 +28,8 @@ from .forms import (
 from django.contrib.auth.models import User
 from .models import Cliente, ContaFidelidade, ProgramaFidelidade, EmissaoPassagem, Aeroporto, ValorMilheiro
 from .models import EmissaoHotel
+from .models import TrechoEmissao
+
 import csv
 
 def admin_required(user):

@@ -38,3 +38,12 @@ a:hover {
 .linha2 {
     background-color: #ececec;
 }
+
+.card {
+    display: flex;
+    flex-direction: column;
+}
+
+.card a {
+    margin-top: auto;
+}
