@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from gestao.pdf_utils import gerar_pdf_emissao
 from gestao.models import (
     ContaFidelidade,
     EmissaoPassagem,
@@ -121,6 +123,15 @@ def painel_emissoes(request):
         'conta': conta,
         'total_pago': total_pago,
     })
+
+
+@login_required
+def emissao_pdf(request, emissao_id):
+    emissao = get_object_or_404(EmissaoPassagem, id=emissao_id, cliente__usuario=request.user)
+    pdf = gerar_pdf_emissao(emissao)
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="emissao_{emissao.id}.pdf"'
+    return response
 
 @login_required
 def painel_hoteis(request):

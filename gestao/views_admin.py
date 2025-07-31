@@ -30,6 +30,7 @@ from .models import (
     EmissaoHotel,
     CotacaoVoo,
 )
+from .pdf_utils import gerar_pdf_emissao
 import csv
 
 def admin_required(user):
@@ -349,6 +350,16 @@ def editar_emissao(request, emissao_id):
 
 @login_required
 @user_passes_test(admin_required)
+def emissao_pdf(request, emissao_id):
+    emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
+    pdf = gerar_pdf_emissao(emissao)
+    response = HttpResponse(pdf, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="emissao_{emissao.id}.pdf"'
+    return response
+
+
+@login_required
+@user_passes_test(admin_required)
 def admin_hoteis(request):
     emissoes = EmissaoHotel.objects.all().select_related('cliente')
     return render(request, 'admin_custom/hoteis.html', {'emissoes': emissoes})
@@ -400,13 +411,25 @@ def admin_cotacoes_voo(request):
 @login_required
 @user_passes_test(admin_required)
 def nova_cotacao_voo(request):
+    initial = {}
+    emissao_id = request.GET.get('emissao')
+    if emissao_id:
+        emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
+        initial = {
+            'cliente': emissao.cliente_id,
+            'companhia_aerea': emissao.companhia_aerea,
+            'origem': emissao.aeroporto_partida_id,
+            'destino': emissao.aeroporto_destino_id,
+            'data_voo': emissao.data_ida,
+            'qtd_passageiros': emissao.qtd_passageiros,
+        }
     if request.method == 'POST':
         form = CotacaoVooForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('admin_cotacoes_voo')
     else:
-        form = CotacaoVooForm()
+        form = CotacaoVooForm(initial=initial)
     return render(request, 'admin_custom/cotacoes_voo_form.html', {'form': form})
 
 
