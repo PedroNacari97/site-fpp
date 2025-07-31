@@ -42,6 +42,7 @@ urlpatterns = [
     path('emissoes/', admin_emissoes, name='admin_emissoes'),
     path('emissoes/nova/', nova_emissao, name='admin_nova_emissao'),
     path('emissoes/<int:emissao_id>/editar/', editar_emissao, name='admin_editar_emissao'),
+    path('emissoes/<int:emissao_id>/pdf/', views_admin.emissao_pdf, name='admin_emissao_pdf'),
     path('hoteis/', admin_hoteis, name='admin_hoteis'),
     path('hoteis/nova/', nova_emissao_hotel, name='admin_nova_emissao_hotel'),
     path('hoteis/<int:emissao_id>/editar/', editar_emissao_hotel, name='admin_editar_emissao_hotel'),

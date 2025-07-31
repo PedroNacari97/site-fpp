@@ -59,7 +59,7 @@
                     <th>Pontos</th>
                     <th>Economia</th>
                     <th>Detalhes</th>
-                    <th></th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -79,7 +79,11 @@
                     <td>{{ e.pontos_utilizados }}</td>
                     <td>R$ {{ e.economia_obtida|floatformat:2 }}</td>
                     <td>{{ e.detalhes }}</td>
-                    <td><a href="{% url 'admin_editar_emissao' e.id %}" style="color:#b67cff;">Editar</a></td>
+                    <td>
+                        <a href="{% url 'admin_emissao_pdf' e.id %}" style="color:#b67cff;">PDF</a> |
+                        <a href="{% url 'admin_nova_cotacao_voo' %}?emissao={{ e.id }}" style="color:#b67cff;">Cotação</a> |
+                        <a href="{% url 'admin_editar_emissao' e.id %}" style="color:#b67cff;">Editar</a>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="15" style="color:#ff7070;text-align:center;">Nenhuma emissão encontrada.</td></tr>

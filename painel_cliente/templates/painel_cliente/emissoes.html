@@ -77,6 +77,7 @@
                     <th>Pontos Utilizados</th>
                     <th>Economia Obtida</th>
                     <th>Detalhes</th>
+                    <th>PDF</th>
                 </tr>
             </thead>
             <tbody>
@@ -95,16 +96,17 @@
                     <td>{{ emissao.pontos_utilizados }}</td>
                     <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
                     <td>{{ emissao.detalhes|default:"—" }}</td>
+                    <td><a href="{% url 'emissao_pdf' emissao.id %}" style="color:#f8d16c;">PDF</a></td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="13" style="text-align:center;color:#f8d16c;">Nenhuma emissão encontrada.</td>
+                    <td colspan="14" style="text-align:center;color:#f8d16c;">Nenhuma emissão encontrada.</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="9" style="text-align:right;color:#f8d16c;">Total Pago:</td>
+                    <td colspan="10" style="text-align:right;color:#f8d16c;">Total Pago:</td>
                     <td colspan="4" style="color:#f8d16c;">R$ {{ total_pago|floatformat:2 }}</td>
                 </tr>
             </tfoot>
