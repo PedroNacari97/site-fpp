@@ -42,6 +42,7 @@ urlpatterns = [
     path('contas/novo/', criar_conta, name='admin_nova_conta'),
     path('clientes/novo/', criar_cliente, name='admin_novo_cliente'),
     path('clientes/<int:cliente_id>/programas/', views_admin.programas_do_cliente, name='admin_programas_do_cliente'),
+    path('clientes/<int:cliente_id>/painel/', views_admin.visualizar_cliente, name='admin_visualizar_cliente'),
     path('contas/<int:conta_id>/movimentacoes/', views_admin.admin_movimentacoes, name='admin_movimentacoes'),
     path('contas/<int:conta_id>/movimentacoes/nova/', views_admin.admin_nova_movimentacao, name='admin_nova_movimentacao'),
 

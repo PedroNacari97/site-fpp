@@ -2,8 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from gestao.models import ContaFidelidade, EmissaoPassagem, ValorMilheiro
-from gestao.models import ContaFidelidade, EmissaoPassagem, EmissaoHotel, ValorMilheiro
+from gestao.models import (
+    ContaFidelidade,
+    EmissaoPassagem,
+    EmissaoHotel,
+    ValorMilheiro,
+    Cliente,
+)
+from gestao.models import AcessoClienteLog
 
 # VIEW LOGIN CUSTOMIZADA
 def login_custom_view(request):
@@ -13,6 +19,7 @@ def login_custom_view(request):
         tipo_acesso = request.POST.get('tipo_acesso')
         if form.is_valid():
             user = form.get_user()
+            cliente_obj = Cliente.objects.filter(usuario=user).first()
             if tipo_acesso == 'admin':
                 if user.is_staff or user.is_superuser:
                     login(request, user)
@@ -21,8 +28,11 @@ def login_custom_view(request):
                     error_message = "Você não tem permissão de administrador."
             else:  # Cliente comum
                 if not (user.is_staff or user.is_superuser):
-                    login(request, user)
-                    return redirect('painel_dashboard')
+                    if cliente_obj and not cliente_obj.ativo:
+                        error_message = "Sua conta está inativa. Entre em contato com o administrador."
+                    else:
+                        login(request, user)
+                        return redirect('painel_dashboard')
                 else:
                     error_message = "Selecione 'Administrador' para acessar o painel admin."
         else:
@@ -39,12 +49,10 @@ def sair(request):
     return redirect('login_custom')
 
 # DASHBOARD DO CLIENTE
-@login_required
-def dashboard(request):
-    contas = ContaFidelidade.objects.filter(cliente__usuario=request.user).select_related("programa")
-    emissoes = EmissaoPassagem.objects.filter(cliente__usuario=request.user)
-    hoteis = EmissaoHotel.objects.filter(cliente__usuario=request.user)
-    valor_milheiros = {v.programa_nome: v.valor_mercado for v in ValorMilheiro.objects.all()}
+def build_dashboard_context(user):
+    contas = ContaFidelidade.objects.filter(cliente__usuario=user).select_related("programa")
+    emissoes = EmissaoPassagem.objects.filter(cliente__usuario=user)
+    hoteis = EmissaoHotel.objects.filter(cliente__usuario=user)
 
     contas_info = []
     for conta in contas:
@@ -70,7 +78,7 @@ def dashboard(request):
     valor_total_hoteis_referencia = sum(float(h.valor_referencia or 0) for h in hoteis)
     valor_total_hoteis_economia = sum(float(h.economia_obtida or (h.valor_referencia - h.valor_pago)) for h in hoteis)
 
-    context = {
+    return {
         'contas_info': contas_info,
         'qtd_emissoes': qtd_emissoes,
         'pontos_totais_utilizados': pontos_totais_utilizados,
@@ -82,6 +90,14 @@ def dashboard(request):
         'valor_total_hoteis_referencia': valor_total_hoteis_referencia,
         'valor_total_hoteis_economia': valor_total_hoteis_economia,
     }
+
+
+@login_required
+def dashboard(request):
+    cliente = get_object_or_404(Cliente, usuario=request.user)
+    if not cliente.ativo:
+        return render(request, 'painel_cliente/inativo.html')
+    context = build_dashboard_context(request.user)
     return render(request, 'painel_cliente/dashboard.html', context)
 
 

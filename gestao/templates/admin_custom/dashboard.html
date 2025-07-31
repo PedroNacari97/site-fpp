@@ -36,6 +36,22 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-dark text-light">
+                <div class="card-body">
+                    <h5 class="card-title">Reservas de Hotéis</h5>
+                    <p class="card-text" style="font-size:2.2rem;font-weight:700;">{{ total_hoteis }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-dark text-light">
+                <div class="card-body">
+                    <h5 class="card-title">Valor em Hotéis</h5>
+                    <p class="card-text" style="font-size:2.2rem;font-weight:700;">R$ {{ valor_hoteis|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="mt-4" style="background:#232345;border-radius:12px;padding:16px;">
         <h4 style="color:#b6a9ff;">Cotações do Milheiro</h4>
