@@ -6,6 +6,13 @@
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
+    {{ formset.management_form }}
+    {% for f in formset %}
+        <fieldset style="border:1px solid #555;padding:10px;margin-bottom:10px;">
+            <legend>Trecho {{ forloop.counter }}</legend>
+            {{ f.as_p }}
+        </fieldset>
+    {% endfor %}
     <button type="submit" style="background:#b67cff;color:#232345;border:none;padding:8px 20px;border-radius:8px;font-weight:bold;">Salvar</button>
 </form>
 {% endblock %}

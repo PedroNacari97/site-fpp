@@ -6,6 +6,7 @@ from .models import (
     Aeroporto,
     EmissaoPassagem,
     EmissaoHotel,
+    TrechoEmissao,
 )
 
 class ContaFidelidadeForm(forms.ModelForm):
@@ -76,6 +77,27 @@ class EmissaoPassagemForm(forms.ModelForm):
         widgets = {
             'data_ida': forms.DateInput(attrs={'type': 'date'}),
             'data_volta': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+
+class TrechoEmissaoForm(forms.ModelForm):
+    class Meta:
+        model = TrechoEmissao
+        fields = [
+            'ordem',
+            'companhia_aerea',
+            'numero_voo',
+            'aeroporto_origem',
+            'aeroporto_destino',
+            'saida',
+            'chegada',
+            'classe_tarifaria',
+            'assento',
+            'situacao',
+        ]
+        widgets = {
+            'saida': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'chegada': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
         
 

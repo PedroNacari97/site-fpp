@@ -100,6 +100,46 @@ class EmissaoPassagem(models.Model):
     def __str__(self):
         return f'{self.cliente} - {self.programa} - {self.data_ida}'
 
+    def conexoes(self, limite_horas=6):
+        trechos = list(self.trechos.order_by("ordem"))
+        resultado = []
+        for i in range(len(trechos) - 1):
+            intervalo = trechos[i + 1].saida - trechos[i].chegada
+            if intervalo.total_seconds() < limite_horas * 3600:
+                resultado.append(
+                    {
+                        "aeroporto": trechos[i].aeroporto_destino,
+                        "duracao": intervalo,
+                    }
+                )
+        return resultado
+
+
+class TrechoEmissao(models.Model):
+    emissao = models.ForeignKey(
+        EmissaoPassagem, related_name="trechos", on_delete=models.CASCADE
+    )
+    ordem = models.PositiveIntegerField(default=1)
+    companhia_aerea = models.CharField(max_length=100, blank=True)
+    numero_voo = models.CharField(max_length=50, blank=True)
+    aeroporto_origem = models.ForeignKey(
+        Aeroporto, related_name="origens_trecho", on_delete=models.CASCADE
+    )
+    aeroporto_destino = models.ForeignKey(
+        Aeroporto, related_name="destinos_trecho", on_delete=models.CASCADE
+    )
+    saida = models.DateTimeField()
+    chegada = models.DateTimeField()
+    classe_tarifaria = models.CharField(max_length=50, blank=True)
+    assento = models.CharField(max_length=20, blank=True)
+    situacao = models.CharField(max_length=30, default="Confirmado")
+
+    class Meta:
+        ordering = ["ordem"]
+
+    def __str__(self):
+        return f"{self.emissao} - {self.aeroporto_origem.sigla} > {self.aeroporto_destino.sigla}"
+
 class ValorMilheiro(models.Model):
     programa_nome = models.CharField(max_length=50, unique=True)
     valor_mercado = models.DecimalField(max_digits=8, decimal_places=2)  # Exemplo: 37.50

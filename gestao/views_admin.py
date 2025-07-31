@@ -8,6 +8,12 @@ from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
 from django import forms
 from django.db import models
+from django.forms import inlineformset_factory
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+import io
 
 from .forms import (
     ContaFidelidadeForm,
@@ -17,6 +23,7 @@ from .forms import (
     AeroportoForm,
     EmissaoPassagemForm,
     EmissaoHotelForm,
+    TrechoEmissaoForm,
 )
 from django.contrib.auth.models import User
 from .models import Cliente, ContaFidelidade, ProgramaFidelidade, EmissaoPassagem, Aeroporto, ValorMilheiro
@@ -307,35 +314,99 @@ def admin_emissoes(request):
 @login_required
 @user_passes_test(admin_required)
 def nova_emissao(request):
+    TrechoFormSet = inlineformset_factory(
+        EmissaoPassagem, TrechoEmissao, form=TrechoEmissaoForm, extra=1, can_delete=True
+    )
     if request.method == "POST":
         form = EmissaoPassagemForm(request.POST)
-        if form.is_valid():
+        formset = TrechoFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
             emissao = form.save(commit=False)
             if not emissao.cliente.ativo:
                 return HttpResponse("Cliente inativo", status=403)
             if emissao.valor_referencia and emissao.valor_pago:
                 emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
             emissao.save()
+            formset.instance = emissao
+            formset.save()
             return redirect('admin_emissoes')
     else:
         form = EmissaoPassagemForm()
-    return render(request, "admin_custom/emissoes_form.html", {"form": form})
+        formset = TrechoFormSet()
+    return render(request, "admin_custom/emissoes_form.html", {"form": form, "formset": formset})
 
 @login_required
 @user_passes_test(admin_required)
 def editar_emissao(request, emissao_id):
     emissao = EmissaoPassagem.objects.get(id=emissao_id)
+    TrechoFormSet = inlineformset_factory(
+        EmissaoPassagem, TrechoEmissao, form=TrechoEmissaoForm, extra=0, can_delete=True
+    )
     if request.method == "POST":
         form = EmissaoPassagemForm(request.POST, instance=emissao)
-        if form.is_valid():
+        formset = TrechoFormSet(request.POST, instance=emissao)
+        if form.is_valid() and formset.is_valid():
             emissao = form.save(commit=False)
             if emissao.valor_referencia and emissao.valor_pago:
                 emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
             emissao.save()
+            formset.save()
             return redirect('admin_emissoes')
     else:
         form = EmissaoPassagemForm(instance=emissao)
-    return render(request, "admin_custom/emissoes_form.html", {"form": form})
+        formset = TrechoFormSet(instance=emissao)
+    return render(
+        request,
+        "admin_custom/emissoes_form.html",
+        {"form": form, "formset": formset},
+    )
+
+
+@login_required
+@user_passes_test(admin_required)
+def emissao_pdf(request, emissao_id):
+    emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    styles = getSampleStyleSheet()
+    elems = []
+    elems.append(
+        Paragraph("Detalhamento de Emissão de Passagem Aérea", styles["Title"]) 
+    )
+    elems.append(Spacer(1, 12))
+    dados = [
+        ["Passageiro", emissao.cliente.usuario.get_full_name()],
+        ["Localizador", emissao.localizador],
+        ["Companhia", emissao.companhia_aerea],
+        ["Data Ida", emissao.data_ida.strftime("%d/%m/%Y")],
+    ]
+    tabela = Table(dados, colWidths=[120, 300])
+    tabela.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.25, colors.grey)]))
+    elems.append(tabela)
+
+    for trecho in emissao.trechos.all():
+        elems.append(Spacer(1, 12))
+        elems.append(
+            Paragraph(
+                f"Trecho {trecho.ordem}: {trecho.aeroporto_origem.sigla} -> {trecho.aeroporto_destino.sigla}",
+                styles["Heading2"],
+            )
+        )
+        dados_trecho = [
+            ["Número do Voo", trecho.numero_voo],
+            ["Saída", trecho.saida.strftime("%d/%m/%Y %H:%M")],
+            ["Chegada", trecho.chegada.strftime("%d/%m/%Y %H:%M")],
+            ["Classe", trecho.classe_tarifaria],
+            ["Assento", trecho.assento],
+            ["Situação", trecho.situacao],
+        ]
+        t = Table(dados_trecho, colWidths=[150, 270])
+        t.setStyle(TableStyle([("GRID", (0, 0), (-1, -1), 0.25, colors.grey)]))
+        elems.append(t)
+
+    doc.build(elems)
+    buffer.seek(0)
+    return HttpResponse(buffer.getvalue(), content_type="application/pdf")
 
 
 @login_required
