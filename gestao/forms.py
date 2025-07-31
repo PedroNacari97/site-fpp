@@ -6,6 +6,7 @@ from .models import (
     Aeroporto,
     EmissaoPassagem,
     EmissaoHotel,
+    CotacaoVoo,
 )
 
 class ContaFidelidadeForm(forms.ModelForm):
@@ -95,3 +96,31 @@ class EmissaoHotelForm(forms.ModelForm):
             'check_in': forms.DateInput(attrs={'type': 'date'}),
             'check_out': forms.DateInput(attrs={'type': 'date'}),
                   }
+
+
+class CotacaoVooForm(forms.ModelForm):
+    class Meta:
+        model = CotacaoVoo
+        fields = [
+            'cliente',
+            'companhia_aerea',
+            'origem',
+            'destino',
+            'data_voo',
+            'qtd_passageiros',
+            'classe',
+            'observacoes',
+            'valor_passagem',
+            'taxas',
+            'milhas',
+            'valor_milheiro',
+            'parcelas',
+            'juros',
+            'desconto',
+            'validade',
+            'status',
+        ]
+        widgets = {
+            'data_voo': forms.DateInput(attrs={'type': 'date'}),
+            'validade': forms.DateInput(attrs={'type': 'date'}),
+        }
