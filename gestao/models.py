@@ -138,3 +138,58 @@ class AcessoClienteLog(models.Model):
 
     def __str__(self):
         return f"{self.admin} -> {self.cliente} em {self.data_acesso:%d/%m/%Y %H:%M}"
+
+
+class CotacaoVoo(models.Model):
+    STATUS_CHOICES = (
+        ("pendente", "Pendente"),
+        ("aceita", "Aceita"),
+        ("rejeitada", "Rejeitada"),
+    )
+
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    companhia_aerea = models.CharField(max_length=100, blank=True)
+    origem = models.ForeignKey(
+        Aeroporto,
+        related_name="cotacoes_origem",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    destino = models.ForeignKey(
+        Aeroporto,
+        related_name="cotacoes_destino",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    data_voo = models.DateField()
+    qtd_passageiros = models.PositiveIntegerField(default=1)
+    classe = models.CharField(max_length=50, blank=True)
+    observacoes = models.TextField(blank=True)
+    valor_passagem = models.DecimalField(max_digits=10, decimal_places=2)
+    taxas = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    milhas = models.IntegerField(default=0)
+    valor_milheiro = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    parcelas = models.IntegerField(default=1)
+    juros = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    desconto = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    valor_parcelado = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    valor_vista = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    validade = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pendente")
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    def calcular_valores(self):
+        base = (self.milhas / 1000) * float(self.valor_milheiro) + float(self.taxas)
+        parcelado = base * (1 + float(self.juros) / 100)
+        avista = parcelado * (1 - float(self.desconto) / 100)
+        self.valor_parcelado = parcelado
+        self.valor_vista = avista
+
+    def save(self, *args, **kwargs):
+        self.calcular_valores()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.cliente} - {self.origem} -> {self.destino} ({self.data_voo})"

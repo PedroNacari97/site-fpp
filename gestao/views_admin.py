@@ -17,10 +17,19 @@ from .forms import (
     AeroportoForm,
     EmissaoPassagemForm,
     EmissaoHotelForm,
+    CotacaoVooForm,
 )
 from django.contrib.auth.models import User
-from .models import Cliente, ContaFidelidade, ProgramaFidelidade, EmissaoPassagem, Aeroporto, ValorMilheiro
-from .models import EmissaoHotel
+from .models import (
+    Cliente,
+    ContaFidelidade,
+    ProgramaFidelidade,
+    EmissaoPassagem,
+    Aeroporto,
+    ValorMilheiro,
+    EmissaoHotel,
+    CotacaoVoo,
+)
 import csv
 
 def admin_required(user):
@@ -378,6 +387,41 @@ def editar_emissao_hotel(request, emissao_id):
     else:
         form = EmissaoHotelForm(instance=emissao)
     return render(request, "admin_custom/hoteis_form.html", {"form": form})
+
+
+# --- COTAÇÕES DE VOO ---
+@login_required
+@user_passes_test(admin_required)
+def admin_cotacoes_voo(request):
+    cotacoes = CotacaoVoo.objects.all().select_related('cliente', 'origem', 'destino')
+    return render(request, 'admin_custom/cotacoes_voo.html', {'cotacoes': cotacoes})
+
+
+@login_required
+@user_passes_test(admin_required)
+def nova_cotacao_voo(request):
+    if request.method == 'POST':
+        form = CotacaoVooForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_cotacoes_voo')
+    else:
+        form = CotacaoVooForm()
+    return render(request, 'admin_custom/cotacoes_voo_form.html', {'form': form})
+
+
+@login_required
+@user_passes_test(admin_required)
+def editar_cotacao_voo(request, cotacao_id):
+    cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
+    if request.method == 'POST':
+        form = CotacaoVooForm(request.POST, instance=cotacao)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_cotacoes_voo')
+    else:
+        form = CotacaoVooForm(instance=cotacao)
+    return render(request, 'admin_custom/cotacoes_voo_form.html', {'form': form})
 
 @login_required
 @user_passes_test(admin_required)
