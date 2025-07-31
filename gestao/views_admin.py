@@ -4,7 +4,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
-from gestao.models import ContaFidelidade, Movimentacao
+from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
+from painel_cliente.views import build_dashboard_context
 from django import forms
 from django.db import models
 
@@ -16,10 +17,19 @@ from .forms import (
     AeroportoForm,
     EmissaoPassagemForm,
     EmissaoHotelForm,
+    CotacaoVooForm,
 )
 from django.contrib.auth.models import User
-from .models import Cliente, ContaFidelidade, ProgramaFidelidade, EmissaoPassagem, Aeroporto, ValorMilheiro
-from .models import EmissaoHotel
+from .models import (
+    Cliente,
+    ContaFidelidade,
+    ProgramaFidelidade,
+    EmissaoPassagem,
+    Aeroporto,
+    ValorMilheiro,
+    EmissaoHotel,
+    CotacaoVoo,
+)
 import csv
 
 def admin_required(user):
@@ -128,6 +138,8 @@ def editar_cliente(request, cliente_id):
 @user_passes_test(admin_required)
 def admin_clientes(request):
     if 'toggle' in request.GET:
+        if not request.user.is_superuser:
+            return HttpResponse("Sem permissão", status=403)
         cli = Cliente.objects.get(id=request.GET['toggle'])
         cli.ativo = not cli.ativo
         cli.save()
@@ -236,11 +248,17 @@ def admin_dashboard(request):
     total_contas = ContaFidelidade.objects.count()
     total_emissoes = EmissaoPassagem.objects.count()
     total_pontos = sum([c.saldo_pontos for c in ContaFidelidade.objects.all()])
+    total_hoteis = EmissaoHotel.objects.count()
+    valor_hoteis = sum(float(h.valor_pago or 0) for h in EmissaoHotel.objects.all())
+    cotacoes_mercado = ValorMilheiro.objects.all().order_by('programa_nome')
     return render(request, 'admin_custom/dashboard.html', {
         'total_clientes': total_clientes,
         'total_contas': total_contas,
         'total_emissoes': total_emissoes,
         'total_pontos': total_pontos,
+        'total_hoteis': total_hoteis,
+        'valor_hoteis': valor_hoteis,
+        'cotacoes_mercado': cotacoes_mercado,
     })
 
 # --- EMISSÕES ---
@@ -302,6 +320,8 @@ def nova_emissao(request):
         form = EmissaoPassagemForm(request.POST)
         if form.is_valid():
             emissao = form.save(commit=False)
+            if not emissao.cliente.ativo:
+                return HttpResponse("Cliente inativo", status=403)
             if emissao.valor_referencia and emissao.valor_pago:
                 emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
             emissao.save()
@@ -341,6 +361,8 @@ def nova_emissao_hotel(request):
         form = EmissaoHotelForm(request.POST)
         if form.is_valid():
             emissao = form.save(commit=False)
+            if not emissao.cliente.ativo:
+                return HttpResponse("Cliente inativo", status=403)
             if emissao.valor_referencia and emissao.valor_pago:
                 emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
             emissao.save()
@@ -365,6 +387,41 @@ def editar_emissao_hotel(request, emissao_id):
     else:
         form = EmissaoHotelForm(instance=emissao)
     return render(request, "admin_custom/hoteis_form.html", {"form": form})
+
+
+# --- COTAÇÕES DE VOO ---
+@login_required
+@user_passes_test(admin_required)
+def admin_cotacoes_voo(request):
+    cotacoes = CotacaoVoo.objects.all().select_related('cliente', 'origem', 'destino')
+    return render(request, 'admin_custom/cotacoes_voo.html', {'cotacoes': cotacoes})
+
+
+@login_required
+@user_passes_test(admin_required)
+def nova_cotacao_voo(request):
+    if request.method == 'POST':
+        form = CotacaoVooForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_cotacoes_voo')
+    else:
+        form = CotacaoVooForm()
+    return render(request, 'admin_custom/cotacoes_voo_form.html', {'form': form})
+
+
+@login_required
+@user_passes_test(admin_required)
+def editar_cotacao_voo(request, cotacao_id):
+    cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
+    if request.method == 'POST':
+        form = CotacaoVooForm(request.POST, instance=cotacao)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_cotacoes_voo')
+    else:
+        form = CotacaoVooForm(instance=cotacao)
+    return render(request, 'admin_custom/cotacoes_voo_form.html', {'form': form})
 
 @login_required
 @user_passes_test(admin_required)
@@ -424,6 +481,8 @@ class NovaMovimentacaoForm(forms.ModelForm):
 @staff_member_required
 def admin_nova_movimentacao(request, conta_id):
     conta = get_object_or_404(ContaFidelidade, id=conta_id)
+    if not conta.cliente.ativo:
+        return HttpResponse("Cliente inativo", status=403)
     if request.method == 'POST':
         form = NovaMovimentacaoForm(request.POST)
         if form.is_valid():
@@ -437,3 +496,13 @@ def admin_nova_movimentacao(request, conta_id):
         'form': form,
         'conta': conta,
     })
+
+
+@login_required
+@user_passes_test(admin_required)
+def visualizar_cliente(request, cliente_id):
+    cliente = get_object_or_404(Cliente, id=cliente_id)
+    AcessoClienteLog.objects.create(admin=request.user, cliente=cliente)
+    context = build_dashboard_context(cliente.usuario)
+    context['cliente_obj'] = cliente
+    return render(request, 'admin_custom/cliente_dashboard.html', context)

@@ -1,0 +1,6 @@
+{% extends "admin_custom/base_admin.html" %}
+{% block title %}Cliente {{ cliente_obj }}{% endblock %}
+{% block header_title %}Painel do Cliente: {{ cliente_obj }}{% endblock %}
+{% block content %}
+    {% include "painel_cliente/dashboard.html" %}
+{% endblock %}
