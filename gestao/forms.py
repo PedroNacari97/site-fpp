@@ -120,6 +120,9 @@ class CotacaoVooForm(forms.ModelForm):
             'validade',
             'status',
         ]
+        labels = {
+            'parcelas': 'Número de parcelas sem juros',
+        }
         widgets = {
             'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}),

@@ -30,7 +30,7 @@ from .models import (
     EmissaoHotel,
     CotacaoVoo,
 )
-from .pdf_utils import gerar_pdf_emissao
+from .pdf_utils import gerar_pdf_emissao, gerar_pdf_cotacao
 import csv
 
 
@@ -658,3 +658,12 @@ def visualizar_cliente(request, cliente_id):
     context = build_dashboard_context(cliente.usuario)
     context["cliente_obj"] = cliente
     return render(request, "admin_custom/cliente_dashboard.html", context)
+
+@login_required
+@user_passes_test(admin_required)
+def cotacao_voo_pdf(request, cotacao_id):
+    cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
+    pdf_content = gerar_pdf_cotacao(cotacao)
+    response = HttpResponse(pdf_content, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="cotacao_{cotacao_id}.pdf"'
+    return response
