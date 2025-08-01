@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from decimal import Decimal
+
 
 
 class Cliente(models.Model):
@@ -215,23 +217,25 @@ class CotacaoVoo(models.Model):
     milhas = models.IntegerField(default=0)
     valor_milheiro = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     parcelas = models.IntegerField(default=1)
-    juros = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    desconto = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    juros = models.DecimalField(max_digits=5, decimal_places=2, default=1.00)      # 1.00 = sem juros
+    desconto = models.DecimalField(max_digits=5, decimal_places=2, default=1.00)   # 1.00 = sem desconto
     valor_parcelado = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     valor_vista = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     validade = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pendente")
+    economia = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     emissao = models.OneToOneField(
         "EmissaoPassagem", on_delete=models.SET_NULL, null=True, blank=True
     )
     criado_em = models.DateTimeField(auto_now_add=True)
 
     def calcular_valores(self):
-        base = (self.milhas / 1000) * float(self.valor_milheiro) + float(self.taxas)
-        parcelado = base * (1 + float(self.juros) / 100)
-        avista = parcelado * (1 - float(self.desconto) / 100)
+        base = (Decimal(self.milhas) / Decimal('1000')) * Decimal(self.valor_milheiro) + Decimal(self.taxas)
+        parcelado = base * Decimal(self.juros)         # juros deve ser algo tipo 1.13
+        avista = parcelado * Decimal(self.desconto)    # desconto deve ser algo tipo 0.95
         self.valor_parcelado = parcelado
         self.valor_vista = avista
+        self.economia = Decimal(self.valor_passagem) - avista
 
     def save(self, *args, **kwargs):
         self.calcular_valores()
