@@ -69,8 +69,8 @@
                     <td>{{ e.programa }}</td>
                     <td>{{ e.aeroporto_partida }}</td>
                     <td>{{ e.aeroporto_destino }}</td>
-                    <td>{{ e.data_ida|date:"d/m/Y" }}</td>
-                    <td>{{ e.data_volta|date:"d/m/Y" }}</td>
+                    <td>{{ e.data_ida|date:"d/m/Y H:i" }}</td>
+                    <td>{{ e.data_volta|date:"d/m/Y H:i" }}</td>
                     <td>{{ e.qtd_passageiros }}</td>
                     <td>{{ e.companhia_aerea }}</td>
                     <td>{{ e.localizador }}</td>
@@ -81,7 +81,6 @@
                     <td>{{ e.detalhes }}</td>
                     <td>
                         <a href="{% url 'admin_emissao_pdf' e.id %}" style="color:#b67cff;">PDF</a> |
-                        <a href="{% url 'admin_nova_cotacao_voo' %}?emissao={{ e.id }}" style="color:#b67cff;">Cotação</a> |
                         <a href="{% url 'admin_editar_emissao' e.id %}" style="color:#b67cff;">Editar</a>
                     </td>
                 </tr>
