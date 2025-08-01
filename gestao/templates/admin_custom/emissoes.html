@@ -81,7 +81,6 @@
                     <td>{{ e.detalhes }}</td>
                     <td>
                         <a href="{% url 'admin_emissao_pdf' e.id %}" style="color:#b67cff;">PDF</a> |
-                        <a href="{% url 'admin_nova_cotacao_voo' %}?emissao={{ e.id }}" style="color:#b67cff;">Cotação</a> |
                         <a href="{% url 'admin_editar_emissao' e.id %}" style="color:#b67cff;">Editar</a>
                     </td>
                 </tr>
