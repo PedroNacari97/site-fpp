@@ -71,12 +71,10 @@ class EmissaoPassagemForm(forms.ModelForm):
             'valor_referencia_pontos',
             'economia_obtida',
             'detalhes',
-            'companhia_aerea',
-            'localizador',
         ]
         widgets = {
-            'data_ida': forms.DateInput(attrs={'type': 'date'}),
-            'data_volta': forms.DateInput(attrs={'type': 'date'}),
+            'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
         
 
@@ -106,7 +104,9 @@ class CotacaoVooForm(forms.ModelForm):
             'companhia_aerea',
             'origem',
             'destino',
-            'data_voo',
+            'programa',
+            'data_ida',
+            'data_volta',
             'qtd_passageiros',
             'classe',
             'observacoes',
@@ -121,6 +121,7 @@ class CotacaoVooForm(forms.ModelForm):
             'status',
         ]
         widgets = {
-            'data_voo': forms.DateInput(attrs={'type': 'date'}),
+            'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'validade': forms.DateInput(attrs={'type': 'date'}),
         }

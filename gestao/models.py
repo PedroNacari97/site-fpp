@@ -110,8 +110,8 @@ class EmissaoPassagem(models.Model):
         null=True,
         blank=True,
     )
-    data_ida = models.DateField()
-    data_volta = models.DateField(null=True, blank=True)
+    data_ida = models.DateTimeField()
+    data_volta = models.DateTimeField(null=True, blank=True)
     qtd_passageiros = models.PositiveIntegerField()
     companhia_aerea = models.CharField(max_length=100, blank=True)
     localizador = models.CharField(max_length=100, blank=True)
@@ -202,7 +202,11 @@ class CotacaoVoo(models.Model):
         null=True,
         blank=True,
     )
-    data_voo = models.DateField()
+    data_ida = models.DateTimeField()
+    data_volta = models.DateTimeField(null=True, blank=True)
+    programa = models.ForeignKey(
+        ProgramaFidelidade, on_delete=models.SET_NULL, null=True, blank=True
+    )
     qtd_passageiros = models.PositiveIntegerField(default=1)
     classe = models.CharField(max_length=50, blank=True)
     observacoes = models.TextField(blank=True)
@@ -234,4 +238,4 @@ class CotacaoVoo(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.cliente} - {self.origem} -> {self.destino} ({self.data_voo})"
+        return f"{self.cliente} - {self.origem} -> {self.destino} ({self.data_ida})"
