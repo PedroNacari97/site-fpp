@@ -143,3 +143,12 @@ class CotacaoVooForm(forms.ModelForm):
             'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'validade': forms.DateInput(attrs={'type': 'date'}),
         }
+
+class CompanhiaAereaForm(forms.ModelForm):
+    class Meta:
+        model = CompanhiaAerea
+        fields = ["nome", "site_url"]
+        widgets = {
+            "nome": forms.TextInput(attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2"}),
+            "site_url": forms.URLInput(attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2"}),
+        }

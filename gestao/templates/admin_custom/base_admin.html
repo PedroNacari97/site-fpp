@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <script src="https://cdn.tailwindcss.com"></script>
     <meta charset="UTF-8">
     <title>{% block title %}Administração{% endblock %} - Gestão de Pontos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -44,6 +45,7 @@
             <a class="nav-link {% block menu_contas %}{% endblock %}" href="{% url 'admin_contas' %}">Contas Fidelidade</a>
             <a class="nav-link {% block menu_programas %}{% endblock %}" href="{% url 'admin_programas' %}">Programas</a>
             <a class="nav-link {% block menu_aeroportos %}{% endblock %}" href="{% url 'admin_aeroportos' %}">Aeroportos</a>
+            <a class="nav-link {% block menu_companhias %}{% endblock %}" href="{% url 'admin_companhias' %}">Companhias</a>
             <a class="nav-link {% block menu_cotacoes_voo %}{% endblock %}" href="{% url 'admin_cotacoes_voo' %}">Cotações</a>
             <a class="nav-link {% block menu_emissoes %}{% endblock %}" href="{% url 'admin_emissoes' %}">Emissões</a>
             <a class="nav-link {% block menu_hoteis %}{% endblock %}" href="{% url 'admin_hoteis' %}">Hotéis</a>
