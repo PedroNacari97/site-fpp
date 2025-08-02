@@ -170,7 +170,7 @@ def nova_emissao(request):
     aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
     return render(
         request,
-        "admin_custom/emissoes_form.html",
+        "admin_custom/form_emissao_passagem.html",
         {
             "form": form,
             "emissoes": emissoes,
@@ -241,7 +241,7 @@ def editar_emissao(request, emissao_id):
     aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
     return render(
         request,
-        "admin_custom/emissoes_form.html",
+        "admin_custom/form_emissao_passagem.html",
         {
             "form": form,
             "emissoes": emissoes,
@@ -284,7 +284,7 @@ def nova_emissao_hotel(request):
             return redirect("admin_hoteis")
     else:
         form = EmissaoHotelForm()
-    return render(request, "admin_custom/hoteis_form.html", {"form": form})
+    return render(request, "admin_custom/form_hotel.html", {"form": form})
 
 
 @login_required
@@ -301,6 +301,6 @@ def editar_emissao_hotel(request, emissao_id):
             return redirect("admin_hoteis")
     else:
         form = EmissaoHotelForm(instance=emissao)
-    return render(request, "admin_custom/hoteis_form.html", {"form": form})
+    return render(request, "admin_custom/form_hotel.html", {"form": form})
 
 

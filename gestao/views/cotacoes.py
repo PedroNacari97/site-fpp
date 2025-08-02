@@ -119,7 +119,7 @@ def nova_cotacao_voo(request):
             return redirect("admin_cotacoes_voo")
     else:
         form = CotacaoVooForm(initial=initial)
-    return render(request, "admin_custom/cotacoes_voo_form.html", {"form": form})
+    return render(request, "admin_custom/form_cotacao.html", {"form": form})
 
 
 @login_required
@@ -150,7 +150,7 @@ def editar_cotacao_voo(request, cotacao_id):
             return redirect("admin_cotacoes_voo")
     else:
         form = CotacaoVooForm(instance=cotacao)
-    return render(request, "admin_custom/cotacoes_voo_form.html", {"form": form})
+    return render(request, "admin_custom/form_cotacao.html", {"form": form})
 
 @login_required
 @user_passes_test(admin_required)
