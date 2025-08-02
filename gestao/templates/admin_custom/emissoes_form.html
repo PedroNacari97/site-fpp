@@ -154,9 +154,43 @@ body {
             <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data volta</label>
             {{ form.data_volta }}
         </div>
+    </div>
+    <div class="form-group">
         <div style="flex: 1;">
-            <label class="form-label" for="{{ form.qtd_passageiros.id_for_label }}">Qtd passageiros</label>
-            {{ form.qtd_passageiros }}
+            <label class="form-label" for="{{ form.qtd_adultos.id_for_label }}">Adultos</label>
+            {{ form.qtd_adultos }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.qtd_criancas.id_for_label }}">Crianças</label>
+            {{ form.qtd_criancas }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.qtd_bebes.id_for_label }}">Bebês</label>
+            {{ form.qtd_bebes }}
+        </div>
+    </div>
+
+    <div class="section-title">Passageiros</div>
+    <input type="hidden" name="total_passageiros" id="id_total_passageiros" value="0" />
+    <div id="passageiros-container"></div>
+
+    <div class="section-title">Escala</div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.possui_escala.id_for_label }}">Este voo possui escala?</label>
+            {{ form.possui_escala }}
+        </div>
+    </div>
+    <div id="escala-fields" style="display:none;">
+        <div class="form-group">
+            <div style="flex: 1;">
+                <label class="form-label" for="{{ form.aeroporto_escala.id_for_label }}">Aeroporto de escala</label>
+                {{ form.aeroporto_escala }}
+            </div>
+            <div style="flex: 1;">
+                <label class="form-label" for="{{ form.duracao_escala.id_for_label }}">Tempo de escala</label>
+                {{ form.duracao_escala }}
+            </div>
         </div>
     </div>
 
@@ -244,4 +278,61 @@ body {
     </div>
 </div>
 {% endif %}
+<script>
+const passageirosData = {{ passageiros_json|safe }};
+const container = document.getElementById('passageiros-container');
+function renderPassengerForms() {
+    container.innerHTML = '';
+    let index = 0;
+    const categorias = [
+        {id: 'id_qtd_adultos', nome: 'Adulto', valor: 'adulto'},
+        {id: 'id_qtd_criancas', nome: 'Criança', valor: 'crianca'},
+        {id: 'id_qtd_bebes', nome: 'Bebê', valor: 'bebe'}
+    ];
+    categorias.forEach(cat => {
+        const qtd = parseInt(document.getElementById(cat.id).value || 0);
+        for(let i=0;i<qtd;i++){
+            const div = document.createElement('div');
+            div.className = 'form-group single';
+            div.innerHTML = `
+                <label class="form-label">${cat.nome} ${i+1} - Nome</label>
+                <input type="text" name="passageiro-${index}-nome" required />
+                <label class="form-label">Documento</label>
+                <input type="text" name="passageiro-${index}-documento" required />
+                <input type="hidden" name="passageiro-${index}-categoria" value="${cat.valor}" />
+            `;
+            container.appendChild(div);
+            index++;
+        }
+    });
+    document.getElementById('id_total_passageiros').value = index;
+    if(passageirosData.length){
+        passageirosData.forEach((p, idx) => {
+            const nome = document.getElementsByName(`passageiro-${idx}-nome`)[0];
+            const doc = document.getElementsByName(`passageiro-${idx}-documento`)[0];
+            if(nome) nome.value = p.nome;
+            if(doc) doc.value = p.documento;
+        });
+    }
+}
+['id_qtd_adultos','id_qtd_criancas','id_qtd_bebes'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', renderPassengerForms);
+});
+renderPassengerForms();
+
+const escalaToggle = document.getElementById('id_possui_escala');
+const escalaFields = document.getElementById('escala-fields');
+function toggleEscala(){
+    if(escalaToggle.checked){
+        escalaFields.style.display = 'block';
+    }else{
+        escalaFields.style.display = 'none';
+    }
+}
+if(escalaToggle){
+    escalaToggle.addEventListener('change', toggleEscala);
+    toggleEscala();
+}
+</script>
 {% endblock %}

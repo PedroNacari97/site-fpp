@@ -53,6 +53,17 @@ class AeroportoForm(forms.ModelForm):
 
 
 class EmissaoPassagemForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for f in [
+            'qtd_adultos',
+            'qtd_criancas',
+            'qtd_bebes',
+            'aeroporto_escala',
+            'duracao_escala',
+        ]:
+            self.fields[f].required = False
+
     class Meta:
         model = EmissaoPassagem
         fields = [
@@ -62,7 +73,9 @@ class EmissaoPassagemForm(forms.ModelForm):
             'aeroporto_destino',
             'data_ida',
             'data_volta',
-            'qtd_passageiros',
+            'qtd_adultos',
+            'qtd_criancas',
+            'qtd_bebes',
             'companhia_aerea',
             'localizador',
             'valor_referencia',
@@ -70,11 +83,15 @@ class EmissaoPassagemForm(forms.ModelForm):
             'pontos_utilizados',
             'valor_referencia_pontos',
             'economia_obtida',
+            'possui_escala',
+            'aeroporto_escala',
+            'duracao_escala',
             'detalhes',
         ]
         widgets = {
             'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'duracao_escala': forms.TimeInput(format='%H:%M', attrs={'type': 'time'}),
         }
         
 

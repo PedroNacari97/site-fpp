@@ -29,10 +29,12 @@ from .models import (
     ValorMilheiro,
     EmissaoHotel,
     CotacaoVoo,
+    Passageiro,
 )
 from .pdf_cotacao import gerar_pdf_cotacao
 from .pdf_emissao import gerar_pdf_emissao
 import csv
+import json
 
 
 def admin_required(user):
@@ -396,6 +398,15 @@ def nova_emissao(request):
             if emissao.valor_referencia and emissao.valor_pago:
                 emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
             emissao.save()
+            total = int(request.POST.get("total_passageiros", 0))
+            for i in range(total):
+                nome = request.POST.get(f"passageiro-{i}-nome")
+                doc = request.POST.get(f"passageiro-{i}-documento")
+                cat = request.POST.get(f"passageiro-{i}-categoria")
+                if nome and doc and cat:
+                    Passageiro.objects.create(
+                        emissao=emissao, nome=nome, documento=doc, categoria=cat
+                    )
             return redirect("admin_emissoes")
     else:
         form = EmissaoPassagemForm()
@@ -403,7 +414,7 @@ def nova_emissao(request):
     return render(
         request,
         "admin_custom/emissoes_form.html",
-        {"form": form, "emissoes": emissoes},
+        {"form": form, "emissoes": emissoes, "passageiros_json": "[]"},
     )
 
 @login_required
@@ -417,14 +428,37 @@ def editar_emissao(request, emissao_id):
             if emissao.valor_referencia and emissao.valor_pago:
                 emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
             emissao.save()
+            emissao.passageiros.all().delete()
+            total = int(request.POST.get("total_passageiros", 0))
+            for i in range(total):
+                nome = request.POST.get(f"passageiro-{i}-nome")
+                doc = request.POST.get(f"passageiro-{i}-documento")
+                cat = request.POST.get(f"passageiro-{i}-categoria")
+                if nome and doc and cat:
+                    Passageiro.objects.create(
+                        emissao=emissao, nome=nome, documento=doc, categoria=cat
+                    )
             return redirect("admin_emissoes")
     else:
         form = EmissaoPassagemForm(instance=emissao)
     emissoes = EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida")
+    passageiros = list(
+        emissao.passageiros.filter(categoria="adulto").values("nome", "documento", "categoria")
+    )
+    passageiros += list(
+        emissao.passageiros.filter(categoria="crianca").values("nome", "documento", "categoria")
+    )
+    passageiros += list(
+        emissao.passageiros.filter(categoria="bebe").values("nome", "documento", "categoria")
+    )
     return render(
         request,
         "admin_custom/emissoes_form.html",
-        {"form": form, "emissoes": emissoes},
+        {
+            "form": form,
+            "emissoes": emissoes,
+            "passageiros_json": json.dumps(passageiros),
+        },
     )
 
 
