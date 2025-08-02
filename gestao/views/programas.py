@@ -77,7 +77,7 @@ def editar_programa(request, programa_id):
             return redirect("admin_programas")
     else:
         form = ProgramaFidelidadeForm(instance=programa)
-    return render(request, "admin_custom/programas_form.html", {"form": form})
+    return render(request, "admin_custom/form_programa.html", {"form": form})
 
 
 

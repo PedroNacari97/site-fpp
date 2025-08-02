@@ -77,7 +77,7 @@ def criar_cliente(request):
             return redirect("admin_clientes")
     else:
         form = NovoClienteForm()
-    return render(request, "admin_custom/cliente_form.html", {"form": form})
+    return render(request, "admin_custom/form_cliente.html", {"form": form})
 
 
 @login_required
@@ -91,7 +91,7 @@ def editar_cliente(request, cliente_id):
             return redirect("admin_clientes")
     else:
         form = ClienteForm(instance=cliente)
-    return render(request, "admin_custom/cliente_form.html", {"form": form})
+    return render(request, "admin_custom/form_cliente.html", {"form": form})
 
 
 @login_required

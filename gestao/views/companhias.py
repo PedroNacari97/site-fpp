@@ -61,7 +61,7 @@ def criar_companhia(request):
             return redirect("admin_companhias")
     else:
         form = CompanhiaAereaForm()
-    return render(request, "admin_custom/companhias_form.html", {"form": form})
+    return render(request, "admin_custom/form_companhia_aerea.html", {"form": form})
 
 @login_required
 @user_passes_test(admin_required)
@@ -74,4 +74,4 @@ def editar_companhia(request, companhia_id):
             return redirect("admin_companhias")
     else:
         form = CompanhiaAereaForm(instance=companhia)
-    return render(request, "admin_custom/companhias_form.html", {"form": form})
+    return render(request, "admin_custom/form_companhia_aerea.html", {"form": form})

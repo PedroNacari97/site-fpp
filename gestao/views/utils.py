@@ -140,7 +140,7 @@ def editar_aeroporto(request, aeroporto_id):
             return redirect("admin_aeroportos")
     else:
         form = AeroportoForm(instance=aeroporto)
-    return render(request, "admin_custom/aeroportos_form.html", {"form": form})
+    return render(request, "admin_custom/form_aeroporto.html", {"form": form})
 
 
 # --- DASHBOARD ---
