@@ -19,6 +19,21 @@
     </div>
 </div>
 
+<div class="mb-6">
+    <h3 class="text-zinc-200 font-semibold mb-2">Dados Complementares</h3>
+    <div class="flex flex-wrap gap-3">
+        <a href="{% url 'admin_programas' %}"
+           class="px-4 py-2 rounded font-bold"
+           style="background:linear-gradient(90deg,#D1863F,#BFA45F);color:#f6f6f6;">+ Adicionar Programa</a>
+        <a href="{% url 'admin_nova_companhia' %}"
+           class="px-4 py-2 rounded font-bold"
+           style="background:linear-gradient(90deg,#D1863F,#BFA45F);color:#f6f6f6;">+ Adicionar Companhia Aérea</a>
+        <a href="{% url 'admin_aeroportos' %}"
+           class="px-4 py-2 rounded font-bold"
+           style="background:linear-gradient(90deg,#D1863F,#BFA45F);color:#f6f6f6;">+ Adicionar Aeroporto</a>
+    </div>
+</div>
+
 <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
     <div class="bg-zinc-900 p-4 rounded shadow">
         <div class="text-sm text-zinc-400">👥 Total de Clientes</div>
