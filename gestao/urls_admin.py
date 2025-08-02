@@ -39,6 +39,7 @@ urlpatterns = [
     path('cotacoes-voo/', admin_cotacoes_voo, name='admin_cotacoes_voo'),
     path('cotacoes-voo/nova/', nova_cotacao_voo, name='admin_nova_cotacao_voo'),
     path('cotacoes-voo/<int:cotacao_id>/editar/', editar_cotacao_voo, name='admin_editar_cotacao_voo'),
+    path('cotacoes-voo/<int:cotacao_id>/pdf/', views_admin.cotacao_voo_pdf, name='admin_cotacao_voo_pdf'),
     path('emissoes/', admin_emissoes, name='admin_emissoes'),
     path('emissoes/nova/', nova_emissao, name='admin_nova_emissao'),
     path('emissoes/<int:emissao_id>/editar/', editar_emissao, name='admin_editar_emissao'),
