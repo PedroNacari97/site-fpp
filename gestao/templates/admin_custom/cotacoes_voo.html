@@ -4,7 +4,7 @@
 {% block menu_cotacoes_voo %}bg-zinc-700 text-white{% endblock %}
 {% block content %}
 <div class="mb-6 text-right">
-    <a href="{% url 'admin_nova_cotacao_voo' %}" class="bg-zinc-700 text-violet-300 px-4 py-2 rounded font-bold">Nova Cotação</a>
+    <a href="{% url 'admin_nova_cotacao_voo' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Nova Cotação</a>
 </div>
 <div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
     <table class="min-w-full text-sm">
@@ -35,10 +35,10 @@
                 <td class="p-2">R$ {{ c.valor_passagem|floatformat:2 }}</td>
                 <td class="p-2">R$ {{ c.economia|floatformat:2 }}</td>
                 <td class="p-2">{{ c.get_status_display }}</td>
-                <td class="p-2"><a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="text-violet-300">Editar</a></td>
+                <td class="p-2"><a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="text-blue-400">Editar</a></td>
                 <td class="p-2">
-                    <a href="{% url 'admin_cotacao_voo_pdf' c.id %}" class="text-violet-300">PDF</a> |
-                    <a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="text-violet-300">Editar</a>
+                    <a href="{% url 'admin_cotacao_voo_pdf' c.id %}" class="text-blue-400">PDF</a> |
+                    <a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="text-blue-400">Editar</a>
                 </td>
             </tr>
             {% empty %}

@@ -48,6 +48,13 @@ def admin_required(user):
 @login_required
 @user_passes_test(admin_required)
 def admin_programas(request):
+    programas = ProgramaFidelidade.objects.all().order_by("nome")
+    return render(request, "admin_custom/programas.html", {"programas": programas})
+
+
+@login_required
+@user_passes_test(admin_required)
+def criar_programa(request):
     if request.method == "POST":
         form = ProgramaFidelidadeForm(request.POST)
         if form.is_valid():
@@ -55,15 +62,7 @@ def admin_programas(request):
             return redirect("admin_programas")
     else:
         form = ProgramaFidelidadeForm()
-    programas = ProgramaFidelidade.objects.all().order_by("nome")
-    return render(
-        request,
-        "admin_custom/programas.html",
-        {
-            "programas": programas,
-            "form": form,
-        },
-    )
+    return render(request, "admin_custom/form_programa.html", {"form": form})
 
 
 @login_required

@@ -5,7 +5,6 @@
 {% block content %}
 <div class="flex justify-between items-center mb-6">
   <h2 class="text-2xl font-bold">Companhias Aéreas</h2>
-  <a href="{% url 'admin_nova_companhia' %}" class="bg-violet-700 hover:bg-violet-600 text-white px-4 py-2 rounded">Nova Companhia</a>
 </div>
 <div class="bg-zinc-800 rounded-xl overflow-x-auto">
   <table class="min-w-full text-sm">
@@ -22,7 +21,7 @@
         <td class="p-3">{{ companhia.nome }}</td>
         <td class="p-3"><a href="{{ companhia.site_url }}" class="text-blue-400" target="_blank">{{ companhia.site_url }}</a></td>
         <td class="p-3">
-          <a href="{% url 'admin_editar_companhia' companhia.id %}" class="text-violet-400 hover:underline">Editar</a>
+          <a href="{% url 'admin_editar_companhia' companhia.id %}" class="text-blue-400 hover:underline">Editar</a>
         </td>
       </tr>
       {% empty %}
