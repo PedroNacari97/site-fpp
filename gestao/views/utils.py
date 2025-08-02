@@ -111,6 +111,13 @@ def admin_contas(request):
 @login_required
 @user_passes_test(admin_required)
 def admin_aeroportos(request):
+    aeroportos = Aeroporto.objects.all()
+    return render(request, "admin_custom/aeroportos.html", {"aeroportos": aeroportos})
+
+
+@login_required
+@user_passes_test(admin_required)
+def criar_aeroporto(request):
     if request.method == "POST":
         form = AeroportoForm(request.POST)
         if form.is_valid():
@@ -118,15 +125,7 @@ def admin_aeroportos(request):
             return redirect("admin_aeroportos")
     else:
         form = AeroportoForm()
-    aeroportos = Aeroporto.objects.all()
-    return render(
-        request,
-        "admin_custom/aeroportos.html",
-        {
-            "form": form,
-            "aeroportos": aeroportos,
-        },
-    )
+    return render(request, "admin_custom/form_aeroporto.html", {"form": form})
 
 
 @login_required
