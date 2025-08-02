@@ -27,6 +27,7 @@ body {
   padding: 32px 40px;
   max-width: 520px;
   width: 100%;
+  margin: 0 auto;
 }
 .form-title {
   font-size: 2.2rem;
@@ -235,41 +236,6 @@ body {
     </div>
 </form>
 
-{% if emissoes %}
-<div class="form-card" style="margin-top:24px;">
-    <div class="section-title">Emissões já realizadas</div>
-    <div style="overflow-x:auto;">
-        <table class="existing-table">
-            <thead>
-                <tr>
-                    <th>Cliente</th>
-                    <th>Programa</th>
-                    <th>Origem</th>
-                    <th>Destino</th>
-                    <th>Data Ida</th>
-                    <th>Data Volta</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for e in emissoes %}
-                <tr>
-                    <td>{{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}</td>
-                    <td>{{ e.programa }}</td>
-                    <td>{{ e.aeroporto_partida }}</td>
-                    <td>{{ e.aeroporto_destino }}</td>
-                    <td>{{ e.data_ida|date:"d/m/Y H:i" }}</td>
-                    <td>{{ e.data_volta|date:"d/m/Y H:i" }}</td>
-                    <td><a href="{% url 'admin_editar_emissao' e.id %}" class="text-violet-400">Editar</a></td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="7">Nenhuma emissão encontrada.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-{% endif %}
 <script>
 const passageirosData = {{ passageiros_json|safe }};
 const escalasData = {{ escalas_json|safe }};
