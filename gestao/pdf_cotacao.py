@@ -91,7 +91,7 @@ def gerar_pdf_cotacao(cotacao):
         ],
         [
             Paragraph("COMPANHIA AÉREA", estilo_label),
-            Paragraph(cotacao.companhia_aerea or "-", estilo_valor),
+            Paragraph(cotacao.companhia_aerea.nome if cotacao.companhia_aerea else "-", estilo_valor),
         ],
         [
             Paragraph("PROGRAMA DE FIDELIDADE", estilo_label),

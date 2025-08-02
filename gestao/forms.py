@@ -114,6 +114,10 @@ class EmissaoHotelForm(forms.ModelForm):
 class CotacaoVooForm(forms.ModelForm):
     qtd_escalas = forms.IntegerField(min_value=0, required=False, initial=0)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['companhia_aerea'].queryset = CompanhiaAerea.objects.all()
+
     class Meta:
         model = CotacaoVoo
         fields = [

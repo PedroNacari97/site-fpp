@@ -13,7 +13,10 @@
             <option value="{{ c.id }}" {% if selected_cliente and c.id == selected_cliente.id %}selected{% endif %}>{{ c }}</option>
         {% endfor %}
     </select>
-    <a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="bg-violet-700 hover:bg-violet-600 text-white px-4 py-2 rounded font-bold">+ Nova Emissão</a>
+    <div class="flex gap-2">
+        <a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="bg-violet-700 hover:bg-violet-600 text-white px-4 py-2 rounded font-bold">+ Novo Cliente</a>
+        <a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="bg-violet-700 hover:bg-violet-600 text-white px-4 py-2 rounded font-bold">+ Nova Emissão</a>
+    </div>
 </div>
 
 <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
@@ -24,10 +27,6 @@
     <div class="bg-zinc-900 p-4 rounded shadow">
         <div class="text-sm text-zinc-400">✈️ Total de Emissões</div>
         <div class="text-2xl font-bold">{{ total_emissoes }}</div>
-    </div>
-    <div class="bg-zinc-900 p-4 rounded shadow">
-        <div class="text-sm text-zinc-400">💳 Total de Pontos</div>
-        <div class="text-2xl font-bold">{{ total_pontos }}</div>
     </div>
     <div class="bg-zinc-900 p-4 rounded shadow">
         <div class="text-sm text-zinc-400">💰 Total Economizado</div>
