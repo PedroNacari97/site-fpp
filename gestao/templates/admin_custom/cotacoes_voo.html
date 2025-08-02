@@ -19,7 +19,6 @@
                 <th class="p-2 text-left font-medium">Valor Referência</th>
                 <th class="p-2 text-left font-medium">Economia de até</th>
                 <th class="p-2 text-left font-medium">Status</th>
-                <th class="p-2 text-left font-medium"></th>
                 <th class="p-2 text-left font-medium">Ações</th>
             </tr>
         </thead>
@@ -35,14 +34,14 @@
                 <td class="p-2">R$ {{ c.valor_passagem|floatformat:2 }}</td>
                 <td class="p-2">R$ {{ c.economia|floatformat:2 }}</td>
                 <td class="p-2">{{ c.get_status_display }}</td>
-                <td class="p-2"><a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="text-blue-400">Editar</a></td>
                 <td class="p-2">
                     <a href="{% url 'admin_cotacao_voo_pdf' c.id %}" class="text-blue-400">PDF</a> |
-                    <a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="text-blue-400">Editar</a>
+                    <a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="text-blue-400">Editar</a> |
+                    <a href="{% url 'admin_deletar_cotacao_voo' c.id %}" class="text-blue-400">Deletar</a>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="11" class="text-center text-red-400 py-4">Nenhuma cotação encontrada.</td></tr>
+            <tr><td colspan="10" class="text-center text-red-400 py-4">Nenhuma cotação encontrada.</td></tr>
             {% endfor %}
         </tbody>
     </table>

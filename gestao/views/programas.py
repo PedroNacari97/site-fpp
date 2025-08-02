@@ -1,13 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.http import HttpResponse
-from django.contrib.admin.views.decorators import staff_member_required
-from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
-from painel_cliente.views import build_dashboard_context
-from django import forms
-from django.db import models
 
 from ..forms import (
     ContaFidelidadeForm,
@@ -48,8 +44,15 @@ def admin_required(user):
 @login_required
 @user_passes_test(admin_required)
 def admin_programas(request):
+    busca = request.GET.get("busca", "")
     programas = ProgramaFidelidade.objects.all().order_by("nome")
-    return render(request, "admin_custom/programas.html", {"programas": programas})
+    if busca:
+        programas = programas.filter(nome__icontains=busca)
+    return render(
+        request,
+        "admin_custom/programas.html",
+        {"programas": programas, "busca": busca},
+    )
 
 
 @login_required
@@ -77,6 +80,15 @@ def editar_programa(request, programa_id):
     else:
         form = ProgramaFidelidadeForm(instance=programa)
     return render(request, "admin_custom/form_programa.html", {"form": form})
+
+
+@login_required
+@user_passes_test(admin_required)
+def deletar_programa(request, programa_id):
+    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
+        return HttpResponse("Não autorizado", status=403)
+    ProgramaFidelidade.objects.filter(id=programa_id).delete()
+    return redirect("admin_programas")
 
 
 

@@ -111,8 +111,15 @@ def admin_contas(request):
 @login_required
 @user_passes_test(admin_required)
 def admin_aeroportos(request):
+    busca = request.GET.get("busca", "")
     aeroportos = Aeroporto.objects.all()
-    return render(request, "admin_custom/aeroportos.html", {"aeroportos": aeroportos})
+    if busca:
+        aeroportos = aeroportos.filter(Q(nome__icontains=busca) | Q(sigla__icontains=busca))
+    return render(
+        request,
+        "admin_custom/aeroportos.html",
+        {"aeroportos": aeroportos, "busca": busca},
+    )
 
 
 @login_required
@@ -126,6 +133,15 @@ def criar_aeroporto(request):
     else:
         form = AeroportoForm()
     return render(request, "admin_custom/form_aeroporto.html", {"form": form})
+
+
+@login_required
+@user_passes_test(admin_required)
+def deletar_aeroporto(request, aeroporto_id):
+    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
+        return HttpResponse("Não autorizado", status=403)
+    Aeroporto.objects.filter(id=aeroporto_id).delete()
+    return redirect("admin_aeroportos")
 
 
 @login_required
