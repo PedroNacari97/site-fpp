@@ -6,9 +6,9 @@
 <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
     <form method="get" class="flex gap-3">
         <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar por nome ou usuário..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
-        <button type="submit" class="bg-violet-700 hover:bg-violet-600 text-white px-4 py-2 rounded">Buscar</button>
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
     </form>
-    <a href="{% url 'admin_novo_cliente' %}" class="bg-zinc-700 text-violet-300 px-4 py-2 rounded font-bold">Novo Cliente</a>
+    <a href="{% url 'admin_novo_cliente' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Novo Cliente</a>
 </div>
 <div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
     <table class="min-w-full text-sm">
@@ -35,8 +35,8 @@
                 <td class="p-2">{{ cliente.get_perfil_display }}</td>
                 <td class="p-2">{{ cliente.ativo|yesno:"Ativo,Inativo" }}</td>
                 <td class="p-2">
-                    <a href="{% url 'admin_editar_cliente' cliente.id %}" class="text-violet-300">Editar</a> |
-                    <a href="?toggle={{ cliente.id }}" class="text-violet-300">Ativar/Inativar</a>
+                    <a href="{% url 'admin_editar_cliente' cliente.id %}" class="text-blue-400">Editar</a> |
+                    <a href="?toggle={{ cliente.id }}" class="text-blue-400">Ativar/Inativar</a>
                 </td>
             </tr>
             {% empty %}

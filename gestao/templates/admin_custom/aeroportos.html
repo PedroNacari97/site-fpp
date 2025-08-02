@@ -2,26 +2,7 @@
 {% block title %}Aeroportos{% endblock %}
 {% block header_title %}Aeroportos{% endblock %}
 {% block menu_aeroportos %}bg-zinc-700 text-white{% endblock %}
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
-{% endblock %}
 {% block content %}
-<div class="form-wrapper mb-6">
-<form method="post">
-    {% csrf_token %}
-    <div class="form-title">Adicionar Aeroporto</div>
-    {% for field in form %}
-    <div class="form-group single">
-        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}<div class="text-red-400 text-sm mt-1">{{ field.errors }}</div>{% endif %}
-    </div>
-    {% endfor %}
-    <div class="form-actions">
-        <button type="submit" class="btn-primary">Salvar</button>
-    </div>
-</form>
-</div>
 <div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
     <table class="min-w-full text-sm">
         <thead class="bg-zinc-700 text-zinc-200">
@@ -36,7 +17,7 @@
             <tr class="border-b border-zinc-700">
                 <td class="p-2">{{ a.sigla }}</td>
                 <td class="p-2">{{ a.nome }}</td>
-                <td class="p-2"><a href="{% url 'admin_editar_aeroporto' a.id %}" class="text-violet-300">Editar</a></td>
+                <td class="p-2"><a href="{% url 'admin_editar_aeroporto' a.id %}" class="text-blue-400">Editar</a></td>
             </tr>
             {% empty %}
             <tr><td colspan="3" class="text-center text-red-400 py-4">Nenhum aeroporto cadastrado.</td></tr>
@@ -45,3 +26,4 @@
     </table>
 </div>
 {% endblock %}
+
