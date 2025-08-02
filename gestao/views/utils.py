@@ -8,6 +8,8 @@ from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
 from django import forms
 from django.db import models
+from decimal import Decimal
+
 
 from ..forms import (
     ContaFidelidadeForm,
@@ -156,18 +158,18 @@ def build_dashboard_metrics(cliente_id=None):
     programas_data = []
     if cliente_id:
         for conta in contas:
-            programas_data.append(
-                {
-                    "id": conta.programa.id,
-                    "nome": conta.programa.nome,
-                    "pontos": conta.saldo_pontos,
-                    "valor_total": (conta.saldo_pontos / 1000)
-                    * conta.programa.preco_medio_milheiro,
-                    "valor_medio": conta.valor_medio_por_mil,
-                    "valor_referencia": conta.programa.preco_medio_milheiro,
-                    "conta_id": conta.id,
-                }
-            )
+            programas_data.append({
+                "id": conta.programa.id,
+                "nome": conta.programa.nome,
+                "pontos": conta.saldo_pontos,
+                "valor_total": (
+                    Decimal(conta.saldo_pontos) / Decimal(1000)
+                ) * Decimal(conta.valor_medio_por_mil) * conta.programa.preco_medio_milheiro,
+                "valor_medio": conta.valor_medio_por_mil,
+                "valor_referencia": conta.programa.preco_medio_milheiro,
+                "conta_id": conta.id,
+        })
+
     else:
         for prog in ProgramaFidelidade.objects.all():
             contas_prog = contas.filter(programa=prog)
@@ -180,7 +182,7 @@ def build_dashboard_metrics(cliente_id=None):
                     "id": prog.id,
                     "nome": prog.nome,
                     "pontos": total_pontos_prog,
-                    "valor_total": (total_pontos_prog / 1000) * valor_medio,
+                    "valor_total": (total_pontos_prog / 1000) * float(valor_medio),
                     "valor_medio": valor_medio,
                     "valor_referencia": prog.preco_medio_milheiro,
                     "conta_id": None,
