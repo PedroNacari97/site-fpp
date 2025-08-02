@@ -1,27 +1,39 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block title %}Aeroportos{% endblock %}
 {% block header_title %}Aeroportos{% endblock %}
-{% block menu_aeroportos %}active{% endblock %}
+{% block menu_aeroportos %}bg-zinc-700 text-white{% endblock %}
 {% block content %}
-<form method="post" style="margin-bottom:20px;">
+<form method="post" class="bg-zinc-800 p-4 rounded-xl mb-6 space-y-4 max-w-xl">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" style="background:#b67cff;color:#232345;border:none;padding:8px 20px;border-radius:8px;font-weight:bold;">Salvar</button>
-</form>
-<table style="width:100%;background:#232345;border-radius:12px;overflow:hidden;">
-    <tr style="color:#b6a9ff;">
-        <th>Sigla</th>
-        <th>Nome</th>
-        <th></th>
-    </tr>
-    {% for a in aeroportos %}
-    <tr>
-        <td>{{ a.sigla }}</td>
-        <td>{{ a.nome }}</td>
-        <td><a href="{% url 'admin_editar_aeroporto' a.id %}" style="color:#b67cff;">Editar</a></td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="3" style="color:#ff7070;text-align:center;">Nenhum aeroporto cadastrado.</td></tr>
+    {% for field in form %}
+    <div>
+        <label class="block mb-1 text-sm text-zinc-300">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="text-red-400 text-sm mt-1">{{ field.errors }}</div>{% endif %}
+    </div>
     {% endfor %}
-</table>
+    <button type="submit" class="bg-violet-700 hover:bg-violet-600 text-white px-4 py-2 rounded">Salvar</button>
+</form>
+<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
+    <table class="min-w-full text-sm">
+        <thead class="bg-zinc-700 text-zinc-200">
+            <tr>
+                <th class="p-2 text-left font-medium">Sigla</th>
+                <th class="p-2 text-left font-medium">Nome</th>
+                <th class="p-2 text-left font-medium"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in aeroportos %}
+            <tr class="border-b border-zinc-700">
+                <td class="p-2">{{ a.sigla }}</td>
+                <td class="p-2">{{ a.nome }}</td>
+                <td class="p-2"><a href="{% url 'admin_editar_aeroporto' a.id %}" class="text-violet-300">Editar</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-red-400 py-4">Nenhum aeroporto cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

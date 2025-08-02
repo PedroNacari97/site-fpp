@@ -1,18 +1,22 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block header_title %}Companhias Aéreas{% endblock %}
-{% block menu_companhias %}active{% endblock %}
+{% block menu_companhias %}bg-zinc-700 text-white{% endblock %}
 {% block content %}
-<h2 class="text-xl font-semibold mb-4">{% if form.instance.pk %}Editar Companhia{% else %}Nova Companhia{% endif %}</h2>
-<form method="post" class="space-y-4">
-  {% csrf_token %}
-  <div>
-    {{ form.nome.label_tag }}
-    {{ form.nome }}
-  </div>
-  <div>
-    {{ form.site_url.label_tag }}
-    {{ form.site_url }}
-  </div>
-  <button type="submit" class="bg-violet-700 hover:bg-violet-600 text-white px-4 py-2 rounded">Salvar</button>
-</form>
+<div class="max-w-xl mx-auto">
+  <h2 class="text-2xl font-bold mb-4">{% if form.instance.pk %}Editar Companhia{% else %}Nova Companhia{% endif %}</h2>
+  <form method="post" class="bg-zinc-800 p-6 rounded-xl space-y-4">
+    {% csrf_token %}
+    <div>
+      <label class="block mb-1 text-sm text-zinc-300">{{ form.nome.label }}</label>
+      {{ form.nome }}
+    </div>
+    <div>
+      <label class="block mb-1 text-sm text-zinc-300">{{ form.site_url.label }}</label>
+      {{ form.site_url }}
+    </div>
+    <div class="flex justify-end">
+      <button type="submit" class="bg-violet-700 hover:bg-violet-600 text-white px-4 py-2 rounded">Salvar</button>
+    </div>
+  </form>
+</div>
 {% endblock %}

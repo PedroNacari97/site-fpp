@@ -1,43 +1,43 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block title %}Cotações do Milheiro{% endblock %}
 {% block header_title %}Cotações do Milheiro{% endblock %}
-{% block menu_cotacoes %}active{% endblock %}
+{% block menu_cotacoes %}bg-zinc-700 text-white{% endblock %}
 {% block content %}
-    <h2 style="color:#b67cff;">Atualizar cotação do milheiro</h2>
-    <form method="post" style="margin-bottom:22px;">
-        {% csrf_token %}
-        <select name="programa_nome" required style="padding:8px 14px;border-radius:9px;">
-            <option value="">-- Programa --</option>
-            {% for p in programas %}
-            <option value="{{ p.nome }}">{{ p.nome }}</option>
-            {% endfor %}
-        </select>
-        <input type="number" step="0.01" min="0" name="valor_mercado" placeholder="Valor mercado" required style="padding:8px 10px;border-radius:8px;width:120px;">
-        <button type="submit" style="background:#b67cff;color:#232345;border:none;padding:8px 20px;border-radius:8px;font-weight:bold;">Salvar</button>
-    </form>
+<h2 class="text-violet-400 text-xl font-semibold mb-4">Atualizar cotação do milheiro</h2>
+<form method="post" class="flex flex-wrap gap-3 items-end mb-6">
+    {% csrf_token %}
+    <select name="programa_nome" required class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2">
+        <option value="">-- Programa --</option>
+        {% for p in programas %}
+        <option value="{{ p.nome }}">{{ p.nome }}</option>
+        {% endfor %}
+    </select>
+    <input type="number" step="0.01" min="0" name="valor_mercado" placeholder="Valor mercado" required class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2 w-36" />
+    <button type="submit" class="bg-violet-700 hover:bg-violet-600 text-white px-4 py-2 rounded">Salvar</button>
+</form>
 
-    <div style="background:#232345;border-radius:12px;padding:18px 20px;">
-        <table style="width:100%;border-collapse:collapse;">
-            <thead>
-                <tr style="color:#b6a9ff;">
-                    <th style="padding:10px 4px;text-align:left;">Programa</th>
-                    <th>Cotação Mercado</th>
-                    <th>Última atualização</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cot in cotacoes %}
-                <tr>
-                    <td>{{ cot.programa_nome }}</td>
-                    <td>R$ {{ cot.valor_mercado|floatformat:2 }}</td>
-                    <td>{{ cot.atualizado_em|date:"d/m/Y" }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="3" style="color:#fa7070;text-align:center;">Nenhuma cotação cadastrada.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
+    <table class="min-w-full text-sm">
+        <thead class="bg-zinc-700 text-zinc-200">
+            <tr>
+                <th class="p-2 text-left font-medium">Programa</th>
+                <th class="p-2 text-left font-medium">Cotação Mercado</th>
+                <th class="p-2 text-left font-medium">Última atualização</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cot in cotacoes %}
+            <tr class="border-b border-zinc-700">
+                <td class="p-2">{{ cot.programa_nome }}</td>
+                <td class="p-2">R$ {{ cot.valor_mercado|floatformat:2 }}</td>
+                <td class="p-2">{{ cot.atualizado_em|date:"d/m/Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center text-red-400 py-4">Nenhuma cotação cadastrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
