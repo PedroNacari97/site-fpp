@@ -112,6 +112,8 @@ class EmissaoHotelForm(forms.ModelForm):
 
 
 class CotacaoVooForm(forms.ModelForm):
+    qtd_escalas = forms.IntegerField(min_value=0, required=False, initial=0)
+
     class Meta:
         model = CotacaoVoo
         fields = [
