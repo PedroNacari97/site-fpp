@@ -18,9 +18,6 @@
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_dashboard %}{% endblock %}" href="{% url 'admin_dashboard' %}">Dashboard</a>
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_clientes %}{% endblock %}" href="{% url 'admin_clientes' %}">Clientes</a>
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_contas %}{% endblock %}" href="{% url 'admin_contas' %}">Contas Fidelidade</a>
-            <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_programas %}{% endblock %}" href="{% url 'admin_programas' %}">Programas</a>
-            <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_aeroportos %}{% endblock %}" href="{% url 'admin_aeroportos' %}">Aeroportos</a>
-            <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_companhias %}{% endblock %}" href="{% url 'admin_companhias' %}">Companhias</a>
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_cotacoes_voo %}{% endblock %}" href="{% url 'admin_cotacoes_voo' %}">Cotações</a>
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_emissoes %}{% endblock %}" href="{% url 'admin_emissoes' %}">Emissões</a>
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_hoteis %}{% endblock %}" href="{% url 'admin_hoteis' %}">Hotéis</a>
@@ -28,9 +25,9 @@
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}">Auditoria</a>
             <div class="pt-4">
                 <h2 class="text-blue-400 font-semibold px-3 mb-2">🗂️ Dados Complementares</h2>
-                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700" href="{% url 'admin_novo_aeroporto' %}">✈️ Aeroporto</a>
-                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700" href="{% url 'admin_nova_companhia' %}">🏢 Companhia Aérea</a>
-                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700" href="{% url 'admin_novo_programa' %}">🎯 Programa de Pontos</a>
+                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_programas %}{% endblock %}" href="{% url 'admin_programas' %}">Programas</a>
+                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_aeroportos %}{% endblock %}" href="{% url 'admin_aeroportos' %}">Aeroportos</a>
+                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_companhias %}{% endblock %}" href="{% url 'admin_companhias' %}">Companhias</a>
             </div>
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700" href="{% url 'logout' %}">Sair</a>
         </nav>

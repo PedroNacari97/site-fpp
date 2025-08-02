@@ -69,6 +69,15 @@ def admin_cotacoes(request):
     )
 
 
+@login_required
+@user_passes_test(admin_required)
+def deletar_cotacao(request, cotacao_id):
+    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
+        return HttpResponse("Não autorizado", status=403)
+    ValorMilheiro.objects.filter(id=cotacao_id).delete()
+    return redirect("admin_cotacoes")
+
+
 
 # --- COTAÇÕES DE VOO ---
 @login_required
@@ -151,6 +160,15 @@ def editar_cotacao_voo(request, cotacao_id):
     else:
         form = CotacaoVooForm(instance=cotacao)
     return render(request, "admin_custom/form_cotacao.html", {"form": form})
+
+
+@login_required
+@user_passes_test(admin_required)
+def deletar_cotacao_voo(request, cotacao_id):
+    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
+        return HttpResponse("Não autorizado", status=403)
+    CotacaoVoo.objects.filter(id=cotacao_id).delete()
+    return redirect("admin_cotacoes_voo")
 
 @login_required
 @user_passes_test(admin_required)

@@ -1,13 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.core.paginator import Paginator
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from django.http import HttpResponse
-from django.contrib.admin.views.decorators import staff_member_required
-from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
-from painel_cliente.views import build_dashboard_context
-from django import forms
-from django.db import models
 
 from ..forms import (
     ContaFidelidadeForm,
@@ -45,11 +40,20 @@ def admin_required(user):
 
 
 from ..forms import CompanhiaAereaForm
+
+
 @login_required
 @user_passes_test(admin_required)
 def admin_companhias(request):
+    busca = request.GET.get("busca", "")
     companhias = CompanhiaAerea.objects.all()
-    return render(request, "admin_custom/companhias.html", {"companhias": companhias})
+    if busca:
+        companhias = companhias.filter(nome__icontains=busca)
+    return render(
+        request,
+        "admin_custom/companhias.html",
+        {"companhias": companhias, "busca": busca},
+    )
 
 @login_required
 @user_passes_test(admin_required)
@@ -75,3 +79,12 @@ def editar_companhia(request, companhia_id):
     else:
         form = CompanhiaAereaForm(instance=companhia)
     return render(request, "admin_custom/form_companhia_aerea.html", {"form": form})
+
+
+@login_required
+@user_passes_test(admin_required)
+def deletar_companhia(request, companhia_id):
+    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
+        return HttpResponse("Não autorizado", status=403)
+    CompanhiaAerea.objects.filter(id=companhia_id).delete()
+    return redirect("admin_companhias")

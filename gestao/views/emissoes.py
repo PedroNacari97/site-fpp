@@ -264,6 +264,15 @@ def emissao_pdf(request, emissao_id):
 
 @login_required
 @user_passes_test(admin_required)
+def deletar_emissao(request, emissao_id):
+    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
+        return HttpResponse("Não autorizado", status=403)
+    EmissaoPassagem.objects.filter(id=emissao_id).delete()
+    return redirect("admin_emissoes")
+
+
+@login_required
+@user_passes_test(admin_required)
 def admin_hoteis(request):
     emissoes = EmissaoHotel.objects.all().select_related("cliente")
     return render(request, "admin_custom/hoteis.html", {"emissoes": emissoes})
