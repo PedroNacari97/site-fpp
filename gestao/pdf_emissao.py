@@ -276,28 +276,6 @@ def gerar_pdf_emissao(emissao):
             ),
         ],
     ]
-    # Escala (se houver)
-    if getattr(emissao, "possui_escala", False):
-        voo_data.append(
-            [
-                Paragraph("AEROPORTO DE ESCALA", estilo_label),
-                Paragraph(
-                    f"{emissao.aeroporto_escala.sigla} - {emissao.aeroporto_escala.nome}"
-                    if emissao.aeroporto_escala
-                    else "-",
-                    estilo_valor,
-                ),
-            ]
-        )
-        voo_data.append(
-            [
-                Paragraph("DURAÇÃO DA ESCALA", estilo_label),
-                Paragraph(
-                    str(emissao.duracao_escala) if emissao.duracao_escala else "-",
-                    estilo_valor,
-                ),
-            ]
-        )
     voo_table = Table(voo_data, colWidths=[6 * cm, 10 * cm], hAlign="CENTER")
     voo_table.setStyle(
         TableStyle(
@@ -314,7 +292,37 @@ def gerar_pdf_emissao(emissao):
     elements.append(voo_table)
     elements.append(Spacer(1, 14))
 
-    # 7. Passageiros (total e listas)
+    # 7. Escalas (se houver)
+    escalas = emissao.escalas.all()
+    if escalas.exists():
+        elements.append(Paragraph("Escalas", estilo_secao))
+        dados_escalas = [[
+            Paragraph("Aeroporto", estilo_label),
+            Paragraph("Duração", estilo_label),
+            Paragraph("Cidade/País", estilo_label),
+        ]]
+        for e in escalas:
+            total_seconds = int(e.duracao.total_seconds())
+            h = total_seconds // 3600
+            m = (total_seconds % 3600) // 60
+            dados_escalas.append([
+                Paragraph(f"{e.aeroporto.sigla} - {e.aeroporto.nome}", estilo_valor),
+                Paragraph(f"{h:02d}:{m:02d}", estilo_valor),
+                Paragraph(e.cidade or "-", estilo_valor),
+            ])
+        tabela_escalas = Table(dados_escalas, colWidths=[5 * cm, 4 * cm, 7 * cm], hAlign="CENTER")
+        tabela_escalas.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f8f9fa")),
+            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#e9ecef")),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+            ("TOPPADDING", (0, 0), (-1, -1), 8),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ]))
+        elements.append(tabela_escalas)
+        elements.append(Spacer(1, 14))
+
+    # 8. Passageiros (total e listas)
     elements.append(Paragraph("Passageiros", estilo_secao))
 
     qtd_adultos = getattr(emissao, "qtd_adultos", 0)
@@ -356,7 +364,7 @@ def gerar_pdf_emissao(emissao):
             elements.append(tabela)
             elements.append(Spacer(1, 10))
 
-    # 8. Rodapé padrão
+    # 9. Rodapé padrão
     footer_data = [
         [
             Paragraph(
