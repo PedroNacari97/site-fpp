@@ -47,7 +47,7 @@
 
 .form-label {
   font-size: 1rem;
-  color: #d1c1f7;
+  color: #2E8B57;
   font-weight: 500;
   display: block;
   margin-bottom: 6px;
@@ -70,7 +70,7 @@
 .form-wrapper input:focus,
 .form-wrapper select:focus,
 .form-wrapper textarea:focus {
-  border-color: #7c3aed;
+  border-color: #2E8B57;
   outline: none;
 }
 
@@ -86,8 +86,8 @@
 }
 
 .btn-primary {
-  background: linear-gradient(90deg, #b67cff, #6c47cf);
-  color: #fff;
+  background: linear-gradient(90deg, #D1863F, #BFA45F);
+  color: #f6f6f6;
   font-weight: 600;
   border: none;
   border-radius: 8px;
@@ -95,9 +95,9 @@
   cursor: pointer;
   font-size: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  transition: background 0.18s;
+  transition: opacity 0.18s;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(90deg, #6c47cf, #b67cff);
+  opacity: 0.9;
 }

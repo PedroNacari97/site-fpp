@@ -2,20 +2,26 @@
 {% block title %}Programas{% endblock %}
 {% block header_title %}Programas de Pontos{% endblock %}
 {% block menu_programas %}bg-zinc-700 text-white{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
+{% endblock %}
 {% block content %}
-<form method="post" class="bg-zinc-800 p-4 rounded-xl mb-6 space-y-4 max-w-xl">
+<div class="form-wrapper mb-6">
+<form method="post">
     {% csrf_token %}
+    <div class="form-title">Adicionar Programa</div>
     {% for field in form %}
-    <div>
-        <label class="block mb-1 text-sm text-zinc-300">{{ field.label }}</label>
+    <div class="form-group single">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
         {{ field }}
-        {% if field.errors %}
-        <div class="text-red-400 text-sm mt-1">{{ field.errors }}</div>
-        {% endif %}
+        {% if field.errors %}<div class="text-red-400 text-sm mt-1">{{ field.errors }}</div>{% endif %}
     </div>
     {% endfor %}
-    <button type="submit" class="bg-violet-700 hover:bg-violet-600 text-white px-4 py-2 rounded">Salvar</button>
+    <div class="form-actions">
+        <button type="submit" class="btn-primary">Salvar</button>
+    </div>
 </form>
+</div>
 
 <div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
     <table class="min-w-full text-sm">
