@@ -113,10 +113,13 @@ class EmissaoHotelForm(forms.ModelForm):
 
 class CotacaoVooForm(forms.ModelForm):
     qtd_escalas = forms.IntegerField(min_value=0, required=False, initial=0)
+    companhia_aerea = forms.ChoiceField(choices=[], required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['companhia_aerea'].queryset = CompanhiaAerea.objects.all()
+        self.fields['companhia_aerea'].choices = [
+            (c.nome, c.nome) for c in CompanhiaAerea.objects.all()
+        ]
 
     class Meta:
         model = CotacaoVoo
@@ -149,6 +152,16 @@ class CotacaoVooForm(forms.ModelForm):
             'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'validade': forms.DateInput(attrs={'type': 'date'}),
         }
+
+
+class CalculadoraCotacaoForm(forms.Form):
+    valor_passagem = forms.DecimalField(max_digits=10, decimal_places=2)
+    taxas = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0)
+    milhas = forms.IntegerField(required=False, initial=0)
+    valor_milheiro = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0)
+    parcelas = forms.IntegerField(required=False, initial=1)
+    juros = forms.DecimalField(max_digits=5, decimal_places=2, required=False, initial=1)
+    desconto = forms.DecimalField(max_digits=5, decimal_places=2, required=False, initial=1)
 
 class CompanhiaAereaForm(forms.ModelForm):
     class Meta:
