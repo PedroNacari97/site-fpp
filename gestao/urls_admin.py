@@ -1,6 +1,5 @@
 from django.urls import path
-from gestao import views_admin
-from .views_admin import (
+from gestao.views import (
     admin_dashboard,
     admin_clientes,
     admin_contas,
@@ -22,37 +21,46 @@ from .views_admin import (
     editar_cliente,
     admin_aeroportos,
     editar_aeroporto,
+    programas_do_cliente,
+    visualizar_cliente,
+    admin_movimentacoes,
+    admin_nova_movimentacao,
+    cotacao_voo_pdf,
+    emissao_pdf,
+    admin_companhias,
+    criar_companhia,
+    editar_companhia,
 )
-
 
 urlpatterns = [
     path('painel/', admin_dashboard, name='admin_dashboard'),
     path('clientes/', admin_clientes, name='admin_clientes'),
     path('clientes/<int:cliente_id>/editar/', editar_cliente, name='admin_editar_cliente'),
+    path('clientes/novo/', criar_cliente, name='admin_novo_cliente'),
+    path('clientes/<int:cliente_id>/programas/', programas_do_cliente, name='admin_programas_do_cliente'),
+    path('clientes/<int:cliente_id>/painel/', visualizar_cliente, name='admin_visualizar_cliente'),
     path('contas/', admin_contas, name='admin_contas'),
+    path('contas/novo/', criar_conta, name='admin_nova_conta'),
     path('contas/<int:conta_id>/editar/', editar_conta, name='admin_editar_conta'),
+    path('contas/<int:conta_id>/movimentacoes/', admin_movimentacoes, name='admin_movimentacoes'),
+    path('contas/<int:conta_id>/movimentacoes/nova/', admin_nova_movimentacao, name='admin_nova_movimentacao'),
     path('programas/', admin_programas, name='admin_programas'),
     path('programas/<int:programa_id>/editar/', editar_programa, name='admin_editar_programa'),
     path('aeroportos/', admin_aeroportos, name='admin_aeroportos'),
     path('aeroportos/<int:aeroporto_id>/editar/', editar_aeroporto, name='admin_editar_aeroporto'),
+    path('companhias/', admin_companhias, name='admin_companhias'),
+    path('companhias/nova/', criar_companhia, name='admin_nova_companhia'),
+    path('companhias/<int:companhia_id>/editar/', editar_companhia, name='admin_editar_companhia'),
     path('cotacoes/', admin_cotacoes, name='admin_cotacoes'),
     path('cotacoes-voo/', admin_cotacoes_voo, name='admin_cotacoes_voo'),
     path('cotacoes-voo/nova/', nova_cotacao_voo, name='admin_nova_cotacao_voo'),
     path('cotacoes-voo/<int:cotacao_id>/editar/', editar_cotacao_voo, name='admin_editar_cotacao_voo'),
-    path('cotacoes-voo/<int:cotacao_id>/pdf/', views_admin.cotacao_voo_pdf, name='admin_cotacao_voo_pdf'),
+    path('cotacoes-voo/<int:cotacao_id>/pdf/', cotacao_voo_pdf, name='admin_cotacao_voo_pdf'),
     path('emissoes/', admin_emissoes, name='admin_emissoes'),
     path('emissoes/nova/', nova_emissao, name='admin_nova_emissao'),
     path('emissoes/<int:emissao_id>/editar/', editar_emissao, name='admin_editar_emissao'),
-    path('emissoes/<int:emissao_id>/pdf/', views_admin.emissao_pdf, name='admin_emissao_pdf'),
+    path('emissoes/<int:emissao_id>/pdf/', emissao_pdf, name='admin_emissao_pdf'),
     path('hoteis/', admin_hoteis, name='admin_hoteis'),
     path('hoteis/nova/', nova_emissao_hotel, name='admin_nova_emissao_hotel'),
     path('hoteis/<int:emissao_id>/editar/', editar_emissao_hotel, name='admin_editar_emissao_hotel'),
-    path('contas/novo/', criar_conta, name='admin_nova_conta'),
-    path('clientes/novo/', criar_cliente, name='admin_novo_cliente'),
-    path('clientes/<int:cliente_id>/programas/', views_admin.programas_do_cliente, name='admin_programas_do_cliente'),
-    path('clientes/<int:cliente_id>/painel/', views_admin.visualizar_cliente, name='admin_visualizar_cliente'),
-    path('contas/<int:conta_id>/movimentacoes/', views_admin.admin_movimentacoes, name='admin_movimentacoes'),
-    path('contas/<int:conta_id>/movimentacoes/nova/', views_admin.admin_nova_movimentacao, name='admin_nova_movimentacao'),
-
-
 ]
