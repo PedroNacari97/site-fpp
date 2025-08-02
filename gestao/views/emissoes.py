@@ -130,6 +130,7 @@ def admin_emissoes(request):
 @login_required
 @user_passes_test(admin_required)
 def nova_emissao(request):
+    cliente_id = request.GET.get("cliente_id")
     if request.method == "POST":
         form = EmissaoPassagemForm(request.POST)
         if form.is_valid():
@@ -163,7 +164,8 @@ def nova_emissao(request):
                     )
             return redirect("admin_emissoes")
     else:
-        form = EmissaoPassagemForm()
+        initial = {"cliente": cliente_id} if cliente_id else {}
+        form = EmissaoPassagemForm(initial=initial)
     emissoes = EmissaoPassagem.objects.all().order_by("-data_ida")
     aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
     return render(
@@ -175,6 +177,7 @@ def nova_emissao(request):
             "passageiros_json": "[]",
             "escalas_json": "[]",
             "aeroportos_json": json.dumps(aeroportos),
+            "cliente_id": cliente_id,
         },
     )
 
