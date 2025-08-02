@@ -7,6 +7,7 @@ from .models import (
     EmissaoPassagem,
     EmissaoHotel,
     CotacaoVoo,
+    CompanhiaAerea,
 )
 
 class ContaFidelidadeForm(forms.ModelForm):
@@ -63,6 +64,7 @@ class EmissaoPassagemForm(forms.ModelForm):
             'qtd_escalas',
         ]:
             self.fields[f].required = False
+        self.fields['companhia_aerea'].queryset = CompanhiaAerea.objects.all()
 
     class Meta:
         model = EmissaoPassagem

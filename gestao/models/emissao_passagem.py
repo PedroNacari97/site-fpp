@@ -38,7 +38,6 @@ class EmissaoPassagem(models.Model):
     qtd_adultos = models.PositiveIntegerField(default=0)
     qtd_criancas = models.PositiveIntegerField(default=0)
     qtd_bebes = models.PositiveIntegerField(default=0)
-    companhia_aerea = models.CharField(max_length=100, blank=True)
     localizador = models.CharField(max_length=100, blank=True)
     valor_referencia = models.DecimalField(max_digits=10, decimal_places=2)
     valor_pago = models.DecimalField(max_digits=10, decimal_places=2)
