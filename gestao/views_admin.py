@@ -30,11 +30,13 @@ from .models import (
     EmissaoHotel,
     CotacaoVoo,
     Passageiro,
+    Escala,
 )
 from .pdf_cotacao import gerar_pdf_cotacao
 from .pdf_emissao import gerar_pdf_emissao
 import csv
 import json
+from datetime import timedelta
 
 
 def admin_required(user):
@@ -407,14 +409,34 @@ def nova_emissao(request):
                     Passageiro.objects.create(
                         emissao=emissao, nome=nome, documento=doc, categoria=cat
                     )
+            total_escalas = int(request.POST.get("total_escalas", 0))
+            for i in range(total_escalas):
+                aeroporto_id = request.POST.get(f"escala-{i}-aeroporto")
+                dur = request.POST.get(f"escala-{i}-duracao")
+                cidade = request.POST.get(f"escala-{i}-cidade")
+                if aeroporto_id and dur:
+                    h, m = map(int, dur.split(":"))
+                    Escala.objects.create(
+                        emissao=emissao,
+                        aeroporto_id=aeroporto_id,
+                        duracao=timedelta(hours=h, minutes=m),
+                        cidade=cidade or "",
+                    )
             return redirect("admin_emissoes")
     else:
         form = EmissaoPassagemForm()
     emissoes = EmissaoPassagem.objects.all().order_by("-data_ida")
+    aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
     return render(
         request,
         "admin_custom/emissoes_form.html",
-        {"form": form, "emissoes": emissoes, "passageiros_json": "[]"},
+        {
+            "form": form,
+            "emissoes": emissoes,
+            "passageiros_json": "[]",
+            "escalas_json": "[]",
+            "aeroportos_json": json.dumps(aeroportos),
+        },
     )
 
 @login_required
@@ -438,9 +460,24 @@ def editar_emissao(request, emissao_id):
                     Passageiro.objects.create(
                         emissao=emissao, nome=nome, documento=doc, categoria=cat
                     )
+            emissao.escalas.all().delete()
+            total_escalas = int(request.POST.get("total_escalas", 0))
+            for i in range(total_escalas):
+                aeroporto_id = request.POST.get(f"escala-{i}-aeroporto")
+                dur = request.POST.get(f"escala-{i}-duracao")
+                cidade = request.POST.get(f"escala-{i}-cidade")
+                if aeroporto_id and dur:
+                    h, m = map(int, dur.split(":"))
+                    Escala.objects.create(
+                        emissao=emissao,
+                        aeroporto_id=aeroporto_id,
+                        duracao=timedelta(hours=h, minutes=m),
+                        cidade=cidade or "",
+                    )
             return redirect("admin_emissoes")
     else:
         form = EmissaoPassagemForm(instance=emissao)
+        form.fields['qtd_escalas'].initial = emissao.escalas.count()
     emissoes = EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida")
     passageiros = list(
         emissao.passageiros.filter(categoria="adulto").values("nome", "documento", "categoria")
@@ -451,6 +488,15 @@ def editar_emissao(request, emissao_id):
     passageiros += list(
         emissao.passageiros.filter(categoria="bebe").values("nome", "documento", "categoria")
     )
+    escalas = list(
+        emissao.escalas.values("aeroporto_id", "duracao", "cidade")
+    )
+    for e in escalas:
+        total_seconds = int(e["duracao"].total_seconds())
+        h = total_seconds // 3600
+        m = (total_seconds % 3600) // 60
+        e["duracao"] = f"{h:02d}:{m:02d}"
+    aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
     return render(
         request,
         "admin_custom/emissoes_form.html",
@@ -458,6 +504,8 @@ def editar_emissao(request, emissao_id):
             "form": form,
             "emissoes": emissoes,
             "passageiros_json": json.dumps(passageiros),
+            "escalas_json": json.dumps(escalas),
+            "aeroportos_json": json.dumps(aeroportos),
         },
     )
 

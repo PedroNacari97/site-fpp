@@ -53,14 +53,14 @@ class AeroportoForm(forms.ModelForm):
 
 
 class EmissaoPassagemForm(forms.ModelForm):
+    qtd_escalas = forms.IntegerField(min_value=0, required=False, initial=0)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for f in [
             'qtd_adultos',
             'qtd_criancas',
             'qtd_bebes',
-            'aeroporto_escala',
-            'duracao_escala',
+            'qtd_escalas',
         ]:
             self.fields[f].required = False
 
@@ -83,15 +83,11 @@ class EmissaoPassagemForm(forms.ModelForm):
             'pontos_utilizados',
             'valor_referencia_pontos',
             'economia_obtida',
-            'possui_escala',
-            'aeroporto_escala',
-            'duracao_escala',
             'detalhes',
         ]
         widgets = {
             'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'duracao_escala': forms.TimeInput(format='%H:%M', attrs={'type': 'time'}),
         }
         
 
