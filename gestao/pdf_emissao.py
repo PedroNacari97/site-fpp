@@ -13,12 +13,8 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-def gerar_pdf_emissao(emissao):
-    """
-    Gera PDF da emissão seguindo o layout melhorado,
-    com todas as seções ajustadas.
-    """
 
+def gerar_pdf_emissao(emissao):
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -31,7 +27,6 @@ def gerar_pdf_emissao(emissao):
 
     styles = getSampleStyleSheet()
 
-    # Estilos customizados
     estilo_header = ParagraphStyle(
         "CustomHeader",
         parent=styles["Title"],
@@ -40,16 +35,6 @@ def gerar_pdf_emissao(emissao):
         alignment=TA_CENTER,
         spaceAfter=10,
         fontName="Helvetica-Bold",
-    )
-    estilo_localizador = ParagraphStyle(
-        "LocalizadorDestaque",
-        parent=styles["Normal"],
-        fontSize=18,
-        textColor=colors.HexColor("#2563eb"),
-        alignment=TA_CENTER,
-        fontName="Helvetica-Bold",
-        spaceBefore=6,
-        spaceAfter=14,
     )
     estilo_secao = ParagraphStyle(
         "CustomSection",
@@ -87,14 +72,30 @@ def gerar_pdf_emissao(emissao):
         "CustomValorDestaque",
         parent=styles["Normal"],
         fontSize=14,
-        textColor=colors.HexColor("#28a745"),  # Verde destaque
+        textColor=colors.HexColor("#28a745"),
         fontName="Helvetica-Bold",
         alignment=TA_CENTER,
+    )
+    estilo_localizador = ParagraphStyle(
+        "Localizador",
+        parent=styles["Normal"],
+        fontSize=14,
+        textColor=colors.HexColor("#232345"),
+        fontName="Helvetica-Bold",
+        alignment=TA_CENTER,
+        spaceAfter=14,
+    )
+    estilo_link = ParagraphStyle(
+        "CustomLink",
+        parent=estilo_valor,
+        textColor=colors.HexColor("#3366cc"),
+        underline=True,
+        alignment=TA_LEFT,
     )
 
     elements = []
 
-    # 1. Cabeçalho colorido
+    # Cabeçalho colorido
     header_data = [
         [Paragraph("Confirmação de Emissão de Passagem", estilo_header)],
         [
@@ -116,32 +117,29 @@ def gerar_pdf_emissao(emissao):
                 ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#667eea")),
                 ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
                 ("TOPPADDING", (0, 0), (-1, -1), 18),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 18),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
                 ("LEFTPADDING", (0, 0), (-1, -1), 20),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 20),
             ]
         )
     )
     elements.append(header_table)
-    elements.append(Spacer(1, 16))
-
-    # 2. Localizador em destaque
-    elements.append(Paragraph("LOCALIZADOR", estilo_label))
-    elements.append(Paragraph(emissao.localizador or "-", estilo_localizador))
+    # Localizador abaixo do cabeçalho
+    elements.append(Paragraph(f"Localizador: {emissao.localizador or '-'}", estilo_localizador))
     elements.append(Spacer(1, 8))
 
-    # 3. Informações do Cliente
+    # Informações do Cliente
     elements.append(Paragraph("Informações do Cliente", estilo_secao))
     cliente_data = [
         [
-            Paragraph("NOME COMPLETO", estilo_label),
+            Paragraph("Nome Completo:", estilo_label),
             Paragraph(
                 emissao.cliente.usuario.get_full_name() or emissao.cliente.usuario.username,
                 estilo_valor,
             ),
         ],
         [
-            Paragraph("CPF", estilo_label),
+            Paragraph("CPF:", estilo_label),
             Paragraph(emissao.cliente.cpf or "-", estilo_valor),
         ],
     ]
@@ -159,26 +157,55 @@ def gerar_pdf_emissao(emissao):
         )
     )
     elements.append(cliente_table)
-    elements.append(Spacer(1, 14))
+    elements.append(Spacer(1, 20))
 
-    # 4. Dados da Emissão (agora com menos campos)
+    # Dados da Emissão
     elements.append(Paragraph("Dados da Emissão", estilo_secao))
+
+    # Trecho seguro para Companhia Aérea (objeto ou string)
+    companhia = getattr(emissao, "companhia_aerea", None)
+    if hasattr(companhia, "nome"):
+        companhia_nome = companhia.nome
+        companhia_link = getattr(companhia, "site_url", None)
+    elif isinstance(companhia, str):
+        companhia_nome = companhia
+        companhia_link = None
+    else:
+        companhia_nome = "-"
+        companhia_link = None
+
+    if companhia_link:
+        companhia_para_pdf = Paragraph(f'<a href="{companhia_link}">{companhia_nome}</a>', estilo_link)
+    else:
+        companhia_para_pdf = Paragraph(companhia_nome, estilo_valor)
+
     dados_emissao = [
         [
-            Paragraph("COMPANHIA AÉREA", estilo_label),
-            Paragraph(emissao.companhia_aerea or "-", estilo_valor),
+            Paragraph("Companhia Aérea:", estilo_label),
+            companhia_para_pdf,
         ],
         [
-            Paragraph("DATA DE EMISSÃO", estilo_label),
+            Paragraph("Data de Emissão:", estilo_label),
             Paragraph(
                 emissao.data_ida.strftime("%d/%m/%Y") if emissao.data_ida else "-",
                 estilo_valor,
             ),
         ],
         [
-            Paragraph("PROGRAMA DE FIDELIDADE", estilo_label),
+            Paragraph("Valor Total Pago:", estilo_label),
+            Paragraph(f"R$ {emissao.valor_pago:.2f}", estilo_valor_destaque),
+        ],
+        [
+            Paragraph("Valor de Referência:", estilo_label),
             Paragraph(
-                emissao.programa.nome if emissao.programa else "-",
+                f"R$ {getattr(emissao, 'valor_referencia', 0):.2f}" if getattr(emissao, 'valor_referencia', None) else "-",
+                estilo_valor,
+            ),
+        ],
+        [
+            Paragraph("Valor Economizado:", estilo_label),
+            Paragraph(
+                f"R$ {getattr(emissao, 'valor_economizado', 0):.2f}" if getattr(emissao, 'valor_economizado', None) else "-",
                 estilo_valor,
             ),
         ],
@@ -197,56 +224,13 @@ def gerar_pdf_emissao(emissao):
         )
     )
     elements.append(dados_table)
-    elements.append(Spacer(1, 14))
+    elements.append(Spacer(1, 20))
 
-    # 5. Informações Financeiras
-    elements.append(Paragraph("Informações Financeiras", estilo_secao))
-    valor_referencia = getattr(emissao, "valor_referencia", None) or 0
-    valor_pago = emissao.valor_pago or 0
-    valor_economizado = (valor_referencia - valor_pago) if valor_referencia else 0
-    percentual_economia = (
-        (valor_economizado / valor_referencia * 100) if valor_referencia else 0
-    )
-
-    financeiras_data = [
-        [
-            Paragraph("VALOR DE REFERÊNCIA", estilo_label),
-            Paragraph(f"R$ {valor_referencia:,.2f}", estilo_valor),
-        ],
-        [
-            Paragraph("VALOR TOTAL PAGO", estilo_label),
-            Paragraph(f"R$ {valor_pago:,.2f}", estilo_valor),
-        ],
-        [
-            Paragraph("VALOR ECONOMIZADO", estilo_label),
-            Paragraph(f"R$ {valor_economizado:,.2f}", estilo_valor_destaque),
-        ],
-        [
-            Paragraph("PERCENTUAL DE ECONOMIA", estilo_label),
-            Paragraph(f"{percentual_economia:.2f}%", estilo_valor),
-        ],
-    ]
-    financeiras_table = Table(financeiras_data, colWidths=[6 * cm, 10 * cm], hAlign="CENTER")
-    financeiras_table.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f8f9fa")),
-                ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#e9ecef")),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                ("TOPPADDING", (0, 0), (-1, -1), 12),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
-            ]
-        )
-    )
-    elements.append(financeiras_table)
-    elements.append(Spacer(1, 14))
-
-    # 6. Informações do Voo
+    # Informações do Voo (origem, destino, datas, programa, passageiros)
     elements.append(Paragraph("Informações do Voo", estilo_secao))
     voo_data = [
         [
-            Paragraph("ORIGEM", estilo_label),
+            Paragraph("Origem:", estilo_label),
             Paragraph(
                 f"{emissao.aeroporto_partida.sigla} - {emissao.aeroporto_partida.nome}"
                 if emissao.aeroporto_partida else "-",
@@ -254,7 +238,7 @@ def gerar_pdf_emissao(emissao):
             ),
         ],
         [
-            Paragraph("DESTINO", estilo_label),
+            Paragraph("Destino:", estilo_label),
             Paragraph(
                 f"{emissao.aeroporto_destino.sigla} - {emissao.aeroporto_destino.nome}"
                 if emissao.aeroporto_destino else "-",
@@ -262,20 +246,57 @@ def gerar_pdf_emissao(emissao):
             ),
         ],
         [
-            Paragraph("DATA DE IDA", estilo_label),
+            Paragraph("Data Ida:", estilo_label),
             Paragraph(
                 emissao.data_ida.strftime("%d/%m/%Y") if emissao.data_ida else "-",
                 estilo_valor,
             ),
         ],
         [
-            Paragraph("DATA DE VOLTA", estilo_label),
+            Paragraph("Data Volta:", estilo_label),
             Paragraph(
                 emissao.data_volta.strftime("%d/%m/%Y") if emissao.data_volta else "-",
                 estilo_valor,
             ),
         ],
+        [
+            Paragraph("Programa de Fidelidade:", estilo_label),
+            Paragraph(
+                emissao.programa.nome if emissao.programa else "-",
+                estilo_valor,
+            ),
+        ],
     ]
+    voo_data.append(
+        [
+            Paragraph("Passageiros:", estilo_label),
+            Paragraph(
+                f"Adultos: {emissao.qtd_adultos}  Crianças: {emissao.qtd_criancas}  Bebês: {emissao.qtd_bebes}",
+                estilo_valor,
+            ),
+        ]
+    )
+    if getattr(emissao, "possui_escala", False):
+        voo_data.append(
+            [
+                Paragraph("Aeroporto de escala:", estilo_label),
+                Paragraph(
+                    f"{emissao.aeroporto_escala.sigla} - {emissao.aeroporto_escala.nome}"
+                    if emissao.aeroporto_escala
+                    else "-",
+                    estilo_valor,
+                ),
+            ]
+        )
+        voo_data.append(
+            [
+                Paragraph("Duração da escala:", estilo_label),
+                Paragraph(
+                    str(emissao.duracao_escala) if emissao.duracao_escala else "-",
+                    estilo_valor,
+                ),
+            ]
+        )
     voo_table = Table(voo_data, colWidths=[6 * cm, 10 * cm], hAlign="CENTER")
     voo_table.setStyle(
         TableStyle(
@@ -290,50 +311,10 @@ def gerar_pdf_emissao(emissao):
         )
     )
     elements.append(voo_table)
-    elements.append(Spacer(1, 14))
+    elements.append(Spacer(1, 20))
 
-    # 7. Escalas (se houver)
-    escalas = emissao.escalas.all()
-    if escalas.exists():
-        elements.append(Paragraph("Escalas", estilo_secao))
-        dados_escalas = [[
-            Paragraph("Aeroporto", estilo_label),
-            Paragraph("Duração", estilo_label),
-            Paragraph("Cidade/País", estilo_label),
-        ]]
-        for e in escalas:
-            total_seconds = int(e.duracao.total_seconds())
-            h = total_seconds // 3600
-            m = (total_seconds % 3600) // 60
-            dados_escalas.append([
-                Paragraph(f"{e.aeroporto.sigla} - {e.aeroporto.nome}", estilo_valor),
-                Paragraph(f"{h:02d}:{m:02d}", estilo_valor),
-                Paragraph(e.cidade or "-", estilo_valor),
-            ])
-        tabela_escalas = Table(dados_escalas, colWidths=[5 * cm, 4 * cm, 7 * cm], hAlign="CENTER")
-        tabela_escalas.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f8f9fa")),
-            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#e9ecef")),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-            ("TOPPADDING", (0, 0), (-1, -1), 8),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-        ]))
-        elements.append(tabela_escalas)
-        elements.append(Spacer(1, 14))
-
-    # 8. Passageiros (total e listas)
+    # Passageiros detalhados por categoria
     elements.append(Paragraph("Passageiros", estilo_secao))
-
-    qtd_adultos = getattr(emissao, "qtd_adultos", 0)
-    qtd_criancas = getattr(emissao, "qtd_criancas", 0)
-    qtd_bebes = getattr(emissao, "qtd_bebes", 0)
-
-    # Resumo total de passageiros
-    resumo_passageiros = f"TOTAL DE PASSAGEIROS: Adultos: {qtd_adultos} | Crianças: {qtd_criancas} | Bebês: {qtd_bebes}"
-    elements.append(Paragraph(resumo_passageiros, estilo_label))
-    elements.append(Spacer(1, 5))
-
     categorias = [
         ("adulto", "Adultos"),
         ("crianca", "Crianças"),
@@ -364,7 +345,7 @@ def gerar_pdf_emissao(emissao):
             elements.append(tabela)
             elements.append(Spacer(1, 10))
 
-    # 9. Rodapé padrão
+    # Rodapé padrão
     footer_data = [
         [
             Paragraph(

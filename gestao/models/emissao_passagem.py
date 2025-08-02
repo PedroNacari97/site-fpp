@@ -2,11 +2,21 @@ from django.db import models
 from .cliente import Cliente
 from .programa_fidelidade import ProgramaFidelidade
 from .aeroporto import Aeroporto
+from .companhia_aerea import CompanhiaAerea
+
 
 class EmissaoPassagem(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     programa = models.ForeignKey(
         ProgramaFidelidade, on_delete=models.CASCADE, null=True, blank=True
+    )
+
+    companhia_aerea = models.ForeignKey(
+        CompanhiaAerea,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='emissoes'
     )
     aeroporto_partida = models.ForeignKey(
         Aeroporto,
