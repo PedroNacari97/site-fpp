@@ -81,7 +81,8 @@
                 <td class="p-2">{{ e.detalhes }}</td>
                 <td class="p-2">
                     <a href="{% url 'admin_emissao_pdf' e.id %}" class="text-blue-400">PDF</a> |
-                    <a href="{% url 'admin_editar_emissao' e.id %}" class="text-blue-400">Editar</a>
+                    <a href="{% url 'admin_editar_emissao' e.id %}" class="text-blue-400">Editar</a> |
+                    <a href="{% url 'admin_deletar_emissao' e.id %}" class="text-blue-400">Deletar</a>
                 </td>
             </tr>
             {% empty %}
