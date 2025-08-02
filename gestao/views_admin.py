@@ -31,6 +31,7 @@ from .models import (
     CotacaoVoo,
     Passageiro,
     Escala,
+    CompanhiaAerea,
 )
 from .pdf_cotacao import gerar_pdf_cotacao
 from .pdf_emissao import gerar_pdf_emissao
@@ -579,7 +580,7 @@ def nova_cotacao_voo(request):
         emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
         initial = {
             "cliente": emissao.cliente_id,
-            "companhia_aerea": emissao.companhia_aerea,
+            "companhia_aerea": emissao.companhia_aerea.nome if emissao.companhia_aerea else "",
             "origem": emissao.aeroporto_partida_id,
             "destino": emissao.aeroporto_destino_id,
             "data_ida": emissao.data_ida,
@@ -600,7 +601,7 @@ def nova_cotacao_voo(request):
                     data_volta=cot.data_volta,
                     programa=cot.programa,
                     qtd_passageiros=cot.qtd_passageiros,
-                    companhia_aerea=cot.companhia_aerea,
+                    companhia_aerea=CompanhiaAerea.objects.filter(nome=cot.companhia_aerea).first(),
                     valor_referencia=cot.valor_passagem,
                     valor_pago=cot.valor_vista,
                     pontos_utilizados=cot.milhas,
@@ -631,7 +632,7 @@ def editar_cotacao_voo(request, cotacao_id):
                     data_volta=cot.data_volta,
                     programa=cot.programa,
                     qtd_passageiros=cot.qtd_passageiros,
-                    companhia_aerea=cot.companhia_aerea,
+                    companhia_aerea=CompanhiaAerea.objects.filter(nome=cot.companhia_aerea).first(),
                     valor_referencia=cot.valor_passagem,
                     valor_pago=cot.valor_vista,
                     pontos_utilizados=cot.milhas,
