@@ -225,11 +225,37 @@ def gerar_pdf_emissao(emissao):
                 estilo_valor,
             ),
         ],
+    ]
+    voo_data.append(
         [
             Paragraph("Passageiros:", estilo_label),
-            Paragraph(str(emissao.qtd_passageiros), estilo_valor),
-        ],
-    ]
+            Paragraph(
+                f"Adultos: {emissao.qtd_adultos}  Crianças: {emissao.qtd_criancas}  Bebês: {emissao.qtd_bebes}",
+                estilo_valor,
+            ),
+        ]
+    )
+    if emissao.possui_escala:
+        voo_data.append(
+            [
+                Paragraph("Aeroporto de escala:", estilo_label),
+                Paragraph(
+                    f"{emissao.aeroporto_escala.sigla} - {emissao.aeroporto_escala.nome}"
+                    if emissao.aeroporto_escala
+                    else "-",
+                    estilo_valor,
+                ),
+            ]
+        )
+        voo_data.append(
+            [
+                Paragraph("Duração da escala:", estilo_label),
+                Paragraph(
+                    str(emissao.duracao_escala) if emissao.duracao_escala else "-",
+                    estilo_valor,
+                ),
+            ]
+        )
     voo_table = Table(voo_data, colWidths=[6 * cm, 10 * cm], hAlign="CENTER")
     voo_table.setStyle(
         TableStyle(
@@ -245,6 +271,38 @@ def gerar_pdf_emissao(emissao):
     )
     elements.append(voo_table)
     elements.append(Spacer(1, 20))
+
+    # Passageiros detalhados por categoria
+    elements.append(Paragraph("Passageiros", estilo_secao))
+    categorias = [
+        ("adulto", "Adultos"),
+        ("crianca", "Crianças"),
+        ("bebe", "Bebês"),
+    ]
+    for chave, titulo in categorias:
+        passageiros = emissao.passageiros.filter(categoria=chave)
+        if passageiros.exists():
+            dados = [[Paragraph("Nome", estilo_label), Paragraph("Documento", estilo_label)]]
+            for p in passageiros:
+                dados.append(
+                    [Paragraph(p.nome, estilo_valor), Paragraph(p.documento, estilo_valor)]
+                )
+            tabela = Table(dados, colWidths=[8 * cm, 8 * cm], hAlign="CENTER")
+            tabela.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f8f9fa")),
+                        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#e9ecef")),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                        ("TOPPADDING", (0, 0), (-1, -1), 8),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                    ]
+                )
+            )
+            elements.append(Paragraph(titulo, estilo_label))
+            elements.append(tabela)
+            elements.append(Spacer(1, 10))
 
     # Rodapé padrão
     footer_data = [

@@ -24,7 +24,19 @@ class EmissaoPassagem(models.Model):
     )
     data_ida = models.DateTimeField()
     data_volta = models.DateTimeField(null=True, blank=True)
-    qtd_passageiros = models.PositiveIntegerField()
+    qtd_passageiros = models.PositiveIntegerField(default=0)
+    qtd_adultos = models.PositiveIntegerField(default=0)
+    qtd_criancas = models.PositiveIntegerField(default=0)
+    qtd_bebes = models.PositiveIntegerField(default=0)
+    possui_escala = models.BooleanField(default=False)
+    aeroporto_escala = models.ForeignKey(
+        Aeroporto,
+        on_delete=models.CASCADE,
+        related_name="escalas",
+        null=True,
+        blank=True,
+    )
+    duracao_escala = models.DurationField(null=True, blank=True)
     companhia_aerea = models.CharField(max_length=100, blank=True)
     localizador = models.CharField(max_length=100, blank=True)
     valor_referencia = models.DecimalField(max_digits=10, decimal_places=2)
@@ -37,6 +49,10 @@ class EmissaoPassagem(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     detalhes = models.TextField(blank=True)
+
+    def save(self, *args, **kwargs):
+        self.qtd_passageiros = self.qtd_adultos + self.qtd_criancas + self.qtd_bebes
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.cliente} - {self.programa} - {self.data_ida}"
