@@ -399,8 +399,12 @@ def nova_emissao(request):
             return redirect("admin_emissoes")
     else:
         form = EmissaoPassagemForm()
-    return render(request, "admin_custom/emissoes_form.html", {"form": form})
-
+    emissoes = EmissaoPassagem.objects.all().order_by("-data_ida")
+    return render(
+        request,
+        "admin_custom/emissoes_form.html",
+        {"form": form, "emissoes": emissoes},
+    )
 
 @login_required
 @user_passes_test(admin_required)
@@ -416,7 +420,12 @@ def editar_emissao(request, emissao_id):
             return redirect("admin_emissoes")
     else:
         form = EmissaoPassagemForm(instance=emissao)
-    return render(request, "admin_custom/emissoes_form.html", {"form": form})
+    emissoes = EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida")
+    return render(
+        request,
+        "admin_custom/emissoes_form.html",
+        {"form": form, "emissoes": emissoes},
+    )
 
 
 @login_required
