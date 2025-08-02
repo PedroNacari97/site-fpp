@@ -30,6 +30,8 @@ from gestao.views import (
     admin_companhias,
     criar_companhia,
     editar_companhia,
+    admin_auditoria,
+    calculadora_cotacao,
 )
 
 urlpatterns = [
@@ -53,6 +55,7 @@ urlpatterns = [
     path('companhias/<int:companhia_id>/editar/', editar_companhia, name='admin_editar_companhia'),
     path('cotacoes/', admin_cotacoes, name='admin_cotacoes'),
     path('cotacoes-voo/', admin_cotacoes_voo, name='admin_cotacoes_voo'),
+    path('cotacoes-voo/calculadora/', calculadora_cotacao, name='admin_calculadora_cotacao'),
     path('cotacoes-voo/nova/', nova_cotacao_voo, name='admin_nova_cotacao_voo'),
     path('cotacoes-voo/<int:cotacao_id>/editar/', editar_cotacao_voo, name='admin_editar_cotacao_voo'),
     path('cotacoes-voo/<int:cotacao_id>/pdf/', cotacao_voo_pdf, name='admin_cotacao_voo_pdf'),
@@ -63,4 +66,5 @@ urlpatterns = [
     path('hoteis/', admin_hoteis, name='admin_hoteis'),
     path('hoteis/nova/', nova_emissao_hotel, name='admin_nova_emissao_hotel'),
     path('hoteis/<int:emissao_id>/editar/', editar_emissao_hotel, name='admin_editar_emissao_hotel'),
+    path('auditoria/', admin_auditoria, name='admin_auditoria'),
 ]

@@ -11,6 +11,7 @@ from .emissao_hotel import EmissaoHotel
 from .acesso_cliente_log import AcessoClienteLog
 from .cotacao_voo import CotacaoVoo
 from .companhia_aerea import CompanhiaAerea
+from .audit_log import AuditLog
 
 __all__ = [
     'Cliente',
@@ -26,4 +27,5 @@ __all__ = [
     'AcessoClienteLog',
     'CotacaoVoo',
     'CompanhiaAerea',
+    'AuditLog',
 ]

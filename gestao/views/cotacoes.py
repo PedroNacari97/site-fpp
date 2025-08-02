@@ -18,6 +18,7 @@ from ..forms import (
     EmissaoPassagemForm,
     EmissaoHotelForm,
     CotacaoVooForm,
+    CalculadoraCotacaoForm,
 )
 from django.contrib.auth.models import User
 from ..models import (
@@ -38,6 +39,7 @@ from ..pdf_emissao import gerar_pdf_emissao
 import csv
 import json
 from datetime import timedelta
+from decimal import Decimal
 
 
 def admin_required(user):
@@ -164,4 +166,35 @@ def cotacao_voo_pdf(request, cotacao_id):
     response = HttpResponse(pdf_content, content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="cotacao_{cotacao_id}.pdf"'
     return response
+
+
+@login_required
+@user_passes_test(admin_required)
+def calculadora_cotacao(request):
+    resultado = None
+    if request.method == 'POST':
+        form = CalculadoraCotacaoForm(request.POST)
+        if form.is_valid():
+            milhas = form.cleaned_data['milhas']
+            valor_milheiro = form.cleaned_data['valor_milheiro']
+            taxas = form.cleaned_data['taxas']
+            juros = form.cleaned_data['juros']
+            desconto = form.cleaned_data['desconto']
+            valor_passagem = form.cleaned_data['valor_passagem']
+            parcelas = form.cleaned_data['parcelas'] or 1
+
+            base = (Decimal(milhas) / Decimal('1000')) * Decimal(valor_milheiro) + Decimal(taxas)
+            valor_parcelado = base * Decimal(juros)
+            valor_vista = valor_parcelado * Decimal(desconto)
+            economia = Decimal(valor_passagem) - valor_vista
+            parcela = valor_parcelado / Decimal(parcelas)
+            resultado = {
+                'valor_parcelado': round(valor_parcelado, 2),
+                'valor_vista': round(valor_vista, 2),
+                'economia': round(economia, 2),
+                'parcela': round(parcela, 2),
+            }
+    else:
+        form = CalculadoraCotacaoForm()
+    return render(request, 'admin_custom/calculadora_cotacao.html', {'form': form, 'resultado': resultado})
 
