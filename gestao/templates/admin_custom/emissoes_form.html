@@ -68,6 +68,10 @@ body {
   margin-bottom: 2px;
   transition: border 0.2s;
 }
+.form-card input.filled,
+.form-card select.filled {
+  border-color: #16a34a;
+}
 .form-card input:focus,
 .form-card select:focus,
 .form-card textarea:focus {
@@ -154,11 +158,34 @@ body {
             <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data volta</label>
             {{ form.data_volta }}
         </div>
+    </div>
+    <div class="form-group">
         <div style="flex: 1;">
-            <label class="form-label" for="{{ form.qtd_passageiros.id_for_label }}">Qtd passageiros</label>
-            {{ form.qtd_passageiros }}
+            <label class="form-label" for="{{ form.qtd_adultos.id_for_label }}">Adultos</label>
+            {{ form.qtd_adultos }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.qtd_criancas.id_for_label }}">Crianças</label>
+            {{ form.qtd_criancas }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.qtd_bebes.id_for_label }}">Bebês</label>
+            {{ form.qtd_bebes }}
         </div>
     </div>
+
+    <div class="section-title">Passageiros</div>
+    <input type="hidden" name="total_passageiros" id="id_total_passageiros" value="0" />
+    <div id="passageiros-container"></div>
+
+    <div class="section-title">Escalas</div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.qtd_escalas.id_for_label }}">Quantidade de escalas</label>
+            {{ form.qtd_escalas }}
+        </div>
+    </div>
+    <div id="escalas-container"></div>
 
     <div class="section-title">Companhia e Localização</div>
     <div class="form-group">
@@ -244,4 +271,128 @@ body {
     </div>
 </div>
 {% endif %}
+
+<script>
+const passageirosData = {{ passageiros_json|safe }};
+const escalasData = {{ escalas_json|safe }};
+const aeroportosData = {{ aeroportos_json|safe }};
+
+function toggleFilled(el){
+    if(el.value){ el.classList.add('filled'); } else { el.classList.remove('filled'); }
+}
+
+const passageiroContainer = document.getElementById('passageiros-container');
+let passengerCache = JSON.parse(sessionStorage.getItem('passageirosTemp') || '{}');
+if(!Object.keys(passengerCache).length && passageirosData.length){
+    passageirosData.forEach((p, idx)=>{
+        passengerCache[`passageiro-${idx}-nome`] = p.nome;
+        passengerCache[`passageiro-${idx}-documento`] = p.documento;
+        passengerCache[`passageiro-${idx}-categoria`] = p.categoria;
+    });
+}
+
+function capturePassengerValues(){
+    passageiroContainer.querySelectorAll('input').forEach(inp=>{
+        passengerCache[inp.name] = inp.value;
+        toggleFilled(inp);
+    });
+    sessionStorage.setItem('passageirosTemp', JSON.stringify(passengerCache));
+}
+
+function renderPassengerForms(){
+    capturePassengerValues();
+    passageiroContainer.innerHTML='';
+    let index=0;
+    const categorias=[
+        {id:'id_qtd_adultos',nome:'Adulto',valor:'adulto'},
+        {id:'id_qtd_criancas',nome:'Criança',valor:'crianca'},
+        {id:'id_qtd_bebes',nome:'Bebê',valor:'bebe'}
+    ];
+    categorias.forEach(cat=>{
+        const qtd=parseInt(document.getElementById(cat.id).value||0);
+        for(let i=0;i<qtd;i++){
+            const div=document.createElement('div');
+            div.className='form-group single passageiro-group';
+            div.innerHTML=`
+                <label class="form-label">${cat.nome} ${i+1} - Nome</label>
+                <input type="text" name="passageiro-${index}-nome" required />
+                <label class="form-label">Documento</label>
+                <input type="text" name="passageiro-${index}-documento" required />
+                <input type="hidden" name="passageiro-${index}-categoria" value="${cat.valor}" />`;
+            passageiroContainer.appendChild(div);
+            const nomeInput=div.querySelector(`input[name="passageiro-${index}-nome"]`);
+            const docInput=div.querySelector(`input[name="passageiro-${index}-documento"]`);
+            nomeInput.value=passengerCache[`passageiro-${index}-nome`]||'';
+            docInput.value=passengerCache[`passageiro-${index}-documento`]||'';
+            toggleFilled(nomeInput); toggleFilled(docInput);
+            index++;
+        }
+    });
+    document.getElementById('id_total_passageiros').value=index;
+    capturePassengerValues();
+}
+
+['id_qtd_adultos','id_qtd_criancas','id_qtd_bebes'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('input', renderPassengerForms);
+});
+passageiroContainer.addEventListener('input', capturePassengerValues);
+renderPassengerForms();
+
+const escalaContainer = document.getElementById('escalas-container');
+let escalaCache = JSON.parse(sessionStorage.getItem('escalasTemp') || '{}');
+if(!Object.keys(escalaCache).length && escalasData.length){
+    escalasData.forEach((e, idx)=>{
+        escalaCache[`escala-${idx}-aeroporto`] = e.aeroporto;
+        escalaCache[`escala-${idx}-duracao`] = e.duracao;
+        escalaCache[`escala-${idx}-cidade`] = e.cidade || '';
+    });
+}
+
+function captureEscalaValues(){
+    escalaContainer.querySelectorAll('select, input').forEach(inp=>{
+        escalaCache[inp.name] = inp.value;
+        toggleFilled(inp);
+    });
+    sessionStorage.setItem('escalasTemp', JSON.stringify(escalaCache));
+}
+
+function renderEscalaForms(){
+    captureEscalaValues();
+    escalaContainer.innerHTML='';
+    const qtd=parseInt(document.getElementById('id_qtd_escalas').value||0);
+    for(let i=0;i<qtd;i++){
+        const div=document.createElement('div');
+        div.className='form-group';
+        div.innerHTML=`
+            <div style="flex:1;">
+                <label class="form-label">Aeroporto escala ${i+1}</label>
+                <select name="escala-${i}-aeroporto"></select>
+            </div>
+            <div style="flex:1;">
+                <label class="form-label">Tempo (hh:mm)</label>
+                <input type="time" name="escala-${i}-duracao" required />
+            </div>
+            <div style="flex:1;">
+                <label class="form-label">Cidade/País</label>
+                <input type="text" name="escala-${i}-cidade" />
+            </div>`;
+        escalaContainer.appendChild(div);
+        const sel=div.querySelector(`select[name="escala-${i}-aeroporto"]`);
+        sel.innerHTML=aeroportosData.map(a=>`<option value="${a.id}">${a.sigla} - ${a.nome}</option>`).join('');
+        sel.value=escalaCache[`escala-${i}-aeroporto`]||'';
+        const dur=div.querySelector(`input[name="escala-${i}-duracao"]`);
+        dur.value=escalaCache[`escala-${i}-duracao`]||'';
+        const cid=div.querySelector(`input[name="escala-${i}-cidade"]`);
+        cid.value=escalaCache[`escala-${i}-cidade`]||'';
+        [sel,dur,cid].forEach(toggleFilled);
+    }
+    captureEscalaValues();
+}
+
+const qtdEscalasInput=document.getElementById('id_qtd_escalas');
+if(qtdEscalasInput){qtdEscalasInput.addEventListener('input', renderEscalaForms);}
+escalaContainer.addEventListener('input', captureEscalaValues);
+renderEscalaForms();
+</script>
 {% endblock %}

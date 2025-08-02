@@ -53,6 +53,16 @@ class AeroportoForm(forms.ModelForm):
 
 
 class EmissaoPassagemForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for f in [
+            'qtd_adultos',
+            'qtd_criancas',
+            'qtd_bebes',
+            'qtd_escalas',
+        ]:
+            self.fields[f].required = False
+
     class Meta:
         model = EmissaoPassagem
         fields = [
@@ -62,7 +72,10 @@ class EmissaoPassagemForm(forms.ModelForm):
             'aeroporto_destino',
             'data_ida',
             'data_volta',
-            'qtd_passageiros',
+            'qtd_adultos',
+            'qtd_criancas',
+            'qtd_bebes',
+            'qtd_escalas',
             'companhia_aerea',
             'localizador',
             'valor_referencia',

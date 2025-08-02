@@ -3,6 +3,8 @@ from .programa_fidelidade import ProgramaFidelidade
 from .aeroporto import Aeroporto
 from .conta_fidelidade import ContaFidelidade
 from .emissao_passagem import EmissaoPassagem
+from .passageiro import Passageiro
+from .escala import Escala
 from .valor_milheiro import ValorMilheiro
 from .movimentacao import Movimentacao
 from .emissao_hotel import EmissaoHotel
@@ -15,6 +17,8 @@ __all__ = [
     'Aeroporto',
     'ContaFidelidade',
     'EmissaoPassagem',
+    'Passageiro',
+    'Escala',
     'ValorMilheiro',
     'Movimentacao',
     'EmissaoHotel',

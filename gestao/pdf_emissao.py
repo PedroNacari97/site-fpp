@@ -225,11 +225,22 @@ def gerar_pdf_emissao(emissao):
                 estilo_valor,
             ),
         ],
+    ]
+    voo_data.append(
         [
             Paragraph("Passageiros:", estilo_label),
-            Paragraph(str(emissao.qtd_passageiros), estilo_valor),
-        ],
-    ]
+            Paragraph(
+                f"Adultos: {emissao.qtd_adultos}  Crianças: {emissao.qtd_criancas}  Bebês: {emissao.qtd_bebes}",
+                estilo_valor,
+            ),
+        ]
+    )
+    voo_data.append(
+        [
+            Paragraph("Escalas:", estilo_label),
+            Paragraph(str(emissao.qtd_escalas), estilo_valor),
+        ]
+    )
     voo_table = Table(voo_data, colWidths=[6 * cm, 10 * cm], hAlign="CENTER")
     voo_table.setStyle(
         TableStyle(
@@ -245,6 +256,80 @@ def gerar_pdf_emissao(emissao):
     )
     elements.append(voo_table)
     elements.append(Spacer(1, 20))
+
+    if emissao.qtd_escalas:
+        elements.append(Paragraph("Escalas", estilo_secao))
+        for idx, esc in enumerate(emissao.escalas.all(), 1):
+            total_sec = int(esc.duracao.total_seconds())
+            dur_str = f"{total_sec//3600:02d}:{(total_sec%3600)//60:02d}"
+            dados = [
+                [
+                    Paragraph("Aeroporto:", estilo_label),
+                    Paragraph(
+                        f"{esc.aeroporto.sigla} - {esc.aeroporto.nome}",
+                        estilo_valor,
+                    ),
+                ],
+                [
+                    Paragraph("Duração:", estilo_label),
+                    Paragraph(dur_str, estilo_valor),
+                ],
+            ]
+            if esc.cidade:
+                dados.append(
+                    [
+                        Paragraph("Cidade/País:", estilo_label),
+                        Paragraph(esc.cidade, estilo_valor),
+                    ]
+                )
+            tabela = Table(dados, colWidths=[6 * cm, 10 * cm], hAlign="CENTER")
+            tabela.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f8f9fa")),
+                        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#e9ecef")),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                        ("TOPPADDING", (0, 0), (-1, -1), 8),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                    ]
+                )
+            )
+            elements.append(Paragraph(f"Escala {idx}", estilo_label))
+            elements.append(tabela)
+            elements.append(Spacer(1, 10))
+
+    # Passageiros detalhados por categoria
+    elements.append(Paragraph("Passageiros", estilo_secao))
+    categorias = [
+        ("adulto", "Adultos"),
+        ("crianca", "Crianças"),
+        ("bebe", "Bebês"),
+    ]
+    for chave, titulo in categorias:
+        passageiros = emissao.passageiros.filter(categoria=chave)
+        if passageiros.exists():
+            dados = [[Paragraph("Nome", estilo_label), Paragraph("Documento", estilo_label)]]
+            for p in passageiros:
+                dados.append(
+                    [Paragraph(p.nome, estilo_valor), Paragraph(p.documento, estilo_valor)]
+                )
+            tabela = Table(dados, colWidths=[8 * cm, 8 * cm], hAlign="CENTER")
+            tabela.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f8f9fa")),
+                        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#e9ecef")),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                        ("TOPPADDING", (0, 0), (-1, -1), 8),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                    ]
+                )
+            )
+            elements.append(Paragraph(titulo, estilo_label))
+            elements.append(tabela)
+            elements.append(Spacer(1, 10))
 
     # Rodapé padrão
     footer_data = [
