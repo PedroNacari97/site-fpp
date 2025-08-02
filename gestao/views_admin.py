@@ -30,7 +30,8 @@ from .models import (
     EmissaoHotel,
     CotacaoVoo,
 )
-from .pdf_utils import gerar_pdf_emissao, gerar_pdf_cotacao
+from .pdf_utils import gerar_pdf_cotacao
+from .pdf_emissao import gerar_pdf_emissao
 import csv
 
 

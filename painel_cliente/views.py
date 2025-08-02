@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from gestao.pdf_utils import gerar_pdf_emissao
+from gestao.pdf_emissao import gerar_pdf_emissao
 from gestao.models import (
     ContaFidelidade,
     EmissaoPassagem,
