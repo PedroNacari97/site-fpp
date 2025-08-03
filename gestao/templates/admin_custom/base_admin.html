@@ -32,11 +32,13 @@
                     </div>
                 </details>
             {% endif %}
-            <div class="pt-4">
-                <p class="px-3 text-zinc-400 uppercase text-xs mb-2">Administrativo</p>
-                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}">Auditoria</a>
-                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700" href="{% url 'user_list' %}">Usuários da Empresa</a>
-            </div>
+            <details class="pt-4 group" {% block administrativo_open %}{% endblock %}>
+                <summary class="px-3 py-2 rounded text-blue-400 cursor-pointer hover:bg-zinc-700 focus:outline-none">Administrativo</summary>
+                <div class="mt-2 ml-4 flex flex-col space-y-2">
+                    <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}">Auditoria</a>
+                    <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700" href="{% url 'user_list' %}">Usuários da Empresa</a>
+                </div>
+            </details>
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700" href="{% url 'logout' %}">Sair</a>
         </nav>
     </aside>
