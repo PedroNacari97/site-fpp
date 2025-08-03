@@ -26,6 +26,7 @@ urlpatterns = [
     path('adm/programas/', views.admin_programas, name='admin_programas'),
     path('adm/valor-milheiro/', views.admin_valor_milheiro, name='admin_valor_milheiro'),
     path('accounts/', include('accounts.urls')),
+    path('superadmin/', include('superadmin.urls')),
 ]
 
 

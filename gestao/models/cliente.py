@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from .empresa import Empresa
 
 class Cliente(models.Model):
     usuario = models.OneToOneField(
@@ -19,6 +20,9 @@ class Cliente(models.Model):
     criado_por = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="usuarios_criados",
         null=True, blank=True
+    )
+    empresa = models.ForeignKey(
+        Empresa, on_delete=models.SET_NULL, null=True, blank=True, related_name="clientes"
     )
 
     def __str__(self):
