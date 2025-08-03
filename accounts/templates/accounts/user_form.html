@@ -1,24 +1,32 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Novo Usuário</title>
-</head>
-<body>
-    <h2>Criar Usuário</h2>
-    {% if messages %}
-      <ul>
-        {% for message in messages %}
-          <li style="color:green">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-    {% if form %}
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Salvar</button>
-    </form>
-    {% endif %}
-</body>
-</html>
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Novo Usuário{% endblock %}
+{% block header_title %}Usuários da Empresa{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">{% endblock %}
+{% block content %}
+<div class="form-wrapper">
+  <form method="POST">
+    {% csrf_token %}
+    <div class="form-title">Novo Usuário</div>
+    <div class="form-group single">
+      <label class="form-label" for="{{ form.nome_completo.id_for_label }}">{{ form.nome_completo.label }}</label>
+      {{ form.nome_completo }}
+    </div>
+    <div class="form-group single">
+      <label class="form-label" for="{{ form.cpf.id_for_label }}">{{ form.cpf.label }}</label>
+      {{ form.cpf }}
+    </div>
+    <div class="form-group single">
+      <label class="form-label" for="{{ form.perfil.id_for_label }}">{{ form.perfil.label }}</label>
+      {{ form.perfil }}
+    </div>
+    <div class="form-group single">
+      <label class="form-label" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+      {{ form.password }}
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Salvar</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

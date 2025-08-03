@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import AuthenticationForm
+from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from gestao.pdf_emissao import gerar_pdf_emissao
@@ -13,21 +13,54 @@ from gestao.models import (
 )
 from gestao.models import AcessoClienteLog
 
+class LoginForm(forms.Form):
+    identifier = forms.CharField(label='Usuário/CPF')
+    password = forms.CharField(label='Senha', widget=forms.PasswordInput)
+
+
 # VIEW LOGIN CUSTOMIZADA
 def login_custom_view(request):
     error_message = None
-    if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
+    form = LoginForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        identifier = form.cleaned_data['identifier']
+        password = form.cleaned_data['password']
         tipo_acesso = request.POST.get('tipo_acesso')
-        if form.is_valid():
-            user = form.get_user()
+
+        username = None
+        if tipo_acesso == 'cliente':
+            try:
+                cliente_obj = Cliente.objects.get(cpf=identifier)
+                username = cliente_obj.usuario.username
+            except Cliente.DoesNotExist:
+                username = None
+        elif tipo_acesso == 'superadmin':
+            from django.utils.text import slugify
+            username = slugify(identifier)
+        else:
+            username = identifier
+
+        user = authenticate(request, username=username, password=password)
+        if user:
             cliente_obj = Cliente.objects.filter(usuario=user).first()
             if tipo_acesso == 'admin':
-                if user.is_staff or user.is_superuser:
+                if user.is_staff and not user.is_superuser and cliente_obj and cliente_obj.perfil == 'admin':
                     login(request, user)
-                    return redirect('admin_dashboard')  # <-- Aqui, faz o redirect certo!
+                    return redirect('admin_dashboard')
                 else:
                     error_message = "Você não tem permissão de administrador."
+            elif tipo_acesso == 'operador':
+                if user.is_staff and cliente_obj and cliente_obj.perfil == 'operador':
+                    login(request, user)
+                    return redirect('admin_dashboard')
+                else:
+                    error_message = "Você não tem permissão de operador."
+            elif tipo_acesso == 'superadmin':
+                if user.is_superuser:
+                    login(request, user)
+                    return redirect('admin_dashboard')
+                else:
+                    error_message = "Você não tem permissão de super admin."
             else:  # Cliente comum
                 if not (user.is_staff or user.is_superuser):
                     if cliente_obj and not cliente_obj.ativo:
@@ -38,9 +71,7 @@ def login_custom_view(request):
                 else:
                     error_message = "Selecione 'Administrador' para acessar o painel admin."
         else:
-            error_message = "Usuário ou senha inválidos."
-    else:
-        form = AuthenticationForm()
+            error_message = "Usuário/CPF ou senha inválidos."
     return render(request, 'registration/login.html', {'form': form, 'error_message': error_message})
 
 

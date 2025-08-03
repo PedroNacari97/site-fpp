@@ -45,7 +45,7 @@ from decimal import Decimal
 
 def verificar_admin(request):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
-    if perfil != "admin":
+    if perfil not in ["admin", "operador"]:
         return render(request, "sem_permissao.html")
     return None
 
@@ -82,6 +82,9 @@ def admin_cotacoes(request):
 def deletar_cotacao(request, cotacao_id):
     if (resp := verificar_admin(request)):
         return resp
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
     ValorMilheiro.objects.filter(id=cotacao_id).delete()
     messages.success(request, "Cotação deletada com sucesso.")
     return redirect("admin_cotacoes")
@@ -186,6 +189,9 @@ def editar_cotacao_voo(request, cotacao_id):
 def deletar_cotacao_voo(request, cotacao_id):
     if (resp := verificar_admin(request)):
         return resp
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
     CotacaoVoo.objects.filter(id=cotacao_id).delete()
     messages.success(request, "Cotação de voo deletada com sucesso.")
     return redirect("admin_cotacoes_voo")

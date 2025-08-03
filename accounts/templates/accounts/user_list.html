@@ -1,18 +1,13 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Usuários</title>
-</head>
-<body>
-    <h2>Usuários</h2>
-    <a href="{% url 'user_create' %}">Novo Usuário</a>
-    <ul>
-        {% for u in usuarios %}
-            <li>{{ u.usuario.username }} - {{ u.get_perfil_display }}</li>
-        {% empty %}
-            <li>Nenhum usuário cadastrado.</li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+{% extends "admin_custom/base_admin.html" %}
+{% block title %}Usuários da Empresa{% endblock %}
+{% block header_title %}Usuários da Empresa{% endblock %}
+{% block content %}
+<a href="{% url 'user_create' %}" class="btn-primary inline-block mb-4">Novo Usuário</a>
+<ul class="space-y-2">
+  {% for u in usuarios %}
+    <li>{{ u.usuario.first_name }} - {{ u.get_perfil_display }}</li>
+  {% empty %}
+    <li>Nenhum usuário cadastrado.</li>
+  {% endfor %}
+</ul>
+{% endblock %}
