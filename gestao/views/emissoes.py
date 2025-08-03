@@ -5,7 +5,6 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.contrib import messages
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
-from painel_cliente.views import build_dashboard_context
 from django import forms
 from django.db import models
 

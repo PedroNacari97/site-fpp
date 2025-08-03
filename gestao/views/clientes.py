@@ -5,7 +5,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
-from painel_cliente.views import build_dashboard_context
+from painel_cliente.utils import generate_dashboard_context
 from django import forms
 from django.db import models
 
@@ -169,7 +169,7 @@ def visualizar_cliente(request, cliente_id):
         return permission_denied
     cliente = get_object_or_404(Cliente, id=cliente_id)
     AcessoClienteLog.objects.create(admin=request.user, cliente=cliente)
-    context = build_dashboard_context(cliente.usuario)
+    context = generate_dashboard_context(cliente.usuario)
     context["cliente_obj"] = cliente
     return render(request, "admin_custom/cliente_dashboard.html", context)
 

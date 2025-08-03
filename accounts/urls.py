@@ -1,9 +1,9 @@
 from django.urls import path
-from .views import custom_login, user_list, user_create, cliente_create
+from .views import UserLoginView, list_users, create_user, register_client
 
 urlpatterns = [
-    path('login/', custom_login, name='login'),
-    path('usuarios/', user_list, name='user_list'),
-    path('usuarios/novo/', user_create, name='user_create'),
-    path('cliente/novo/', cliente_create, name='cliente_create'),
+    path('login/', UserLoginView.as_view(), name='login'),
+    path('usuarios/', list_users, name='user_list'),
+    path('usuarios/novo/', create_user, name='user_create'),
+    path('cliente/novo/', register_client, name='cliente_create'),
 ]
