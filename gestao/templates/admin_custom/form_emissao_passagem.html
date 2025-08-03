@@ -1,0 +1,237 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}{% if form.instance.pk %}Editar Emissão{% else %}Nova Emissão{% endif %}{% endblock %}
+{% block header_title %}{% if form.instance.pk %}Editar Emissão{% else %}Nova Emissão{% endif %}{% endblock %}
+{% block menu_emissoes %}bg-zinc-700 text-white{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
+{% endblock %}
+{% block content %}
+<div class="form-wrapper">
+<form method="post">
+    {% csrf_token %}
+    <div class="form-title">Formulário de Reserva de Viagem</div>
+
+    <div class="section-title">Informações Básicas</div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente</label>
+            {{ form.cliente }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.programa.id_for_label }}">Programa</label>
+            {{ form.programa }}
+        </div>
+    </div>
+
+    <div class="section-title">Detalhes do Voo</div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.aeroporto_partida.id_for_label }}">Aeroporto partida</label>
+            {{ form.aeroporto_partida }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.aeroporto_destino.id_for_label }}">Aeroporto destino</label>
+            {{ form.aeroporto_destino }}
+        </div>
+    </div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data ida</label>
+            {{ form.data_ida }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data volta</label>
+            {{ form.data_volta }}
+        </div>
+    </div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.qtd_adultos.id_for_label }}">Adultos</label>
+            {{ form.qtd_adultos }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.qtd_criancas.id_for_label }}">Crianças</label>
+            {{ form.qtd_criancas }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.qtd_bebes.id_for_label }}">Bebês</label>
+            {{ form.qtd_bebes }}
+        </div>
+    </div>
+
+    <div class="section-title">Passageiros</div>
+    <input type="hidden" name="total_passageiros" id="id_total_passageiros" value="0" />
+    <div id="passageiros-container"></div>
+
+    <div class="section-title">Escalas</div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="id_qtd_escalas">Quantidade de escalas</label>
+            {{ form.qtd_escalas }}
+        </div>
+    </div>
+    <input type="hidden" name="total_escalas" id="id_total_escalas" value="0" />
+    <div id="escalas-container"></div>
+
+    <div class="section-title">Companhia e Localização</div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea</label>
+            {{ form.companhia_aerea }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.localizador.id_for_label }}">Localizador</label>
+            {{ form.localizador }}
+        </div>
+    </div>
+
+    <div class="section-title">Valores Financeiros</div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.valor_referencia.id_for_label }}">Valor referência (R$)</label>
+            {{ form.valor_referencia }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.valor_pago.id_for_label }}">Valor pago (R$)</label>
+            {{ form.valor_pago }}
+        </div>
+    </div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.pontos_utilizados.id_for_label }}">Pontos utilizados</label>
+            {{ form.pontos_utilizados }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.valor_referencia_pontos.id_for_label }}">Valor referência pontos (R$)</label>
+            {{ form.valor_referencia_pontos }}
+        </div>
+    </div>
+    <div class="form-group single">
+        <label class="form-label" for="{{ form.economia_obtida.id_for_label }}">Economia obtida (R$)</label>
+        {{ form.economia_obtida }}
+    </div>
+
+    <div class="section-title">Observações</div>
+    <div class="form-group single">
+        <label class="form-label" for="{{ form.detalhes.id_for_label }}">Detalhes</label>
+        {{ form.detalhes }}
+    </div>
+
+    <div class="form-actions">
+        <button class="btn-primary" type="submit">Salvar</button>
+    </div>
+</form>
+</div>
+
+<script>
+const passageirosData = {{ passageiros_json|safe }};
+const escalasData = {{ escalas_json|safe }};
+const aeroportos = {{ aeroportos_json|safe }};
+
+const passageirosContainer = document.getElementById('passageiros-container');
+function renderPassengerForms() {
+    const prev = [];
+    passageirosContainer.querySelectorAll('.passageiro-fields').forEach(div => {
+        const idx = div.dataset.index;
+        prev[idx] = {
+            nome: div.querySelector(`input[name="passageiro-${idx}-nome"]`).value,
+            documento: div.querySelector(`input[name="passageiro-${idx}-documento"]`).value,
+            categoria: div.querySelector(`input[name="passageiro-${idx}-categoria"]`).value,
+        };
+    });
+    passageirosContainer.innerHTML = '';
+    let index = 0;
+    const categorias = [
+        {id: 'id_qtd_adultos', nome: 'Adulto', valor: 'adulto'},
+        {id: 'id_qtd_criancas', nome: 'Criança', valor: 'crianca'},
+        {id: 'id_qtd_bebes', nome: 'Bebê', valor: 'bebe'}
+    ];
+    categorias.forEach(cat => {
+        const qtd = parseInt(document.getElementById(cat.id).value || 0);
+        for(let i=0;i<qtd;i++){
+            const div = document.createElement('div');
+            div.className = 'form-group single passageiro-fields';
+            div.dataset.index = index;
+            div.innerHTML = `
+                <label class="form-label">${cat.nome} ${i+1} - Nome</label>
+                <input type="text" name="passageiro-${index}-nome" required />
+                <label class="form-label">Documento</label>
+                <input type="text" name="passageiro-${index}-documento" required />
+                <input type="hidden" name="passageiro-${index}-categoria" value="${cat.valor}" />
+            `;
+            passageirosContainer.appendChild(div);
+            index++;
+        }
+    });
+    document.getElementById('id_total_passageiros').value = index;
+    const data = prev.length ? prev : passageirosData;
+    data.forEach((p, idx) => {
+        const nome = document.getElementsByName(`passageiro-${idx}-nome`)[0];
+        const doc = document.getElementsByName(`passageiro-${idx}-documento`)[0];
+        const cat = document.getElementsByName(`passageiro-${idx}-categoria`)[0];
+        if(p){
+            if(nome) nome.value = p.nome;
+            if(doc) doc.value = p.documento;
+            if(cat && p.categoria) cat.value = p.categoria;
+        }
+    });
+}
+['id_qtd_adultos','id_qtd_criancas','id_qtd_bebes'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', renderPassengerForms);
+});
+renderPassengerForms();
+
+const escalasContainer = document.getElementById('escalas-container');
+function renderEscalaForms(){
+    const prev = [];
+    escalasContainer.querySelectorAll('.escala-fields').forEach(div=>{
+        const idx = div.dataset.index;
+        prev[idx] = {
+            aeroporto: div.querySelector(`select[name="escala-${idx}-aeroporto"]`).value,
+            duracao: div.querySelector(`input[name="escala-${idx}-duracao"]`).value,
+            cidade: div.querySelector(`input[name="escala-${idx}-cidade"]`).value,
+        };
+    });
+    escalasContainer.innerHTML='';
+    const qtd = parseInt(document.getElementById('id_qtd_escalas').value || 0);
+    for(let i=0;i<qtd;i++){
+        const div = document.createElement('div');
+        div.className = 'form-group single escala-fields';
+        div.dataset.index = i;
+        let options = '<option value=""></option>';
+        aeroportos.forEach(a=>{
+            options += `<option value="${a.id}">${a.sigla} - ${a.nome}</option>`;
+        });
+        div.innerHTML = `
+            <label class="form-label">Escala ${i+1} - Aeroporto</label>
+            <select name="escala-${i}-aeroporto" required>${options}</select>
+            <label class="form-label">Duração</label>
+            <input type="time" name="escala-${i}-duracao" required />
+            <label class="form-label">Cidade/País (opcional)</label>
+            <input type="text" name="escala-${i}-cidade" />
+        `;
+        escalasContainer.appendChild(div);
+    }
+    document.getElementById('id_total_escalas').value = qtd;
+    const data = prev.length ? prev : escalasData;
+    for(let i=0;i<qtd;i++){
+        const d = data[i];
+        if(d){
+            const sel = document.getElementsByName(`escala-${i}-aeroporto`)[0];
+            const dur = document.getElementsByName(`escala-${i}-duracao`)[0];
+            const cid = document.getElementsByName(`escala-${i}-cidade`)[0];
+            if(sel) sel.value = d.aeroporto_id || d.aeroporto || '';
+            if(dur) dur.value = d.duracao || '';
+            if(cid) cid.value = d.cidade || '';
+        }
+    }
+}
+const qtdEscalas = document.getElementById('id_qtd_escalas');
+if(qtdEscalas){
+    qtdEscalas.addEventListener('input', renderEscalaForms);
+    renderEscalaForms();
+}
+</script>
+{% endblock %}

@@ -1,38 +1,44 @@
 {% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
 {% block title %}Programas{% endblock %}
 {% block header_title %}Programas de Pontos{% endblock %}
-{% block menu_programas %}active{% endblock %}
+{% block menu_programas %}bg-zinc-700 text-white{% endblock %}
+{% block dados_complementares_open %}open{% endblock %}
 {% block content %}
-    <form method="post" style="margin-bottom:20px;">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" style="background:#b67cff;color:#232345;border:none;padding:8px 20px;border-radius:8px;font-weight:bold;">Salvar</button>
+<div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+    <form method="get" class="flex gap-3">
+        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
     </form>
-
-    <div style="background:#232345;border-radius:12px;padding:8px 20px;">
-        <table style="width:100%;border-collapse:collapse;">
-            <thead>
-                <tr style="color:#b6a9ff;">
-                    <th>Nome</th>
-                    <th>Valor Referência</th>
-                    <th>Descrição</th>
-                    <th>Valor Referência</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in programas %}
-                <tr>
-                    <td>{{ p.nome }}</td>
-                    <td>R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
-                    <td>{{ p.descricao }}</td>
-                    <td>R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
-                    <td><a href="{% url 'admin_editar_programa' p.id %}" style="color:#b67cff;">Editar</a></td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="4" style="color:#ff7070;text-align:center;">Nenhum programa cadastrado.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <a href="{% url 'admin_novo_programa' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Novo Programa</a>
+</div>
+<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
+    <table class="min-w-full text-sm">
+        <thead class="bg-zinc-700 text-zinc-200">
+            <tr>
+                <th class="p-2 text-left font-medium">Nome</th>
+                <th class="p-2 text-left font-medium">Valor Referência</th>
+                <th class="p-2 text-left font-medium">Descrição</th>
+                <th class="p-2 text-left font-medium">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in programas %}
+            <tr class="border-b border-zinc-700">
+                <td class="p-2">{{ p.nome }}</td>
+                <td class="p-2">R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
+                <td class="p-2">{{ p.descricao }}</td>
+                <td class="p-2">
+                    <a href="{% url 'admin_editar_programa' p.id %}" class="text-blue-400">Editar</a> |
+                    <a href="{% url 'admin_deletar_programa' p.id %}" class="text-blue-400">Deletar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-red-400 py-4">Nenhum programa cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
+

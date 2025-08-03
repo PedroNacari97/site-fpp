@@ -1,68 +1,106 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block header_title %}Dashboard Administrativo{% endblock %}
-{% block menu_dashboard %}active{% endblock %}
-{% block content %}
-    <div class="row">
-        <div class="col-md-3 mb-3">
-            <div class="card bg-dark text-light">
-                <div class="card-body">
-                    <h5 class="card-title">Total Clientes</h5>
-                    <p class="card-text" style="font-size:2.2rem;font-weight:700;">{{ total_clientes }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-dark text-light">
-                <div class="card-body">
-                    <h5 class="card-title">Contas Fidelidade</h5>
-                    <p class="card-text" style="font-size:2.2rem;font-weight:700;">{{ total_contas }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-dark text-light">
-                <div class="card-body">
-                    <h5 class="card-title">Emissões</h5>
-                    <p class="card-text" style="font-size:2.2rem;font-weight:700;">{{ total_emissoes }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-dark text-light">
-                <div class="card-body">
-                    <h5 class="card-title">Pontos (total)</h5>
-                    <p class="card-text" style="font-size:2.2rem;font-weight:700;">{{ total_pontos }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-dark text-light">
-                <div class="card-body">
-                    <h5 class="card-title">Reservas de Hotéis</h5>
-                    <p class="card-text" style="font-size:2.2rem;font-weight:700;">{{ total_hoteis }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-dark text-light">
-                <div class="card-body">
-                    <h5 class="card-title">Valor em Hotéis</h5>
-                    <p class="card-text" style="font-size:2.2rem;font-weight:700;">R$ {{ valor_hoteis|floatformat:2 }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="mt-4" style="background:#232345;border-radius:12px;padding:16px;">
-        <h4 style="color:#b6a9ff;">Cotações do Milheiro</h4>
-        <ul style="margin:0;padding:0;list-style:none;">
-            {% for cotacao in cotacoes_mercado %}
-                <li>
-                    <strong>{{ cotacao.programa_nome }}</strong>: R$ {{ cotacao.valor_mercado|floatformat:2 }}
-                </li>
-            {% empty %}
-                <li><i>Nenhuma cotação cadastrada.</i></li>
-            {% endfor %}
-        </ul>
-    </div>
+{% block menu_dashboard %}bg-zinc-700 text-white{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <select id="clienteSelect" class="bg-zinc-700 text-white px-3 py-2 rounded">
+        <option value="">Selecionar Cliente</option>
+        {% for c in clientes %}
+            <option value="{{ c.id }}" {% if selected_cliente and c.id == selected_cliente.id %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+    </select>
+    <div class="flex gap-2">
+        <a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">+ Novo Cliente</a>
+        <a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">+ Nova Emissão</a>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+    <div class="bg-zinc-900 p-4 rounded shadow">
+        <div class="text-sm text-zinc-400">👥 Total de Clientes</div>
+        <div class="text-2xl font-bold">{{ total_clientes }}</div>
+    </div>
+    <div class="bg-zinc-900 p-4 rounded shadow">
+        <div class="text-sm text-zinc-400">✈️ Total de Emissões</div>
+        <div class="text-2xl font-bold">{{ total_emissoes }}</div>
+    </div>
+    <div class="bg-zinc-900 p-4 rounded shadow">
+        <div class="text-sm text-zinc-400">💰 Total Economizado</div>
+        <div class="text-2xl font-bold">R$ {{ total_economizado|floatformat:2 }}</div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+{% for prog in programas %}
+    <div class="bg-zinc-900 p-4 rounded shadow">
+        <h5 class="text-blue-400 font-bold mb-2">{{ prog.nome }}</h5>
+        <p class="text-sm text-zinc-400">Pontos acumulados</p>
+        <p class="font-bold">{{ prog.pontos }}</p>
+        <p class="text-sm text-zinc-400 mt-2">Valor total</p>
+        <p class="font-bold">R$ {{ prog.valor_total|floatformat:2 }}</p>
+        <p class="text-sm text-zinc-400 mt-2">Valor médio por 1.000</p>
+        <p class="font-bold">R$ {{ prog.valor_medio|floatformat:2 }}</p>
+        <p class="text-sm text-zinc-400 mt-2">Valor de referência atual</p>
+        <p class="font-bold">R$ {{ prog.valor_referencia|floatformat:2 }}</p>
+        {% if prog.conta_id %}
+        <a href="{% url 'admin_movimentacoes' prog.conta_id %}" class="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Ver movimentações</a>
+        {% endif %}
+    </div>
+{% empty %}
+    <p>Nenhum programa encontrado.</p>
+{% endfor %}
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="bg-zinc-900 p-4 rounded shadow">
+        <h5 class="text-blue-400 font-bold mb-2">Emissões</h5>
+        <ul class="text-sm space-y-1">
+            <li>Quantidade: <span class="font-bold">{{ emissoes.qtd }}</span></li>
+            <li>Total de pontos usados: <span class="font-bold">{{ emissoes.pontos }}</span></li>
+            <li>Valor total de referência: <span class="font-bold">R$ {{ emissoes.valor_referencia|floatformat:2 }}</span></li>
+            <li>Valor total pago: <span class="font-bold">R$ {{ emissoes.valor_pago|floatformat:2 }}</span></li>
+            <li>Valor total economizado: <span class="font-bold">R$ {{ emissoes.valor_economizado|floatformat:2 }}</span></li>
+        </ul>
+        <a href="{% url 'admin_emissoes' %}" class="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Ver detalhes</a>
+    </div>
+    <div class="bg-zinc-900 p-4 rounded shadow">
+        <h5 class="text-blue-400 font-bold mb-2">Hotéis</h5>
+        <ul class="text-sm space-y-1">
+            <li>Quantidade de reservas: <span class="font-bold">{{ hoteis.qtd }}</span></li>
+            <li>Valor de referência acumulado: <span class="font-bold">R$ {{ hoteis.valor_referencia|floatformat:2 }}</span></li>
+            <li>Valor total pago: <span class="font-bold">R$ {{ hoteis.valor_pago|floatformat:2 }}</span></li>
+            <li>Valor total economizado: <span class="font-bold">R$ {{ hoteis.valor_economizado|floatformat:2 }}</span></li>
+        </ul>
+        <a href="{% url 'admin_hoteis' %}" class="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Ver detalhes</a>
+    </div>
+</div>
+
+<div class="bg-zinc-900 p-4 rounded shadow">
+    <h5 class="text-blue-400 font-bold mb-2">Emissões por programa</h5>
+    <canvas id="emissoesChart"></canvas>
+</div>
+{% endblock %}
+{% block extra_body %}
+<script>
+document.getElementById('clienteSelect').addEventListener('change', function() {
+    const value = this.value;
+    const url = '{% url "admin_dashboard" %}';
+    window.location = value ? url + '?cliente_id=' + value : url;
+});
+const ctx = document.getElementById('emissoesChart');
+const chartData = {
+    labels: [{% for item in emissoes_programa %}'{{ item.programa }}',{% endfor %}],
+    datasets: [{
+        label: 'Emissões',
+        data: [{% for item in emissoes_programa %}{{ item.quantidade }},{% endfor %}],
+        backgroundColor: '#3b82f6'
+    }]
+};
+new Chart(ctx, {type: 'bar', data: chartData, options: {scales: {y: {beginAtZero: true}}}});
+</script>
+{% endblock %}
+

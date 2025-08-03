@@ -1,0 +1,134 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}{% if form.instance.pk %}Editar Cotação{% else %}Nova Cotação de Voo{% endif %}{% endblock %}
+{% block header_title %}{% if form.instance.pk %}Editar Cotação{% else %}Nova Cotação de Voo{% endif %}{% endblock %}
+{% block menu_cotacoes_voo %}bg-zinc-700 text-white{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
+{% endblock %}
+{% block content %}
+<div class="form-wrapper">
+<form method="post">
+    {% csrf_token %}
+    <div class="form-title">{% if form.instance.pk %}Editar Cotação de Viagem{% else %}Formulário de Cotação de Viagem{% endif %}</div>
+
+    <div class="section-title">Informações Básicas</div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente</label>
+            {{ form.cliente }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.programa.id_for_label }}">Programa</label>
+            {{ form.programa }}
+        </div>
+    </div>
+
+    <div class="section-title">Detalhes do Voo</div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.origem.id_for_label }}">Aeroporto partida</label>
+            {{ form.origem }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.destino.id_for_label }}">Aeroporto destino</label>
+            {{ form.destino }}
+        </div>
+    </div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data ida</label>
+            {{ form.data_ida }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data volta</label>
+            {{ form.data_volta }}
+        </div>
+    </div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.qtd_passageiros.id_for_label }}">Quantidade de passageiros</label>
+            {{ form.qtd_passageiros }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.classe.id_for_label }}">Classe</label>
+            {{ form.classe }}
+        </div>
+    </div>
+
+    <div class="section-title">Escalas</div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.qtd_escalas.id_for_label }}">Quantidade de escalas</label>
+            {{ form.qtd_escalas }}
+        </div>
+    </div>
+
+    <div class="section-title">Companhia Aérea</div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea</label>
+            {{ form.companhia_aerea }}
+        </div>
+    </div>
+
+    <div class="section-title">Outras Informações</div>
+    <div class="form-group single">
+        <label class="form-label" for="{{ form.observacoes.id_for_label }}">Observações</label>
+        {{ form.observacoes }}
+    </div>
+
+    <div class="section-title">Valores Financeiros</div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.valor_passagem.id_for_label }}">Valor passagem (R$)</label>
+            {{ form.valor_passagem }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.taxas.id_for_label }}">Taxas (R$)</label>
+            {{ form.taxas }}
+        </div>
+    </div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.milhas.id_for_label }}">Milhas</label>
+            {{ form.milhas }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.valor_milheiro.id_for_label }}">Valor milheiro (R$)</label>
+            {{ form.valor_milheiro }}
+        </div>
+    </div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.parcelas.id_for_label }}">Número de parcelas sem juros</label>
+            {{ form.parcelas }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.juros.id_for_label }}">Juros (%)</label>
+            {{ form.juros }}
+        </div>
+    </div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.desconto.id_for_label }}">Desconto (%)</label>
+            {{ form.desconto }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.validade.id_for_label }}">Validade</label>
+            {{ form.validade }}
+        </div>
+    </div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.status.id_for_label }}">Status</label>
+            {{ form.status }}
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button class="btn-primary" type="submit">Salvar</button>
+    </div>
+</form>
+</div>
+{% endblock %}

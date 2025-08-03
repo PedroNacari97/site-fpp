@@ -7,6 +7,7 @@ from .models import (
     EmissaoPassagem,
     EmissaoHotel,
     CotacaoVoo,
+    CompanhiaAerea,
 )
 
 class ContaFidelidadeForm(forms.ModelForm):
@@ -40,10 +41,11 @@ class NovoClienteForm(forms.ModelForm):
     first_name = forms.CharField(max_length=150, required=False)
     last_name = forms.CharField(max_length=150, required=False)
     email = forms.EmailField(required=False)
+    perfil = forms.CharField(initial='cliente', widget=forms.HiddenInput())
 
     class Meta:
         model = Cliente
-        fields = ['telefone', 'data_nascimento', 'cpf', 'perfil', 'observacoes', 'ativo']
+        fields = ['telefone', 'data_nascimento', 'cpf', 'observacoes', 'ativo', 'perfil']
 
 
 class AeroportoForm(forms.ModelForm):
@@ -53,6 +55,18 @@ class AeroportoForm(forms.ModelForm):
 
 
 class EmissaoPassagemForm(forms.ModelForm):
+    qtd_escalas = forms.IntegerField(min_value=0, required=False, initial=0)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for f in [
+            'qtd_adultos',
+            'qtd_criancas',
+            'qtd_bebes',
+            'qtd_escalas',
+        ]:
+            self.fields[f].required = False
+        self.fields['companhia_aerea'].queryset = CompanhiaAerea.objects.all()
+
     class Meta:
         model = EmissaoPassagem
         fields = [
@@ -62,7 +76,9 @@ class EmissaoPassagemForm(forms.ModelForm):
             'aeroporto_destino',
             'data_ida',
             'data_volta',
-            'qtd_passageiros',
+            'qtd_adultos',
+            'qtd_criancas',
+            'qtd_bebes',
             'companhia_aerea',
             'localizador',
             'valor_referencia',
@@ -71,12 +87,10 @@ class EmissaoPassagemForm(forms.ModelForm):
             'valor_referencia_pontos',
             'economia_obtida',
             'detalhes',
-            'companhia_aerea',
-            'localizador',
         ]
         widgets = {
-            'data_ida': forms.DateInput(attrs={'type': 'date'}),
-            'data_volta': forms.DateInput(attrs={'type': 'date'}),
+            'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
         
 
@@ -99,6 +113,15 @@ class EmissaoHotelForm(forms.ModelForm):
 
 
 class CotacaoVooForm(forms.ModelForm):
+    qtd_escalas = forms.IntegerField(min_value=0, required=False, initial=0)
+    companhia_aerea = forms.ChoiceField(choices=[], required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['companhia_aerea'].choices = [
+            (c.nome, c.nome) for c in CompanhiaAerea.objects.all()
+        ]
+
     class Meta:
         model = CotacaoVoo
         fields = [
@@ -106,7 +129,9 @@ class CotacaoVooForm(forms.ModelForm):
             'companhia_aerea',
             'origem',
             'destino',
-            'data_voo',
+            'programa',
+            'data_ida',
+            'data_volta',
             'qtd_passageiros',
             'classe',
             'observacoes',
@@ -120,7 +145,30 @@ class CotacaoVooForm(forms.ModelForm):
             'validade',
             'status',
         ]
+        labels = {
+            'parcelas': 'Número de parcelas sem juros',
+        }
         widgets = {
-            'data_voo': forms.DateInput(attrs={'type': 'date'}),
+            'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'validade': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+
+class CalculadoraCotacaoForm(forms.Form):
+    valor_passagem = forms.DecimalField(max_digits=10, decimal_places=2)
+    taxas = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0)
+    milhas = forms.IntegerField(required=False, initial=0)
+    valor_milheiro = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0)
+    parcelas = forms.IntegerField(required=False, initial=1)
+    juros = forms.DecimalField(max_digits=5, decimal_places=2, required=False, initial=1)
+    desconto = forms.DecimalField(max_digits=5, decimal_places=2, required=False, initial=1)
+
+class CompanhiaAereaForm(forms.ModelForm):
+    class Meta:
+        model = CompanhiaAerea
+        fields = ["nome", "site_url"]
+        widgets = {
+            "nome": forms.TextInput(attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2"}),
+            "site_url": forms.URLInput(attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2"}),
         }
