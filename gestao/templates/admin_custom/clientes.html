@@ -36,7 +36,8 @@
                 <td class="p-2">{{ cliente.ativo|yesno:"Ativo,Inativo" }}</td>
                 <td class="p-2">
                     <a href="{% url 'admin_editar_cliente' cliente.id %}" class="text-blue-400">Editar</a> |
-                    <a href="?toggle={{ cliente.id }}" class="text-blue-400">Ativar/Inativar</a>
+                    <a href="{% url 'admin_deletar_cliente' cliente.id %}" class="text-red-400" onclick="return confirm('Confirma excluir?');">Remover</a>
+                    {% if request.user.is_superuser %}| <a href="?toggle={{ cliente.id }}" class="text-blue-400">Ativar/Inativar</a>{% endif %}
                 </td>
             </tr>
             {% empty %}
