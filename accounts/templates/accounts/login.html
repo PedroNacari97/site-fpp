@@ -20,7 +20,7 @@
             {% endif %}
             <form method="POST">
                 {% csrf_token %}
-                <label for="identifier">Usuário/CPF<span class="required">*</span></label>
+                <label for="identifier">Usuário/Documento<span class="required">*</span></label>
                 <input type="text" id="identifier" name="identifier" required>
 
                 <label for="password">Senha<span class="required">*</span></label>
@@ -34,7 +34,6 @@
                     <option value="cliente">Cliente</option>
                     <option value="operador">Operador</option>
                     <option value="admin">Administrador</option>
-                    <option value="superadmin">Super Admin</option>
                 </select>
 
                 <button type="submit">Entrar</button>

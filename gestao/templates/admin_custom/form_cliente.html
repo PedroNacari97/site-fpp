@@ -57,8 +57,18 @@
             {{ form.data_nascimento }}
         </div>
         <div style="flex: 1;">
-            <label class="form-label" for="{{ form.cpf.id_for_label }}">CPF</label>
-            {{ form.cpf }}
+            <label class="form-label" for="{{ form.tipo_documento.id_for_label }}">Tipo Documento</label>
+            {{ form.tipo_documento }}
+        </div>
+    </div>
+    <div class="form-group">
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.documento.id_for_label }}">Documento</label>
+            {{ form.documento }}
+        </div>
+        <div style="flex: 1;">
+            <label class="form-label" for="{{ form.data_expiracao.id_for_label }}">Data de expiração</label>
+            {{ form.data_expiracao }}
         </div>
     </div>
     <div class="form-group">

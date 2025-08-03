@@ -17,7 +17,7 @@
                 <th class="p-2 text-left font-medium">Usuário</th>
                 <th class="p-2 text-left font-medium">Nome Completo</th>
                 <th class="p-2 text-left font-medium">E-mail</th>
-                <th class="p-2 text-left font-medium">CPF</th>
+                <th class="p-2 text-left font-medium">Documento</th>
                 <th class="p-2 text-left font-medium">Telefone</th>
                 <th class="p-2 text-left font-medium">Perfil</th>
                 <th class="p-2 text-left font-medium">Status</th>
@@ -30,7 +30,7 @@
                 <td class="p-2 text-amber-300">{{ cliente.usuario.username }}</td>
                 <td class="p-2">{{ cliente.usuario.get_full_name }}</td>
                 <td class="p-2">{{ cliente.usuario.email }}</td>
-                <td class="p-2">{{ cliente.cpf }}</td>
+                <td class="p-2">{{ cliente.documento }}</td>
                 <td class="p-2">{{ cliente.telefone }}</td>
                 <td class="p-2">{{ cliente.get_perfil_display }}</td>
                 <td class="p-2">{{ cliente.ativo|yesno:"Ativo,Inativo" }}</td>

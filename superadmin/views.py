@@ -3,7 +3,12 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
 
 from gestao.models import Empresa
-from .forms import EmpresaForm, AdministradorForm
+from .forms import (
+    EmpresaForm,
+    AdministradorForm,
+    OperadorForm,
+    ClienteFormSuper,
+)
 
 
 def superadmin_required(user):
@@ -43,3 +48,31 @@ def administrador_create(request):
     else:
         form = AdministradorForm()
     return render(request, "superadmin/administrador_form.html", {"form": form})
+
+
+@login_required
+@user_passes_test(superadmin_required)
+def operador_create(request):
+    if request.method == "POST":
+        form = OperadorForm(request.POST)
+        if form.is_valid():
+            form.save(criado_por=request.user)
+            messages.success(request, "Operador criado com sucesso.")
+            return redirect("superadmin_empresa_list")
+    else:
+        form = OperadorForm()
+    return render(request, "superadmin/operador_form.html", {"form": form})
+
+
+@login_required
+@user_passes_test(superadmin_required)
+def cliente_create(request):
+    if request.method == "POST":
+        form = ClienteFormSuper(request.POST)
+        if form.is_valid():
+            form.save(criado_por=request.user)
+            messages.success(request, "Cliente criado com sucesso.")
+            return redirect("superadmin_empresa_list")
+    else:
+        form = ClienteFormSuper()
+    return render(request, "superadmin/cliente_form.html", {"form": form})

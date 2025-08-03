@@ -8,7 +8,15 @@ class Cliente(models.Model):
     )
     telefone = models.CharField(max_length=20, blank=True)
     data_nascimento = models.DateField(null=True, blank=True)
-    cpf = models.CharField(max_length=14, default="000.000.000-00")
+    TIPO_DOCUMENTO = (
+        ("cpf", "CPF"),
+        ("cnpj", "CNPJ"),
+    )
+    tipo_documento = models.CharField(
+        max_length=4, choices=TIPO_DOCUMENTO, default="cpf"
+    )
+    documento = models.CharField(max_length=18, default="")
+    data_expiracao = models.DateField(null=True, blank=True)
     PERFIS = (
         ("admin", "Administrador"),
         ("operador", "Operador"),

@@ -32,7 +32,17 @@ class ProgramaFidelidadeForm(forms.ModelForm):
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ['usuario', 'telefone', 'data_nascimento', 'cpf', 'perfil', 'observacoes', 'ativo']
+        fields = [
+            'usuario',
+            'telefone',
+            'data_nascimento',
+            'tipo_documento',
+            'documento',
+            'data_expiracao',
+            'perfil',
+            'observacoes',
+            'ativo'
+        ]
 
 
 class NovoClienteForm(forms.ModelForm):
@@ -45,7 +55,16 @@ class NovoClienteForm(forms.ModelForm):
 
     class Meta:
         model = Cliente
-        fields = ['telefone', 'data_nascimento', 'cpf', 'observacoes', 'ativo', 'perfil']
+        fields = [
+            'telefone',
+            'data_nascimento',
+            'tipo_documento',
+            'documento',
+            'data_expiracao',
+            'observacoes',
+            'ativo',
+            'perfil'
+        ]
 
 
 class AeroportoForm(forms.ModelForm):

@@ -14,7 +14,7 @@ from gestao.models import (
 )
 
 class LoginForm(forms.Form):
-    identifier = forms.CharField(label='Usuário/CPF')
+    identifier = forms.CharField(label='Usuário/Documento')
     password = forms.CharField(label='Senha', widget=forms.PasswordInput)
 
 
@@ -27,7 +27,6 @@ def login_custom_view(request):
         'inativo': "Sua conta está inativa. Entre em contato com o administrador.",
         'sem_permissao_admin': "Você não tem permissão de administrador.",
         'sem_permissao_operador': "Você não tem permissão de operador.",
-        'sem_permissao_superadmin': "Você não tem permissão de super admin.",
         'acesso_errado': "Selecione 'Administrador' para acessar o painel admin."
     }
 
@@ -37,7 +36,7 @@ def login_custom_view(request):
         tipo_acesso = request.POST.get('tipo_acesso')
         username = identifier
 
-        cliente_obj = Cliente.objects.filter(cpf=identifier).first() if tipo_acesso == 'cliente' else None
+        cliente_obj = Cliente.objects.filter(documento=identifier).first() if tipo_acesso == 'cliente' else None
         if cliente_obj and tipo_acesso == 'cliente':
             username = cliente_obj.usuario.username
 
@@ -46,7 +45,7 @@ def login_custom_view(request):
             cliente_obj = Cliente.objects.filter(usuario=user).first()
 
             if tipo_acesso == 'admin':
-                if user.is_staff and not user.is_superuser and cliente_obj and cliente_obj.perfil == 'admin':
+                if (user.is_superuser) or (user.is_staff and cliente_obj and cliente_obj.perfil == 'admin'):
                     login(request, user)
                     return redirect('admin_dashboard')
                 error_message = mensagens_erro['sem_permissao_admin']
@@ -56,12 +55,6 @@ def login_custom_view(request):
                     login(request, user)
                     return redirect('admin_dashboard')
                 error_message = mensagens_erro['sem_permissao_operador']
-
-            elif tipo_acesso == 'superadmin':
-                if user.is_superuser:
-                    login(request, user)
-                    return redirect('admin_dashboard')
-                error_message = mensagens_erro['sem_permissao_superadmin']
 
             else:  # Cliente comum
                 if not (user.is_staff or user.is_superuser):
