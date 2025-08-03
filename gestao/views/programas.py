@@ -83,10 +83,9 @@ def editar_programa(request, programa_id):
 
 
 @login_required
-@user_passes_test(admin_required)
 def deletar_programa(request, programa_id):
     if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
-        return HttpResponse("Não autorizado", status=403)
+        return HttpResponse("Você não tem permissão para deletar este item")
     ProgramaFidelidade.objects.filter(id=programa_id).delete()
     return redirect("admin_programas")
 

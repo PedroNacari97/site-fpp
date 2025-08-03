@@ -23,12 +23,14 @@
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_hoteis %}{% endblock %}" href="{% url 'admin_hoteis' %}">Hotéis</a>
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_calculadora %}{% endblock %}" href="{% url 'admin_calculadora_cotacao' %}">Calculadora</a>
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}">Auditoria</a>
-            <div class="pt-4">
-                <h2 class="text-blue-400 font-semibold px-3 mb-2">🗂️ Dados Complementares</h2>
-                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_programas %}{% endblock %}" href="{% url 'admin_programas' %}">Programas</a>
-                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_aeroportos %}{% endblock %}" href="{% url 'admin_aeroportos' %}">Aeroportos</a>
-                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_companhias %}{% endblock %}" href="{% url 'admin_companhias' %}">Companhias</a>
-            </div>
+            <details class="pt-4 group">
+                <summary class="px-3 py-2 rounded text-blue-400 cursor-pointer hover:bg-zinc-700 focus:outline-none">Dados Complementares</summary>
+                <div class="mt-2 ml-4 flex flex-col space-y-2">
+                    <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_aeroportos %}{% endblock %}" href="{% url 'admin_aeroportos' %}">Aeroporto</a>
+                    <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_companhias %}{% endblock %}" href="{% url 'admin_companhias' %}">Companhia Aérea</a>
+                    <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_programas %}{% endblock %}" href="{% url 'admin_programas' %}">Programa de Pontos</a>
+                </div>
+            </details>
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700" href="{% url 'logout' %}">Sair</a>
         </nav>
     </aside>

@@ -1,36 +1,30 @@
 {% extends 'admin_custom/base_admin.html' %}
-
 {% block content %}
-<h2 style="margin-bottom: 15px;">Contas Fidelidade</h2>
-<a href="{% url 'admin_nova_conta' %}" style="margin-bottom: 20px; display: inline-block; color:#fff; background:#b67cff; padding:8px 16px; border-radius:8px; text-decoration:none;">Nova Conta</a>
-
-<table style="width: 100%; border-collapse: collapse;">
-    <thead style="background-color: #232345; color: #b6a9ff;">
-        <tr>
-            <th style="padding: 10px; text-align: left;">Nome</th>
-            <th style="padding: 10px; text-align: left;">Programa</th>
-            <th style="padding: 10px; text-align: left;">Valor do Milheiro</th>
-            <th style="padding: 10px; text-align: left;">Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for conta in contas %}
-        <tr class="{% cycle 'linha1' 'linha2' %}">
-            <td style="padding: 10px;">
-                {{ conta.cliente.usuario.get_full_name|default:conta.cliente.usuario.username|default:"Cliente sem nome" }}
-            </td>
-            <td style="padding: 10px;">{{ conta.programa.nome }}</td>
-            <td style="padding: 10px;">R$ {{ conta.valor_milheiro|floatformat:2 }}</td>
-            <td style="padding: 10px;">
-                <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}"
-                   style="background-color: #b67cff; color: white; padding: 6px 16px; border-radius: 6px; text-decoration: none; font-size: 13px; display:inline-block;">
-                   Ver Programas
-                </a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="4" style="padding: 10px; color: #ff7070;">Nenhuma conta cadastrada.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="mb-6">
+    <a href="{% url 'admin_nova_conta' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Nova Conta</a>
+</div>
+<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
+    <table class="min-w-full text-sm">
+        <thead class="bg-zinc-700 text-zinc-200">
+            <tr>
+                <th class="p-2 text-left font-medium">Nome</th>
+                <th class="p-2 text-left font-medium">Programa</th>
+                <th class="p-2 text-left font-medium">Valor do Milheiro</th>
+                <th class="p-2 text-left font-medium">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for conta in contas %}
+            <tr class="border-b border-zinc-700">
+                <td class="p-2">{{ conta.cliente.usuario.get_full_name|default:conta.cliente.usuario.username|default:"Cliente sem nome" }}</td>
+                <td class="p-2">{{ conta.programa.nome }}</td>
+                <td class="p-2">R$ {{ conta.valor_milheiro|floatformat:2 }}</td>
+                <td class="p-2"><a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">Ver Programas</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-red-400 py-4">Nenhuma conta cadastrada.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

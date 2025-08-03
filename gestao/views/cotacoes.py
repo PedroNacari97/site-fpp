@@ -8,6 +8,7 @@ from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
 from django import forms
 from django.db import models
+from django.db.models import Q
 
 from ..forms import (
     ContaFidelidadeForm,
@@ -57,7 +58,10 @@ def admin_cotacoes(request):
             ValorMilheiro.objects.update_or_create(
                 programa_nome=programa_nome, defaults={"valor_mercado": valor_mercado}
             )
+    busca = request.GET.get("busca", "")
     cotacoes = ValorMilheiro.objects.all().order_by("programa_nome")
+    if busca:
+        cotacoes = cotacoes.filter(programa_nome__icontains=busca)
     programas = ProgramaFidelidade.objects.all()
     return render(
         request,
@@ -65,15 +69,15 @@ def admin_cotacoes(request):
         {
             "cotacoes": cotacoes,
             "programas": programas,
+            "busca": busca,
         },
     )
 
 
 @login_required
-@user_passes_test(admin_required)
 def deletar_cotacao(request, cotacao_id):
     if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
-        return HttpResponse("Não autorizado", status=403)
+        return HttpResponse("Você não tem permissão para deletar este item")
     ValorMilheiro.objects.filter(id=cotacao_id).delete()
     return redirect("admin_cotacoes")
 
@@ -83,8 +87,16 @@ def deletar_cotacao(request, cotacao_id):
 @login_required
 @user_passes_test(admin_required)
 def admin_cotacoes_voo(request):
-    cotacoes = CotacaoVoo.objects.all().select_related("cliente", "origem", "destino")
-    return render(request, "admin_custom/cotacoes_voo.html", {"cotacoes": cotacoes})
+    busca = request.GET.get("busca", "")
+    cotacoes = CotacaoVoo.objects.all().select_related("cliente__usuario", "origem", "destino")
+    if busca:
+        cotacoes = cotacoes.filter(
+            Q(cliente__usuario__username__icontains=busca)
+            | Q(cliente__usuario__first_name__icontains=busca)
+            | Q(origem__nome__icontains=busca)
+            | Q(destino__nome__icontains=busca)
+        )
+    return render(request, "admin_custom/cotacoes_voo.html", {"cotacoes": cotacoes, "busca": busca})
 
 
 @login_required
@@ -163,10 +175,9 @@ def editar_cotacao_voo(request, cotacao_id):
 
 
 @login_required
-@user_passes_test(admin_required)
 def deletar_cotacao_voo(request, cotacao_id):
     if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
-        return HttpResponse("Não autorizado", status=403)
+        return HttpResponse("Você não tem permissão para deletar este item")
     CotacaoVoo.objects.filter(id=cotacao_id).delete()
     return redirect("admin_cotacoes_voo")
 
