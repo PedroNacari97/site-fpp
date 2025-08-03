@@ -3,22 +3,30 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 from gestao.models import Cliente
 
-class UsuarioForm(forms.ModelForm):
+
+class UsuarioForm(forms.Form):
+    nome_completo = forms.CharField(max_length=150)
+    cpf = forms.CharField(max_length=14)
+    perfil = forms.ChoiceField(choices=[("admin", "Administrador"), ("operador", "Operador")])
     password = forms.CharField(widget=forms.PasswordInput)
-    perfil = forms.ChoiceField(choices=[('admin', 'Administrador'), ('operador', 'Operador')])
 
-    class Meta:
-        model = User
-        fields = ['username', 'password', 'first_name', 'last_name', 'email']
-
-    def save(self, criado_por=None, commit=True):
-        perfil = self.cleaned_data['perfil']
-        user = super().save(commit=False)
-        user.set_password(self.cleaned_data['password'])
+    def save(self, criado_por=None):
+        nome = self.cleaned_data["nome_completo"]
+        cpf = self.cleaned_data["cpf"]
+        username = slugify(cpf) or slugify(nome) or "user"
+        user = User.objects.create_user(
+            username=username,
+            password=self.cleaned_data["password"],
+            first_name=nome,
+        )
         user.is_staff = True
-        if commit:
-            user.save()
-            Cliente.objects.create(usuario=user, perfil=perfil, criado_por=criado_por)
+        user.save()
+        Cliente.objects.create(
+            usuario=user,
+            cpf=cpf,
+            perfil=self.cleaned_data["perfil"],
+            criado_por=criado_por,
+        )
         return user
 
 class ClientePublicoForm(forms.ModelForm):

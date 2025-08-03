@@ -36,7 +36,7 @@ from datetime import timedelta
 
 def verificar_admin(request):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
-    if perfil != "admin":
+    if perfil not in ["admin", "operador"]:
         return render(request, "sem_permissao.html")
     return None
 
@@ -90,6 +90,9 @@ def editar_companhia(request, companhia_id):
 def deletar_companhia(request, companhia_id):
     if (resp := verificar_admin(request)):
         return resp
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
     CompanhiaAerea.objects.filter(id=companhia_id).delete()
     messages.success(request, "Companhia aérea deletada com sucesso.")
     return redirect("admin_companhias")

@@ -43,7 +43,7 @@ from datetime import timedelta
 
 def verificar_admin(request):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
-    if perfil != "admin":
+    if perfil not in ["admin", "operador"]:
         return render(request, "sem_permissao.html")
     return None
 

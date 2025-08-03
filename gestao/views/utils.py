@@ -46,7 +46,7 @@ def verificar_admin(request):
     if request.user.is_superuser:
         return None
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
-    if perfil != "admin":
+    if perfil not in ["admin", "operador"]:
         return render(request, "sem_permissao.html")
     return None
 
@@ -93,6 +93,9 @@ def editar_conta(request, conta_id):
 def deletar_conta(request, conta_id):
     if (resp := verificar_admin(request)):
         return resp
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
     ContaFidelidade.objects.filter(id=conta_id).delete()
     messages.success(request, "Conta deletada com sucesso.")
     return redirect("admin_contas")
@@ -159,6 +162,9 @@ def criar_aeroporto(request):
 def deletar_aeroporto(request, aeroporto_id):
     if (resp := verificar_admin(request)):
         return resp
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
     Aeroporto.objects.filter(id=aeroporto_id).delete()
     messages.success(request, "Aeroporto deletado com sucesso.")
     return redirect("admin_aeroportos")

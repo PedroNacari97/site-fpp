@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import AuthenticationForm
+from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from gestao.pdf_emissao import gerar_pdf_emissao
@@ -13,14 +13,26 @@ from gestao.models import (
 )
 from gestao.models import AcessoClienteLog
 
+class CPFLoginForm(forms.Form):
+    cpf = forms.CharField(label='CPF')
+    password = forms.CharField(label='Senha', widget=forms.PasswordInput)
+
+
 # VIEW LOGIN CUSTOMIZADA
 def login_custom_view(request):
     error_message = None
-    if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
+    form = CPFLoginForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        cpf = form.cleaned_data['cpf']
+        password = form.cleaned_data['password']
         tipo_acesso = request.POST.get('tipo_acesso')
-        if form.is_valid():
-            user = form.get_user()
+        user = None
+        try:
+            cliente_obj = Cliente.objects.get(cpf=cpf)
+            user = authenticate(request, username=cliente_obj.usuario.username, password=password)
+        except Cliente.DoesNotExist:
+            user = None
+        if user:
             cliente_obj = Cliente.objects.filter(usuario=user).first()
             if tipo_acesso == 'admin':
                 if user.is_staff or user.is_superuser:
@@ -38,9 +50,7 @@ def login_custom_view(request):
                 else:
                     error_message = "Selecione 'Administrador' para acessar o painel admin."
         else:
-            error_message = "Usuário ou senha inválidos."
-    else:
-        form = AuthenticationForm()
+            error_message = "CPF ou senha inválidos."
     return render(request, 'registration/login.html', {'form': form, 'error_message': error_message})
 
 
