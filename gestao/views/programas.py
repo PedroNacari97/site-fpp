@@ -33,19 +33,14 @@ import csv
 import json
 from datetime import timedelta
 
-
-def verificar_admin(request):
-    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
-    if perfil not in ["admin", "operador"]:
-        return render(request, "sem_permissao.html")
-    return None
+from .permissions import require_admin_or_operator
 
 
 # --- PROGRAMAS ---
 @login_required
 def admin_programas(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     busca = request.GET.get("busca", "")
     programas = ProgramaFidelidade.objects.all().order_by("nome")
     if busca:
@@ -59,8 +54,8 @@ def admin_programas(request):
 
 @login_required
 def criar_programa(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     if request.method == "POST":
         form = ProgramaFidelidadeForm(request.POST)
         if form.is_valid():
@@ -73,8 +68,8 @@ def criar_programa(request):
 
 @login_required
 def editar_programa(request, programa_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     programa = ProgramaFidelidade.objects.get(id=programa_id)
     if request.method == "POST":
         form = ProgramaFidelidadeForm(request.POST, instance=programa)
@@ -88,8 +83,8 @@ def editar_programa(request, programa_id):
 
 @login_required
 def deletar_programa(request, programa_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
         return render(request, "sem_permissao.html")

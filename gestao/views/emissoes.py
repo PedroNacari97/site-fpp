@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -39,19 +39,14 @@ import csv
 import json
 from datetime import timedelta
 
-
-def verificar_admin(request):
-    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
-    if perfil not in ["admin", "operador"]:
-        return render(request, "sem_permissao.html")
-    return None
+from .permissions import require_admin_or_operator
 
 
 # --- EMISSÕES ---
 @login_required
 def admin_emissoes(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     programa_id = request.GET.get("programa")
     cliente_id = request.GET.get("cliente")
     q = request.GET.get("q")
@@ -133,8 +128,8 @@ def admin_emissoes(request):
 
 @login_required
 def nova_emissao(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     cliente_id = request.GET.get("cliente_id")
     if request.method == "POST":
         form = EmissaoPassagemForm(request.POST)
@@ -188,8 +183,8 @@ def nova_emissao(request):
 
 @login_required
 def editar_emissao(request, emissao_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     emissao = EmissaoPassagem.objects.get(id=emissao_id)
     if request.method == "POST":
         form = EmissaoPassagemForm(request.POST, instance=emissao)
@@ -260,8 +255,8 @@ def editar_emissao(request, emissao_id):
 
 @login_required
 def emissao_pdf(request, emissao_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
     pdf = gerar_pdf_emissao(emissao)
     response = HttpResponse(pdf, content_type="application/pdf")
@@ -271,8 +266,8 @@ def emissao_pdf(request, emissao_id):
 
 @login_required
 def deletar_emissao(request, emissao_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
         return render(request, "sem_permissao.html")
@@ -283,8 +278,8 @@ def deletar_emissao(request, emissao_id):
 
 @login_required
 def admin_hoteis(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     busca = request.GET.get("busca", "")
     emissoes = EmissaoHotel.objects.all().select_related("cliente__usuario")
     if busca:
@@ -298,8 +293,8 @@ def admin_hoteis(request):
 
 @login_required
 def nova_emissao_hotel(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     if request.method == "POST":
         form = EmissaoHotelForm(request.POST)
         if form.is_valid():
@@ -317,8 +312,8 @@ def nova_emissao_hotel(request):
 
 @login_required
 def editar_emissao_hotel(request, emissao_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     emissao = EmissaoHotel.objects.get(id=emissao_id)
     if request.method == "POST":
         form = EmissaoHotelForm(request.POST, instance=emissao)
@@ -335,8 +330,8 @@ def editar_emissao_hotel(request, emissao_id):
 
 @login_required
 def deletar_emissao_hotel(request, emissao_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
         return render(request, "sem_permissao.html")

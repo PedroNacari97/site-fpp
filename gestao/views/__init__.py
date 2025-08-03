@@ -3,5 +3,8 @@ from .cotacoes import *
 from .emissoes import *
 from .companhias import *
 from .programas import *
-from .utils import *
+from .contas import *
+from .aeroportos import *
+from .dashboard import *
+from .movimentacoes import *
 from .auditoria import *

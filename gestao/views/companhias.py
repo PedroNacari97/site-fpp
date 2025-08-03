@@ -33,21 +33,15 @@ import csv
 import json
 from datetime import timedelta
 
-
-def verificar_admin(request):
-    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
-    if perfil not in ["admin", "operador"]:
-        return render(request, "sem_permissao.html")
-    return None
-
+from .permissions import require_admin_or_operator
 
 from ..forms import CompanhiaAereaForm
 
 
 @login_required
 def admin_companhias(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     busca = request.GET.get("busca", "")
     companhias = CompanhiaAerea.objects.all()
     if busca:
@@ -60,8 +54,8 @@ def admin_companhias(request):
 
 @login_required
 def criar_companhia(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     if request.method == "POST":
         form = CompanhiaAereaForm(request.POST)
         if form.is_valid():
@@ -73,8 +67,8 @@ def criar_companhia(request):
 
 @login_required
 def editar_companhia(request, companhia_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     companhia = get_object_or_404(CompanhiaAerea, id=companhia_id)
     if request.method == "POST":
         form = CompanhiaAereaForm(request.POST, instance=companhia)
@@ -88,8 +82,8 @@ def editar_companhia(request, companhia_id):
 
 @login_required
 def deletar_companhia(request, companhia_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
         return render(request, "sem_permissao.html")
