@@ -122,10 +122,10 @@ def gerar_pdf_emissao(emissao):
         getattr(getattr(emissao, 'cliente', None), 'usuario', None)
         and (emissao.cliente.usuario.get_full_name() or emissao.cliente.usuario.username)
     ) or "-"
-    cliente_cpf = getattr(getattr(emissao, 'cliente', None), 'cpf', None) or "-"
+    cliente_doc = getattr(getattr(emissao, 'cliente', None), 'documento', None) or "-"
     cliente_data = [
-        [Paragraph("NOME COMPLETO", estilo_label), Paragraph("CPF", estilo_label)],
-        [Paragraph(cliente_nome, estilo_valor), Paragraph(cliente_cpf, estilo_valor)]
+        [Paragraph("NOME COMPLETO", estilo_label), Paragraph("DOCUMENTO", estilo_label)],
+        [Paragraph(cliente_nome, estilo_valor), Paragraph(cliente_doc, estilo_valor)]
     ]
     cliente_table = Table(cliente_data, colWidths=[80*mm, 80*mm])
     cliente_table.setStyle(TableStyle([

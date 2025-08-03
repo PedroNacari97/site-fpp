@@ -3,6 +3,8 @@
 {% block content %}
 <a href="{% url 'superadmin_empresa_create' %}" class="bg-blue-500 text-white px-4 py-2 rounded">Nova Empresa</a>
 <a href="{% url 'superadmin_administrador_create' %}" class="bg-green-500 text-white px-4 py-2 rounded ml-2">Novo Administrador</a>
+<a href="{% url 'superadmin_operador_create' %}" class="bg-purple-500 text-white px-4 py-2 rounded ml-2">Novo Operador</a>
+<a href="{% url 'superadmin_cliente_create' %}" class="bg-yellow-500 text-white px-4 py-2 rounded ml-2">Novo Cliente</a>
 <table class="mt-4 w-full text-left">
     <tr>
         <th class="p-2">Nome</th>
@@ -24,3 +26,4 @@
     {% endfor %}
 </table>
 {% endblock %}
+

@@ -2,7 +2,6 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.utils.text import slugify
 from gestao.models import Cliente
 from .forms import UsuarioForm, ClientePublicoForm
 
@@ -13,14 +12,12 @@ def custom_login(request):
         perfil = request.POST.get("perfil")
 
         username = None
-        if perfil == "cliente":
+        if perfil in ["cliente", "admin"]:
             try:
-                cliente = Cliente.objects.get(cpf=identifier)
+                cliente = Cliente.objects.get(documento=identifier)
                 username = cliente.usuario.username
             except Cliente.DoesNotExist:
-                username = None
-        elif perfil == "superadmin":
-            username = slugify(identifier)
+                username = identifier if perfil == "admin" else None
         else:
             username = identifier
 
@@ -28,9 +25,9 @@ def custom_login(request):
         if user:
             login(request, user)
             user_perfil = getattr(getattr(user, "cliente_gestao", None), "perfil", "")
-            if perfil == "superadmin" and user.is_superuser:
-                return redirect('/superadmin/empresas/')
-            elif perfil == "admin" and user_perfil == "admin":
+            if perfil == "admin" and user_perfil == "admin":
+                if user.is_superuser:
+                    return redirect('/superadmin/empresas/')
                 return redirect('/admin/')
             elif perfil == "operador" and user_perfil == "operador":
                 return redirect('/admin/')
@@ -39,7 +36,7 @@ def custom_login(request):
             else:
                 messages.error(request, "Tipo de usuário inválido para esse acesso.")
         else:
-            messages.error(request, "Usuário/CPF ou senha inválidos.")
+            messages.error(request, "Usuário/Documento ou senha inválidos.")
     return render(request, "accounts/login.html")
 
 

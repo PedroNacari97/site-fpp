@@ -5,14 +5,16 @@ from gestao.models import Cliente
 
 class UsuarioForm(forms.Form):
     nome_completo = forms.CharField(max_length=150)
-    cpf = forms.CharField(max_length=14)
+    tipo_documento = forms.ChoiceField(choices=[("cpf", "CPF"), ("cnpj", "CNPJ")])
+    documento = forms.CharField(max_length=18)
+    data_expiracao = forms.DateField(required=False)
     perfil = forms.ChoiceField(choices=[("admin", "Administrador"), ("operador", "Operador"), ("cliente", "cliente")])
     password = forms.CharField(widget=forms.PasswordInput)
 
     def save(self, criado_por=None, empresa=None):
         nome = self.cleaned_data["nome_completo"]
-        cpf = self.cleaned_data["cpf"]
-        username = slugify(cpf) or slugify(nome) or "user"
+        documento = self.cleaned_data["documento"]
+        username = slugify(documento) or slugify(nome) or "user"
         user = User.objects.create_user(
             username=username,
             password=self.cleaned_data["password"],
@@ -22,7 +24,9 @@ class UsuarioForm(forms.Form):
         user.save()
         Cliente.objects.create(
             usuario=user,
-            cpf=cpf,
+            tipo_documento=self.cleaned_data["tipo_documento"],
+            documento=documento,
+            data_expiracao=self.cleaned_data.get("data_expiracao"),
             perfil=self.cleaned_data["perfil"],
             criado_por=criado_por,
             empresa=empresa,
@@ -35,7 +39,7 @@ class ClientePublicoForm(forms.ModelForm):
 
     class Meta:
         model = Cliente
-        fields = ['telefone', 'data_nascimento', 'cpf', 'observacoes']
+        fields = ['telefone', 'data_nascimento', 'tipo_documento', 'documento', 'data_expiracao', 'observacoes']
 
     def save(self, commit=True):
         nome = self.cleaned_data['nome']
