@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
-from django.http import HttpResponse
+from django.contrib import messages
 
 from ..forms import (
     ContaFidelidadeForm,
@@ -83,7 +82,9 @@ def editar_companhia(request, companhia_id):
 
 @login_required
 def deletar_companhia(request, companhia_id):
-    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
-        return HttpResponse("Você não tem permissão para deletar este item")
-    CompanhiaAerea.objects.filter(id=companhia_id).delete()
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "Você não tem autorização para deletar este item.")
+    else:
+        CompanhiaAerea.objects.filter(id=companhia_id).delete()
+        messages.success(request, "Companhia aérea deletada com sucesso.")
     return redirect("admin_companhias")

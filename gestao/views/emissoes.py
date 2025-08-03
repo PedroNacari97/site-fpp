@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
@@ -264,9 +265,11 @@ def emissao_pdf(request, emissao_id):
 
 @login_required
 def deletar_emissao(request, emissao_id):
-    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
-        return HttpResponse("Você não tem permissão para deletar este item")
-    EmissaoPassagem.objects.filter(id=emissao_id).delete()
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "Você não tem autorização para deletar este item.")
+    else:
+        EmissaoPassagem.objects.filter(id=emissao_id).delete()
+        messages.success(request, "Emissão deletada com sucesso.")
     return redirect("admin_emissoes")
 
 
@@ -321,9 +324,11 @@ def editar_emissao_hotel(request, emissao_id):
 
 @login_required
 def deletar_emissao_hotel(request, emissao_id):
-    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
-        return HttpResponse("Você não tem permissão para deletar este item")
-    EmissaoHotel.objects.filter(id=emissao_id).delete()
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "Você não tem autorização para deletar este item.")
+    else:
+        EmissaoHotel.objects.filter(id=emissao_id).delete()
+        messages.success(request, "Emissão deletada com sucesso.")
     return redirect("admin_hoteis")
 
 

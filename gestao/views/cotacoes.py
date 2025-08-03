@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
@@ -76,9 +77,11 @@ def admin_cotacoes(request):
 
 @login_required
 def deletar_cotacao(request, cotacao_id):
-    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
-        return HttpResponse("Você não tem permissão para deletar este item")
-    ValorMilheiro.objects.filter(id=cotacao_id).delete()
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "Você não tem autorização para deletar este item.")
+    else:
+        ValorMilheiro.objects.filter(id=cotacao_id).delete()
+        messages.success(request, "Cotação deletada com sucesso.")
     return redirect("admin_cotacoes")
 
 
@@ -176,9 +179,11 @@ def editar_cotacao_voo(request, cotacao_id):
 
 @login_required
 def deletar_cotacao_voo(request, cotacao_id):
-    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
-        return HttpResponse("Você não tem permissão para deletar este item")
-    CotacaoVoo.objects.filter(id=cotacao_id).delete()
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "Você não tem autorização para deletar este item.")
+    else:
+        CotacaoVoo.objects.filter(id=cotacao_id).delete()
+        messages.success(request, "Cotação de voo deletada com sucesso.")
     return redirect("admin_cotacoes_voo")
 
 @login_required
