@@ -41,10 +41,11 @@ class NovoClienteForm(forms.ModelForm):
     first_name = forms.CharField(max_length=150, required=False)
     last_name = forms.CharField(max_length=150, required=False)
     email = forms.EmailField(required=False)
+    perfil = forms.CharField(initial='cliente', widget=forms.HiddenInput())
 
     class Meta:
         model = Cliente
-        fields = ['telefone', 'data_nascimento', 'cpf', 'perfil', 'observacoes', 'ativo']
+        fields = ['telefone', 'data_nascimento', 'cpf', 'observacoes', 'ativo', 'perfil']
 
 
 class AeroportoForm(forms.ModelForm):

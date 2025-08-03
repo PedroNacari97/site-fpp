@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib import messages
 
@@ -34,16 +34,20 @@ import json
 from datetime import timedelta
 
 
-def admin_required(user):
-    return user.is_staff or user.is_superuser
+def verificar_admin(request):
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
+    return None
 
 
 from ..forms import CompanhiaAereaForm
 
 
 @login_required
-@user_passes_test(admin_required)
 def admin_companhias(request):
+    if (resp := verificar_admin(request)):
+        return resp
     busca = request.GET.get("busca", "")
     companhias = CompanhiaAerea.objects.all()
     if busca:
@@ -55,8 +59,9 @@ def admin_companhias(request):
     )
 
 @login_required
-@user_passes_test(admin_required)
 def criar_companhia(request):
+    if (resp := verificar_admin(request)):
+        return resp
     if request.method == "POST":
         form = CompanhiaAereaForm(request.POST)
         if form.is_valid():
@@ -67,8 +72,9 @@ def criar_companhia(request):
     return render(request, "admin_custom/form_companhia_aerea.html", {"form": form})
 
 @login_required
-@user_passes_test(admin_required)
 def editar_companhia(request, companhia_id):
+    if (resp := verificar_admin(request)):
+        return resp
     companhia = get_object_or_404(CompanhiaAerea, id=companhia_id)
     if request.method == "POST":
         form = CompanhiaAereaForm(request.POST, instance=companhia)
@@ -82,9 +88,8 @@ def editar_companhia(request, companhia_id):
 
 @login_required
 def deletar_companhia(request, companhia_id):
-    if not (request.user.is_staff or request.user.is_superuser):
-        messages.error(request, "Você não tem autorização para deletar este item.")
-    else:
-        CompanhiaAerea.objects.filter(id=companhia_id).delete()
-        messages.success(request, "Companhia aérea deletada com sucesso.")
+    if (resp := verificar_admin(request)):
+        return resp
+    CompanhiaAerea.objects.filter(id=companhia_id).delete()
+    messages.success(request, "Companhia aérea deletada com sucesso.")
     return redirect("admin_companhias")

@@ -1,10 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
 from django import forms
@@ -44,14 +43,18 @@ from datetime import timedelta
 from decimal import Decimal
 
 
-def admin_required(user):
-    return user.is_staff or user.is_superuser
+def verificar_admin(request):
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
+    return None
 
 
 # --- COTAÇÕES ---
 @login_required
-@user_passes_test(admin_required)
 def admin_cotacoes(request):
+    if (resp := verificar_admin(request)):
+        return resp
     if request.method == "POST":
         programa_nome = request.POST.get("programa_nome")
         valor_mercado = request.POST.get("valor_mercado")
@@ -77,19 +80,19 @@ def admin_cotacoes(request):
 
 @login_required
 def deletar_cotacao(request, cotacao_id):
-    if not (request.user.is_staff or request.user.is_superuser):
-        messages.error(request, "Você não tem autorização para deletar este item.")
-    else:
-        ValorMilheiro.objects.filter(id=cotacao_id).delete()
-        messages.success(request, "Cotação deletada com sucesso.")
+    if (resp := verificar_admin(request)):
+        return resp
+    ValorMilheiro.objects.filter(id=cotacao_id).delete()
+    messages.success(request, "Cotação deletada com sucesso.")
     return redirect("admin_cotacoes")
 
 
 
 # --- COTAÇÕES DE VOO ---
 @login_required
-@user_passes_test(admin_required)
 def admin_cotacoes_voo(request):
+    if (resp := verificar_admin(request)):
+        return resp
     busca = request.GET.get("busca", "")
     cotacoes = CotacaoVoo.objects.all().select_related("cliente__usuario", "origem", "destino")
     if busca:
@@ -103,8 +106,9 @@ def admin_cotacoes_voo(request):
 
 
 @login_required
-@user_passes_test(admin_required)
 def nova_cotacao_voo(request):
+    if (resp := verificar_admin(request)):
+        return resp
     initial = {}
     emissao_id = request.GET.get("emissao")
     if emissao_id:
@@ -147,8 +151,9 @@ def nova_cotacao_voo(request):
 
 
 @login_required
-@user_passes_test(admin_required)
 def editar_cotacao_voo(request, cotacao_id):
+    if (resp := verificar_admin(request)):
+        return resp
     cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
     if request.method == "POST":
         form = CotacaoVooForm(request.POST, instance=cotacao)
@@ -179,22 +184,23 @@ def editar_cotacao_voo(request, cotacao_id):
 
 @login_required
 def deletar_cotacao_voo(request, cotacao_id):
-    if not (request.user.is_staff or request.user.is_superuser):
-        messages.error(request, "Você não tem autorização para deletar este item.")
-    else:
-        CotacaoVoo.objects.filter(id=cotacao_id).delete()
-        messages.success(request, "Cotação de voo deletada com sucesso.")
+    if (resp := verificar_admin(request)):
+        return resp
+    CotacaoVoo.objects.filter(id=cotacao_id).delete()
+    messages.success(request, "Cotação de voo deletada com sucesso.")
     return redirect("admin_cotacoes_voo")
 
 @login_required
-@user_passes_test(admin_required)
 def admin_valor_milheiro(request):
+    if (resp := verificar_admin(request)):
+        return resp
     cotacoes = ValorMilheiro.objects.all().order_by("programa_nome")
     return render(request, "admin_custom/valor_milheiro.html", {"cotacoes": cotacoes})
 
 @login_required
-@user_passes_test(admin_required)
 def cotacao_voo_pdf(request, cotacao_id):
+    if (resp := verificar_admin(request)):
+        return resp
     cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
     pdf_content = gerar_pdf_cotacao(cotacao)
     response = HttpResponse(pdf_content, content_type='application/pdf')
@@ -203,8 +209,9 @@ def cotacao_voo_pdf(request, cotacao_id):
 
 
 @login_required
-@user_passes_test(admin_required)
 def calculadora_cotacao(request):
+    if (resp := verificar_admin(request)):
+        return resp
     resultado = None
     if request.method == 'POST':
         form = CalculadoraCotacaoForm(request.POST)

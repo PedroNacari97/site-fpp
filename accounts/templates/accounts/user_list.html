@@ -6,17 +6,13 @@
 </head>
 <body>
     <h2>Usuários</h2>
-    {% if sem_permissao %}
-        <p style="color:red;">Você não tem autorização para acessar esta funcionalidade.</p>
-    {% else %}
-        <a href="{% url 'user_create' %}">Novo Usuário</a>
-        <ul>
-            {% for u in usuarios %}
-                <li>{{ u.usuario.username }} - {{ u.get_perfil_display }}</li>
-            {% empty %}
-                <li>Nenhum usuário cadastrado.</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    <a href="{% url 'user_create' %}">Novo Usuário</a>
+    <ul>
+        {% for u in usuarios %}
+            <li>{{ u.usuario.username }} - {{ u.get_perfil_display }}</li>
+        {% empty %}
+            <li>Nenhum usuário cadastrado.</li>
+        {% endfor %}
+    </ul>
 </body>
 </html>

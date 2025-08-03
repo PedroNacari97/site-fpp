@@ -1,10 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
 from django import forms
@@ -41,14 +40,18 @@ import json
 from datetime import timedelta
 
 
-def admin_required(user):
-    return user.is_staff or user.is_superuser
+def verificar_admin(request):
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
+    return None
 
 
 # --- EMISSÕES ---
 @login_required
-@user_passes_test(admin_required)
 def admin_emissoes(request):
+    if (resp := verificar_admin(request)):
+        return resp
     programa_id = request.GET.get("programa")
     cliente_id = request.GET.get("cliente")
     q = request.GET.get("q")
@@ -129,8 +132,9 @@ def admin_emissoes(request):
 
 
 @login_required
-@user_passes_test(admin_required)
 def nova_emissao(request):
+    if (resp := verificar_admin(request)):
+        return resp
     cliente_id = request.GET.get("cliente_id")
     if request.method == "POST":
         form = EmissaoPassagemForm(request.POST)
@@ -183,8 +187,9 @@ def nova_emissao(request):
     )
 
 @login_required
-@user_passes_test(admin_required)
 def editar_emissao(request, emissao_id):
+    if (resp := verificar_admin(request)):
+        return resp
     emissao = EmissaoPassagem.objects.get(id=emissao_id)
     if request.method == "POST":
         form = EmissaoPassagemForm(request.POST, instance=emissao)
@@ -254,8 +259,9 @@ def editar_emissao(request, emissao_id):
 
 
 @login_required
-@user_passes_test(admin_required)
 def emissao_pdf(request, emissao_id):
+    if (resp := verificar_admin(request)):
+        return resp
     emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
     pdf = gerar_pdf_emissao(emissao)
     response = HttpResponse(pdf, content_type="application/pdf")
@@ -265,17 +271,17 @@ def emissao_pdf(request, emissao_id):
 
 @login_required
 def deletar_emissao(request, emissao_id):
-    if not (request.user.is_staff or request.user.is_superuser):
-        messages.error(request, "Você não tem autorização para deletar este item.")
-    else:
-        EmissaoPassagem.objects.filter(id=emissao_id).delete()
-        messages.success(request, "Emissão deletada com sucesso.")
+    if (resp := verificar_admin(request)):
+        return resp
+    EmissaoPassagem.objects.filter(id=emissao_id).delete()
+    messages.success(request, "Emissão deletada com sucesso.")
     return redirect("admin_emissoes")
 
 
 @login_required
-@user_passes_test(admin_required)
 def admin_hoteis(request):
+    if (resp := verificar_admin(request)):
+        return resp
     busca = request.GET.get("busca", "")
     emissoes = EmissaoHotel.objects.all().select_related("cliente__usuario")
     if busca:
@@ -288,8 +294,9 @@ def admin_hoteis(request):
 
 
 @login_required
-@user_passes_test(admin_required)
 def nova_emissao_hotel(request):
+    if (resp := verificar_admin(request)):
+        return resp
     if request.method == "POST":
         form = EmissaoHotelForm(request.POST)
         if form.is_valid():
@@ -306,8 +313,9 @@ def nova_emissao_hotel(request):
 
 
 @login_required
-@user_passes_test(admin_required)
 def editar_emissao_hotel(request, emissao_id):
+    if (resp := verificar_admin(request)):
+        return resp
     emissao = EmissaoHotel.objects.get(id=emissao_id)
     if request.method == "POST":
         form = EmissaoHotelForm(request.POST, instance=emissao)
@@ -324,11 +332,10 @@ def editar_emissao_hotel(request, emissao_id):
 
 @login_required
 def deletar_emissao_hotel(request, emissao_id):
-    if not (request.user.is_staff or request.user.is_superuser):
-        messages.error(request, "Você não tem autorização para deletar este item.")
-    else:
-        EmissaoHotel.objects.filter(id=emissao_id).delete()
-        messages.success(request, "Emissão deletada com sucesso.")
+    if (resp := verificar_admin(request)):
+        return resp
+    EmissaoHotel.objects.filter(id=emissao_id).delete()
+    messages.success(request, "Emissão deletada com sucesso.")
     return redirect("admin_hoteis")
 
 
