@@ -32,6 +32,22 @@ class Cliente(models.Model):
     empresa = models.ForeignKey(
         Empresa, on_delete=models.SET_NULL, null=True, blank=True, related_name="clientes"
     )
+    administrador_responsavel = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        limit_choices_to={"perfil": "admin"},
+        related_name="subordinados",
+    )
+    operador_responsavel = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        limit_choices_to={"perfil": "operador"},
+        related_name="clientes_associados",
+    )
 
     def __str__(self):
         return self.usuario.get_full_name() or self.usuario.username
