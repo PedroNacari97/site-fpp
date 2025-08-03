@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Login - Plataforma FPP</title>
     {% load static %}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
@@ -19,20 +20,40 @@
             {% endif %}
             <form method="POST">
                 {% csrf_token %}
-                <label>Usuário/CPF:</label>
-                <input type="text" name="identifier" required>
-                <label>Senha:</label>
-                <input type="password" name="password" required>
-                <label>Tipo de acesso:</label>
-                <select name="perfil" required>
+                <label for="identifier">Usuário/CPF<span class="required">*</span></label>
+                <input type="text" id="identifier" name="identifier" required>
+
+                <label for="password">Senha<span class="required">*</span></label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" required>
+                    <button type="button" id="togglePassword" aria-label="Mostrar senha">&#128065;</button>
+                </div>
+
+                <label for="perfil">Tipo de acesso<span class="required">*</span></label>
+                <select id="perfil" name="perfil" required>
                     <option value="cliente">Cliente</option>
                     <option value="operador">Operador</option>
                     <option value="admin">Administrador</option>
                     <option value="superadmin">Super Admin</option>
                 </select>
+
                 <button type="submit">Entrar</button>
             </form>
+            <div class="links">
+                <a href="#">Esqueceu a senha?</a>
+                <a href="{% url 'cliente_create' %}">Criar conta</a>
+            </div>
         </div>
     </div>
 </body>
+<script>
+  const toggle = document.getElementById('togglePassword');
+  const password = document.getElementById('password');
+  if (toggle) {
+    toggle.addEventListener('click', function () {
+      const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+      password.setAttribute('type', type);
+    });
+  }
+</script>
 </html>
