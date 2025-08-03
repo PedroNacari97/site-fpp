@@ -3,8 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import redirect, render
 from django.views.generic.edit import FormView
+from django.utils import timezone
 
-from gestao.models import Cliente
+from gestao.models import Cliente, Administrador, Operador
 from .forms import UsuarioForm, ClientePublicoForm, LoginForm
 
 
@@ -29,11 +30,21 @@ class UserLoginView(FormView):
         if user:
             perfil = getattr(getattr(user, "cliente_gestao", None), "perfil", "")
             if access_type == "admin" and user.is_staff and perfil == "admin":
-                login(self.request, user)
-                return redirect("admin_dashboard")
+                admin_obj = Administrador.objects.filter(usuario=user, ativo=True).first()
+                if admin_obj and (
+                    not admin_obj.acesso_ate or admin_obj.acesso_ate >= timezone.now().date()
+                ):
+                    login(self.request, user)
+                    return redirect("admin_dashboard")
             if access_type == "operador" and user.is_staff and perfil == "operador":
-                login(self.request, user)
-                return redirect("admin_dashboard")
+                operador_obj = Operador.objects.filter(
+                    usuario=user, ativo=True, admin__ativo=True
+                ).first()
+                if operador_obj and (
+                    not operador_obj.admin.acesso_ate or operador_obj.admin.acesso_ate >= timezone.now().date()
+                ):
+                    login(self.request, user)
+                    return redirect("admin_dashboard")
             if access_type == "cliente" and not user.is_staff:
                 cliente_obj = Cliente.objects.filter(usuario=user).first()
                 if cliente_obj and not cliente_obj.ativo:
@@ -67,14 +78,14 @@ def create_user(request):
     else:
         return render(request, "sem_permissao.html")
     if request.method == "POST":
-        form = UsuarioForm(request.POST)
+        form = UsuarioForm(request.POST, user=request.user)
         form.fields['perfil'].choices = allowed
         if form.is_valid():
             form.save(criado_por=request.user)
             messages.success(request, "Usuário criado com sucesso.")
             return redirect("user_list")
     else:
-        form = UsuarioForm()
+        form = UsuarioForm(user=request.user)
         form.fields['perfil'].choices = allowed
     return render(request, "accounts/user_form.html", {"form": form})
 

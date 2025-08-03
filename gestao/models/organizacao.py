@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import date
 
 class Empresa(models.Model):
     nome = models.CharField(max_length=100)
@@ -19,6 +20,15 @@ class Administrador(models.Model):
 
     def __str__(self):
         return self.usuario.get_full_name() or self.usuario.username
+
+    def save(self, *args, **kwargs):
+        if self.acesso_ate and self.acesso_ate < date.today():
+            self.ativo = False
+        super().save(*args, **kwargs)
+        if not self.ativo:
+            from .organizacao import Operador, ClienteEmpresa
+            Operador.objects.filter(admin=self).update(ativo=False)
+            ClienteEmpresa.objects.filter(admin=self).update(ativo=False)
 
 class Operador(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE)
