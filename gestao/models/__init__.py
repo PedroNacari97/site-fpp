@@ -1,4 +1,5 @@
 from .cliente import Cliente
+from .empresa import Empresa
 from .programa_fidelidade import ProgramaFidelidade
 from .aeroporto import Aeroporto
 from .conta_fidelidade import ContaFidelidade
@@ -28,4 +29,5 @@ __all__ = [
     'CotacaoVoo',
     'CompanhiaAerea',
     'AuditLog',
+    'Empresa',
 ]

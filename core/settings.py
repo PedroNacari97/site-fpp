@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'painel_cliente',
     'gestao',
     'accounts',
+    'superadmin',
 ]
 
 MIDDLEWARE = [

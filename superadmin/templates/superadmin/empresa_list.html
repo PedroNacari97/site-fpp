@@ -1,0 +1,26 @@
+{% extends "gestao/admin_custom/base_admin.html" %}
+{% block header_title %}Empresas{% endblock %}
+{% block content %}
+<a href="{% url 'superadmin_empresa_create' %}" class="bg-blue-500 text-white px-4 py-2 rounded">Nova Empresa</a>
+<a href="{% url 'superadmin_administrador_create' %}" class="bg-green-500 text-white px-4 py-2 rounded ml-2">Novo Administrador</a>
+<table class="mt-4 w-full text-left">
+    <tr>
+        <th class="p-2">Nome</th>
+        <th class="p-2">Limite Admins</th>
+        <th class="p-2">Limite Operadores</th>
+        <th class="p-2">Limite Clientes</th>
+    </tr>
+    {% for empresa in empresas %}
+    <tr class="border-t border-zinc-700">
+        <td class="p-2">{{ empresa.nome }}</td>
+        <td class="p-2">{{ empresa.limite_administradores }}</td>
+        <td class="p-2">{{ empresa.limite_operadores }}</td>
+        <td class="p-2">{{ empresa.limite_clientes }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4" class="p-2">Nenhuma empresa cadastrada.</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
