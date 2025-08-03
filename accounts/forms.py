@@ -9,7 +9,7 @@ class UsuarioForm(forms.Form):
     perfil = forms.ChoiceField(choices=[("admin", "Administrador"), ("operador", "Operador"), ("cliente", "cliente")])
     password = forms.CharField(widget=forms.PasswordInput)
 
-    def save(self, criado_por=None):
+    def save(self, criado_por=None, empresa=None):
         nome = self.cleaned_data["nome_completo"]
         cpf = self.cleaned_data["cpf"]
         username = slugify(cpf) or slugify(nome) or "user"
@@ -25,6 +25,7 @@ class UsuarioForm(forms.Form):
             cpf=cpf,
             perfil=self.cleaned_data["perfil"],
             criado_por=criado_por,
+            empresa=empresa,
         )
         return user
 

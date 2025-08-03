@@ -5,7 +5,7 @@
 <a href="{% url 'user_create' %}" class="btn-primary inline-block mb-4">Novo Usuário</a>
 <ul class="space-y-2">
   {% for u in usuarios %}
-    <li>{{ u.usuario.first_name }} - {{ u.get_perfil_display }}</li>
+    <li>{{ u.usuario.first_name }} - {{ u.get_perfil_display }} - <a href="{% url 'user_delete' u.id %}" class="text-red-500">Remover</a></li>
   {% empty %}
     <li>Nenhum usuário cadastrado.</li>
   {% endfor %}

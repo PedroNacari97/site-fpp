@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils.text import slugify
 from gestao.models import Cliente
@@ -46,10 +46,11 @@ def custom_login(request):
 @login_required
 def user_list(request):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     if request.user.is_superuser:
         usuarios = Cliente.objects.filter(criado_por=request.user, perfil="admin")
-    elif perfil == "admin":
-        usuarios = Cliente.objects.filter(criado_por=request.user)
+    elif perfil == "admin" and empresa:
+        usuarios = Cliente.objects.filter(empresa=empresa, perfil__in=["admin", "operador"])
     else:
         return render(request, "sem_permissao.html")
     return render(request, "accounts/user_list.html", {"usuarios": usuarios})
@@ -58,9 +59,10 @@ def user_list(request):
 @login_required
 def user_create(request):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     if request.user.is_superuser:
         allowed = [("admin", "Administrador")]
-    elif perfil == "admin":
+    elif perfil == "admin" and empresa:
         allowed = [("operador", "Operador")]
     else:
         return render(request, "sem_permissao.html")
@@ -68,13 +70,36 @@ def user_create(request):
         form = UsuarioForm(request.POST)
         form.fields['perfil'].choices = allowed
         if form.is_valid():
-            form.save(criado_por=request.user)
+            perfil_novo = form.cleaned_data['perfil']
+            if empresa:
+                limites = {
+                    'admin': empresa.limite_administradores,
+                    'operador': empresa.limite_operadores,
+                }
+                total = Cliente.objects.filter(empresa=empresa, perfil=perfil_novo).count()
+                if total >= limites.get(perfil_novo, 0):
+                    messages.error(request, "Limite de usuários atingido.")
+                    return render(request, "accounts/user_form.html", {"form": form})
+            form.save(criado_por=request.user, empresa=empresa)
             messages.success(request, "Usuário criado com sucesso.")
             return redirect("user_list")
     else:
         form = UsuarioForm()
         form.fields['perfil'].choices = allowed
     return render(request, "accounts/user_form.html", {"form": form})
+
+
+@login_required
+def user_delete(request, user_id):
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    if perfil != "admin" or not empresa:
+        return render(request, "sem_permissao.html")
+    usuario = get_object_or_404(Cliente, id=user_id, empresa=empresa, perfil__in=["admin", "operador"])
+    usuario.usuario.delete()
+    usuario.delete()
+    messages.success(request, "Usuário removido com sucesso.")
+    return redirect("user_list")
 
 
 def cliente_create(request):

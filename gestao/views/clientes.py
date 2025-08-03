@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
@@ -53,32 +54,40 @@ def verificar_admin(request):
 def criar_cliente(request):
     if (resp := verificar_admin(request)):
         return resp
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    if not empresa:
+        return render(request, "sem_permissao.html")
     if request.method == "POST":
         form = NovoClienteForm(request.POST)
         if form.is_valid():
-            user = User.objects.create_user(
-                username=form.cleaned_data["username"],
-                password=form.cleaned_data["password"],
-                first_name=form.cleaned_data.get("first_name", ""),
-                last_name=form.cleaned_data.get("last_name", ""),
-                email=form.cleaned_data.get("email", ""),
-            )
-            perfil = form.cleaned_data["perfil"]
-            if perfil in ["admin", "operador"]:
-                user.is_staff = True
-            if perfil == "admin":
-                user.is_superuser = True
-            user.save()
-            Cliente.objects.create(
-                usuario=user,
-                telefone=form.cleaned_data["telefone"],
-                data_nascimento=form.cleaned_data["data_nascimento"],
-                cpf=form.cleaned_data["cpf"],
-                perfil=perfil,
-                observacoes=form.cleaned_data["observacoes"],
-                ativo=form.cleaned_data["ativo"],
-            )
-            return redirect("admin_clientes")
+            total_clientes = Cliente.objects.filter(empresa=empresa, perfil="cliente").count()
+            if total_clientes >= empresa.limite_clientes:
+                messages.error(request, "Limite de clientes atingido.")
+            else:
+                user = User.objects.create_user(
+                    username=form.cleaned_data["username"],
+                    password=form.cleaned_data["password"],
+                    first_name=form.cleaned_data.get("first_name", ""),
+                    last_name=form.cleaned_data.get("last_name", ""),
+                    email=form.cleaned_data.get("email", ""),
+                )
+                perfil = form.cleaned_data["perfil"]
+                if perfil in ["admin", "operador"]:
+                    user.is_staff = True
+                if perfil == "admin":
+                    user.is_superuser = True
+                user.save()
+                Cliente.objects.create(
+                    usuario=user,
+                    telefone=form.cleaned_data["telefone"],
+                    data_nascimento=form.cleaned_data["data_nascimento"],
+                    cpf=form.cleaned_data["cpf"],
+                    perfil=perfil,
+                    observacoes=form.cleaned_data["observacoes"],
+                    ativo=form.cleaned_data["ativo"],
+                    empresa=empresa,
+                )
+                return redirect("admin_clientes")
     else:
         form = NovoClienteForm()
     return render(request, "admin_custom/form_cliente.html", {"form": form})
@@ -88,7 +97,10 @@ def criar_cliente(request):
 def editar_cliente(request, cliente_id):
     if (resp := verificar_admin(request)):
         return resp
-    cliente = Cliente.objects.get(id=cliente_id)
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    if not empresa:
+        return render(request, "sem_permissao.html")
+    cliente = get_object_or_404(Cliente, id=cliente_id, empresa=empresa)
     if request.method == "POST":
         form = ClienteForm(request.POST, instance=cliente)
         if form.is_valid():
@@ -103,16 +115,19 @@ def editar_cliente(request, cliente_id):
 def admin_clientes(request):
     if (resp := verificar_admin(request)):
         return resp
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    if not empresa:
+        return render(request, "sem_permissao.html")
     if "toggle" in request.GET:
         if not request.user.is_superuser:
             return HttpResponse("Sem permissão", status=403)
-        cli = Cliente.objects.get(id=request.GET["toggle"])
+        cli = get_object_or_404(Cliente, id=request.GET["toggle"], empresa=empresa)
         cli.ativo = not cli.ativo
         cli.save()
         return redirect("admin_clientes")
 
     busca = request.GET.get("busca", "")
-    clientes = Cliente.objects.all().select_related("usuario")
+    clientes = Cliente.objects.filter(empresa=empresa).select_related("usuario")
     if busca:
         clientes = clientes.filter(
             Q(usuario__username__icontains=busca)
@@ -133,7 +148,8 @@ def admin_clientes(request):
 
 
 def programas_do_cliente(request, cliente_id):
-    cliente = Cliente.objects.get(pk=cliente_id)
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    cliente = get_object_or_404(Cliente, pk=cliente_id, empresa=empresa)
     contas = ContaFidelidade.objects.filter(cliente=cliente)
 
     lista_contas = []
@@ -172,7 +188,8 @@ def programas_do_cliente(request, cliente_id):
 def visualizar_cliente(request, cliente_id):
     if (resp := verificar_admin(request)):
         return resp
-    cliente = get_object_or_404(Cliente, id=cliente_id)
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    cliente = get_object_or_404(Cliente, id=cliente_id, empresa=empresa)
     AcessoClienteLog.objects.create(admin=request.user, cliente=cliente)
     context = build_dashboard_context(cliente.usuario)
     context["cliente_obj"] = cliente
