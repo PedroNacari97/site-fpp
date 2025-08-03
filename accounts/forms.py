@@ -3,6 +3,13 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 from gestao.models import Cliente
 
+
+class LoginForm(forms.Form):
+    """Simple authentication form used by ``UserLoginView``."""
+
+    identifier = forms.CharField(label="Usuário/CPF")
+    password = forms.CharField(label="Senha", widget=forms.PasswordInput)
+
 class UsuarioForm(forms.Form):
     nome_completo = forms.CharField(max_length=150)
     cpf = forms.CharField(max_length=14)
