@@ -1,10 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
 from django import forms
@@ -43,21 +42,26 @@ import json
 from datetime import timedelta
 
 
-def admin_required(user):
-    return user.is_staff or user.is_superuser
+def verificar_admin(request):
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
+    return None
 
 
 # --- CONTAS ---
 @login_required
-@user_passes_test(admin_required)
 def listar_contas(request):
+    if (resp := verificar_admin(request)):
+        return resp
     contas = ContaFidelidade.objects.all()
     return render(request, "admin_custom/contas_list.html", {"contas": contas})
 
 
 @login_required
-@user_passes_test(admin_required)
 def criar_conta(request):
+    if (resp := verificar_admin(request)):
+        return resp
     if request.method == "POST":
         form = ContaFidelidadeForm(request.POST)
         if form.is_valid():
@@ -69,8 +73,9 @@ def criar_conta(request):
 
 
 @login_required
-@user_passes_test(admin_required)
 def editar_conta(request, conta_id):
+    if (resp := verificar_admin(request)):
+        return resp
     conta = ContaFidelidade.objects.get(id=conta_id)
     if request.method == "POST":
         form = ContaFidelidadeForm(request.POST, instance=conta)
@@ -84,17 +89,17 @@ def editar_conta(request, conta_id):
 
 @login_required
 def deletar_conta(request, conta_id):
-    if not (request.user.is_staff or request.user.is_superuser):
-        messages.error(request, "Você não tem autorização para deletar este item.")
-    else:
-        ContaFidelidade.objects.filter(id=conta_id).delete()
-        messages.success(request, "Conta deletada com sucesso.")
+    if (resp := verificar_admin(request)):
+        return resp
+    ContaFidelidade.objects.filter(id=conta_id).delete()
+    messages.success(request, "Conta deletada com sucesso.")
     return redirect("admin_contas")
 
 
 @login_required
-@user_passes_test(admin_required)
 def admin_contas(request):
+    if (resp := verificar_admin(request)):
+        return resp
     busca = request.GET.get("busca", "")
     contas = ContaFidelidade.objects.select_related("cliente__usuario", "programa")
     if busca:
@@ -120,8 +125,9 @@ def admin_contas(request):
 
 # --- AEROPORTOS ---
 @login_required
-@user_passes_test(admin_required)
 def admin_aeroportos(request):
+    if (resp := verificar_admin(request)):
+        return resp
     busca = request.GET.get("busca", "")
     aeroportos = Aeroporto.objects.all()
     if busca:
@@ -134,8 +140,9 @@ def admin_aeroportos(request):
 
 
 @login_required
-@user_passes_test(admin_required)
 def criar_aeroporto(request):
+    if (resp := verificar_admin(request)):
+        return resp
     if request.method == "POST":
         form = AeroportoForm(request.POST)
         if form.is_valid():
@@ -148,17 +155,17 @@ def criar_aeroporto(request):
 
 @login_required
 def deletar_aeroporto(request, aeroporto_id):
-    if not (request.user.is_staff or request.user.is_superuser):
-        messages.error(request, "Você não tem autorização para deletar este item.")
-    else:
-        Aeroporto.objects.filter(id=aeroporto_id).delete()
-        messages.success(request, "Aeroporto deletado com sucesso.")
+    if (resp := verificar_admin(request)):
+        return resp
+    Aeroporto.objects.filter(id=aeroporto_id).delete()
+    messages.success(request, "Aeroporto deletado com sucesso.")
     return redirect("admin_aeroportos")
 
 
 @login_required
-@user_passes_test(admin_required)
 def editar_aeroporto(request, aeroporto_id):
+    if (resp := verificar_admin(request)):
+        return resp
     aeroporto = Aeroporto.objects.get(id=aeroporto_id)
     if request.method == "POST":
         form = AeroportoForm(request.POST, instance=aeroporto)
@@ -266,8 +273,9 @@ def build_dashboard_metrics(cliente_id=None):
 
 
 @login_required
-@user_passes_test(admin_required)
 def admin_dashboard(request):
+    if (resp := verificar_admin(request)):
+        return resp
     cliente_id = request.GET.get("cliente_id")
     data = build_dashboard_metrics(cliente_id)
     clientes = Cliente.objects.all().order_by("usuario__first_name")
@@ -279,9 +287,12 @@ def admin_dashboard(request):
 
 
 
+@login_required
 def admin_movimentacoes(request, conta_id):
+    if (resp := verificar_admin(request)):
+        return resp
     conta = get_object_or_404(ContaFidelidade, id=conta_id)
-    movimentacoes = conta.movimentacoes.all()  # Aqui está o segredo!
+    movimentacoes = conta.movimentacoes.all()
     return render(
         request,
         "admin_custom/movimentacoes.html",
@@ -302,8 +313,10 @@ class NovaMovimentacaoForm(forms.ModelForm):
         }
 
 
-@staff_member_required
+@login_required
 def admin_nova_movimentacao(request, conta_id):
+    if (resp := verificar_admin(request)):
+        return resp
     conta = get_object_or_404(ContaFidelidade, id=conta_id)
     if not conta.cliente.ativo:
         return HttpResponse("Cliente inativo", status=403)
@@ -327,8 +340,9 @@ def admin_nova_movimentacao(request, conta_id):
 
 
 @login_required
-@user_passes_test(admin_required)
 def api_dashboard(request):
+    if (resp := verificar_admin(request)):
+        return resp
     cliente_id = request.GET.get("cliente_id")
     data = build_dashboard_metrics(cliente_id)
     return JsonResponse(data)

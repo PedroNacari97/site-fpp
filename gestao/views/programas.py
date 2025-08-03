@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib import messages
 
@@ -34,14 +34,18 @@ import json
 from datetime import timedelta
 
 
-def admin_required(user):
-    return user.is_staff or user.is_superuser
+def verificar_admin(request):
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
+    return None
 
 
 # --- PROGRAMAS ---
 @login_required
-@user_passes_test(admin_required)
 def admin_programas(request):
+    if (resp := verificar_admin(request)):
+        return resp
     busca = request.GET.get("busca", "")
     programas = ProgramaFidelidade.objects.all().order_by("nome")
     if busca:
@@ -54,8 +58,9 @@ def admin_programas(request):
 
 
 @login_required
-@user_passes_test(admin_required)
 def criar_programa(request):
+    if (resp := verificar_admin(request)):
+        return resp
     if request.method == "POST":
         form = ProgramaFidelidadeForm(request.POST)
         if form.is_valid():
@@ -67,8 +72,9 @@ def criar_programa(request):
 
 
 @login_required
-@user_passes_test(admin_required)
 def editar_programa(request, programa_id):
+    if (resp := verificar_admin(request)):
+        return resp
     programa = ProgramaFidelidade.objects.get(id=programa_id)
     if request.method == "POST":
         form = ProgramaFidelidadeForm(request.POST, instance=programa)
@@ -82,11 +88,10 @@ def editar_programa(request, programa_id):
 
 @login_required
 def deletar_programa(request, programa_id):
-    if not (request.user.is_staff or request.user.is_superuser):
-        messages.error(request, "Você não tem autorização para deletar este item.")
-    else:
-        ProgramaFidelidade.objects.filter(id=programa_id).delete()
-        messages.success(request, "Programa deletado com sucesso.")
+    if (resp := verificar_admin(request)):
+        return resp
+    ProgramaFidelidade.objects.filter(id=programa_id).delete()
+    messages.success(request, "Programa deletado com sucesso.")
     return redirect("admin_programas")
 
 
