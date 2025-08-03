@@ -43,6 +43,8 @@ from datetime import timedelta
 
 
 def verificar_admin(request):
+    if request.user.is_superuser:
+        return None
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
         return render(request, "sem_permissao.html")
