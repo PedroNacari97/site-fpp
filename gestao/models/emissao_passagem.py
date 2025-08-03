@@ -49,7 +49,7 @@ class EmissaoPassagem(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     detalhes = models.TextField(blank=True)
-
+    
     def save(self, *args, **kwargs):
         self.qtd_passageiros = self.qtd_adultos + self.qtd_criancas + self.qtd_bebes
         super().save(*args, **kwargs)

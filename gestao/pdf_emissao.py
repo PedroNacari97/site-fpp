@@ -15,6 +15,10 @@ from reportlab.platypus import (
 
 
 def gerar_pdf_emissao(emissao):
+    """
+    Gera PDF da emissão seguindo o layout do PDF de cotação, com informações e valores formatados.
+    """
+
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -27,6 +31,7 @@ def gerar_pdf_emissao(emissao):
 
     styles = getSampleStyleSheet()
 
+    # Estilos baseados no PDF de cotação
     estilo_header = ParagraphStyle(
         "CustomHeader",
         parent=styles["Title"],
@@ -72,7 +77,7 @@ def gerar_pdf_emissao(emissao):
         "CustomValorDestaque",
         parent=styles["Normal"],
         fontSize=14,
-        textColor=colors.HexColor("#28a745"),
+        textColor=colors.HexColor("#28a745"),  # Verde destaque
         fontName="Helvetica-Bold",
         alignment=TA_CENTER,
     )
@@ -81,26 +86,7 @@ def gerar_pdf_emissao(emissao):
         parent=estilo_valor,
         textColor=colors.HexColor("#3366cc"),
         underline=True,
-        alignment=TA_LEFT,
     )
-
-    companhia = emissao.companhia_aerea
-    if companhia:
-        companhia_nome = getattr(companhia, "nome", str(companhia))
-        companhia_link = getattr(companhia, "site_url", None)
-    else:
-        companhia_nome = "-"
-        companhia_link = None
-
-    if companhia_link:
-        companhia_para_pdf = Paragraph(
-            f'<link href="{companhia_link}">{companhia_nome}</link>',
-            estilo_link,
-        )
-    else:
-        companhia_para_pdf = Paragraph(companhia_nome, estilo_valor)
-
-    localizador_para_pdf = Paragraph(emissao.localizador or "-", estilo_valor)
 
     elements = []
 
@@ -123,42 +109,17 @@ def gerar_pdf_emissao(emissao):
     header_table.setStyle(
         TableStyle(
             [
-                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#667eea")),
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#667eea")),  # Azul semelhante à cotação
                 ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
                 ("TOPPADDING", (0, 0), (-1, -1), 18),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 18),
                 ("LEFTPADDING", (0, 0), (-1, -1), 20),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 20),
             ]
         )
     )
     elements.append(header_table)
-    info_left = [[Paragraph("Companhia Aérea:", estilo_label), companhia_para_pdf]]
-    info_right = [[Paragraph("Localizador:", estilo_label), localizador_para_pdf]]
-    info_table = Table(
-        [
-            [
-                Table(info_left, colWidths=[4 * cm, 4 * cm]),
-                Table(info_right, colWidths=[3.5 * cm, 4.5 * cm]),
-            ]
-        ],
-        colWidths=[8 * cm, 8 * cm],
-        hAlign="CENTER",
-    )
-    info_table.setStyle(
-        TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f8f9fa")),
-                ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#e9ecef")),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                ("TOPPADDING", (0, 0), (-1, -1), 8),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
-            ]
-        )
-    )
-    elements.append(info_table)
-    elements.append(Spacer(1, 12))
+    elements.append(Spacer(1, 20))
 
     # Informações do Cliente
     elements.append(Paragraph("Informações do Cliente", estilo_secao))
@@ -191,10 +152,31 @@ def gerar_pdf_emissao(emissao):
     elements.append(cliente_table)
     elements.append(Spacer(1, 20))
 
-    # Dados da Emissão
+    # Dados da Emissão com tratamento seguro para companhia aérea
     elements.append(Paragraph("Dados da Emissão", estilo_secao))
 
+    # === TRECHO DE COMPANHIA AÉREA ROBUSTO ===
+    companhia = getattr(emissao, "companhia_aerea", None)
+    if hasattr(companhia, "nome"):
+        companhia_nome = companhia.nome
+        companhia_link = getattr(companhia, "site_url", None)
+    elif isinstance(companhia, str):
+        companhia_nome = companhia
+        companhia_link = None
+    else:
+        companhia_nome = "-"
+        companhia_link = None
+
+    if companhia_link:
+        companhia_para_pdf = Paragraph(f'<a href="{companhia_link}">{companhia_nome}</a>', estilo_link)
+    else:
+        companhia_para_pdf = Paragraph(companhia_nome, estilo_valor)
+
     dados_emissao = [
+        [
+            Paragraph("Localizador:", estilo_label),
+            Paragraph(emissao.localizador or "-", estilo_valor),
+        ],
         [
             Paragraph("Companhia Aérea:", estilo_label),
             companhia_para_pdf,
@@ -209,20 +191,6 @@ def gerar_pdf_emissao(emissao):
         [
             Paragraph("Valor Total Pago:", estilo_label),
             Paragraph(f"R$ {emissao.valor_pago:.2f}", estilo_valor_destaque),
-        ],
-        [
-            Paragraph("Valor de Referência:", estilo_label),
-            Paragraph(
-                f"R$ {getattr(emissao, 'valor_referencia', 0):.2f}" if getattr(emissao, 'valor_referencia', None) else "-",
-                estilo_valor,
-            ),
-        ],
-        [
-            Paragraph("Valor Economizado:", estilo_label),
-            Paragraph(
-                f"R$ {getattr(emissao, 'valor_economizado', 0):.2f}" if getattr(emissao, 'valor_economizado', None) else "-",
-                estilo_valor,
-            ),
         ],
     ]
     dados_table = Table(dados_emissao, colWidths=[6 * cm, 10 * cm], hAlign="CENTER")
