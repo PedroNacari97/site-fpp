@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.http import HttpResponse, JsonResponse
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
@@ -83,9 +84,11 @@ def editar_conta(request, conta_id):
 
 @login_required
 def deletar_conta(request, conta_id):
-    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
-        return HttpResponse("Você não tem permissão para deletar este item")
-    ContaFidelidade.objects.filter(id=conta_id).delete()
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "Você não tem autorização para deletar este item.")
+    else:
+        ContaFidelidade.objects.filter(id=conta_id).delete()
+        messages.success(request, "Conta deletada com sucesso.")
     return redirect("admin_contas")
 
 
@@ -145,9 +148,11 @@ def criar_aeroporto(request):
 
 @login_required
 def deletar_aeroporto(request, aeroporto_id):
-    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
-        return HttpResponse("Você não tem permissão para deletar este item")
-    Aeroporto.objects.filter(id=aeroporto_id).delete()
+    if not (request.user.is_staff or request.user.is_superuser):
+        messages.error(request, "Você não tem autorização para deletar este item.")
+    else:
+        Aeroporto.objects.filter(id=aeroporto_id).delete()
+        messages.success(request, "Aeroporto deletado com sucesso.")
     return redirect("admin_aeroportos")
 
 
