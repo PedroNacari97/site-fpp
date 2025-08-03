@@ -40,19 +40,14 @@ import csv
 import json
 from datetime import timedelta
 
-
-def verificar_admin(request):
-    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
-    if perfil not in ["admin", "operador"]:
-        return render(request, "sem_permissao.html")
-    return None
+from .permissions import require_admin_or_operator
 
 
 # --- CLIENTES ---
 @login_required
 def criar_cliente(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     if request.method == "POST":
         form = NovoClienteForm(request.POST)
         if form.is_valid():
@@ -86,8 +81,8 @@ def criar_cliente(request):
 
 @login_required
 def editar_cliente(request, cliente_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     cliente = Cliente.objects.get(id=cliente_id)
     if request.method == "POST":
         form = ClienteForm(request.POST, instance=cliente)
@@ -101,8 +96,8 @@ def editar_cliente(request, cliente_id):
 
 @login_required
 def admin_clientes(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     if "toggle" in request.GET:
         if not request.user.is_superuser:
             return HttpResponse("Sem permissão", status=403)
@@ -170,8 +165,8 @@ def programas_do_cliente(request, cliente_id):
     )
 @login_required
 def visualizar_cliente(request, cliente_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     cliente = get_object_or_404(Cliente, id=cliente_id)
     AcessoClienteLog.objects.create(admin=request.user, cliente=cliente)
     context = build_dashboard_context(cliente.usuario)

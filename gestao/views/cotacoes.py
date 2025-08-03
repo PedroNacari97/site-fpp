@@ -42,19 +42,14 @@ import json
 from datetime import timedelta
 from decimal import Decimal
 
-
-def verificar_admin(request):
-    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
-    if perfil not in ["admin", "operador"]:
-        return render(request, "sem_permissao.html")
-    return None
+from .permissions import require_admin_or_operator
 
 
 # --- COTAÇÕES ---
 @login_required
 def admin_cotacoes(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     if request.method == "POST":
         programa_nome = request.POST.get("programa_nome")
         valor_mercado = request.POST.get("valor_mercado")
@@ -80,8 +75,8 @@ def admin_cotacoes(request):
 
 @login_required
 def deletar_cotacao(request, cotacao_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
         return render(request, "sem_permissao.html")
@@ -94,8 +89,8 @@ def deletar_cotacao(request, cotacao_id):
 # --- COTAÇÕES DE VOO ---
 @login_required
 def admin_cotacoes_voo(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     busca = request.GET.get("busca", "")
     cotacoes = CotacaoVoo.objects.all().select_related("cliente__usuario", "origem", "destino")
     if busca:
@@ -110,8 +105,8 @@ def admin_cotacoes_voo(request):
 
 @login_required
 def nova_cotacao_voo(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     initial = {}
     emissao_id = request.GET.get("emissao")
     if emissao_id:
@@ -155,8 +150,8 @@ def nova_cotacao_voo(request):
 
 @login_required
 def editar_cotacao_voo(request, cotacao_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
     if request.method == "POST":
         form = CotacaoVooForm(request.POST, instance=cotacao)
@@ -187,8 +182,8 @@ def editar_cotacao_voo(request, cotacao_id):
 
 @login_required
 def deletar_cotacao_voo(request, cotacao_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
         return render(request, "sem_permissao.html")
@@ -198,15 +193,15 @@ def deletar_cotacao_voo(request, cotacao_id):
 
 @login_required
 def admin_valor_milheiro(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     cotacoes = ValorMilheiro.objects.all().order_by("programa_nome")
     return render(request, "admin_custom/valor_milheiro.html", {"cotacoes": cotacoes})
 
 @login_required
 def cotacao_voo_pdf(request, cotacao_id):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
     pdf_content = gerar_pdf_cotacao(cotacao)
     response = HttpResponse(pdf_content, content_type='application/pdf')
@@ -216,8 +211,8 @@ def cotacao_voo_pdf(request, cotacao_id):
 
 @login_required
 def calculadora_cotacao(request):
-    if (resp := verificar_admin(request)):
-        return resp
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
     resultado = None
     if request.method == 'POST':
         form = CalculadoraCotacaoForm(request.POST)
