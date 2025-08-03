@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'painel_cliente',
     'gestao',
+    'accounts',
 ]
 
 MIDDLEWARE = [

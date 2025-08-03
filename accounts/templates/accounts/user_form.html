@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Novo Usuário</title>
+</head>
+<body>
+    <h2>Criar Usuário</h2>
+    {% if sem_permissao %}
+        <p style="color:red;">Você não tem autorização para acessar esta funcionalidade.</p>
+    {% else %}
+        {% if messages %}
+          <ul>
+            {% for message in messages %}
+              <li style="color:green">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% if form %}
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Salvar</button>
+        </form>
+        {% endif %}
+    {% endif %}
+</body>
+</html>
