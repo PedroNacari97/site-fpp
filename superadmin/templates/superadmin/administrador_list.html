@@ -1,0 +1,51 @@
+{% extends "superadmin/base_superadmin.html" %}
+{% block header_title %}Administradores{% endblock %}
+
+{% block content %}
+<h2 class="text-xl mb-4">Administradores</h2>
+<table class="min-w-full table-auto text-sm">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Empresa</th>
+            <th>Ativo</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for admin in administradores %}
+        <tr>
+            <td>{{ admin.usuario.get_full_name }}</td>
+            <td>{{ admin.usuario.email }}</td>
+            <td>{{ admin.empresa.nome }}</td>
+            <td>{{ admin.ativo|yesno:"Sim,Não" }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4">Nenhum administrador cadastrado.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% for admin in administradores %}
+<tr>
+    <td>{{ admin.usuario.get_full_name }}</td>
+    <td>{{ admin.usuario.email }}</td>
+    <td>{{ admin.empresa.nome }}</td>
+    <td>
+        {% if admin.ativo %}
+            <span class="text-green-500 font-bold">Ativo</span>
+        {% else %}
+            <span class="text-red-500 font-bold">Inativo</span>
+        {% endif %}
+        <form method="post" action="{% url 'superadmin_toggle_admin' admin.id %}" style="display:inline;">
+            {% csrf_token %}
+            {% if admin.ativo %}
+                <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Desativar</button>
+            {% else %}
+                <button type="submit" class="bg-green-500 text-white px-2 py-1 rounded ml-2">Ativar</button>
+            {% endif %}
+        </form>
+    </td>
+</tr>
+{% endfor %}
+
+{% endblock %}

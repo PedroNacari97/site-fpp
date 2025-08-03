@@ -1,8 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect
-
+from gestao.models import Cliente
 from gestao.models import Empresa
+from django.views.decorators.http import require_POST
+from django.shortcuts import get_object_or_404
 from .forms import (
     EmpresaForm,
     AdministradorForm,
@@ -76,3 +78,18 @@ def cliente_create(request):
     else:
         form = ClienteFormSuper()
     return render(request, "superadmin/cliente_form.html", {"form": form})
+
+@login_required
+@user_passes_test(superadmin_required)
+def administrador_list(request):
+    administradores = Cliente.objects.filter(perfil="admin")
+    return render(request, "superadmin/administrador_list.html", {"administradores": administradores})
+
+@require_POST
+@login_required
+@user_passes_test(superadmin_required)
+def toggle_admin(request, admin_id):
+    admin = get_object_or_404(Cliente, id=admin_id, perfil="admin")
+    admin.ativo = not admin.ativo
+    admin.save()
+    return redirect("superadmin_administrador_list")

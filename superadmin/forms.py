@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 from gestao.models import Empresa, Cliente
 
-
+# --------- Formulário de Empresa ----------
 class EmpresaForm(forms.ModelForm):
     class Meta:
         model = Empresa
@@ -14,7 +14,7 @@ class EmpresaForm(forms.ModelForm):
             "limite_clientes",
         ]
 
-
+# --------- Formulário de Administrador ----------
 class AdministradorForm(forms.Form):
     nome = forms.CharField(max_length=150)
     username = forms.CharField(max_length=150)
@@ -30,6 +30,14 @@ class AdministradorForm(forms.Form):
     limite_operadores = forms.IntegerField(required=False)
     limite_clientes = forms.IntegerField(required=False)
 
+    # Validação: username deve ser único
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("Já existe um usuário com esse nome de usuário.")
+        return username
+
+    # Validação de empresa/nova empresa e limites
     def clean(self):
         cleaned_data = super().clean()
         empresa = cleaned_data.get("empresa")
@@ -40,6 +48,7 @@ class AdministradorForm(forms.Form):
             raise forms.ValidationError("Informe uma empresa existente ou os dados da nova empresa.")
         return cleaned_data
 
+    # Salvando tudo
     def save(self, criado_por=None):
         data = self.cleaned_data
         empresa = data.get("empresa")
@@ -57,6 +66,9 @@ class AdministradorForm(forms.Form):
             first_name=data["nome"],
             email=data["email"],
         )
+        user.is_active = True  # <-- Isso ativa o usuário!
+        user.save()
+
         cliente = Cliente.objects.create(
             usuario=user,
             tipo_documento=data["tipo_documento"],
@@ -69,7 +81,7 @@ class AdministradorForm(forms.Form):
         )
         return cliente
 
-
+# --------- Formulário de Operador ----------
 class OperadorForm(forms.Form):
     nome = forms.CharField(max_length=150)
     username = forms.CharField(max_length=150)
@@ -84,6 +96,14 @@ class OperadorForm(forms.Form):
         queryset=Cliente.objects.filter(perfil="admin"),
     )
 
+    # Validação: username deve ser único
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("Já existe um usuário com esse nome de usuário.")
+        return username
+
+    # Validação de empresa/admin responsável
     def clean(self):
         cleaned_data = super().clean()
         empresa = cleaned_data.get("empresa")
@@ -94,6 +114,7 @@ class OperadorForm(forms.Form):
             raise forms.ValidationError("Administrador responsável deve pertencer à mesma empresa.")
         return cleaned_data
 
+    # Salvando tudo
     def save(self, criado_por=None):
         data = self.cleaned_data
         username = slugify(data["username"]) or slugify(data["documento"]) or slugify(data["nome"]) or "user"
@@ -103,8 +124,9 @@ class OperadorForm(forms.Form):
             first_name=data["nome"],
             email=data.get("email", ""),
         )
-        user.is_staff = True
+        user.is_active = True  # <-- Isso ativa o usuário!
         user.save()
+        
         cliente = Cliente.objects.create(
             usuario=user,
             tipo_documento=data["tipo_documento"],
@@ -118,7 +140,7 @@ class OperadorForm(forms.Form):
         )
         return cliente
 
-
+# --------- Formulário de Cliente pelo SuperAdmin ----------
 class ClienteFormSuper(forms.Form):
     nome = forms.CharField(max_length=150)
     username = forms.CharField(max_length=150)
@@ -136,6 +158,14 @@ class ClienteFormSuper(forms.Form):
         queryset=Cliente.objects.filter(perfil="operador"),
     )
 
+    # Validação: username deve ser único
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("Já existe um usuário com esse nome de usuário.")
+        return username
+
+    # Validação de empresa/admin/operador responsável
     def clean(self):
         cleaned_data = super().clean()
         empresa = cleaned_data.get("empresa")
@@ -149,6 +179,7 @@ class ClienteFormSuper(forms.Form):
             raise forms.ValidationError("Operador responsável deve pertencer à mesma empresa.")
         return cleaned_data
 
+    # Salvando tudo
     def save(self, criado_por=None):
         data = self.cleaned_data
         username = slugify(data["username"]) or slugify(data["documento"]) or slugify(data["nome"]) or "user"
@@ -156,8 +187,11 @@ class ClienteFormSuper(forms.Form):
             username=username,
             password=data["password"],
             first_name=data["nome"],
-            email=data.get("email", ""),
-        )
+    email=data["email"],
+    )
+        user.is_active = True  # <-- Isso ativa o usuário!
+        user.save()
+
         cliente = Cliente.objects.create(
             usuario=user,
             tipo_documento=data["tipo_documento"],

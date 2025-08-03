@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from gestao.pdf_emissao import gerar_pdf_emissao
+from django.contrib.auth.decorators import login_required
 from gestao.models import (
     ContaFidelidade,
     EmissaoPassagem,
@@ -113,10 +114,10 @@ def build_dashboard_context(user):
 @login_required
 def dashboard(request):
     cliente = get_object_or_404(Cliente, usuario=request.user)
-    if not cliente.ativo:
-        return render(request, 'painel_cliente/inativo.html')
+    if not cliente.ativo or cliente.perfil not in ['admin', 'operador']:
+        return render(request, 'admin_custom/sem_permissao.html')  # ou outro template de sem permissão
     context = build_dashboard_context(request.user)
-    return render(request, 'painel_cliente/dashboard.html', context)
+    return render(request, 'admin_custom/dashboard.html', context)  # ou painel_cliente/dashboard.html se preferir
 
 
 @login_required
