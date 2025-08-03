@@ -7,11 +7,18 @@ from .forms import UsuarioForm, ClientePublicoForm
 
 def custom_login(request):
     if request.method == "POST":
-        username = request.POST.get("username")
+        cpf = request.POST.get("cpf")
         password = request.POST.get("password")
         perfil = request.POST.get("perfil")
 
-        user = authenticate(request, username=username, password=password)
+        user = None
+        try:
+            cliente = Cliente.objects.get(cpf=cpf)
+            user = authenticate(
+                request, username=cliente.usuario.username, password=password
+            )
+        except Cliente.DoesNotExist:
+            user = None
         if user:
             login(request, user)
             if perfil in ["admin", "operador"] and user.is_staff:
@@ -21,7 +28,7 @@ def custom_login(request):
             else:
                 messages.error(request, "Tipo de usuário inválido para esse acesso.")
         else:
-            messages.error(request, "Usuário ou senha inválidos.")
+            messages.error(request, "CPF ou senha inválidos.")
     return render(request, "accounts/login.html")
 
 

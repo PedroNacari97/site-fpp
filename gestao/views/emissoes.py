@@ -42,7 +42,7 @@ from datetime import timedelta
 
 def verificar_admin(request):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
-    if perfil != "admin":
+    if perfil not in ["admin", "operador"]:
         return render(request, "sem_permissao.html")
     return None
 
@@ -273,6 +273,9 @@ def emissao_pdf(request, emissao_id):
 def deletar_emissao(request, emissao_id):
     if (resp := verificar_admin(request)):
         return resp
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
     EmissaoPassagem.objects.filter(id=emissao_id).delete()
     messages.success(request, "Emissão deletada com sucesso.")
     return redirect("admin_emissoes")
@@ -334,6 +337,9 @@ def editar_emissao_hotel(request, emissao_id):
 def deletar_emissao_hotel(request, emissao_id):
     if (resp := verificar_admin(request)):
         return resp
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
     EmissaoHotel.objects.filter(id=emissao_id).delete()
     messages.success(request, "Emissão deletada com sucesso.")
     return redirect("admin_hoteis")
