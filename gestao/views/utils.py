@@ -82,6 +82,14 @@ def editar_conta(request, conta_id):
 
 
 @login_required
+def deletar_conta(request, conta_id):
+    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
+        return HttpResponse("Você não tem permissão para deletar este item")
+    ContaFidelidade.objects.filter(id=conta_id).delete()
+    return redirect("admin_contas")
+
+
+@login_required
 @user_passes_test(admin_required)
 def admin_contas(request):
     busca = request.GET.get("busca", "")
@@ -136,10 +144,9 @@ def criar_aeroporto(request):
 
 
 @login_required
-@user_passes_test(admin_required)
 def deletar_aeroporto(request, aeroporto_id):
     if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
-        return HttpResponse("Não autorizado", status=403)
+        return HttpResponse("Você não tem permissão para deletar este item")
     Aeroporto.objects.filter(id=aeroporto_id).delete()
     return redirect("admin_aeroportos")
 
