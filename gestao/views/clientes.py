@@ -60,7 +60,9 @@ def criar_cliente(request):
     if request.method == "POST":
         form = NovoClienteForm(request.POST)
         if form.is_valid():
-            total_clientes = Cliente.objects.filter(empresa=empresa, perfil="cliente").count()
+            total_clientes = Cliente.objects.filter(
+                empresa=empresa, perfil="cliente"
+            ).count()
             if total_clientes >= empresa.limite_clientes:
                 messages.error(request, "Limite de clientes atingido.")
             else:
@@ -71,11 +73,8 @@ def criar_cliente(request):
                     last_name=form.cleaned_data.get("last_name", ""),
                     email=form.cleaned_data.get("email", ""),
                 )
-                perfil = form.cleaned_data["perfil"]
-                if perfil in ["admin", "operador"]:
-                    user.is_staff = True
-                if perfil == "admin":
-                    user.is_superuser = True
+                # Operadores só podem criar clientes comuns
+                perfil = "cliente"
                 user.save()
                 Cliente.objects.create(
                     usuario=user,
@@ -88,6 +87,7 @@ def criar_cliente(request):
                     observacoes=form.cleaned_data["observacoes"],
                     ativo=form.cleaned_data["ativo"],
                     empresa=empresa,
+                    criado_por=request.user,
                 )
                 return redirect("admin_clientes")
     else:
@@ -100,17 +100,45 @@ def editar_cliente(request, cliente_id):
     if (resp := verificar_admin(request)):
         return resp
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if not empresa:
         return render(request, "sem_permissao.html")
-    cliente = get_object_or_404(Cliente, id=cliente_id, empresa=empresa)
+    filtros = {"id": cliente_id, "empresa": empresa, "perfil": "cliente"}
+    if perfil == "operador":
+        filtros["criado_por"] = request.user
+    cliente = get_object_or_404(Cliente, **filtros)
     if request.method == "POST":
         form = ClienteForm(request.POST, instance=cliente)
+        if perfil == "operador":
+            form.fields["perfil"].disabled = True
         if form.is_valid():
-            form.save()
+            cli = form.save(commit=False)
+            cli.perfil = "cliente"
+            cli.save()
             return redirect("admin_clientes")
     else:
         form = ClienteForm(instance=cliente)
+        if perfil == "operador":
+            form.fields["perfil"].disabled = True
     return render(request, "admin_custom/form_cliente.html", {"form": form})
+
+
+@login_required
+def deletar_cliente(request, cliente_id):
+    if (resp := verificar_admin(request)):
+        return resp
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if not empresa:
+        return render(request, "sem_permissao.html")
+    filtros = {"id": cliente_id, "empresa": empresa, "perfil": "cliente"}
+    if perfil == "operador":
+        filtros["criado_por"] = request.user
+    cliente = get_object_or_404(Cliente, **filtros)
+    cliente.usuario.delete()
+    cliente.delete()
+    messages.success(request, "Cliente removido com sucesso.")
+    return redirect("admin_clientes")
 
 
 @login_required
@@ -118,6 +146,7 @@ def admin_clientes(request):
     if (resp := verificar_admin(request)):
         return resp
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if not empresa:
         return render(request, "sem_permissao.html")
     if "toggle" in request.GET:
@@ -129,7 +158,11 @@ def admin_clientes(request):
         return redirect("admin_clientes")
 
     busca = request.GET.get("busca", "")
-    clientes = Cliente.objects.filter(empresa=empresa).select_related("usuario")
+    clientes = Cliente.objects.filter(
+        empresa=empresa, perfil="cliente"
+    ).select_related("usuario")
+    if perfil == "operador":
+        clientes = clientes.filter(criado_por=request.user)
     if busca:
         clientes = clientes.filter(
             Q(usuario__username__icontains=busca)
@@ -151,7 +184,11 @@ def admin_clientes(request):
 
 def programas_do_cliente(request, cliente_id):
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
-    cliente = get_object_or_404(Cliente, pk=cliente_id, empresa=empresa)
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    filtros = {"pk": cliente_id, "empresa": empresa, "perfil": "cliente"}
+    if perfil == "operador":
+        filtros["criado_por"] = request.user
+    cliente = get_object_or_404(Cliente, **filtros)
     contas = ContaFidelidade.objects.filter(cliente=cliente)
 
     lista_contas = []
@@ -191,7 +228,11 @@ def visualizar_cliente(request, cliente_id):
     if (resp := verificar_admin(request)):
         return resp
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
-    cliente = get_object_or_404(Cliente, id=cliente_id, empresa=empresa)
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    filtros = {"id": cliente_id, "empresa": empresa, "perfil": "cliente"}
+    if perfil == "operador":
+        filtros["criado_por"] = request.user
+    cliente = get_object_or_404(Cliente, **filtros)
     AcessoClienteLog.objects.create(admin=request.user, cliente=cliente)
     context = build_dashboard_context(cliente.usuario)
     context["cliente_obj"] = cliente

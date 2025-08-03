@@ -4,6 +4,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
 from django import forms
@@ -345,6 +347,22 @@ def admin_nova_movimentacao(request, conta_id):
             "conta": conta,
         },
     )
+
+
+@login_required
+def alterar_senha(request):
+    if (resp := verificar_admin(request)):
+        return resp
+    if request.method == "POST":
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, "Senha alterada com sucesso.")
+            return redirect("admin_dashboard")
+    else:
+        form = PasswordChangeForm(user=request.user)
+    return render(request, "admin_custom/alterar_senha.html", {"form": form})
 
 
 @login_required
