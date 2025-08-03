@@ -17,6 +17,7 @@ class EmpresaForm(forms.ModelForm):
 
 class AdministradorForm(forms.Form):
     nome = forms.CharField(max_length=150)
+    username = forms.CharField(max_length=150)
     tipo_documento = forms.ChoiceField(choices=[("cpf", "CPF"), ("cnpj", "CNPJ")])
     documento = forms.CharField(max_length=18)
     data_expiracao = forms.DateField(required=False)
@@ -49,7 +50,7 @@ class AdministradorForm(forms.Form):
                 limite_operadores=data.get("limite_operadores") or 0,
                 limite_clientes=data.get("limite_clientes") or 0,
             )
-        username = slugify(data["documento"]) or slugify(data["nome"]) or "user"
+        username = slugify(data["username"]) or slugify(data["documento"]) or slugify(data["nome"]) or "user"
         user = User.objects.create_user(
             username=username,
             password=data["password"],
@@ -71,6 +72,7 @@ class AdministradorForm(forms.Form):
 
 class OperadorForm(forms.Form):
     nome = forms.CharField(max_length=150)
+    username = forms.CharField(max_length=150)
     tipo_documento = forms.ChoiceField(choices=[("cpf", "CPF"), ("cnpj", "CNPJ")])
     documento = forms.CharField(max_length=18)
     data_expiracao = forms.DateField(required=False)
@@ -78,17 +80,23 @@ class OperadorForm(forms.Form):
     telefone = forms.CharField(max_length=20, required=False)
     password = forms.CharField(widget=forms.PasswordInput)
     empresa = forms.ModelChoiceField(queryset=Empresa.objects.all())
+    administrador_responsavel = forms.ModelChoiceField(
+        queryset=Cliente.objects.filter(perfil="admin"),
+    )
 
     def clean(self):
         cleaned_data = super().clean()
         empresa = cleaned_data.get("empresa")
         if empresa and empresa.clientes.filter(perfil="operador").count() >= empresa.limite_operadores:
             raise forms.ValidationError("Limite de operadores atingido para esta empresa.")
+        admin_resp = cleaned_data.get("administrador_responsavel")
+        if admin_resp and admin_resp.empresa != empresa:
+            raise forms.ValidationError("Administrador responsável deve pertencer à mesma empresa.")
         return cleaned_data
 
     def save(self, criado_por=None):
         data = self.cleaned_data
-        username = slugify(data["documento"]) or slugify(data["nome"]) or "user"
+        username = slugify(data["username"]) or slugify(data["documento"]) or slugify(data["nome"]) or "user"
         user = User.objects.create_user(
             username=username,
             password=data["password"],
@@ -105,6 +113,7 @@ class OperadorForm(forms.Form):
             perfil="operador",
             telefone=data.get("telefone", ""),
             empresa=data["empresa"],
+            administrador_responsavel=data["administrador_responsavel"],
             criado_por=criado_por,
         )
         return cliente
@@ -112,6 +121,7 @@ class OperadorForm(forms.Form):
 
 class ClienteFormSuper(forms.Form):
     nome = forms.CharField(max_length=150)
+    username = forms.CharField(max_length=150)
     tipo_documento = forms.ChoiceField(choices=[("cpf", "CPF"), ("cnpj", "CNPJ")])
     documento = forms.CharField(max_length=18)
     data_expiracao = forms.DateField(required=False)
@@ -119,17 +129,29 @@ class ClienteFormSuper(forms.Form):
     telefone = forms.CharField(max_length=20, required=False)
     password = forms.CharField(widget=forms.PasswordInput)
     empresa = forms.ModelChoiceField(queryset=Empresa.objects.all())
+    administrador_responsavel = forms.ModelChoiceField(
+        queryset=Cliente.objects.filter(perfil="admin"),
+    )
+    operador_responsavel = forms.ModelChoiceField(
+        queryset=Cliente.objects.filter(perfil="operador"),
+    )
 
     def clean(self):
         cleaned_data = super().clean()
         empresa = cleaned_data.get("empresa")
         if empresa and empresa.clientes.filter(perfil="cliente").count() >= empresa.limite_clientes:
             raise forms.ValidationError("Limite de clientes atingido para esta empresa.")
+        admin_resp = cleaned_data.get("administrador_responsavel")
+        op_resp = cleaned_data.get("operador_responsavel")
+        if admin_resp and admin_resp.empresa != empresa:
+            raise forms.ValidationError("Administrador responsável deve pertencer à mesma empresa.")
+        if op_resp and op_resp.empresa != empresa:
+            raise forms.ValidationError("Operador responsável deve pertencer à mesma empresa.")
         return cleaned_data
 
     def save(self, criado_por=None):
         data = self.cleaned_data
-        username = slugify(data["documento"]) or slugify(data["nome"]) or "user"
+        username = slugify(data["username"]) or slugify(data["documento"]) or slugify(data["nome"]) or "user"
         user = User.objects.create_user(
             username=username,
             password=data["password"],
@@ -144,6 +166,8 @@ class ClienteFormSuper(forms.Form):
             perfil="cliente",
             telefone=data.get("telefone", ""),
             empresa=data["empresa"],
+            administrador_responsavel=data["administrador_responsavel"],
+            operador_responsavel=data["operador_responsavel"],
             criado_por=criado_por,
         )
         return cliente
