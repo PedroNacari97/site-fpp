@@ -23,18 +23,21 @@ def custom_login(request):
 
         user = authenticate(request, username=username, password=password)
         if user:
-            login(request, user)
             user_perfil = getattr(getattr(user, "cliente_gestao", None), "perfil", "")
+
             if perfil == "admin" and user_perfil == "admin":
+                login(request, user)
                 if user.is_superuser:
                     return redirect('/superadmin/empresas/')
                 return redirect('/admin/')
             elif perfil == "operador" and user_perfil == "operador":
+                login(request, user)
                 return redirect('/admin/')
-            elif perfil == "cliente" and not user.is_staff:
+            elif perfil == "cliente" and user_perfil == "cliente":
+                login(request, user)
                 return redirect('/painel/')
             else:
-                messages.error(request, "Tipo de usuário inválido para esse acesso.")
+                messages.error(request, "Você não tem permissão para este acesso.")
         else:
             messages.error(request, "Usuário/Documento ou senha inválidos.")
     return render(request, "accounts/login.html")
