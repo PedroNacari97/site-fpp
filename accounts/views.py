@@ -29,7 +29,7 @@ def custom_login(request):
 def user_list(request):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
-        return render(request, "accounts/user_list.html", {"sem_permissao": True})
+        return render(request, "sem_permissao.html")
     usuarios = Cliente.objects.filter(criado_por=request.user)
     return render(request, "accounts/user_list.html", {"usuarios": usuarios})
 
@@ -38,7 +38,7 @@ def user_list(request):
 def user_create(request):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
-        return render(request, "accounts/user_form.html", {"sem_permissao": True})
+        return render(request, "sem_permissao.html")
     if request.method == "POST":
         form = UsuarioForm(request.POST)
         if form.is_valid():

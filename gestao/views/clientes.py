@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
@@ -41,14 +41,18 @@ import json
 from datetime import timedelta
 
 
-def admin_required(user):
-    return user.is_staff or user.is_superuser
+def verificar_admin(request):
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
+    return None
 
 
 # --- CLIENTES ---
 @login_required
-@user_passes_test(admin_required)
 def criar_cliente(request):
+    if (resp := verificar_admin(request)):
+        return resp
     if request.method == "POST":
         form = NovoClienteForm(request.POST)
         if form.is_valid():
@@ -81,8 +85,9 @@ def criar_cliente(request):
 
 
 @login_required
-@user_passes_test(admin_required)
 def editar_cliente(request, cliente_id):
+    if (resp := verificar_admin(request)):
+        return resp
     cliente = Cliente.objects.get(id=cliente_id)
     if request.method == "POST":
         form = ClienteForm(request.POST, instance=cliente)
@@ -95,8 +100,9 @@ def editar_cliente(request, cliente_id):
 
 
 @login_required
-@user_passes_test(admin_required)
 def admin_clientes(request):
+    if (resp := verificar_admin(request)):
+        return resp
     if "toggle" in request.GET:
         if not request.user.is_superuser:
             return HttpResponse("Sem permissão", status=403)
@@ -163,8 +169,9 @@ def programas_do_cliente(request, cliente_id):
         },
     )
 @login_required
-@user_passes_test(admin_required)
 def visualizar_cliente(request, cliente_id):
+    if (resp := verificar_admin(request)):
+        return resp
     cliente = get_object_or_404(Cliente, id=cliente_id)
     AcessoClienteLog.objects.create(admin=request.user, cliente=cliente)
     context = build_dashboard_context(cliente.usuario)

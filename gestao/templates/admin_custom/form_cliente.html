@@ -13,6 +13,7 @@
 <div class="form-wrapper">
 <form method="post">
     {% csrf_token %}
+    {{ form.perfil }}
     <div class="form-title">Cadastro de Cliente</div>
     {% if form.username %}
     <div class="section-title">Credenciais</div>
@@ -61,10 +62,6 @@
         </div>
     </div>
     <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.perfil.id_for_label }}">Perfil</label>
-            {{ form.perfil }}
-        </div>
         <div style="flex: 1;">
             <label class="form-label" for="{{ form.ativo.id_for_label }}">Ativo</label>
             {{ form.ativo }}

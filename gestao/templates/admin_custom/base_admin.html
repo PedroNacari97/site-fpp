@@ -23,6 +23,7 @@
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_hoteis %}{% endblock %}" href="{% url 'admin_hoteis' %}">Hotéis</a>
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_calculadora %}{% endblock %}" href="{% url 'admin_calculadora_cotacao' %}">Calculadora</a>
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}">Auditoria</a>
+            <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700" href="{% url 'user_list' %}">Gerenciar Usuários</a>
             <details class="pt-4 group" {% block dados_complementares_open %}{% endblock %}>
                 <summary class="px-3 py-2 rounded text-blue-400 cursor-pointer hover:bg-zinc-700 focus:outline-none">Dados Complementares</summary>
                 <div class="mt-2 ml-4 flex flex-col space-y-2">
