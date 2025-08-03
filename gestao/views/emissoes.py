@@ -263,10 +263,9 @@ def emissao_pdf(request, emissao_id):
 
 
 @login_required
-@user_passes_test(admin_required)
 def deletar_emissao(request, emissao_id):
     if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
-        return HttpResponse("Não autorizado", status=403)
+        return HttpResponse("Você não tem permissão para deletar este item")
     EmissaoPassagem.objects.filter(id=emissao_id).delete()
     return redirect("admin_emissoes")
 
@@ -274,8 +273,15 @@ def deletar_emissao(request, emissao_id):
 @login_required
 @user_passes_test(admin_required)
 def admin_hoteis(request):
-    emissoes = EmissaoHotel.objects.all().select_related("cliente")
-    return render(request, "admin_custom/hoteis.html", {"emissoes": emissoes})
+    busca = request.GET.get("busca", "")
+    emissoes = EmissaoHotel.objects.all().select_related("cliente__usuario")
+    if busca:
+        emissoes = emissoes.filter(
+            Q(cliente__usuario__username__icontains=busca)
+            | Q(cliente__usuario__first_name__icontains=busca)
+            | Q(nome_hotel__icontains=busca)
+        )
+    return render(request, "admin_custom/hoteis.html", {"emissoes": emissoes, "busca": busca})
 
 
 @login_required
@@ -311,5 +317,13 @@ def editar_emissao_hotel(request, emissao_id):
     else:
         form = EmissaoHotelForm(instance=emissao)
     return render(request, "admin_custom/form_hotel.html", {"form": form})
+
+
+@login_required
+def deletar_emissao_hotel(request, emissao_id):
+    if not getattr(request.user, "cliente_gestao", None) or request.user.cliente_gestao.perfil != "admin":
+        return HttpResponse("Você não tem permissão para deletar este item")
+    EmissaoHotel.objects.filter(id=emissao_id).delete()
+    return redirect("admin_hoteis")
 
 

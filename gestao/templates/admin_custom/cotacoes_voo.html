@@ -3,7 +3,11 @@
 {% block header_title %}Cotações de Voo{% endblock %}
 {% block menu_cotacoes_voo %}bg-zinc-700 text-white{% endblock %}
 {% block content %}
-<div class="mb-6 text-right">
+<div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+    <form method="get" class="flex gap-3">
+        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
+    </form>
     <a href="{% url 'admin_nova_cotacao_voo' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Nova Cotação</a>
 </div>
 <div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
