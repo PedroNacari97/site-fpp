@@ -88,7 +88,7 @@
       color: #ffb3b3;
       margin-top: 12px;
     }
-  </style>
+   </style>
 </head>
 <body>
   <div class="login-container">
@@ -101,8 +101,8 @@
 
     <form method="post">
       {% csrf_token %}
-      <label for="id_cpf">{{ form.cpf.label }}</label>
-      {{ form.cpf }}
+      <label for="id_identifier">{{ form.identifier.label }}</label>
+      {{ form.identifier }}
 
       <label for="id_password">{{ form.password.label }}</label>
       {{ form.password }}
@@ -110,8 +110,9 @@
       <label for="tipo_acesso">Tipo de Acesso</label>
       <select name="tipo_acesso" id="tipo_acesso">
         <option value="cliente">Cliente</option>
-        <option value="admin">Administrador</option>
         <option value="operador">Operador</option>
+        <option value="admin">Administrador</option>
+        <option value="superadmin">Super Admin</option>
       </select>
 
       <input type="submit" value="Entrar">

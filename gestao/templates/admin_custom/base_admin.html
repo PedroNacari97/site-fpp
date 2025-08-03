@@ -15,23 +15,28 @@
             <span class="text-amber-300">Gestão</span> Admin
         </div>
         <nav class="flex flex-col space-y-2">
-            <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_dashboard %}{% endblock %}" href="{% url 'admin_dashboard' %}">Dashboard</a>
-            <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_clientes %}{% endblock %}" href="{% url 'admin_clientes' %}">Clientes</a>
-            <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_contas %}{% endblock %}" href="{% url 'admin_contas' %}">Contas Fidelidade</a>
-            <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_cotacoes_voo %}{% endblock %}" href="{% url 'admin_cotacoes_voo' %}">Cotações</a>
-            <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_emissoes %}{% endblock %}" href="{% url 'admin_emissoes' %}">Emissões</a>
-            <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_hoteis %}{% endblock %}" href="{% url 'admin_hoteis' %}">Hotéis</a>
-            <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_calculadora %}{% endblock %}" href="{% url 'admin_calculadora_cotacao' %}">Calculadora</a>
-            <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}">Auditoria</a>
-            <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700" href="{% url 'user_list' %}">Gerenciar Usuários</a>
-            <details class="pt-4 group" {% block dados_complementares_open %}{% endblock %}>
-                <summary class="px-3 py-2 rounded text-blue-400 cursor-pointer hover:bg-zinc-700 focus:outline-none">Dados Complementares</summary>
-                <div class="mt-2 ml-4 flex flex-col space-y-2">
-                    <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_aeroportos %}{% endblock %}" href="{% url 'admin_aeroportos' %}">Aeroporto</a>
-                    <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_companhias %}{% endblock %}" href="{% url 'admin_companhias' %}">Companhia Aérea</a>
-                    <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_programas %}{% endblock %}" href="{% url 'admin_programas' %}">Programa de Pontos</a>
-                </div>
-            </details>
+            {% if not request.user.is_superuser %}
+                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_dashboard %}{% endblock %}" href="{% url 'admin_dashboard' %}">Dashboard</a>
+                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_clientes %}{% endblock %}" href="{% url 'admin_clientes' %}">Clientes</a>
+                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_contas %}{% endblock %}" href="{% url 'admin_contas' %}">Contas Fidelidade</a>
+                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_cotacoes_voo %}{% endblock %}" href="{% url 'admin_cotacoes_voo' %}">Cotações</a>
+                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_emissoes %}{% endblock %}" href="{% url 'admin_emissoes' %}">Emissões</a>
+                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_hoteis %}{% endblock %}" href="{% url 'admin_hoteis' %}">Hotéis</a>
+                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_calculadora %}{% endblock %}" href="{% url 'admin_calculadora_cotacao' %}">Calculadora</a>
+                <details class="pt-4 group" {% block dados_complementares_open %}{% endblock %}>
+                    <summary class="px-3 py-2 rounded text-blue-400 cursor-pointer hover:bg-zinc-700 focus:outline-none">Dados Complementares</summary>
+                    <div class="mt-2 ml-4 flex flex-col space-y-2">
+                        <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_aeroportos %}{% endblock %}" href="{% url 'admin_aeroportos' %}">Aeroporto</a>
+                        <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_companhias %}{% endblock %}" href="{% url 'admin_companhias' %}">Companhia Aérea</a>
+                        <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_programas %}{% endblock %}" href="{% url 'admin_programas' %}">Programa de Pontos</a>
+                    </div>
+                </details>
+            {% endif %}
+            <div class="pt-4">
+                <p class="px-3 text-zinc-400 uppercase text-xs mb-2">Administrativo</p>
+                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700 {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}">Auditoria</a>
+                <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700" href="{% url 'user_list' %}">Usuários da Empresa</a>
+            </div>
             <a class="block px-3 py-2 rounded text-blue-400 hover:bg-zinc-700" href="{% url 'logout' %}">Sair</a>
         </nav>
     </aside>
@@ -57,5 +62,3 @@
         </section>
     </main>
     {% block extra_body %}{% endblock %}
-</body>
-</html>

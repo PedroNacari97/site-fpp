@@ -15,8 +15,8 @@
     {% endif %}
     <form method="POST">
         {% csrf_token %}
-        <label>CPF:</label>
-        <input type="text" name="cpf" required><br>
+        <label>Usuário/CPF:</label>
+        <input type="text" name="identifier" required><br>
         <label>Senha:</label>
         <input type="password" name="password" required><br>
         <label>Tipo de acesso:</label>
@@ -24,6 +24,7 @@
             <option value="cliente">Cliente</option>
             <option value="operador">Operador</option>
             <option value="admin">Administrador</option>
+            <option value="superadmin">Super Admin</option>
         </select><br><br>
         <button type="submit">Entrar</button>
     </form>

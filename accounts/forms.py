@@ -3,11 +3,10 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 from gestao.models import Cliente
 
-
 class UsuarioForm(forms.Form):
     nome_completo = forms.CharField(max_length=150)
     cpf = forms.CharField(max_length=14)
-    perfil = forms.ChoiceField(choices=[("admin", "Administrador"), ("operador", "Operador")])
+    perfil = forms.ChoiceField(choices=[("admin", "Administrador"), ("operador", "Operador"), ("cliente", "cliente")])
     password = forms.CharField(widget=forms.PasswordInput)
 
     def save(self, criado_por=None):
