@@ -5,3 +5,4 @@ services:
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn core.wsgi:application"
     preDeployCommand: "python manage.py migrate"
+    preDeployCommand: "python manage.py collectstatic --noinput"
