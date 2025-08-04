@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'painel_cliente',
     'gestao',
     'accounts',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -126,9 +127,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+if os.environ.get("AWS_STORAGE_BUCKET_NAME"):
+    AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
+    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "us-east-1")
+    AWS_S3_CUSTOM_DOMAIN = os.environ.get(
+        "AWS_S3_CUSTOM_DOMAIN", f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+    )
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+    STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+else:
+    STATIC_URL = "/static/"
+    STATIC_ROOT = BASE_DIR / "staticfiles"
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 # Default primary key field type
