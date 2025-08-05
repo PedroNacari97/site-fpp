@@ -8,7 +8,18 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'chave-super-secreta-para-dev')
 
 DEBUG = False  # Produção
 
-ALLOWED_HOSTS = ['.elasticbeanstalk.com', 'localhost', '127.0.0.1']
+# Definindo ALLOWED_HOSTS a partir de variável de ambiente ou padrão
+ALLOWED_HOSTS = os.environ.get(
+    "DJANGO_ALLOWED_HOSTS",
+    ".elasticbeanstalk.com,localhost,127.0.0.1"
+).split(",")
+
+# Domínios confiáveis para CSRF em produção (excluindo localhost e 127.0.0.1)
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{host}"
+    for host in ALLOWED_HOSTS
+    if host not in ["localhost", "127.0.0.1"]
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -84,14 +95,16 @@ USE_I18N = True
 USE_TZ = True
 
 # STATIC FILES
-if os.environ.get("AWS_STORAGE_BUCKET_NAME"):
-    AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
-    AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "us-east-1")
+if bucket := os.environ.get("AWS_STORAGE_BUCKET_NAME"):
+    AWS_STORAGE_BUCKET_NAME = bucket
     AWS_S3_CUSTOM_DOMAIN = os.environ.get(
         "AWS_S3_CUSTOM_DOMAIN", f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
     )
-    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
-    STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    AWS_LOCATION = "static"
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/"
+    STATICFILES_STORAGE = "storages.backends.s3boto3.S3StaticStorage"
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
 else:
     STATIC_URL = "/static/"
     STATIC_ROOT = BASE_DIR / "staticfiles"
