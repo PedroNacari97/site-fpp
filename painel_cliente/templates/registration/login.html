@@ -13,7 +13,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
     }
 
@@ -92,7 +92,7 @@
 </head>
 <body>
   <div class="login-container">
-    <img src="{% static 'gestao/imagens/ncfly_logo.png' %}" alt="Logo NCfly" style="width: 200px; height: auto; display: block; margin: 0 auto 20px;">
+    <img src="{% static 'painel_cliente/imagens/ncfly_logo.png' %}" alt="Logo NCfly" style="width: 200px; height: auto; display: block; margin: 0 auto 20px;">
     <h2>Bem-vindo ao NCfly</h2>
 
     {% if error_message %}
@@ -101,11 +101,11 @@
 
     <form method="post">
       {% csrf_token %}
-      <label for="id_identifier">{{ form.identifier.label }}</label>
-      {{ form.identifier }}
+     <label for="id_identifier">Usuário/CPF</label>
+      <input type="text" name="identifier" id="id_identifier" required>
 
-      <label for="id_password">{{ form.password.label }}</label>
-      {{ form.password }}
+       <label for="id_password">Senha</label>
+      <input type="password" name="password" id="id_password" required>
 
       <label for="tipo_acesso">Tipo de Acesso</label>
       <select name="tipo_acesso" id="tipo_acesso">
