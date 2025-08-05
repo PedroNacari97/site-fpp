@@ -107,7 +107,7 @@ if bucket := os.environ.get("AWS_STORAGE_BUCKET_NAME"):
     AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
 else:
     STATIC_URL = "/static/"
-    STATIC_ROOT = BASE_DIR / "staticfiles"
+    STATIC_ROOT = "/var/app/current/staticfiles"
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
