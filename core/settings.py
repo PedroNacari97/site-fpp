@@ -8,7 +8,17 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'chave-super-secreta-para-dev')
 
 DEBUG = False  # Produção
 
-ALLOWED_HOSTS = ['.elasticbeanstalk.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.environ.get(
+    'DJANGO_ALLOWED_HOSTS',
+    '.elasticbeanstalk.com,localhost,127.0.0.1'
+).split(',')
+
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{h.lstrip('.')}"
+    for h in ALLOWED_HOSTS
+    if h.strip() and h not in ['*', 'localhost', '127.0.0.1']
+]
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
