@@ -109,3 +109,15 @@ LOGGING = {
         'django.template': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
     }
 }
+
+# === Autenticação: para onde redirecionar login/logout ===
+from django.urls import reverse_lazy
+
+# Quando uma view exigir login, redireciona para o login customizado
+LOGIN_URL = reverse_lazy('login_custom')
+
+# Após login bem-sucedido, redireciona para o painel
+LOGIN_REDIRECT_URL = reverse_lazy('painel_dashboard')
+
+# Após logout, volta para a tela de login customizado
+LOGOUT_REDIRECT_URL = reverse_lazy('login_custom')
