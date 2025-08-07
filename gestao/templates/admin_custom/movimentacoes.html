@@ -4,39 +4,35 @@
 {% block header_title %}Movimentações de {{ conta.programa.nome }}{% endblock %}
 
 {% block content %}
-<div style="background:#232345;padding:20px;border-radius:12px;">
-  <h3>Movimentações do Programa: {{ conta.programa.nome }} - Cliente: {{ conta.cliente.usuario.username }}</h3>
-  
-  <!-- Botão para nova movimentação -->
-  <a href="{% url 'admin_nova_movimentacao' conta.id %}" class="btn btn-primary" style="margin-bottom:16px;">
-      + Nova Movimentação
-  </a>
-  
-  <table style="width:100%;color:#fff;border-collapse:collapse;margin-bottom:20px;">
-    <thead>
-      <tr>
-        <th>Data</th>
-        <th>Pontos</th>
-        <th>Valor Pago</th>
-        <th>Descrição</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for mov in movimentacoes %}
-      <tr>
-        <td>{{ mov.data|date:"d/m/Y" }}</td>
-        <td>{{ mov.pontos }}</td>
-        <td>R$ {{ mov.valor_pago|floatformat:2 }}</td>
-        <td>{{ mov.descricao }}</td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="4" style="color:#fa7070;text-align:center;">Nenhuma movimentação lançada.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  
-  <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="btn btn-secondary">
-    Voltar para Programas
-  </a>
+<div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+    <h3 class="text-xl font-semibold">Movimentações do Programa: {{ conta.programa.nome }} - Cliente: {{ conta.cliente.usuario.username }}</h3>
+    <a href="{% url 'admin_nova_movimentacao' conta.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">+ Nova Movimentação</a>
+</div>
+<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
+    <table class="min-w-full text-sm">
+        <thead class="bg-zinc-700 text-zinc-200">
+            <tr>
+                <th class="p-2 text-left font-medium">Data</th>
+                <th class="p-2 text-left font-medium">Pontos</th>
+                <th class="p-2 text-left font-medium">Valor Pago</th>
+                <th class="p-2 text-left font-medium">Descrição</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mov in movimentacoes %}
+            <tr class="border-b border-zinc-700">
+                <td class="p-2">{{ mov.data|date:"d/m/Y" }}</td>
+                <td class="p-2">{{ mov.pontos }}</td>
+                <td class="p-2">R$ {{ mov.valor_pago|floatformat:2 }}</td>
+                <td class="p-2">{{ mov.descricao }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-red-400 py-4">Nenhuma movimentação lançada.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="mt-4">
+    <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="bg-zinc-600 hover:bg-zinc-700 text-white px-4 py-2 rounded">Voltar para Programas</a>
 </div>
 {% endblock %}
