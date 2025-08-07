@@ -1,12 +1,23 @@
 {% extends 'admin_custom/base_admin.html' %}
+{% load static %}
+{% block title %}Nova Movimentação{% endblock %}
+{% block header_title %}Nova Movimentação{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">{% endblock %}
 {% block content %}
-<div class="container" style="max-width:480px;margin:40px auto;">
-    <h2>Nova Movimentação para {{ conta.programa.nome }}</h2>
+<div class="form-wrapper max-w-md mx-auto">
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success" style="margin-top:20px;">Salvar</button>
-        <a href="{% url 'admin_movimentacoes' conta.id %}" class="btn" style="margin-left:10px;">Cancelar</a>
+        {% for field in form %}
+        <div class="form-group single">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="text-red-400 text-sm mt-1">{{ field.errors }}</div>{% endif %}
+        </div>
+        {% endfor %}
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Salvar</button>
+            <a href="{% url 'admin_movimentacoes' conta.id %}" class="ml-3 bg-zinc-600 hover:bg-zinc-700 text-white px-4 py-2 rounded">Cancelar</a>
+        </div>
     </form>
 </div>
 {% endblock %}
