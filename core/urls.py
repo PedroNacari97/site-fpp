@@ -16,20 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from painel_cliente.views import login_custom_view
 
 urlpatterns = [
-    # Rota inicial → seu login custom
-    path('', login_custom_view, name='home'),
+    # Painel do cliente (raiz = login e dashboard)
+    path('', include('painel_cliente.urls')),  # controla / e /dashboard/
 
     # Django Admin original
     path('django/admin/', admin.site.urls),
 
     # Seu painel admin customizado
     path('adm/', include('gestao.urls_admin')),
-
-    # Painel do cliente
-    path('', include('painel_cliente.urls')),
 
     # Login/logout via accounts
     path('accounts/', include('accounts.urls')),
