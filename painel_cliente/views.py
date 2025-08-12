@@ -130,10 +130,15 @@ def dashboard(request):
 def movimentacoes_programa(request, conta_id):
     conta = get_object_or_404(ContaFidelidade, id=conta_id, cliente__usuario=request.user)
     movimentacoes = conta.movimentacoes.all().order_by('-data')
-    return render(request, 'painel_cliente/movimentacoes.html', {
-        'movimentacoes': movimentacoes,
-        'conta': conta,
-    })
+
+    return render(
+        request,
+        'painel_cliente/movimentacoes.html',
+        {
+            'movimentacoes': movimentacoes,
+            'conta': conta,
+        },
+    )
 
 
 @login_required

@@ -4,70 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Painel do Cliente</title>
-    <link rel="stylesheet" href="{% static 'gestao/styles.css' %}">
-    <style>
-        body {
-            background: #181c25;
-            color: #fff;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        .container {
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 0 16px;
-        }
-        .painel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        h1, h2 {
-            color: #f8d16c;
-            margin-bottom: 0.7rem;
-        }
-        .painel-cards {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            margin-bottom: 2rem;
-        }
-        .card {
-            background: #23263a;
-            border-radius: 14px;
-            padding: 24px;
-            min-width: 220px;
-            flex: 1 1 240px;
-            box-shadow: 0 1px 8px #0002;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .valor {
-            font-size: 1.6rem;
-            font-weight: bold;
-            color: #f8d16c;
-        }
-        .label {
-            font-size: 1.06rem;
-            color: #c6c7db;
-        }
-        .card a {
-            background: #313455;
-            color: #f8d16c;
-            padding: 6px 12px;
-            border-radius: 8px;
-            text-decoration: none;
-            text-align: center;
-            margin-top: 8px;
-        }
-        .card a:hover {
-            background: #3d4063;
-        }
-        .section-title {
-            margin-top: 2.2rem;
-            color: #f8d16c;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'painel_cliente/painel.css' %}">
 </head>
 <body>
 <div class="container">
@@ -82,7 +19,7 @@
     <div class="painel-cards">
         {% for c in contas_info %}
         <div class="card">
-            <strong style="color:#f8d16c;">{{ c.programa }}</strong>
+            <strong>{{ c.programa }}</strong>
             <span class="label">Pontos acumulados</span>
             <span class="valor">{{ c.saldo_pontos }}</span>
             <span class="label">Valor total dos pontos</span>
@@ -94,14 +31,14 @@
             <a href="{% url 'movimentacoes_programa' c.id %}">Ver movimentações</a>
         </div>
         {% empty %}
-        <p style="color:#f8d16c;">Nenhum programa cadastrado.</p>
+        <p>Nenhum programa cadastrado.</p>
         {% endfor %}
     </div>
 
     <h2 class="section-title">Emissões e Hotéis</h2>
     <div class="painel-cards">
         <div class="card">
-            <strong style="color:#f8d16c; font-size: 1.2rem;">Emissões</strong>
+            <strong>Emissões</strong>
             <span class="label">Quantidade total de emissões</span>
             <span class="valor">{{ qtd_emissoes }}</span>
             <span class="label">Valor total gasto em pontos</span>
@@ -116,7 +53,7 @@
         </div>
 
         <div class="card">
-            <strong style="color:#f8d16c; font-size: 1.2rem;">Hotéis</strong>
+            <strong>Hotéis</strong>
             <span class="label">Quantidade de reservas de hotéis</span>
             <span class="valor">{{ qtd_hoteis }}</span>
             <span class="label">Valor de referência acumulado</span>

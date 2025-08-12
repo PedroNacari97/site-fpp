@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from django.contrib import messages
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
@@ -37,6 +37,7 @@ from ..models import (
 )
 from ..pdf_cotacao import gerar_pdf_cotacao
 from ..pdf_emissao import gerar_pdf_emissao
+from io import BytesIO
 import csv
 import json
 from datetime import timedelta
@@ -204,9 +205,7 @@ def cotacao_voo_pdf(request, cotacao_id):
         return permission_denied
     cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
     pdf_content = gerar_pdf_cotacao(cotacao)
-    response = HttpResponse(pdf_content, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="cotacao_{cotacao_id}.pdf"'
-    return response
+    return FileResponse(BytesIO(pdf_content), as_attachment=True, filename=f'cotacao_{cotacao_id}.pdf')
 
 
 @login_required
