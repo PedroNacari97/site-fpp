@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 import dj_database_url
+from django.urls import reverse_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -18,7 +19,6 @@ CSRF_TRUSTED_ORIGINS = [
     for h in ALLOWED_HOSTS
     if h.strip() and h not in ['*', 'localhost', '127.0.0.1']
 ]
-
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -64,27 +64,38 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# DATABASES
-DATABASES = {
-   'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# === Banco de dados: alterna entre SQLite e MySQL via ENV ===
+DB_ENGINE = os.getenv("DB_ENGINE", "sqlite")  # "sqlite" ou "mysql"
+
+if DB_ENGINE == "mysql":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": os.getenv("MYSQL_DB", "seu_banco"),
+            "USER": os.getenv("MYSQL_USER", "seu_usuario"),
+            "PASSWORD": os.getenv("MYSQL_PASSWORD", "sua_senha"),
+            "HOST": os.getenv("MYSQL_HOST", "127.0.0.1"),
+            "PORT": os.getenv("MYSQL_PORT", "3306"),
+            "CONN_MAX_AGE": 60,
+            "OPTIONS": {
+                "charset": "utf8mb4",
+                "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 LANGUAGE_CODE = 'en-us'
@@ -92,12 +103,13 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# STATIC FILES
+# === Arquivos estáticos ===
 if os.environ.get("AWS_STORAGE_BUCKET_NAME"):
     AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
     AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "us-east-1")
     AWS_S3_CUSTOM_DOMAIN = os.environ.get(
-        "AWS_S3_CUSTOM_DOMAIN", f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+        "AWS_S3_CUSTOM_DOMAIN",
+        f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
     )
     STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
     STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
@@ -119,14 +131,7 @@ LOGGING = {
     }
 }
 
-# === Autenticação: para onde redirecionar login/logout ===
-from django.urls import reverse_lazy
-
-# Quando uma view exigir login, redireciona para o login customizado
+# === URLs de login/logout ===
 LOGIN_URL = reverse_lazy('login_custom')
-
-# Após login bem-sucedido, redireciona para o painel
 LOGIN_REDIRECT_URL = reverse_lazy('painel_dashboard')
-
-# Após logout, volta para a tela de login customizado
 LOGOUT_REDIRECT_URL = reverse_lazy('login_custom')
