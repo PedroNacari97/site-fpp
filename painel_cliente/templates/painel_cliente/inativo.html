@@ -1,15 +1,11 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Acesso Bloqueado</title>
-    <link rel="stylesheet" href="{% static 'painel_cliente/painel.css' %}">
-</head>
-<body>
-    <div class="container" style="text-align:center;">
+{% extends 'painel_cliente/base_painel.html' %}
+
+{% block title %}Acesso Bloqueado{% endblock %}
+
+{% block content %}
+    <div style="text-align:center;">
         <h1>Conta Inativa</h1>
         <p>Seu acesso foi bloqueado. Entre em contato com o administrador.</p>
     </div>
-</body>
-</html>
+{% endblock %}
+

@@ -1,24 +1,31 @@
+"""Views for the Painel do Cliente app."""
+
 from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+
 from services.pdf_service import emissao_pdf_response
-from gestao.models import (
-    ContaFidelidade,
-    EmissaoPassagem,
-    EmissaoHotel,
-    ValorMilheiro,
-    Cliente,
-    AcessoClienteLog,
+from gestao.models import Cliente
+from repositories.painel_repository import (
+    get_contas_by_user,
+    get_emissoes_passagem_by_user,
+    get_emissoes_hotel_by_user,
+    get_conta_by_id_for_user,
+    get_emissao_passagem_for_user,
 )
 
 
 class LoginForm(forms.Form):
+    """Simple form to capture login credentials."""
+
     identifier = forms.CharField(label="Usuário/CPF")
     password = forms.CharField(label="Senha", widget=forms.PasswordInput)
 
 
 def login_custom_view(request):
+    """Custom login view handling different access types."""
+
     error_message = None
     form = LoginForm(request.POST or None)
 
@@ -93,16 +100,16 @@ def login_custom_view(request):
 
 @login_required
 def sair(request):
+    """Logout the current user and redirect to login."""
     logout(request)
     return redirect("login_custom")
 
 
 def build_dashboard_context(user):
-    contas = ContaFidelidade.objects.filter(cliente__usuario=user).select_related(
-        "programa"
-    )
-    emissoes = EmissaoPassagem.objects.filter(cliente__usuario=user)
-    hoteis = EmissaoHotel.objects.filter(cliente__usuario=user)
+    """Build context data for the dashboard page."""
+    contas = get_contas_by_user(user)
+    emissoes = get_emissoes_passagem_by_user(user)
+    hoteis = get_emissoes_hotel_by_user(user)
 
     contas_info = []
     for conta in contas:
@@ -142,6 +149,7 @@ def build_dashboard_context(user):
 
 @login_required
 def dashboard(request):
+    """Render the main dashboard for an authenticated client."""
     cliente = get_object_or_404(Cliente, usuario=request.user)
     if not cliente.ativo:
         return render(request, "painel_cliente/inativo.html")
@@ -151,9 +159,8 @@ def dashboard(request):
 
 @login_required
 def movimentacoes_programa(request, conta_id):
-    conta = get_object_or_404(
-        ContaFidelidade, id=conta_id, cliente__usuario=request.user
-    )
+    """List points transactions for a fidelity account."""
+    conta = get_conta_by_id_for_user(conta_id, request.user)
     movimentacoes = conta.movimentacoes.all().order_by("-data")
 
     return render(
@@ -168,8 +175,9 @@ def movimentacoes_programa(request, conta_id):
 
 @login_required
 def painel_emissoes(request):
-    conta = ContaFidelidade.objects.filter(cliente__usuario=request.user).first()
-    emissoes = EmissaoPassagem.objects.filter(cliente__usuario=request.user)
+    """Display detailed flight emissions for the user."""
+    conta = get_contas_by_user(request.user).first()
+    emissoes = get_emissoes_passagem_by_user(request.user)
     total_pago = sum(float(e.valor_pago or 0) for e in emissoes)
     return render(
         request,
@@ -189,15 +197,14 @@ def emissao_pdf(request, emissao_id):
     A lógica de geração do PDF foi extraída para ``services.pdf_service``
     para manter a view responsável apenas pelo fluxo HTTP.
     """
-    emissao = get_object_or_404(
-        EmissaoPassagem, id=emissao_id, cliente__usuario=request.user
-    )
+    emissao = get_emissao_passagem_for_user(emissao_id, request.user)
     return emissao_pdf_response(emissao)
 
 
 @login_required
 def painel_hoteis(request):
-    emissoes = EmissaoHotel.objects.filter(cliente__usuario=request.user)
+    """Display hotel reservations for the user."""
+    emissoes = get_emissoes_hotel_by_user(request.user)
     total_pago = sum(float(e.valor_pago or 0) for e in emissoes)
     total_referencia = sum(float(e.valor_referencia or 0) for e in emissoes)
     total_economia = sum(

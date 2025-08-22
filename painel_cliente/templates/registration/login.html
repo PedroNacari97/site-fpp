@@ -1,15 +1,10 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <title>Login - NCfly</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="{% static 'painel_cliente/painel.css' %}">
-</head>
-<body>
+{% extends 'painel_cliente/base_painel.html' %}
+
+{% block title %}Login - NCfly{% endblock %}
+
+{% block content %}
   <div class="login-container">
-    <img src="{% static 'gestao/imagens/ncfly_logo.png' %}" alt="Logo NCfly" style="width: 200px; height: auto; display: block;margin: 0 auto 20px;">
+    <img src="{% static 'painel_cliente/ncfly_logo.png' %}" alt="Logo NCfly" style="width: 200px; height: auto; display: block;margin: 0 auto 20px;">
     <h2>Bem-vindo ao NCfly</h2>
 
     {% if error_message %}
@@ -35,5 +30,5 @@
       <input type="submit" value="Entrar">
     </form>
   </div>
-</body>
-</html>
+{% endblock %}
+
