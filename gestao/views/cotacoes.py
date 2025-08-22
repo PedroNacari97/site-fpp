@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import HttpResponse, FileResponse
 from django.contrib import messages
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
@@ -35,9 +34,7 @@ from ..models import (
     Escala,
     CompanhiaAerea,
 )
-from ..pdf_cotacao import gerar_pdf_cotacao
-from ..pdf_emissao import gerar_pdf_emissao
-from io import BytesIO
+from services.pdf_service import cotacao_pdf_response
 import csv
 import json
 from datetime import timedelta
@@ -49,7 +46,7 @@ from .permissions import require_admin_or_operator
 # --- COTAÇÕES ---
 @login_required
 def admin_cotacoes(request):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     if request.method == "POST":
         programa_nome = request.POST.get("programa_nome")
@@ -76,7 +73,7 @@ def admin_cotacoes(request):
 
 @login_required
 def deletar_cotacao(request, cotacao_id):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
@@ -86,14 +83,15 @@ def deletar_cotacao(request, cotacao_id):
     return redirect("admin_cotacoes")
 
 
-
 # --- COTAÇÕES DE VOO ---
 @login_required
 def admin_cotacoes_voo(request):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     busca = request.GET.get("busca", "")
-    cotacoes = CotacaoVoo.objects.all().select_related("cliente__usuario", "origem", "destino")
+    cotacoes = CotacaoVoo.objects.all().select_related(
+        "cliente__usuario", "origem", "destino"
+    )
     if busca:
         cotacoes = cotacoes.filter(
             Q(cliente__usuario__username__icontains=busca)
@@ -101,12 +99,16 @@ def admin_cotacoes_voo(request):
             | Q(origem__nome__icontains=busca)
             | Q(destino__nome__icontains=busca)
         )
-    return render(request, "admin_custom/cotacoes_voo.html", {"cotacoes": cotacoes, "busca": busca})
+    return render(
+        request,
+        "admin_custom/cotacoes_voo.html",
+        {"cotacoes": cotacoes, "busca": busca},
+    )
 
 
 @login_required
 def nova_cotacao_voo(request):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     initial = {}
     emissao_id = request.GET.get("emissao")
@@ -114,7 +116,9 @@ def nova_cotacao_voo(request):
         emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
         initial = {
             "cliente": emissao.cliente_id,
-            "companhia_aerea": emissao.companhia_aerea.nome if emissao.companhia_aerea else "",
+            "companhia_aerea": (
+                emissao.companhia_aerea.nome if emissao.companhia_aerea else ""
+            ),
             "origem": emissao.aeroporto_partida_id,
             "destino": emissao.aeroporto_destino_id,
             "data_ida": emissao.data_ida,
@@ -135,7 +139,9 @@ def nova_cotacao_voo(request):
                     data_volta=cot.data_volta,
                     programa=cot.programa,
                     qtd_passageiros=cot.qtd_passageiros,
-                    companhia_aerea=CompanhiaAerea.objects.filter(nome=cot.companhia_aerea).first(),
+                    companhia_aerea=CompanhiaAerea.objects.filter(
+                        nome=cot.companhia_aerea
+                    ).first(),
                     valor_referencia=cot.valor_passagem,
                     valor_pago=cot.valor_vista,
                     pontos_utilizados=cot.milhas,
@@ -151,7 +157,7 @@ def nova_cotacao_voo(request):
 
 @login_required
 def editar_cotacao_voo(request, cotacao_id):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
     if request.method == "POST":
@@ -167,7 +173,9 @@ def editar_cotacao_voo(request, cotacao_id):
                     data_volta=cot.data_volta,
                     programa=cot.programa,
                     qtd_passageiros=cot.qtd_passageiros,
-                    companhia_aerea=CompanhiaAerea.objects.filter(nome=cot.companhia_aerea).first(),
+                    companhia_aerea=CompanhiaAerea.objects.filter(
+                        nome=cot.companhia_aerea
+                    ).first(),
                     valor_referencia=cot.valor_passagem,
                     valor_pago=cot.valor_vista,
                     pontos_utilizados=cot.milhas,
@@ -183,7 +191,7 @@ def editar_cotacao_voo(request, cotacao_id):
 
 @login_required
 def deletar_cotacao_voo(request, cotacao_id):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
@@ -192,50 +200,57 @@ def deletar_cotacao_voo(request, cotacao_id):
     messages.success(request, "Cotação de voo deletada com sucesso.")
     return redirect("admin_cotacoes_voo")
 
+
 @login_required
 def admin_valor_milheiro(request):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     cotacoes = ValorMilheiro.objects.all().order_by("programa_nome")
     return render(request, "admin_custom/valor_milheiro.html", {"cotacoes": cotacoes})
 
+
 @login_required
 def cotacao_voo_pdf(request, cotacao_id):
-    if (permission_denied := require_admin_or_operator(request)):
+    """Download da cotação de voo em PDF."""
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
-    pdf_content = gerar_pdf_cotacao(cotacao)
-    return FileResponse(BytesIO(pdf_content), as_attachment=True, filename=f'cotacao_{cotacao_id}.pdf')
+    return cotacao_pdf_response(cotacao)
 
 
 @login_required
 def calculadora_cotacao(request):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     resultado = None
-    if request.method == 'POST':
+    if request.method == "POST":
         form = CalculadoraCotacaoForm(request.POST)
         if form.is_valid():
-            milhas = form.cleaned_data['milhas']
-            valor_milheiro = form.cleaned_data['valor_milheiro']
-            taxas = form.cleaned_data['taxas']
-            juros = form.cleaned_data['juros']
-            desconto = form.cleaned_data['desconto']
-            valor_passagem = form.cleaned_data['valor_passagem']
-            parcelas = form.cleaned_data['parcelas'] or 1
+            milhas = form.cleaned_data["milhas"]
+            valor_milheiro = form.cleaned_data["valor_milheiro"]
+            taxas = form.cleaned_data["taxas"]
+            juros = form.cleaned_data["juros"]
+            desconto = form.cleaned_data["desconto"]
+            valor_passagem = form.cleaned_data["valor_passagem"]
+            parcelas = form.cleaned_data["parcelas"] or 1
 
-            base = (Decimal(milhas) / Decimal('1000')) * Decimal(valor_milheiro) + Decimal(taxas)
+            base = (Decimal(milhas) / Decimal("1000")) * Decimal(
+                valor_milheiro
+            ) + Decimal(taxas)
             valor_parcelado = base * Decimal(juros)
             valor_vista = valor_parcelado * Decimal(desconto)
             economia = Decimal(valor_passagem) - valor_vista
             parcela = valor_parcelado / Decimal(parcelas)
             resultado = {
-                'valor_parcelado': round(valor_parcelado, 2),
-                'valor_vista': round(valor_vista, 2),
-                'economia': round(economia, 2),
-                'parcela': round(parcela, 2),
+                "valor_parcelado": round(valor_parcelado, 2),
+                "valor_vista": round(valor_vista, 2),
+                "economia": round(economia, 2),
+                "parcela": round(parcela, 2),
             }
     else:
         form = CalculadoraCotacaoForm()
-    return render(request, 'admin_custom/calculadora_cotacao.html', {'form': form, 'resultado': resultado})
-
+    return render(
+        request,
+        "admin_custom/calculadora_cotacao.html",
+        {"form": form, "resultado": resultado},
+    )

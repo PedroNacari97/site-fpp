@@ -1,13 +1,8 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Painel do Cliente</title>
-    <link rel="stylesheet" href="{% static 'painel_cliente/painel.css' %}">
-</head>
-<body>
-<div class="container">
+{% extends 'painel_cliente/base_painel.html' %}
+
+{% block title %}Painel do Cliente{% endblock %}
+
+{% block content %}
     <div class="painel-header">
         <h1>Bem-vindo, {{ request.user.first_name|default:request.user.username }}!</h1>
         <form action="{% url 'logout' %}" method="post">{% csrf_token %}
@@ -65,6 +60,4 @@
             <a href="{% url 'painel_hoteis' %}">Ver detalhes</a>
         </div>
     </div>
-</div>
-</body>
-</html>
+{% endblock %}

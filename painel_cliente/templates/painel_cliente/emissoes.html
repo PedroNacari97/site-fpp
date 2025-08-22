@@ -1,13 +1,8 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Emissões Detalhadas</title>
-    <link rel="stylesheet" href="{% static 'painel_cliente/painel.css' %}">
-</head>
-<body>
-    <div class="container">
+{% extends 'painel_cliente/base_painel.html' %}
+
+{% block title %}Emissões Detalhadas{% endblock %}
+
+{% block content %}
         <a class="back-link" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
         <h1>Emissões Detalhadas</h1>
         <table>
@@ -60,6 +55,4 @@
                 </tr>
             </tfoot>
         </table>
-    </div>
-</body>
-</html>
+{% endblock %}
