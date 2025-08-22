@@ -1,13 +1,8 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Emissões de Hotéis</title>
-    <link rel="stylesheet" href="{% static 'painel_cliente/painel.css' %}">
-</head>
-<body>
-    <div class="container">
+{% extends 'painel_cliente/base_painel.html' %}
+
+{% block title %}Emissões de Hotéis{% endblock %}
+
+{% block content %}
         <h1>Emissões de Hotéis</h1>
         <table>
             <thead>
@@ -36,8 +31,6 @@
                 </tr>
                 {% endfor %}
             </tbody>
-            <tfoot>
         </table>
-    </div>
-</body>
-</html>
+{% endblock %}
+
