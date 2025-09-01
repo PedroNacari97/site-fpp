@@ -9,4 +9,5 @@ urlpatterns = [
     path('emissoes/<int:emissao_id>/pdf/', views.emissao_pdf, name='emissao_pdf'),
     path('hoteis/', views.painel_hoteis, name='painel_hoteis'),
     path('movimentacoes/<int:conta_id>/', views.movimentacoes_programa, name='movimentacoes_programa'),
-]
+    path("", views.login_custom_view, name="login_custom"),       # raiz aponta para a view correta
+   ]
