@@ -17,11 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from core.views import healthcheck
-from accounts.views import custom_login   # <<< use a view que existe
 
 urlpatterns = [
     path("health/", healthcheck, name="healthcheck"),
-    path("login/", custom_login, name="login_custom_root"),   # <<< troquei aqui
     path("", include("painel_cliente.urls")),
     path("django/admin/", admin.site.urls),
     path("adm/", include("gestao.urls_admin")),

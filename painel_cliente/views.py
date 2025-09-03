@@ -1,7 +1,6 @@
 """Views for the Painel do Cliente app."""
 
-from django import forms
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
@@ -14,89 +13,6 @@ from repositories.painel_repository import (
     get_conta_by_id_for_user,
     get_emissao_passagem_for_user,
 )
-
-
-class LoginForm(forms.Form):
-    """Simple form to capture login credentials."""
-
-    identifier = forms.CharField(label="Usuário/CPF")
-    password = forms.CharField(label="Senha", widget=forms.PasswordInput)
-
-
-def login_custom_view(request):
-    """Custom login view handling different access types."""
-
-    error_message = None
-    form = LoginForm(request.POST or None)
-
-    mensagens_erro = {
-        "invalido": "Usuário ou senha inválidos.",
-        "inativo": "Sua conta está inativa. Entre em contato com o administrador.",
-        "sem_permissao_admin": "Você não tem permissão de administrador.",
-        "sem_permissao_operador": "Você não tem permissão de operador.",
-        "sem_permissao_superadmin": "Você não tem permissão de super admin.",
-        "acesso_errado": "Selecione 'Administrador' para acessar o painel admin.",
-    }
-
-    if request.method == "POST" and form.is_valid():
-        identifier = form.cleaned_data["identifier"]
-        password = form.cleaned_data["password"]
-        tipo_acesso = request.POST.get("tipo_acesso")
-        username = identifier
-
-        cliente_obj = (
-            Cliente.objects.filter(cpf=identifier).first()
-            if tipo_acesso == "cliente"
-            else None
-        )
-        if cliente_obj and tipo_acesso == "cliente":
-            username = cliente_obj.usuario.username
-
-        user = authenticate(request, username=username, password=password)
-        if user:
-            cliente_obj = Cliente.objects.filter(usuario=user).first()
-
-            if tipo_acesso == "admin":
-                if (
-                    user.is_staff
-                    and not user.is_superuser
-                    and cliente_obj
-                    and cliente_obj.perfil == "admin"
-                ):
-                    login(request, user)
-                    return redirect("admin_dashboard")
-                error_message = mensagens_erro["sem_permissao_admin"]
-
-            elif tipo_acesso == "operador":
-                if user.is_staff and cliente_obj and cliente_obj.perfil == "operador":
-                    login(request, user)
-                    return redirect("admin_dashboard")
-                error_message = mensagens_erro["sem_permissao_operador"]
-
-            elif tipo_acesso == "superadmin":
-                if user.is_superuser:
-                    login(request, user)
-                    return redirect("admin_dashboard")
-                error_message = mensagens_erro["sem_permissao_superadmin"]
-
-            else:  # Cliente comum
-                if not (user.is_staff or user.is_superuser):
-                    if cliente_obj and not cliente_obj.ativo:
-                        error_message = mensagens_erro["inativo"]
-                    else:
-                        login(request, user)
-                        return redirect("painel_dashboard")
-                else:
-                    error_message = mensagens_erro["acesso_errado"]
-        else:
-            error_message = mensagens_erro["invalido"]
-
-    return render(
-        request,
-        "registration/login.html",
-        {"form": form, "error_message": error_message},
-    )
-
 
 @login_required
 def sair(request):

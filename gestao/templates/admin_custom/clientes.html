@@ -1,65 +1,47 @@
 {% extends "admin_custom/base_admin.html" %}
 {% load static %}
-{% block title %}Cliente {{ cliente_obj }}{% endblock %}
-{% block header_title %}Painel do Cliente: {{ cliente_obj }}{% endblock %}
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'painel_cliente/painel.css' %}">
-{% endblock %}
+{% block title %}Clientes{% endblock %}
+{% block header_title %}Clientes{% endblock %}
+
 {% block content %}
 <div class="container">
-    <div class="painel-header">
-        <h1>Bem-vindo, {{ cliente_obj.usuario.first_name|default:cliente_obj.usuario.username }}!</h1>
-    </div>
-
-    <h2 class="section-title">Programas de Fidelidade</h2>
-    <div class="painel-cards">
-        {% for c in contas_info %}
-        <div class="card">
-            <strong>{{ c.programa }}</strong>
-            <span class="label">Pontos acumulados</span>
-            <span class="valor">{{ c.saldo_pontos }}</span>
-            <span class="label">Valor total dos pontos</span>
-            <span class="valor">R$ {{ c.valor_total|floatformat:2 }}</span>
-            <span class="label">Valor médio por 1.000 pontos</span>
-            <span class="valor">R$ {{ c.valor_medio|floatformat:2 }}</span>
-            <span class="label">Valor de referência</span>
-            <span class="valor">R$ {{ c.valor_referencia|floatformat:2 }}</span>
-            <a href="{% url 'movimentacoes_programa' c.id %}">Ver movimentações</a>
-        </div>
-        {% empty %}
-        <p>Nenhum programa cadastrado.</p>
-        {% endfor %}
-    </div>
-
-    <h2 class="section-title">Emissões e Hotéis</h2>
-    <div class="painel-cards">
-        <div class="card">
-            <strong>Emissões</strong>
-            <span class="label">Quantidade total de emissões</span>
-            <span class="valor">{{ qtd_emissoes }}</span>
-            <span class="label">Valor total gasto em pontos</span>
-            <span class="valor">{{ pontos_totais_utilizados }}</span>
-            <span class="label">Valor de referência acumulado</span>
-            <span class="valor">R$ {{ valor_total_referencia|floatformat:2 }}</span>
-            <span class="label">Valor total pago</span>
-            <span class="valor">R$ {{ valor_total_pago|floatformat:2 }}</span>
-            <span class="label">Valor total economizado</span>
-            <span class="valor">R$ {{ valor_total_economizado|floatformat:2 }}</span>
-            <a href="{% url 'painel_emissoes' %}">Ver detalhes</a>
-        </div>
-
-        <div class="card">
-            <strong>Hotéis</strong>
-            <span class="label">Quantidade de reservas de hotéis</span>
-            <span class="valor">{{ qtd_hoteis }}</span>
-            <span class="label">Valor de referência acumulado</span>
-            <span class="valor">R$ {{ valor_total_hoteis_referencia|floatformat:2 }}</span>
-            <span class="label">Valor total pago</span>
-            <span class="valor">R$ {{ valor_total_hoteis|floatformat:2 }}</span>
-            <span class="label">Valor total economizado</span>
-            <span class="valor">R$ {{ valor_total_hoteis_economia|floatformat:2 }}</span>
-            <a href="{% url 'painel_hoteis' %}">Ver detalhes</a>
-        </div>
-    </div>
-</div>
+    <h1>Lista de Clientes</h1>
+    <form method="get" class="mb-3">
+        <input type="text" name="busca" placeholder="Buscar" value="{{ busca }}" />
+        <button type="submit">Buscar</button>
+    </form>
+    <p>Total de clientes: {{ total_clientes }}</p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Usuário</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in page_obj %}
+            <tr>
+                <td>{{ cliente.usuario.first_name|default:cliente.usuario.username }}</td>
+                <td>{{ cliente.usuario.username }}</td>
+                <td>{% if cliente.ativo %}Ativo{% else %}Inativo{% endif %}</td>
+                <td>
+                    <a href="{% url 'admin_visualizar_cliente' cliente.id %}">Ver</a>
+                    <a href="{% url 'admin_editar_cliente' cliente.id %}">Editar</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">Nenhum cliente encontrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}">Anterior</a>
+        {% endif %}
+        <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}">Próxima</a>
+        {% endif %}
 {% endblock %}
