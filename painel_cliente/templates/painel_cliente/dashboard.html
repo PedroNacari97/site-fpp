@@ -11,7 +11,7 @@
     </div>
 
     <h2 class="section-title">Programas de Fidelidade</h2>
-    <div class="painel-cards">
+     <div class="painel-cards programas-grid">
         {% for c in contas_info %}
         <div class="card">
             <strong>{{ c.programa }}</strong>
@@ -36,8 +36,6 @@
             <strong>Emissões</strong>
             <span class="label">Quantidade total de emissões</span>
             <span class="valor">{{ qtd_emissoes }}</span>
-            <span class="label">Valor total gasto em pontos</span>
-            <span class="valor">{{ pontos_totais_utilizados }}</span>
             <span class="label">Valor de referência acumulado</span>
             <span class="valor">R$ {{ valor_total_referencia|floatformat:2 }}</span>
             <span class="label">Valor total pago</span>

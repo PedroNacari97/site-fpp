@@ -3,8 +3,8 @@ from accounts.views import custom_login  # importar a view de login compartilhad
 from . import views
 
 urlpatterns = [
-    path("", custom_login, name="login_custom"),      # usar a view importada
-    path('', views.dashboard, name='painel_dashboard'),  # dashboard cliente
+    path("login/", custom_login, name="login_custom"),
+    path("", views.dashboard, name="painel_dashboard"),  
     path("logout/", views.sair, name="logout"),
     path("emissoes/", views.painel_emissoes, name="painel_emissoes"),
     path("emissoes/<int:emissao_id>/pdf/", views.emissao_pdf, name="emissao_pdf"),

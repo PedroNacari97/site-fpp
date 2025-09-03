@@ -18,7 +18,7 @@ from repositories.painel_repository import (
 def sair(request):
     """Logout the current user and redirect to login."""
     logout(request)
-    return redirect("login_custom")
+    return redirect("/login/")
 
 
 def build_dashboard_context(user):
