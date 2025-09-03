@@ -83,7 +83,8 @@ subprocess.run([
     "eb", "setenv",
     f"DJANGO_SECRET_KEY={secret_key}",
     f"DJANGO_ALLOWED_HOSTS={allowed_hosts}",
-    f"DATABASE_URL={db_url}"
+    f"DATABASE_URL={db_url}",
+    "DJANGO_DEBUG=False",
 ])
 
 print("\n🎯 Tudo pronto! Agora é só fazer:")

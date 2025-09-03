@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
+    <img src="{% static 'painel_cliente/ncfly_logo.png' %}" alt="Logo NCfly" style="width: 200px; height: auto; display: block;margin: 0 auto 20px;">
     <link rel="stylesheet" href="{% static 'painel_cliente/painel.css' %}">
 </head>
-<body>
+<body class="login-page">
     <div class="login-container">
         <h2>Entrar</h2>
         {% if form.errors %}

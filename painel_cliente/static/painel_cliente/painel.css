@@ -143,6 +143,22 @@ td {
   background: #2c5282;
 }
 
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.login-page .container {
+  margin: 0 auto;
+}
+login-logo {
+  width: 50px;
+  margin-bottom: 20px;
+}
+
+
 .login-container {
   background: #ffffff;
   border-radius: 18px;
