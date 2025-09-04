@@ -11,7 +11,7 @@
         <button type="submit">Buscar</button>
     </form>
     <p>Total de clientes: {{ total_clientes }}</p>
-    <table class="table">
+    <table>
         <thead>
             <tr>
                 <th>Nome</th>
@@ -44,4 +44,6 @@
         {% if page_obj.has_next %}
             <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}">Próxima</a>
         {% endif %}
+    </div>
+</div>
 {% endblock %}
