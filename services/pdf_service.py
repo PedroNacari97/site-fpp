@@ -26,6 +26,7 @@ def cotacao_pdf_response(cotacao, *, filename_prefix="cotacao"):
     """
     pdf_content = gerar_pdf_cotacao(cotacao)
     buffer = BytesIO(pdf_content)
+    buffer.seek(0)
     return FileResponse(
         buffer,
         as_attachment=True,
