@@ -3,52 +3,31 @@
 {% block header_title %}Auditoria{% endblock %}
 {% block menu_auditoria %}bg-zinc-700 text-white{% endblock %}
 
-{% block extra_head %}
-<style>
-body {
-  background: #18181b;
-  color: #f4f4f5;
-  font-family: 'Inter', Arial, sans-serif;
-}
-.content {
-  background: #18181b;
-}
-.table-log {
-  width: 100%;
-  border-collapse: collapse;
-}
-.table-log th,
-.table-log td {
-  padding: 8px 12px;
-  border: 1px solid #3f3f46;
-  text-align: left;
-  color: #f4f4f5;
-  font-size: 0.9rem;
-}
-.table-log th {
-  background: #3f3f46;
-  font-weight: 600;
-}
-</style>
-{% endblock %}
+{% block extra_head %}{% endblock %}
 
 {% block content %}
-<table class="table-log">
-    <tr>
-        <th>Data</th>
-        <th>Usuário</th>
-        <th>Método</th>
-        <th>Rota</th>
-    </tr>
-    {% for log in logs %}
-    <tr>
-        <td>{{ log.timestamp|date:'d/m/Y H:i' }}</td>
-        <td>{{ log.user.username }}</td>
-        <td>{{ log.method }}</td>
-        <td>{{ log.path }}</td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="4">Nenhum registro encontrado.</td></tr>
-    {% endfor %}
-</table>
+<div class="overflow-x-auto">
+    <table>
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Usuário</th>
+                <th>Método</th>
+                <th>Rota</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.timestamp|date:'d/m/Y H:i' }}</td>
+                <td>{{ log.user.username }}</td>
+                <td>{{ log.method }}</td>
+                <td>{{ log.path }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">Nenhum registro encontrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

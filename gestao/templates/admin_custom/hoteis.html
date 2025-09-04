@@ -5,42 +5,42 @@
 {% block content %}
 <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
     <form method="get" class="flex gap-3">
-        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
-        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
+        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." />
+        <button type="submit">Buscar</button>
     </form>
-    <a href="{% url 'admin_nova_emissao_hotel' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Nova Emissão</a>
+    <a href="{% url 'admin_nova_emissao_hotel' %}" class="btn">Nova Emissão</a>
 </div>
-<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
-    <table class="min-w-full text-sm">
-        <thead class="bg-zinc-700 text-zinc-200">
+<div class="overflow-x-auto">
+    <table>
+        <thead>
             <tr>
-                <th class="p-2 text-left font-medium">Cliente</th>
-                <th class="p-2 text-left font-medium">Hotel</th>
-                <th class="p-2 text-left font-medium">Check-in</th>
-                <th class="p-2 text-left font-medium">Check-out</th>
-                <th class="p-2 text-left font-medium">Valor Ref.</th>
-                <th class="p-2 text-left font-medium">Pago</th>
-                <th class="p-2 text-left font-medium">Economia</th>
-                <th class="p-2 text-left font-medium">Ações</th>
+                <th>Cliente</th>
+                <th>Hotel</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Valor Ref.</th>
+                <th>Pago</th>
+                <th>Economia</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
             {% for e in emissoes %}
-            <tr class="border-b border-zinc-700">
-                <td class="p-2">{{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}</td>
-                <td class="p-2">{{ e.nome_hotel }}</td>
-                <td class="p-2">{{ e.check_in|date:"d/m/Y" }}</td>
-                <td class="p-2">{{ e.check_out|date:"d/m/Y" }}</td>
-                <td class="p-2">R$ {{ e.valor_referencia|floatformat:2 }}</td>
-                <td class="p-2">R$ {{ e.valor_pago|floatformat:2 }}</td>
-                <td class="p-2">R$ {{ e.economia_obtida|floatformat:2 }}</td>
-                <td class="p-2">
-                    <a href="{% url 'admin_editar_emissao_hotel' e.id %}" class="text-blue-400">Editar</a> |
-                    <a href="{% url 'admin_deletar_emissao_hotel' e.id %}" class="text-blue-400">Deletar</a>
+            <tr>
+                <td>{{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}</td>
+                <td>{{ e.nome_hotel }}</td>
+                <td>{{ e.check_in|date:"d/m/Y" }}</td>
+                <td>{{ e.check_out|date:"d/m/Y" }}</td>
+                <td>R$ {{ e.valor_referencia|floatformat:2 }}</td>
+                <td>R$ {{ e.valor_pago|floatformat:2 }}</td>
+                <td>R$ {{ e.economia_obtida|floatformat:2 }}</td>
+                <td>
+                    <a href="{% url 'admin_editar_emissao_hotel' e.id %}">Editar</a> |
+                    <a href="{% url 'admin_deletar_emissao_hotel' e.id %}">Deletar</a>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="8" class="text-center text-red-400 py-4">Nenhuma emissão encontrada.</td></tr>
+            <tr><td colspan="8">Nenhuma emissão encontrada.</td></tr>
             {% endfor %}
         </tbody>
     </table>
