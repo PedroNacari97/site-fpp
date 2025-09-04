@@ -13,27 +13,27 @@
     </form>
     <a href="{% url 'admin_novo_aeroporto' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Novo Aeroporto</a>
 </div>
-<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
-    <table class="min-w-full text-sm">
-        <thead class="bg-zinc-700 text-zinc-200">
+<div class="overflow-x-auto">
+    <table>
+        <thead>
             <tr>
-                <th class="p-2 text-left font-medium">Sigla</th>
-                <th class="p-2 text-left font-medium">Nome</th>
-                <th class="p-2 text-left font-medium">Ações</th>
+                <th>Sigla</th>
+                <th>Nome</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
             {% for a in aeroportos %}
-            <tr class="border-b border-zinc-700">
-                <td class="p-2">{{ a.sigla }}</td>
-                <td class="p-2">{{ a.nome }}</td>
-                <td class="p-2">
+            <tr>
+                <td>{{ a.sigla }}</td>
+                <td>{{ a.nome }}</td>
+                <td>
                     <a href="{% url 'admin_editar_aeroporto' a.id %}" class="text-blue-400">Editar</a> |
                     <a href="{% url 'admin_deletar_aeroporto' a.id %}" class="text-blue-400">Deletar</a>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="3" class="text-center text-red-400 py-4">Nenhum aeroporto cadastrado.</td></tr>
+            <tr><td colspan="3">Nenhum aeroporto cadastrado.</td></tr>
             {% endfor %}
         </tbody>
     </table>

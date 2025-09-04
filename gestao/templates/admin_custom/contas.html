@@ -10,36 +10,36 @@
     </form>
     <a href="{% url 'admin_nova_conta' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Nova Conta</a>
 </div>
-<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
-    <table class="min-w-full text-sm">
-        <thead class="bg-zinc-700 text-zinc-200">
+<div class="overflow-x-auto">
+    <table>
+        <thead>
             <tr>
-                <th class="p-2 text-left font-medium">Usuário</th>
-                <th class="p-2 text-left font-medium">Programa</th>
-                <th class="p-2 text-left font-medium">Saldo Pontos</th>
-                <th class="p-2 text-left font-medium">Valor Pago</th>
-                <th class="p-2 text-left font-medium">Valor Médio / mil</th>
-                <th class="p-2 text-left font-medium">Ações</th>
+                <th>Usuário</th>
+                <th>Programa</th>
+                <th>Saldo Pontos</th>
+                <th>Valor Pago</th>
+                <th>Valor Médio / mil</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
             {% for conta in page_obj %}
-            <tr class="border-b border-zinc-700">
-                <td class="p-2">
+            <tr>
+                <td>
                     <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded mr-2 text-xs">Programas</a>
                     {{ conta.cliente.usuario.username }}
                 </td>
-                <td class="p-2">{{ conta.programa.nome }}</td>
-                <td class="p-2">{{ conta.saldo_pontos }}</td>
-                <td class="p-2">R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
-                <td class="p-2">R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
-                <td class="p-2">
+                <td>{{ conta.programa.nome }}</td>
+                <td>{{ conta.saldo_pontos }}</td>
+                <td>R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
+                <td>R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
+                <td>
                     <a href="{% url 'admin_editar_conta' conta.id %}" class="text-blue-400">Editar</a> |
                     <a href="{% url 'admin_deletar_conta' conta.id %}" class="text-blue-400">Deletar</a>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="6" class="text-center text-red-400 py-4">Nenhuma conta encontrada.</td></tr>
+            <tr><td colspan="6">Nenhuma conta encontrada.</td></tr>
             {% endfor %}
         </tbody>
     </table>
@@ -55,5 +55,5 @@
     </div>
     {% endif %}
 </div>
-<div class="text-zinc-400 mt-4 text-sm">Total: {{ total_contas }} contas de fidelidade cadastradas.</div>
+<div class="mt-4 text-sm text-gray-600">Total: {{ total_contas }} contas de fidelidade cadastradas.</div>
 {% endblock %}

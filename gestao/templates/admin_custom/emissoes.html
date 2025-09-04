@@ -41,45 +41,45 @@
     <a href="?export=excel{% if params.q %}&q={{ params.q }}{% endif %}" class="bg-zinc-700 text-blue-400 px-4 py-2 rounded">Exportar Excel</a>
     <a href="{% url 'admin_nova_emissao' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Nova Emissão</a>
 </form>
-<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
-    <table class="min-w-full text-sm">
-        <thead class="bg-zinc-700 text-zinc-200">
+<div class="overflow-x-auto">
+    <table>
+        <thead>
             <tr>
-                <th class="p-2 text-left font-medium">Cliente</th>
-                <th class="p-2 text-left font-medium">Programa</th>
-                <th class="p-2 text-left font-medium">Aeroporto Ida</th>
-                <th class="p-2 text-left font-medium">Aeroporto Volta</th>
-                <th class="p-2 text-left font-medium">Data Ida</th>
-                <th class="p-2 text-left font-medium">Data Volta</th>
-                <th class="p-2 text-left font-medium">Qtd</th>
-                <th class="p-2 text-left font-medium">Companhia</th>
-                <th class="p-2 text-left font-medium">Localizador</th>
-                <th class="p-2 text-left font-medium">Valor Ref.</th>
-                <th class="p-2 text-left font-medium">Pago</th>
-                <th class="p-2 text-left font-medium">Pontos</th>
-                <th class="p-2 text-left font-medium">Economia</th>
-                <th class="p-2 text-left font-medium">Detalhes</th>
-                <th class="p-2 text-left font-medium">Ações</th>
+                <th>Cliente</th>
+                <th>Programa</th>
+                <th>Aeroporto Ida</th>
+                <th>Aeroporto Volta</th>
+                <th>Data Ida</th>
+                <th>Data Volta</th>
+                <th>Qtd</th>
+                <th>Companhia</th>
+                <th>Localizador</th>
+                <th>Valor Ref.</th>
+                <th>Pago</th>
+                <th>Pontos</th>
+                <th>Economia</th>
+                <th>Detalhes</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
             {% for e in emissoes %}
-            <tr class="border-b border-zinc-700">
-                <td class="p-2">{{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}</td>
-                <td class="p-2 text-blue-400 font-medium">{{ e.programa }}</td>
-                <td class="p-2">{{ e.aeroporto_partida }}</td>
-                <td class="p-2">{{ e.aeroporto_destino }}</td>
-                <td class="p-2">{{ e.data_ida|date:"d/m/Y H:i" }}</td>
-                <td class="p-2">{{ e.data_volta|date:"d/m/Y H:i" }}</td>
-                <td class="p-2">{{ e.qtd_passageiros }}</td>
-                <td class="p-2">{{ e.companhia_aerea }}</td>
-                <td class="p-2">{{ e.localizador }}</td>
-                <td class="p-2 text-green-400 font-semibold">R$ {{ e.valor_referencia|floatformat:2 }}</td>
-                <td class="p-2">R$ {{ e.valor_pago|floatformat:2 }}</td>
-                <td class="p-2">{{ e.pontos_utilizados }}</td>
-                <td class="p-2 text-green-400 font-semibold">R$ {{ e.economia_obtida|floatformat:2 }}</td>
-                <td class="p-2">{{ e.detalhes }}</td>
-                <td class="p-2">
+            <tr>
+                <td>{{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}</td>
+                <td class="text-blue-400 font-medium">{{ e.programa }}</td>
+                <td>{{ e.aeroporto_partida }}</td>
+                <td>{{ e.aeroporto_destino }}</td>
+                <td>{{ e.data_ida|date:"d/m/Y H:i" }}</td>
+                <td>{{ e.data_volta|date:"d/m/Y H:i" }}</td>
+                <td>{{ e.qtd_passageiros }}</td>
+                <td>{{ e.companhia_aerea }}</td>
+                <td>{{ e.localizador }}</td>
+                <td class="text-green-400 font-semibold">R$ {{ e.valor_referencia|floatformat:2 }}</td>
+                <td>R$ {{ e.valor_pago|floatformat:2 }}</td>
+                <td>{{ e.pontos_utilizados }}</td>
+                <td class="text-green-400 font-semibold">R$ {{ e.economia_obtida|floatformat:2 }}</td>
+                <td>{{ e.detalhes }}</td>
+                <td>
                     <a href="{% url 'admin_emissao_pdf' e.id %}" class="text-blue-400">PDF</a> |
                     <a href="{% url 'admin_editar_emissao' e.id %}" class="text-blue-400">Editar</a> |
                     <a href="{% url 'admin_deletar_emissao' e.id %}" class="text-blue-400">Deletar</a>
@@ -87,7 +87,7 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="15" class="text-center text-red-400 py-4">Nenhuma emissão encontrada.</td>
+                <td colspan="15">Nenhuma emissão encontrada.</td>
             </tr>
             {% endfor %}
         </tbody>

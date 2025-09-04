@@ -11,24 +11,36 @@ main > section {
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #ffffff;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    background: #ffffff !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    margin-bottom: 32px !important;
+    box-shadow: 0 10px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
 th,
 td {
-    padding: 10px;
-    border-bottom: 1px solid #e2e8f0;
+    padding: 10px 10px !important;
+    text-align: left !important;
 }
 
 th {
-    background-color: #f7fafc;
-    color: #000000;
+    background: #1a365d !important;
+    color: #ffffff !important;
 }
 
-tr:nth-child(even) {
-    background-color: #f7fafc;
+tr {
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+tr:last-child {
+    border-bottom: none !important;
+}
+
+td {
+    color: #1a202c !important;
 }
 
 a {
@@ -71,5 +83,15 @@ button:hover {
 
 .linha2 {
     background-color: #f7fafc;
+}
+
+.entrada {
+    color: #2f855a;
+    font-weight: bold;
+}
+
+.saida {
+    color: #e53e3e;
+    font-weight: bold;
 }
 
