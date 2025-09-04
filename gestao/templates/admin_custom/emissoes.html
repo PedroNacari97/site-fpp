@@ -6,8 +6,8 @@
 {% block content %}
 <form method="get" class="flex flex-wrap gap-3 items-end mb-6">
     <div>
-        <label class="text-sm text-zinc-300 block mb-1">Cliente</label>
-        <select name="cliente" class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2">
+        <label>Cliente</label>
+        <select name="cliente">
             <option value="">Todos</option>
             {% for c in clientes %}
             <option value="{{ c.id }}" {% if params.cliente == c.id|stringformat:'s' %}selected{% endif %}>
@@ -17,8 +17,8 @@
         </select>
     </div>
     <div>
-        <label class="text-sm text-zinc-300 block mb-1">Programa</label>
-        <select name="programa" class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2">
+        <label>Programa</label>
+        <select name="programa">
             <option value="">Todos</option>
             {% for p in programas %}
             <option value="{{ p.id }}" {% if params.programa == p.id|stringformat:'s' %}selected{% endif %}>{{ p.nome }}</option>
@@ -26,20 +26,20 @@
         </select>
     </div>
     <div>
-        <label class="text-sm text-zinc-300 block mb-1">Buscar aeroporto ou nome</label>
-        <input type="text" name="q" value="{{ params.q|default_if_none:'' }}" placeholder="Buscar" class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
+        <label>Buscar aeroporto ou nome</label>
+        <input type="text" name="q" value="{{ params.q|default_if_none:'' }}" placeholder="Buscar" />
     </div>
     <div>
-        <label class="text-sm text-zinc-300 block mb-1">Data ida de</label>
-        <input type="date" name="data_ini" value="{{ params.data_ini|default_if_none:'' }}" class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
+        <label>Data ida de</label>
+        <input type="date" name="data_ini" value="{{ params.data_ini|default_if_none:'' }}" />
     </div>
     <div>
-        <label class="text-sm text-zinc-300 block mb-1">Data volta até</label>
-        <input type="date" name="data_fim" value="{{ params.data_fim|default_if_none:'' }}" class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
+        <label>Data volta até</label>
+        <input type="date" name="data_fim" value="{{ params.data_fim|default_if_none:'' }}" />
     </div>
-    <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Filtrar</button>
-    <a href="?export=excel{% if params.q %}&q={{ params.q }}{% endif %}" class="bg-zinc-700 text-blue-400 px-4 py-2 rounded">Exportar Excel</a>
-    <a href="{% url 'admin_nova_emissao' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Nova Emissão</a>
+    <button>Filtrar</button>
+    <a href="?export=excel{% if params.q %}&q={{ params.q }}{% endif %}" class="btn">Exportar Excel</a>
+    <a href="{% url 'admin_nova_emissao' %}" class="btn">Nova Emissão</a>
 </form>
 <div class="overflow-x-auto">
     <table>
@@ -66,7 +66,6 @@
             {% for e in emissoes %}
             <tr>
                 <td>{{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}</td>
-                <td class="text-blue-400 font-medium">{{ e.programa }}</td>
                 <td>{{ e.aeroporto_partida }}</td>
                 <td>{{ e.aeroporto_destino }}</td>
                 <td>{{ e.data_ida|date:"d/m/Y H:i" }}</td>
@@ -74,15 +73,15 @@
                 <td>{{ e.qtd_passageiros }}</td>
                 <td>{{ e.companhia_aerea }}</td>
                 <td>{{ e.localizador }}</td>
-                <td class="text-green-400 font-semibold">R$ {{ e.valor_referencia|floatformat:2 }}</td>
+                <td class="entrada">R$ {{ e.valor_referencia|floatformat:2 }}</td>
                 <td>R$ {{ e.valor_pago|floatformat:2 }}</td>
                 <td>{{ e.pontos_utilizados }}</td>
-                <td class="text-green-400 font-semibold">R$ {{ e.economia_obtida|floatformat:2 }}</td>
+                <td class="entrada">R$ {{ e.economia_obtida|floatformat:2 }}</td>
                 <td>{{ e.detalhes }}</td>
                 <td>
-                    <a href="{% url 'admin_emissao_pdf' e.id %}" class="text-blue-400">PDF</a> |
-                    <a href="{% url 'admin_editar_emissao' e.id %}" class="text-blue-400">Editar</a> |
-                    <a href="{% url 'admin_deletar_emissao' e.id %}" class="text-blue-400">Deletar</a>
+                    <a href="{% url 'admin_emissao_pdf' e.id %}">PDF</a> |
+                    <a href="{% url 'admin_editar_emissao' e.id %}">Editar</a> |
+                    <a href="{% url 'admin_deletar_emissao' e.id %}">Deletar</a>
                 </td>
             </tr>
             {% empty %}

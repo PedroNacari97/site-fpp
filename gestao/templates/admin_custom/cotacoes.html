@@ -3,22 +3,22 @@
 {% block header_title %}Cotações do Milheiro{% endblock %}
 {% block menu_cotacoes %}bg-zinc-700 text-white{% endblock %}
 {% block content %}
-<h2 class="text-blue-500 text-xl font-semibold mb-4">Atualizar cotação do milheiro</h2>
+<h2>Atualizar cotação do milheiro</h2>
 <form method="post" class="flex flex-wrap gap-3 items-end mb-6">
     {% csrf_token %}
-    <select name="programa_nome" required class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2">
+    <select name="programa_nome" required>
         <option value="">-- Programa --</option>
         {% for p in programas %}
         <option value="{{ p.nome }}">{{ p.nome }}</option>
         {% endfor %}
     </select>
-    <input type="number" step="0.01" min="0" name="valor_mercado" placeholder="Valor mercado" required class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2 w-36" />
-    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Salvar</button>
+    <input type="number" step="0.01" min="0" name="valor_mercado" placeholder="Valor mercado" required class="w-36" />
+    <button type="submit">Salvar</button>
 </form>
 
 <form method="get" class="flex gap-3 mb-6">
-    <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar programa..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
-    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
+    <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar programa..." />
+    <button type="submit">Buscar</button>
 </form>
 
 <div class="overflow-x-auto">
@@ -37,7 +37,7 @@
                 <td>{{ cot.programa_nome }}</td>
                 <td>R$ {{ cot.valor_mercado|floatformat:2 }}</td>
                 <td>{{ cot.atualizado_em|date:"d/m/Y" }}</td>
-                <td><a href="{% url 'admin_deletar_cotacao' cot.id %}" class="text-blue-400">Deletar</a></td>
+                <td><a href="{% url 'admin_deletar_cotacao' cot.id %}">Deletar</a></td>
             </tr>
             {% empty %}
             <tr>

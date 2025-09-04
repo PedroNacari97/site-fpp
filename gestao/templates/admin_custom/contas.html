@@ -5,10 +5,10 @@
 {% block content %}
 <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
     <form method="get" class="flex gap-3">
-        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar usuário ou programa..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
-        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
+        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar usuário ou programa..." />
+        <button type="submit">Buscar</button>
     </form>
-    <a href="{% url 'admin_nova_conta' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Nova Conta</a>
+    <a href="{% url 'admin_nova_conta' %}" class="btn">Nova Conta</a>
 </div>
 <div class="overflow-x-auto">
     <table>
@@ -26,16 +26,16 @@
             {% for conta in page_obj %}
             <tr>
                 <td>
-                    <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded mr-2 text-xs">Programas</a>
-                    {{ conta.cliente.usuario.username }}
+                    <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="btn text-xs mr-2">Programas</a>
                 </td>
                 <td>{{ conta.programa.nome }}</td>
                 <td>{{ conta.saldo_pontos }}</td>
                 <td>R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
                 <td>R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
                 <td>
-                    <a href="{% url 'admin_editar_conta' conta.id %}" class="text-blue-400">Editar</a> |
-                    <a href="{% url 'admin_deletar_conta' conta.id %}" class="text-blue-400">Deletar</a>
+                    <a href="{% url 'admin_editar_conta' conta.id %}">Editar</a> |
+                    <a href="{% url 'admin_deletar_conta' conta.id %}">Deletar</a>
+
                 </td>
             </tr>
             {% empty %}
@@ -46,14 +46,14 @@
     {% if page_obj.has_other_pages %}
     <div class="mt-4 flex gap-2 justify-center">
         {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}" class="bg-zinc-700 text-white px-3 py-1 rounded">&lt;</a>
+        <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}" class="btn">&lt;</a>
         {% endif %}
-        <span class="text-zinc-300 px-3 py-1">Página {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+        <span>Página {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
         {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}" class="bg-zinc-700 text-white px-3 py-1 rounded">&gt;</a>
+        <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}" class="btn">&gt;</a>
         {% endif %}
     </div>
     {% endif %}
 </div>
-<div class="mt-4 text-sm text-gray-600">Total: {{ total_contas }} contas de fidelidade cadastradas.</div>
+<div class="mt-4">Total: {{ total_contas }} contas de fidelidade cadastradas.</div>
 {% endblock %}

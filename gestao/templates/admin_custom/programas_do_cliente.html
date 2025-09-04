@@ -22,7 +22,7 @@
                 <td>R$ {{ c.valor_pago|floatformat:2 }}</td>
                 <td>R$ {{ c.valor_medio_milheiro|floatformat:2 }}</td>
                 <td>
-                    <a href="{% url 'admin_movimentacoes' c.conta.id %}" class="text-blue-400 hover:underline">Movimentações</a>
+                    <a href="{% url 'admin_movimentacoes' c.conta.id %}">Movimentações</a>
                 </td>
             </tr>
             {% empty %}
@@ -34,6 +34,6 @@
     </table>
 </div>
 <div class="mt-4">
-    <a href="{% url 'admin_contas' %}" class="bg-zinc-600 hover:bg-zinc-700 text-white px-4 py-2 rounded">Voltar para Contas</a>
+    <a href="{% url 'admin_contas' %}" class="btn">Voltar para Contas</a>
 </div>
 {% endblock %}

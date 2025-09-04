@@ -6,10 +6,10 @@
 {% block content %}
 <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
   <form method="get" class="flex gap-3">
-    <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
-    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
+    <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." />
+    <button type="submit">Buscar</button>
   </form>
-  <a href="{% url 'admin_nova_companhia' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Nova Companhia</a>
+  <a href="{% url 'admin_nova_companhia' %}" class="btn">Nova Companhia</a>
 </div>
 <div class="overflow-x-auto">
   <table>
@@ -24,10 +24,10 @@
       {% for companhia in companhias %}
       <tr>
         <td>{{ companhia.nome }}</td>
-        <td><a href="{{ companhia.site_url }}" class="text-blue-400" target="_blank">{{ companhia.site_url }}</a></td>
+        <td><a href="{{ companhia.site_url }}" target="_blank">{{ companhia.site_url }}</a></td>
         <td>
-          <a href="{% url 'admin_editar_companhia' companhia.id %}" class="text-blue-400 hover:underline">Editar</a> |
-          <a href="{% url 'admin_deletar_companhia' companhia.id %}" class="text-blue-400 hover:underline">Deletar</a>
+          <a href="{% url 'admin_editar_companhia' companhia.id %}">Editar</a> |
+          <a href="{% url 'admin_deletar_companhia' companhia.id %}">Deletar</a>
         </td>
       </tr>
       {% empty %}
