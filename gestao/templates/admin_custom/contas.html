@@ -27,7 +27,6 @@
             <tr>
                 <td>
                     <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="btn text-xs mr-2">Programas</a>
-                    {{ conta.cliente.usuario.username }}
                 </td>
                 <td>{{ conta.programa.nome }}</td>
                 <td>{{ conta.saldo_pontos }}</td>
@@ -36,6 +35,7 @@
                 <td>
                     <a href="{% url 'admin_editar_conta' conta.id %}">Editar</a> |
                     <a href="{% url 'admin_deletar_conta' conta.id %}">Deletar</a>
+
                 </td>
             </tr>
             {% empty %}
