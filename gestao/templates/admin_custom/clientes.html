@@ -6,10 +6,22 @@
 {% block content %}
 <div class="container">
     <h1>Lista de Clientes</h1>
-    <form method="get" class="mb-3">
-        <input type="text" name="busca" placeholder="Buscar" value="{{ busca }}" />
-        <button type="submit">Buscar</button>
-    </form>
+<form method="get" class="flex w-full items-center gap-3">
+  <input
+    type="text"
+    name="busca"
+    value="{{ busca }}"
+    placeholder="Buscar..."
+    class="bg-zinc-100 border border-zinc-300 rounded px-4 py-2 flex-1 h-10 sm:h-12"
+  />
+  <button
+    type="submit"
+    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 flex-1 min-w-[120px] max-w-[120px] h-[50px]"
+  >
+    Buscar
+  </button>
+</form>
+
     <p>Total de clientes: {{ total_clientes }}</p>
     <table class="table">
         <thead>
@@ -27,7 +39,7 @@
                 <td>{{ cliente.usuario.username }}</td>
                 <td>{% if cliente.ativo %}Ativo{% else %}Inativo{% endif %}</td>
                 <td>
-                    <a href="{% url 'admin_visualizar_cliente' cliente.id %}">Ver</a>
+                    <a href="{% url 'admin_visualizar_cliente' cliente.id %}">Ver</a> |
                     <a href="{% url 'admin_editar_cliente' cliente.id %}">Editar</a>
                 </td>
             </tr>

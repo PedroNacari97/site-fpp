@@ -6,12 +6,12 @@
 {% block content %}
 <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
   <form method="get" class="flex gap-3">
-    <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
-    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
+    <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." class="bg-zinc-100 border border-zinc-300 rounded px-4 py-2 flex-1 min-w-[320px] max-w-[720px] h-[50px]"
+ />
+    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 flex-1 min-w-[120px] max-w-[520px] h-[50px]">Buscar</button>
   </form>
-  <a href="{% url 'admin_nova_companhia' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Nova Companhia</a>
+  <a href="{% url 'admin_nova_companhia' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Nova Companhia</a>
 </div>
-<div class="bg-zinc-800 rounded-xl overflow-x-auto">
   <table class="min-w-full text-sm">
     <thead class="bg-zinc-700 text-gray-200">
       <tr>
@@ -24,7 +24,7 @@
       {% for companhia in companhias %}
       <tr class="border-b border-zinc-700 hover:bg-zinc-800">
         <td class="p-3">{{ companhia.nome }}</td>
-        <td class="p-3"><a href="{{ companhia.site_url }}" class="text-blue-400" target="_blank">{{ companhia.site_url }}</a></td>
+        <td class="p-3"><a href="{{ companhia.site_url }}" cclass="border-b border-zinc-700 hover:bg-zinc-800 target="_blank">{{ companhia.site_url }}</a></td>
         <td class="p-3">
           <a href="{% url 'admin_editar_companhia' companhia.id %}" class="text-blue-400 hover:underline">Editar</a> |
           <a href="{% url 'admin_deletar_companhia' companhia.id %}" class="text-blue-400 hover:underline">Deletar</a>
