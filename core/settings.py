@@ -8,14 +8,16 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "chave-super-secreta-para-dev")
 
 DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() in ("1", "true", "yes")
 
-ALLOWED_HOSTS = os.environ.get(
-    "DJANGO_ALLOWED_HOSTS", ".elasticbeanstalk.com,localhost,127.0.0.1"
-).split(",")
+ALLOWED_HOSTS = [
+    "site-fpp.onrender.com",   # domínio do Render deste serviço
+    ".onrender.com",           # qualquer subdomínio do Render (opcional, mas prático)
+    "localhost",
+    "127.0.0.1",
+]
 
 CSRF_TRUSTED_ORIGINS = [
-    f"https://{h.lstrip('.')}"
-    for h in ALLOWED_HOSTS
-    if h.strip() and h not in ["*", "localhost", "127.0.0.1"]
+    "https://site-fpp.onrender.com",
+    "https://*.onrender.com",  # opcional para futuros subdomínios
 ]
 
 INSTALLED_APPS = [
