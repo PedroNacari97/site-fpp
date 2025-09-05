@@ -17,8 +17,11 @@ ALLOWED_HOSTS = [
 
 CSRF_TRUSTED_ORIGINS = [
     "https://site-fpp.onrender.com",
-    "https://*.onrender.com",  # opcional para futuros subdomínios
+    "https://.onrender.com",  # opcional para futuros subdomínios
 ]
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
