@@ -8,12 +8,11 @@
 {% block content %}
 <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
     <form method="get" class="flex gap-3">
-        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
+        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." class="bg-zinc-100 border border-zinc-300 rounded px-4 py-2 flex-1 min-w-[220px] max-w-[720px]" />
         <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
     </form>
     <a href="{% url 'admin_novo_aeroporto' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Novo Aeroporto</a>
 </div>
-<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
     <table class="min-w-full text-sm">
         <thead class="bg-zinc-700 text-zinc-200">
             <tr>
