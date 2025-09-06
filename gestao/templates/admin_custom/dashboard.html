@@ -5,11 +5,6 @@
 {% block header_title %}Dashboard Administrativo{% endblock %}
 {% block menu_dashboard %}bg-[#2c5282]{% endblock %}
 
-{% block extra_head %}
-  <link rel="stylesheet" href="{% static 'painel_cliente/painel.css' %}">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
-
 {% block content %}
 <div class="container">
   <div class="painel-header">
@@ -26,34 +21,47 @@
     </div>
   </div>
 
+  <!-- Cards resumo rápido -->
   <div class="painel-cards">
     <div class="card">
-      <div class="label">👥 Total de Clientes</div>
-      <div class="valor">{{ total_clientes }}</div>
+      <div class="content">
+        <div class="label">👥 Total de Clientes</div>
+        <div class="valor">{{ total_clientes }}</div>
+      </div>
     </div>
     <div class="card">
-      <div class="label">✈️ Total de Emissões</div>
-      <div class="valor">{{ total_emissoes }}</div>
+      <div class="content">
+        <div class="label">✈️ Total de Emissões</div>
+        <div class="valor">{{ total_emissoes }}</div>
+      </div>
     </div>
     <div class="card">
-      <div class="label">💰 Total Economizado</div>
-      <div class="valor">R$ {{ total_economizado|floatformat:2 }}</div>
+      <div class="content">
+        <div class="label">💰 Total Economizado</div>
+        <div class="valor">R$ {{ total_economizado|floatformat:2 }}</div>
+      </div>
     </div>
   </div>
 
+  <!-- Programas -->
   <h2 class="section-title">Programas</h2>
   <div class="painel-cards programas-grid">
     {% for prog in programas %}
       <div class="card">
-        <strong>{{ prog.nome }}</strong>
-        <div class="label">Pontos acumulados</div>
-        <div class="valor">{{ prog.pontos }}</div>
-        <div class="label">Valor total</div>
-        <div class="valor">R$ {{ prog.valor_total|floatformat:2 }}</div>
-        <div class="label">Valor médio por 1.000</div>
-        <div class="valor">R$ {{ prog.valor_medio|floatformat:2 }}</div>
-        <div class="label">Valor de referência atual</div>
-        <div class="valor">R$ {{ prog.valor_referencia|floatformat:2 }}</div>
+        <div class="content">
+          <strong>{{ prog.nome }}</strong>
+          <div class="label">Pontos acumulados</div>
+          <div class="valor">{{ prog.pontos }}</div>
+
+          <div class="label">Valor total</div>
+          <div class="valor">R$ {{ prog.valor_total|floatformat:2 }}</div>
+
+          <div class="label">Valor médio por 1.000</div>
+          <div class="valor">R$ {{ prog.valor_medio|floatformat:2 }}</div>
+
+          <div class="label">Valor de referência atual</div>
+          <div class="valor">R$ {{ prog.valor_referencia|floatformat:2 }}</div>
+        </div>
         {% if prog.conta_id %}
           <a href="{% url 'admin_movimentacoes' prog.conta_id %}">Ver movimentações</a>
         {% endif %}
@@ -63,34 +71,43 @@
     {% endfor %}
   </div>
 
+  <!-- Resumo -->
   <h2 class="section-title">Resumo</h2>
-  <div class="painel-cards">
+  <div class="painel-cards duas-colunas">
     <div class="card">
-      <strong>Emissões</strong>
-      <ul>
-        <li>Quantidade: <span class="valor">{{ emissoes.qtd }}</span></li>
-        <li>Total de pontos usados: <span class="valor">{{ emissoes.pontos }}</span></li>
-        <li>Valor ref.: <span class="valor">R$ {{ emissoes.valor_referencia|floatformat:2 }}</span></li>
-        <li>Valor pago: <span class="valor">R$ {{ emissoes.valor_pago|floatformat:2 }}</span></li>
-        <li>Economizado: <span class="valor">R$ {{ emissoes.valor_economizado|floatformat:2 }}</span></li>
-      </ul>
+      <div class="content">
+        <strong>Emissões</strong>
+        <ul>
+          <li>Quantidade: <span class="valor">{{ emissoes.qtd }}</span></li>
+          <li>Total de pontos usados: <span class="valor">{{ emissoes.pontos }}</span></li>
+          <li>Valor ref.: <span class="valor">R$ {{ emissoes.valor_referencia|floatformat:2 }}</span></li>
+          <li>Valor pago: <span class="valor">R$ {{ emissoes.valor_pago|floatformat:2 }}</span></li>
+          <li>Economizado: <span class="valor">R$ {{ emissoes.valor_economizado|floatformat:2 }}</span></li>
+        </ul>
+      </div>
       <a href="{% url 'admin_emissoes' %}">Ver detalhes</a>
     </div>
+
     <div class="card">
-      <strong>Hotéis</strong>
-      <ul>
-        <li>Quantidade de reservas: <span class="valor">{{ hoteis.qtd }}</span></li>
-        <li>Valor ref. acumulado: <span class="valor">R$ {{ hoteis.valor_referencia|floatformat:2 }}</span></li>
-        <li>Valor pago: <span class="valor">R$ {{ hoteis.valor_pago|floatformat:2 }}</span></li>
-        <li>Economizado: <span class="valor">R$ {{ hoteis.valor_economizado|floatformat:2 }}</span></li>
-      </ul>
+      <div class="content">
+        <strong>Hotéis</strong>
+        <ul>
+          <li>Quantidade de reservas: <span class="valor">{{ hoteis.qtd }}</span></li>
+          <li>Valor ref. acumulado: <span class="valor">R$ {{ hoteis.valor_referencia|floatformat:2 }}</span></li>
+          <li>Valor pago: <span class="valor">R$ {{ hoteis.valor_pago|floatformat:2 }}</span></li>
+          <li>Economizado: <span class="valor">R$ {{ hoteis.valor_economizado|floatformat:2 }}</span></li>
+        </ul>
+      </div>
       <a href="{% url 'admin_hoteis' %}">Ver detalhes</a>
     </div>
   </div>
 
+  <!-- Gráfico -->
   <h2 class="section-title">Emissões por programa</h2>
   <div class="card">
-    <canvas id="emissoesChart"></canvas>
+    <div class="content">
+      <canvas id="emissoesChart"></canvas>
+    </div>
   </div>
 </div>
 {% endblock %}
@@ -110,7 +127,14 @@ if (ctx) {
 
   new Chart(ctx, {
     type: 'bar',
-    data: { labels, datasets: [{ label: 'Emissões', data: dataVals, backgroundColor: '#3182ce' }] },
+    data: { 
+      labels, 
+      datasets: [{ 
+        label: 'Emissões', 
+        data: dataVals, 
+        backgroundColor: '#3182ce' 
+      }] 
+    },
     options: { scales: { y: { beginAtZero: true } } }
   });
 }
