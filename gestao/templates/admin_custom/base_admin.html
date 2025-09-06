@@ -12,7 +12,8 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-gray-100 text-black flex" style="font-family: 'Open Sans', sans-serif;">
-        <aside class="bg-[#1a365d] w-60 min-h-screen p-6 fixed shadow text-white transition-all duration-300">
+        <aside class="bg-[#1a365d] w-60 min-h-screen p-6 fixed shadow text-white transition-all duration-300 relative">
+        <button id="sidebarToggle" class="absolute top-4 right-4 text-white lg:hidden" aria-label="Alternar menu">☰</button>
         <div class="font-bold tracking-wide mb-8 pl-2 sidebar-label">
             Gestão Admin
         </div>
@@ -45,7 +46,7 @@
      <main class="flex-1 ml-60 p-8 transition-all duration-300">
         <header class="bg-white rounded p-4 mb-6 flex justify-between items-center shadow">
                         <div class="flex items-center gap-2">
-                <button id="sidebarToggle" class="text-gray-700 sm:hidden" aria-label="Alternar menu">☰</button>
+                <button id="sidebarToggle" class="text-gray-700 lg:hidden" aria-label="Alternar menu">☰</button>
                 <h1 class="text-2xl font-bold">{% block header_title %}Painel Administrativo{% endblock %}</h1>
             </div>
             <div class="flex items-center space-x-2">
