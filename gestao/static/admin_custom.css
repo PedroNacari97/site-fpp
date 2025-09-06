@@ -75,7 +75,7 @@ button:hover {
 
 /* Sidebar collapse */
 aside {
-    transition: width 0.3s;
+    transition: transform 0.3s;
 }
 main {
     transition: margin-left 0.3s;
@@ -84,11 +84,11 @@ main {
     transition: opacity 0.3s;
 }
 body.sidebar-collapsed aside {
-    width: 56px;
-    padding: 1rem;
+    transform: translateX(-100%);
+    
 }
 body.sidebar-collapsed main {
-    margin-left: 56px;
+    margin-left: 5px;
 }
 body.sidebar-collapsed .sidebar-label {
     display: none;
