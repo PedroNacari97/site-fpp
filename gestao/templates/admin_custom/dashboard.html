@@ -15,7 +15,7 @@
       {% endfor %}
     </select>
 
-    <div style="display:flex; gap: 9px;">
+     <div class="painel-header-actions">
       <a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="btn-voltar">+ Novo Cliente</a>
       <a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="btn-voltar">+ Nova Emissão</a>
     </div>
@@ -45,7 +45,7 @@
 
   <!-- Programas -->
   <h2 class="section-title">Programas</h2>
-  <div class="painel-cards programas-grid">
+  <div class="painel-cards programas-grid scroll-x">
     {% for prog in programas %}
       <div class="card">
         <div class="content">
@@ -73,7 +73,7 @@
 
   <!-- Resumo -->
   <h2 class="section-title">Resumo</h2>
-  <div class="painel-cards duas-colunas">
+  <div class="painel-cards duas-colunas scroll-x">
     <div class="card">
       <div class="content">
         <strong>Emissões</strong>

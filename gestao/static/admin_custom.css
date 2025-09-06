@@ -73,3 +73,29 @@ button:hover {
     background-color: #f7fafc;
 }
 
+/* Sidebar collapse */
+aside {
+    transition: width 0.3s;
+}
+main {
+    transition: margin-left 0.3s;
+}
+.sidebar-label {
+    transition: opacity 0.3s;
+}
+body.sidebar-collapsed aside {
+    width: 56px;
+    padding: 1rem;
+}
+body.sidebar-collapsed main {
+    margin-left: 56px;
+}
+body.sidebar-collapsed .sidebar-label {
+    display: none;
+}
+body.sidebar-collapsed aside nav a {
+    justify-content: center;
+}
+body.sidebar-collapsed aside details > div {
+    display: none;
+}
