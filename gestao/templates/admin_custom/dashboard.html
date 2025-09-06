@@ -6,7 +6,7 @@
 {% block menu_dashboard %}bg-[#2c5282]{% endblock %}
 
 {% block extra_head %}
-  <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
+  <link rel="stylesheet" href="{% static 'painel_cliente/painel.css' %}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
@@ -20,7 +20,7 @@
       {% endfor %}
     </select>
 
-    <div style="display:flex; gap:12px;">
+    <div style="display:flex; gap: 9px;">
       <a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="btn-voltar">+ Novo Cliente</a>
       <a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="btn-voltar">+ Nova Emissão</a>
     </div>
