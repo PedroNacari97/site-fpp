@@ -29,13 +29,13 @@ def custom_login(request):
             login(request, user)
             user_perfil = getattr(getattr(user, "cliente_gestao", None), "perfil", "")
             if perfil == "superadmin" and user.is_superuser:
-                return redirect('/admin/')
+                 return redirect('admin_dashboard')
             elif perfil == "admin" and user_perfil == "admin":
-                return redirect('/admin/')
+                 return redirect('admin_dashboard')
             elif perfil == "operador" and user_perfil == "operador":
-                return redirect('/admin/')
+                 return redirect('admin_dashboard')
             elif perfil == "cliente" and not user.is_staff:
-                return redirect('/painel/')
+                return redirect('painel_dashboard')
             else:
                 messages.error(request, "Tipo de usuário inválido para esse acesso.")
         else:

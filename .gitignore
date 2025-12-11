@@ -1,5 +1,11 @@
 __pycache__/
 *.pyc
 db.sqlite3
+dump.json
 .env
 staticfiles/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

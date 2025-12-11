@@ -33,8 +33,7 @@ from ..models import (
     Escala,
     CompanhiaAerea,
 )
-from ..pdf_cotacao import gerar_pdf_cotacao
-from ..pdf_emissao import gerar_pdf_emissao
+from services.pdf_service import emissao_pdf_response
 import csv
 import json
 from datetime import timedelta
@@ -45,7 +44,7 @@ from .permissions import require_admin_or_operator
 # --- EMISSÕES ---
 @login_required
 def admin_emissoes(request):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     programa_id = request.GET.get("programa")
     cliente_id = request.GET.get("cliente")
@@ -128,7 +127,7 @@ def admin_emissoes(request):
 
 @login_required
 def nova_emissao(request):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     cliente_id = request.GET.get("cliente_id")
     if request.method == "POST":
@@ -181,9 +180,10 @@ def nova_emissao(request):
         },
     )
 
+
 @login_required
 def editar_emissao(request, emissao_id):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     emissao = EmissaoPassagem.objects.get(id=emissao_id)
     if request.method == "POST":
@@ -220,20 +220,24 @@ def editar_emissao(request, emissao_id):
             return redirect("admin_emissoes")
     else:
         form = EmissaoPassagemForm(instance=emissao)
-        form.fields['qtd_escalas'].initial = emissao.escalas.count()
+        form.fields["qtd_escalas"].initial = emissao.escalas.count()
     emissoes = EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida")
     passageiros = list(
-        emissao.passageiros.filter(categoria="adulto").values("nome", "documento", "categoria")
+        emissao.passageiros.filter(categoria="adulto").values(
+            "nome", "documento", "categoria"
+        )
     )
     passageiros += list(
-        emissao.passageiros.filter(categoria="crianca").values("nome", "documento", "categoria")
+        emissao.passageiros.filter(categoria="crianca").values(
+            "nome", "documento", "categoria"
+        )
     )
     passageiros += list(
-        emissao.passageiros.filter(categoria="bebe").values("nome", "documento", "categoria")
+        emissao.passageiros.filter(categoria="bebe").values(
+            "nome", "documento", "categoria"
+        )
     )
-    escalas = list(
-        emissao.escalas.values("aeroporto_id", "duracao", "cidade")
-    )
+    escalas = list(emissao.escalas.values("aeroporto_id", "duracao", "cidade"))
     for e in escalas:
         total_seconds = int(e["duracao"].total_seconds())
         h = total_seconds // 3600
@@ -255,18 +259,16 @@ def editar_emissao(request, emissao_id):
 
 @login_required
 def emissao_pdf(request, emissao_id):
-    if (permission_denied := require_admin_or_operator(request)):
+    """Download da emissão em formato PDF para o painel administrativo."""
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
-    pdf = gerar_pdf_emissao(emissao)
-    response = HttpResponse(pdf, content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="emissao_{emissao.id}.pdf"'
-    return response
+    return emissao_pdf_response(emissao)
 
 
 @login_required
 def deletar_emissao(request, emissao_id):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
@@ -278,7 +280,7 @@ def deletar_emissao(request, emissao_id):
 
 @login_required
 def admin_hoteis(request):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     busca = request.GET.get("busca", "")
     emissoes = EmissaoHotel.objects.all().select_related("cliente__usuario")
@@ -288,12 +290,14 @@ def admin_hoteis(request):
             | Q(cliente__usuario__first_name__icontains=busca)
             | Q(nome_hotel__icontains=busca)
         )
-    return render(request, "admin_custom/hoteis.html", {"emissoes": emissoes, "busca": busca})
+    return render(
+        request, "admin_custom/hoteis.html", {"emissoes": emissoes, "busca": busca}
+    )
 
 
 @login_required
 def nova_emissao_hotel(request):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     if request.method == "POST":
         form = EmissaoHotelForm(request.POST)
@@ -312,7 +316,7 @@ def nova_emissao_hotel(request):
 
 @login_required
 def editar_emissao_hotel(request, emissao_id):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     emissao = EmissaoHotel.objects.get(id=emissao_id)
     if request.method == "POST":
@@ -330,7 +334,7 @@ def editar_emissao_hotel(request, emissao_id):
 
 @login_required
 def deletar_emissao_hotel(request, emissao_id):
-    if (permission_denied := require_admin_or_operator(request)):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
@@ -338,5 +342,3 @@ def deletar_emissao_hotel(request, emissao_id):
     EmissaoHotel.objects.filter(id=emissao_id).delete()
     messages.success(request, "Emissão deletada com sucesso.")
     return redirect("admin_hoteis")
-
-

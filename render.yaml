@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: site-fpp
-    env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn core.wsgi:application"
-    preDeployCommand: "python manage.py migrate"

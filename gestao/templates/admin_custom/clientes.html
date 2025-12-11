@@ -1,60 +1,59 @@
 {% extends "admin_custom/base_admin.html" %}
+{% load static %}
 {% block title %}Clientes{% endblock %}
-{% block header_title %}Clientes Cadastrados{% endblock %}
-{% block menu_clientes %}bg-zinc-700 text-white{% endblock %}
+{% block header_title %}Clientes{% endblock %}
+
 {% block content %}
-<div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-    <form method="get" class="flex gap-3">
-        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar por nome ou usuário..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
-        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
-    </form>
-    <a href="{% url 'admin_novo_cliente' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Novo Cliente</a>
-</div>
-<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
-    <table class="min-w-full text-sm">
-        <thead class="bg-zinc-700 text-zinc-200">
+<div class="container">
+    <h1>Lista de Clientes</h1>
+<form method="get" class="flex w-full items-center gap-3">
+  <input
+    type="text"
+    name="busca"
+    value="{{ busca }}"
+    placeholder="Buscar..."
+    class="bg-zinc-100 border border-zinc-300 rounded px-4 py-2 flex-1 h-10 sm:h-12"
+  />
+  <button
+    type="submit"
+    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 flex-1 min-w-[120px] max-w-[120px] h-[50px]"
+  >
+    Buscar
+  </button>
+</form>
+
+    <p>Total de clientes: {{ total_clientes }}</p>
+    <table class="table">
+        <thead>
             <tr>
-                <th class="p-2 text-left font-medium">Usuário</th>
-                <th class="p-2 text-left font-medium">Nome Completo</th>
-                <th class="p-2 text-left font-medium">E-mail</th>
-                <th class="p-2 text-left font-medium">CPF</th>
-                <th class="p-2 text-left font-medium">Telefone</th>
-                <th class="p-2 text-left font-medium">Perfil</th>
-                <th class="p-2 text-left font-medium">Status</th>
-                <th class="p-2 text-left font-medium">Ação</th>
+                <th>Nome</th>
+                <th>Usuário</th>
+                <th>Status</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
             {% for cliente in page_obj %}
-            <tr class="border-b border-zinc-700">
-                <td class="p-2 text-amber-300">{{ cliente.usuario.username }}</td>
-                <td class="p-2">{{ cliente.usuario.get_full_name }}</td>
-                <td class="p-2">{{ cliente.usuario.email }}</td>
-                <td class="p-2">{{ cliente.cpf }}</td>
-                <td class="p-2">{{ cliente.telefone }}</td>
-                <td class="p-2">{{ cliente.get_perfil_display }}</td>
-                <td class="p-2">{{ cliente.ativo|yesno:"Ativo,Inativo" }}</td>
-                <td class="p-2">
-                    <a href="{% url 'admin_editar_cliente' cliente.id %}" class="text-blue-400">Editar</a> |
-                    <a href="?toggle={{ cliente.id }}" class="text-blue-400">Ativar/Inativar</a>
+            <tr>
+                <td>{{ cliente.usuario.first_name|default:cliente.usuario.username }}</td>
+                <td>{{ cliente.usuario.username }}</td>
+                <td>{% if cliente.ativo %}Ativo{% else %}Inativo{% endif %}</td>
+                <td>
+                    <a href="{% url 'admin_visualizar_cliente' cliente.id %}">Ver</a> |
+                    <a href="{% url 'admin_editar_cliente' cliente.id %}">Editar</a>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="8" class="text-center text-red-400 py-4">Nenhum cliente encontrado.</td></tr>
+            <tr><td colspan="4">Nenhum cliente encontrado.</td></tr>
             {% endfor %}
         </tbody>
     </table>
-</div>
-{% if page_obj.has_other_pages %}
-<div class="mt-4 flex gap-2 justify-center">
-    {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}" class="bg-zinc-700 text-white px-3 py-1 rounded">&lt;</a>
-    {% endif %}
-    <span class="text-zinc-300 px-3 py-1">Página {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
-    {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}" class="bg-zinc-700 text-white px-3 py-1 rounded">&gt;</a>
-    {% endif %}
-</div>
-{% endif %}
-<div class="text-zinc-400 mt-4 text-sm">Total: {{ total_clientes }} clientes cadastrados.</div>
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}">Anterior</a>
+        {% endif %}
+        <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}">Próxima</a>
+        {% endif %}
 {% endblock %}

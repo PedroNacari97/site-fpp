@@ -1,4 +1,6 @@
 from django import forms
+from django.core.validators import RegexValidator
+from django.contrib.auth.models import User
 from .models import (
     ContaFidelidade,
     ProgramaFidelidade,
@@ -36,16 +38,38 @@ class ClienteForm(forms.ModelForm):
 
 
 class NovoClienteForm(forms.ModelForm):
-    username = forms.CharField(max_length=150)
+    # username só com dígitos
+    username = forms.CharField(
+        max_length=150,
+        validators=[RegexValidator(r'^\d+$', 'O username deve conter apenas números.')],
+        help_text="Use apenas números (ex: CPF sem pontuação ou um ID numérico).",
+    )
     password = forms.CharField(widget=forms.PasswordInput)
-    first_name = forms.CharField(max_length=150, required=False)
-    last_name = forms.CharField(max_length=150, required=False)
+
+    # opcionais, ajuste conforme seu template
+    first_name = forms.CharField(required=False)
+    last_name = forms.CharField(required=False)
     email = forms.EmailField(required=False)
-    perfil = forms.CharField(initial='cliente', widget=forms.HiddenInput())
+
+    # perfil vem escondido (se você quiser sempre criar como cliente)
+    perfil = forms.CharField(widget=forms.HiddenInput(), initial="cliente")
 
     class Meta:
         model = Cliente
-        fields = ['telefone', 'data_nascimento', 'cpf', 'observacoes', 'ativo', 'perfil']
+        fields = [
+            "telefone",
+            "data_nascimento",
+            "cpf",
+            "observacoes",
+            "ativo",
+            "perfil",
+        ]
+
+    def clean_username(self):
+        u = self.cleaned_data["username"]
+        if User.objects.filter(username=u).exists():
+            raise forms.ValidationError("Este username já está em uso.")
+        return u
 
 
 class AeroportoForm(forms.ModelForm):

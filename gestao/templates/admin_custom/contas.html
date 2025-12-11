@@ -5,12 +5,12 @@
 {% block content %}
 <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
     <form method="get" class="flex gap-3">
-        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar usuário ou programa..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
-        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
+        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar usuário ou programa..."  class="bg-zinc-100 border border-zinc-300 rounded px-4 py-2 flex-1 min-w-[320px] max-w-[720px] h-[50px]"
+ />
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 flex-1 min-w-[120px] max-w-[520px] h-[50px]">Buscar</button>
     </form>
-    <a href="{% url 'admin_nova_conta' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Nova Conta</a>
+    <a href="{% url 'admin_nova_conta' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Nova Conta</a>
 </div>
-<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
     <table class="min-w-full text-sm">
         <thead class="bg-zinc-700 text-zinc-200">
             <tr>
@@ -20,13 +20,14 @@
                 <th class="p-2 text-left font-medium">Valor Pago</th>
                 <th class="p-2 text-left font-medium">Valor Médio / mil</th>
                 <th class="p-2 text-left font-medium">Ações</th>
+                <th class="p-2 text-left font-medium">Todos do Usuário</th>
             </tr>
         </thead>
         <tbody>
             {% for conta in page_obj %}
             <tr class="border-b border-zinc-700">
                 <td class="p-2">
-                    <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded mr-2 text-xs">Programas</a>
+                    
                     {{ conta.cliente.usuario.username }}
                 </td>
                 <td class="p-2">{{ conta.programa.nome }}</td>
@@ -35,7 +36,9 @@
                 <td class="p-2">R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
                 <td class="p-2">
                     <a href="{% url 'admin_editar_conta' conta.id %}" class="text-blue-400">Editar</a> |
-                    <a href="{% url 'admin_deletar_conta' conta.id %}" class="text-blue-400">Deletar</a>
+                    <a href="{% url 'admin_deletar_conta' conta.id %}" class="text-blue-400">Deletar</a> 
+                <td class="p-2">
+                    <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded mr-2 text-xs">Programas</a>
                 </td>
             </tr>
             {% empty %}

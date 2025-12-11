@@ -374,20 +374,20 @@ def gerar_pdf_emissao(emissao):
         detalhes_texto = str(detalhes).strip().replace('\n', '<br/>')
     # Usando Table para padronizar borda, fundo e espaçamento
         detalhes_table = Table(
-    [[Paragraph(detalhes_texto, estilo_valor)]],
-        colWidths=[160 * mm]
-    )
-    detalhes_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), cor_fundo_claro),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('TOPPADDING', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-        ('LEFTPADDING', (0, 0), (-1, -1), 12),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 12),
-        ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
-        ('LINEBELOW', (0, 0), (-1, -1), 0.5, cor_texto_secundario),
-    ]))
-    elements.append(detalhes_table)
+                [[Paragraph(detalhes_texto, estilo_valor)]],
+            colWidths=[160 * mm]
+        )
+        detalhes_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), cor_fundo_claro),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('TOPPADDING', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+            ('LEFTPADDING', (0, 0), (-1, -1), 12),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+            ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
+            ('LINEBELOW', (0, 0), (-1, -1), 0.5, cor_texto_secundario),
+        ]))
+        elements.append(detalhes_table)
 
 
 
