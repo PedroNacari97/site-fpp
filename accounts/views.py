@@ -38,12 +38,12 @@ def custom_login(request):
 def user_list(request):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if request.user.is_superuser:
-            usuarios = Cliente.objects.filter(perfil="admin").select_related("empresa", "usuario")
+            usuarios = Cliente.objects.filter(perfil__in=["admin", "operador"]).select_related("empresa", "usuario")
     elif perfil == "admin":
         empresa = getattr(request.user.cliente_gestao, "empresa", None)
         if not empresa:
             return render(request, "sem_permissao.html")
-        usuarios = Cliente.objects.filter(empresa=empresa).select_related("usuario", "empresa")
+        usuarios = Cliente.objects.filter(empresa=empresa, perfil__in=["admin", "operador"]).select_related("usuario", "empresa")
     else:
         return render(request, "sem_permissao.html")
     return render(request, "accounts/user_list.html", {"usuarios": usuarios})

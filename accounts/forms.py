@@ -24,7 +24,8 @@ class UsuarioForm(forms.Form):
             limite = empresa.limite_colaboradores
             if limite and operadores >= limite:
                 raise forms.ValidationError(
-                    f"O limite de {limite} colaboradores para esta empresa já foi atingido."
+                    f"O limite de {limite} colaboradores para esta empresa foi atingido. "
+                    "Entre em contato para liberar mais acessos."
                 )
         return cleaned
 

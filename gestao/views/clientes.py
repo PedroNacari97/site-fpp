@@ -122,7 +122,7 @@ def admin_clientes(request):
         return redirect("admin_clientes")
 
     busca = request.GET.get("busca", "")
-    clientes = Cliente.objects.all().select_related("usuario")
+    clientes = Cliente.objects.filter(perfil="cliente").select_related("usuario")
     if busca:
         clientes = clientes.filter(
             Q(usuario__username__icontains=busca)

@@ -7,6 +7,13 @@
 <div class="form-wrapper">
   <form method="POST">
     {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="text-red-600 text-sm mb-2">
+      {% for error in form.non_field_errors %}
+        {{ error }}<br>
+      {% endfor %}
+    </div>
+    {% endif %}
     <div class="form-title">Novo Usuário</div>
     <div class="form-group single">
       <label class="form-label" for="{{ form.nome_completo.id_for_label }}">{{ form.nome_completo.label }}</label>
