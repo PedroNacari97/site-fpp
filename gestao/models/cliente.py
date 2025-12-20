@@ -5,6 +5,13 @@ class Cliente(models.Model):
     usuario = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="cliente_gestao"
     )
+    empresa = models.ForeignKey(
+        "gestao.Empresa",
+        on_delete=models.CASCADE,
+        related_name="pessoas",
+        null=True,
+        blank=True,
+    )
     telefone = models.CharField(max_length=20, blank=True)
     data_nascimento = models.DateField(null=True, blank=True)
     cpf = models.CharField(max_length=14, default="000.000.000-00")

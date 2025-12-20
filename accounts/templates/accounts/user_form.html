@@ -16,6 +16,15 @@
       <label class="form-label" for="{{ form.cpf.id_for_label }}">{{ form.cpf.label }}</label>
       {{ form.cpf }}
     </div>
+    {% if form.empresa %}
+    <div class="form-group single">
+      <label class="form-label" for="{{ form.empresa.id_for_label }}">{{ form.empresa.label }}</label>
+      {{ form.empresa }}
+      {% if form.empresa.help_text %}
+      <p class="text-xs text-gray-500 mt-1">{{ form.empresa.help_text }}</p>
+      {% endif %}
+    </div>
+    {% endif %}
     <div class="form-group single">
       <label class="form-label" for="{{ form.perfil.id_for_label }}">{{ form.perfil.label }}</label>
       {{ form.perfil }}

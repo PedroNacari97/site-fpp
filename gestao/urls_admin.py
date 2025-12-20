@@ -42,6 +42,8 @@ from gestao.views import (
     deletar_companhia,
     admin_auditoria,
     calculadora_cotacao,
+    empresas_list,
+    criar_empresa,
 )
 
 urlpatterns = [
@@ -56,6 +58,8 @@ urlpatterns = [
     path('contas/<int:conta_id>/editar/', editar_conta, name='admin_editar_conta'),
     path('contas/<int:conta_id>/deletar/', deletar_conta, name='admin_deletar_conta'),
     path('contas/<int:conta_id>/movimentacoes/', admin_movimentacoes, name='admin_movimentacoes'),
+    path('empresas/', empresas_list, name='admin_empresas'),
+    path('empresas/nova/', criar_empresa, name='admin_criar_empresa'),
     path('contas/<int:conta_id>/movimentacoes/nova/', admin_nova_movimentacao, name='admin_nova_movimentacao'),
     path('programas/', admin_programas, name='admin_programas'),
     path('programas/novo/', criar_programa, name='admin_novo_programa'),

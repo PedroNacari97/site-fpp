@@ -20,6 +20,7 @@
       <tr>
         <th class="p-2 text-left font-medium">Nome completo</th>
         <th class="p-2 text-left font-medium">CPF</th>
+         <th class="p-2 text-left font-medium">Empresa</th>
         <th class="p-2 text-left font-medium">Perfil</th>
       </tr>
     </thead>
@@ -31,6 +32,9 @@
         </td>
         <td class="p-2 text-zinc-600">
           {{ u.cpf|default:"—" }}
+        </td>
+        <td class="p-2 text-zinc-600">
+          {{ u.empresa.nome|default:"—" }}
         </td>
         <td class="p-2 text-zinc-600">
           {{ u.get_perfil_display|default:u.perfil }}

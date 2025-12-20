@@ -8,3 +8,4 @@ from .aeroportos import *
 from .dashboard import *
 from .movimentacoes import *
 from .auditoria import *
+from .empresas import *

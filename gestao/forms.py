@@ -10,7 +10,9 @@ from .models import (
     EmissaoHotel,
     CotacaoVoo,
     CompanhiaAerea,
+        Empresa,
 )
+from django.db import transaction
 
 class ContaFidelidadeForm(forms.ModelForm):
     class Meta:
@@ -196,3 +198,59 @@ class CompanhiaAereaForm(forms.ModelForm):
             "nome": forms.TextInput(attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2"}),
             "site_url": forms.URLInput(attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2"}),
         }
+
+
+class EmpresaForm(forms.ModelForm):
+    admin_nome = forms.CharField(max_length=150, label="Nome do admin")
+    admin_username = forms.CharField(
+        max_length=150,
+        help_text="Login de acesso do admin da empresa.",
+        label="Usuário (login)",
+    )
+    admin_cpf = forms.CharField(max_length=14, label="CPF do admin")
+    admin_email = forms.EmailField(required=False, label="Email do admin")
+    admin_password = forms.CharField(
+        widget=forms.PasswordInput, label="Senha inicial do admin"
+    )
+
+    class Meta:
+        model = Empresa
+        fields = ["nome", "limite_colaboradores", "ativo"]
+        widgets = {
+            "nome": forms.TextInput(
+                attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2"}
+            ),
+            "limite_colaboradores": forms.NumberInput(
+                attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2", "min": 0}
+            ),
+        }
+
+    def clean_admin_username(self):
+        username = self.cleaned_data["admin_username"]
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("Já existe um usuário com esse login.")
+        return username
+
+    def save(self, *, criado_por):
+        data = self.cleaned_data
+        with transaction.atomic():
+            empresa = super().save(commit=False)
+            empresa.save()
+            user = User.objects.create_user(
+                username=data["admin_username"],
+                password=data["admin_password"],
+                first_name=data["admin_nome"],
+                email=data.get("admin_email", ""),
+            )
+            user.is_staff = True
+            user.save()
+            admin_cliente = Cliente.objects.create(
+                usuario=user,
+                cpf=data["admin_cpf"],
+                perfil="admin",
+                empresa=empresa,
+                criado_por=criado_por,
+            )
+            empresa.admin = admin_cliente
+            empresa.save()
+        return empresa

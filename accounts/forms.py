@@ -1,13 +1,29 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.utils.text import slugify
-from gestao.models import Cliente
+from gestao.models import Cliente, Empresa
 
 class UsuarioForm(forms.Form):
     nome_completo = forms.CharField(max_length=150)
     cpf = forms.CharField(max_length=14)
     perfil = forms.ChoiceField(choices=[("admin", "Administrador"), ("operador", "Operador"), ("cliente", "cliente")])
     password = forms.CharField(widget=forms.PasswordInput)
+    empresa = forms.ModelChoiceField(queryset=Empresa.objects.all(), required=False)
+
+    def clean(self):
+        cleaned = super().clean()
+        perfil = cleaned.get("perfil")
+        empresa = cleaned.get("empresa")
+        if perfil in ["admin", "operador"] and not empresa:
+            raise forms.ValidationError("Selecione uma empresa para o usuário.")
+        if perfil == "operador" and empresa:
+            operadores = Cliente.objects.filter(empresa=empresa, perfil="operador").count()
+            limite = empresa.limite_colaboradores
+            if limite and operadores >= limite:
+                raise forms.ValidationError(
+                    f"O limite de {limite} colaboradores para esta empresa já foi atingido."
+                )
+        return cleaned
 
     def save(self, criado_por=None):
         nome = self.cleaned_data["nome_completo"]
@@ -20,10 +36,12 @@ class UsuarioForm(forms.Form):
         )
         user.is_staff = True
         user.save()
+        empresa = self.cleaned_data.get("empresa")
         Cliente.objects.create(
             usuario=user,
             cpf=cpf,
             perfil=self.cleaned_data["perfil"],
+            empresa=empresa,
             criado_por=criado_por,
         )
         return user

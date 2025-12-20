@@ -18,7 +18,9 @@
             Gestão Admin
         </div>
         <nav class="flex flex-col space-y-2">
-            {% if not request.user.is_superuser %}
+             {% if request.user.is_superuser %}
+                <a class="block px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_empresas %}{% endblock %}" href="{% url 'admin_empresas' %}">Empresas</a>
+            {% else %}
                                 <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_dashboard %}{% endblock %}" href="{% url 'admin_dashboard' %}"><span class="sidebar-label">Dashboard</span></a>
                 <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_clientes %}{% endblock %}" href="{% url 'admin_clientes' %}"><span class="sidebar-label">Clientes</span></a>
                 <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_contas %}{% endblock %}" href="{% url 'admin_contas' %}"><span class="sidebar-label">Contas Fidelidade</span></a>
@@ -37,7 +39,9 @@
             {% endif %}
             <div class="pt-4">
                 <p class="px-3 text-gray-300 uppercase text-xs mb-2 sidebar-label">Administrativo</p>
+                {% if not request.user.is_superuser %}
                 <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}"><span class="sidebar-label">Auditoria</span></a>
+                {% endif %}
                 <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'user_list' %}"><span class="sidebar-label">Usuários da Empresa</span></a>
             </div>
              <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'logout' %}"><span class="sidebar-label">Sair</span></a>

@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.utils.text import slugify
-from gestao.models import Cliente
+from gestao.models import Cliente, Empresa
 from .forms import UsuarioForm, ClientePublicoForm
 
 def custom_login(request):
@@ -47,9 +47,12 @@ def custom_login(request):
 def user_list(request):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if request.user.is_superuser:
-        usuarios = Cliente.objects.filter(criado_por=request.user, perfil="admin")
+            usuarios = Cliente.objects.filter(perfil="admin").select_related("empresa", "usuario")
     elif perfil == "admin":
-        usuarios = Cliente.objects.filter(criado_por=request.user)
+        empresa = getattr(request.user.cliente_gestao, "empresa", None)
+        if not empresa:
+            return render(request, "sem_permissao.html")
+        usuarios = Cliente.objects.filter(empresa=empresa).select_related("usuario", "empresa")
     else:
         return render(request, "sem_permissao.html")
     return render(request, "accounts/user_list.html", {"usuarios": usuarios})
@@ -60,13 +63,20 @@ def user_create(request):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if request.user.is_superuser:
         allowed = [("admin", "Administrador")]
+        empresa_queryset = Empresa.objects.all()
+        empresa_initial = None
     elif perfil == "admin":
         allowed = [("operador", "Operador")]
+        empresa_initial = getattr(request.user.cliente_gestao, "empresa", None)
+        empresa_queryset = Empresa.objects.filter(id=empresa_initial.id) if empresa_initial else Empresa.objects.none()
     else:
         return render(request, "sem_permissao.html")
     if request.method == "POST":
         form = UsuarioForm(request.POST)
         form.fields['perfil'].choices = allowed
+        form.fields['empresa'].queryset = empresa_queryset
+        if empresa_initial:
+            form.fields['empresa'].initial = empresa_initial
         if form.is_valid():
             form.save(criado_por=request.user)
             messages.success(request, "Usuário criado com sucesso.")
@@ -74,6 +84,9 @@ def user_create(request):
     else:
         form = UsuarioForm()
         form.fields['perfil'].choices = allowed
+        form.fields['empresa'].queryset = empresa_queryset
+        if empresa_initial:
+            form.fields['empresa'].initial = empresa_initial
     return render(request, "accounts/user_form.html", {"form": form})
 
 

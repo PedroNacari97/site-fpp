@@ -61,16 +61,16 @@ def criar_cliente(request):
                     perfil = form.cleaned_data["perfil"]
                     if perfil in ["admin", "operador"]:
                         user.is_staff = True
-                    if perfil == "admin":
-                        user.is_superuser = True
                     user.save()
 
+                    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
                     Cliente.objects.create(
                         usuario=user,
                         telefone=form.cleaned_data.get("telefone", ""),
                         data_nascimento=form.cleaned_data.get("data_nascimento"),
                         cpf=form.cleaned_data.get("cpf", "000.000.000-00"),
                         perfil=perfil,
+                        empresa=empresa,
                         observacoes=form.cleaned_data.get("observacoes", ""),
                         ativo=form.cleaned_data.get("ativo", True),
                         criado_por=request.user if request.user.is_authenticated else None,
