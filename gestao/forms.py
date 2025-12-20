@@ -1,6 +1,9 @@
 from django import forms
-from django.core.validators import RegexValidator
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from django.db import transaction
+
+from gestao.utils import generate_unique_username, normalize_cpf
+
 from .models import (
     ContaFidelidade,
     ProgramaFidelidade,
@@ -10,9 +13,11 @@ from .models import (
     EmissaoHotel,
     CotacaoVoo,
     CompanhiaAerea,
-        Empresa,
+    Empresa,
 )
-from django.db import transaction
+
+
+User = get_user_model()
 
 class ContaFidelidadeForm(forms.ModelForm):
     class Meta:
@@ -40,20 +45,10 @@ class ClienteForm(forms.ModelForm):
 
 
 class NovoClienteForm(forms.ModelForm):
-    # username só com dígitos
-    username = forms.CharField(
-        max_length=150,
-        validators=[RegexValidator(r'^\d+$', 'O username deve conter apenas números.')],
-        help_text="Use apenas números (ex: CPF sem pontuação ou um ID numérico).",
-    )
     password = forms.CharField(widget=forms.PasswordInput)
-
-    # opcionais, ajuste conforme seu template
     first_name = forms.CharField(required=False)
     last_name = forms.CharField(required=False)
     email = forms.EmailField(required=False)
-
-    # perfil vem escondido (se você quiser sempre criar como cliente)
     perfil = forms.CharField(widget=forms.HiddenInput(), initial="cliente")
 
     class Meta:
@@ -67,11 +62,13 @@ class NovoClienteForm(forms.ModelForm):
             "perfil",
         ]
 
-    def clean_username(self):
-        u = self.cleaned_data["username"]
-        if User.objects.filter(username=u).exists():
-            raise forms.ValidationError("Este username já está em uso.")
-        return u
+    def clean_cpf(self):
+        cpf = normalize_cpf(self.cleaned_data.get("cpf"))
+        if not cpf:
+            raise forms.ValidationError("CPF é obrigatório.")
+        if Cliente.objects.filter(cpf=cpf).exists():
+            raise forms.ValidationError("Já existe um cliente com este CPF.")
+        return cpf
 
 
 class AeroportoForm(forms.ModelForm):
@@ -202,11 +199,6 @@ class CompanhiaAereaForm(forms.ModelForm):
 
 class EmpresaForm(forms.ModelForm):
     admin_nome = forms.CharField(max_length=150, label="Nome do admin")
-    admin_username = forms.CharField(
-        max_length=150,
-        help_text="Login de acesso do admin da empresa.",
-        label="Usuário (login)",
-    )
     admin_cpf = forms.CharField(max_length=14, label="CPF do admin")
     admin_email = forms.EmailField(required=False, label="Email do admin")
     admin_password = forms.CharField(
@@ -225,11 +217,13 @@ class EmpresaForm(forms.ModelForm):
             ),
         }
 
-    def clean_admin_username(self):
-        username = self.cleaned_data["admin_username"]
-        if User.objects.filter(username=username).exists():
-            raise forms.ValidationError("Já existe um usuário com esse login.")
-        return username
+    def clean_admin_cpf(self):
+        cpf = normalize_cpf(self.cleaned_data.get("admin_cpf"))
+        if not cpf:
+            raise forms.ValidationError("CPF do admin é obrigatório.")
+        if Cliente.objects.filter(cpf=cpf).exists():
+            raise forms.ValidationError("Já existe um cliente com este CPF.")
+        return cpf
 
     def save(self, *, criado_por):
         data = self.cleaned_data
@@ -237,7 +231,7 @@ class EmpresaForm(forms.ModelForm):
             empresa = super().save(commit=False)
             empresa.save()
             user = User.objects.create_user(
-                username=data["admin_username"],
+                username=generate_unique_username(),
                 password=data["admin_password"],
                 first_name=data["admin_nome"],
                 email=data.get("admin_email", ""),

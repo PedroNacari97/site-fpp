@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.contrib import messages
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import IntegrityError, transaction
 
 from ..forms import (
@@ -31,12 +31,16 @@ from ..models import (
     CompanhiaAerea,
     AcessoClienteLog,
 )
+from gestao.utils import generate_unique_username, normalize_cpf
 from painel_cliente.views import build_dashboard_context
 from .permissions import require_admin_or_operator
 
 import csv
 import json
 from datetime import timedelta
+
+
+User = get_user_model()
 
 
 # --- CLIENTES ---
@@ -50,8 +54,10 @@ def criar_cliente(request):
         if form.is_valid():
             try:
                 with transaction.atomic():
+                    username = generate_unique_username()
+                    cpf = normalize_cpf(form.cleaned_data.get("cpf"))
                     user = User.objects.create_user(
-                        username=form.cleaned_data["username"],
+                        username=username,
                         password=form.cleaned_data["password"],
                         first_name=form.cleaned_data.get("first_name", ""),
                         last_name=form.cleaned_data.get("last_name", ""),
@@ -68,7 +74,7 @@ def criar_cliente(request):
                         usuario=user,
                         telefone=form.cleaned_data.get("telefone", ""),
                         data_nascimento=form.cleaned_data.get("data_nascimento"),
-                        cpf=form.cleaned_data.get("cpf", "000.000.000-00"),
+                        cpf=cpf,
                         perfil=perfil,
                         empresa=empresa,
                         observacoes=form.cleaned_data.get("observacoes", ""),
@@ -80,7 +86,7 @@ def criar_cliente(request):
                 return redirect("admin_clientes")
 
             except IntegrityError:
-                form.add_error("username", "Este username já está em uso.")
+                form.add_error(None, "Erro ao criar usuário. Tente novamente.")
     else:
         form = NovoClienteForm()
 
@@ -116,7 +122,7 @@ def admin_clientes(request):
         return redirect("admin_clientes")
 
     busca = request.GET.get("busca", "")
-    clientes = Cliente.objects.all().select_related("usuario")
+    clientes = Cliente.objects.filter(perfil="cliente").select_related("usuario")
     if busca:
         clientes = clientes.filter(
             Q(usuario__username__icontains=busca)
