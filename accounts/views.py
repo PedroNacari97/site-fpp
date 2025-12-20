@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from gestao.models import Cliente, Empresa
 from .forms import UsuarioForm, ClientePublicoForm
@@ -47,6 +47,32 @@ def user_list(request):
     else:
         return render(request, "sem_permissao.html")
     return render(request, "accounts/user_list.html", {"usuarios": usuarios})
+
+
+@login_required
+def operator_list(request):
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if request.user.is_superuser:
+        operadores = Cliente.objects.filter(perfil="operador").select_related("empresa", "usuario")
+    elif perfil == "admin":
+        empresa = getattr(request.user.cliente_gestao, "empresa", None)
+        if not empresa:
+            return render(request, "sem_permissao.html")
+        operadores = Cliente.objects.filter(empresa=empresa, perfil="operador").select_related("usuario", "empresa")
+    else:
+        return render(request, "sem_permissao.html")
+
+    if "toggle" in request.GET and request.method == "GET":
+        operador = get_object_or_404(operadores, id=request.GET["toggle"])
+        operador.ativo = not operador.ativo
+        operador.save(update_fields=["ativo"])
+        messages.success(
+            request,
+            f"Operador {'ativado' if operador.ativo else 'desativado'} com sucesso."
+        )
+        return redirect("operator_list")
+
+    return render(request, "accounts/operator_list.html", {"usuarios": operadores})
 
 
 @login_required

@@ -10,11 +10,24 @@ from .permissions import require_admin_or_operator
 
 
 def build_dashboard_metrics(cliente_id=None):
-    contas = ContaFidelidade.objects.select_related("programa")
-    emissoes = EmissaoPassagem.objects.all()
-    hoteis = EmissaoHotel.objects.all()
+    clientes_qs = Cliente.objects.filter(perfil="cliente")
+    contas = ContaFidelidade.objects.select_related("programa").filter(cliente__perfil="cliente")
+    emissoes = EmissaoPassagem.objects.filter(cliente__perfil="cliente")
+    hoteis = EmissaoHotel.objects.filter(cliente__perfil="cliente")
 
     if cliente_id:
+        cliente = clientes_qs.filter(id=cliente_id).first()
+        if not cliente:
+            return {
+                "total_clientes": clientes_qs.count(),
+                "total_emissoes": 0,
+                "total_pontos": 0,
+                "total_economizado": 0,
+                "programas": [],
+                "emissoes": {"qtd": 0, "pontos": 0, "valor_referencia": 0, "valor_pago": 0, "valor_economizado": 0},
+                "hoteis": {"qtd": 0, "valor_referencia": 0, "valor_pago": 0, "valor_economizado": 0},
+                "emissoes_programa": [],
+            }
         contas = contas.filter(cliente_id=cliente_id)
         emissoes = emissoes.filter(cliente_id=cliente_id)
         hoteis = hoteis.filter(cliente_id=cliente_id)
@@ -50,7 +63,7 @@ def build_dashboard_metrics(cliente_id=None):
     valor_pago_hoteis = sum(float(h.valor_pago or 0) for h in hoteis)
     valor_economizado_hoteis = valor_ref_hoteis - valor_pago_hoteis
 
-    total_clientes = Cliente.objects.count() if not cliente_id else 1
+    total_clientes = clientes_qs.count() if not cliente_id else 1
     total_economizado = valor_economizado_emissoes + valor_economizado_hoteis
 
     emissoes_programa_qs = (
@@ -90,8 +103,8 @@ def admin_dashboard(request):
         return permission_denied
     cliente_id = request.GET.get("cliente_id")
     data = build_dashboard_metrics(cliente_id)
-    clientes = Cliente.objects.all().order_by("usuario__first_name")
-    selected_cliente = Cliente.objects.filter(id=cliente_id).first() if cliente_id else None
+    clientes = Cliente.objects.filter(perfil="cliente").order_by("usuario__first_name")
+    selected_cliente = clientes.filter(id=cliente_id).first() if cliente_id else None
     context = {**data, "clientes": clientes, "selected_cliente": selected_cliente}
     return render(request, "admin_custom/dashboard.html", context)
 
