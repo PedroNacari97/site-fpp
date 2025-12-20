@@ -36,6 +36,11 @@ INSTALLED_APPS = [
     "storages",
 ]
 
+AUTHENTICATION_BACKENDS = [
+    "accounts.backends.CPFBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
