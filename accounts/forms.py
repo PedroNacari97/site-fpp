@@ -1,7 +1,10 @@
 from django import forms
-from django.contrib.auth.models import User
-from django.utils.text import slugify
+from django.contrib.auth import get_user_model
+from django.db import transaction
 from gestao.models import Cliente, Empresa
+from gestao.utils import generate_unique_username, normalize_cpf
+
+User = get_user_model()
 
 class UsuarioForm(forms.Form):
     nome_completo = forms.CharField(max_length=150)
@@ -25,25 +28,34 @@ class UsuarioForm(forms.Form):
                 )
         return cleaned
 
+    def clean_cpf(self):
+        cpf = normalize_cpf(self.cleaned_data.get("cpf"))
+        if not cpf:
+            raise forms.ValidationError("CPF é obrigatório.")
+        if Cliente.objects.filter(cpf=cpf).exists():
+            raise forms.ValidationError("Já existe um cliente com este CPF.")
+        return cpf
+
     def save(self, criado_por=None):
         nome = self.cleaned_data["nome_completo"]
         cpf = self.cleaned_data["cpf"]
-        username = slugify(cpf) or slugify(nome) or "user"
-        user = User.objects.create_user(
-            username=username,
-            password=self.cleaned_data["password"],
-            first_name=nome,
-        )
-        user.is_staff = True
-        user.save()
-        empresa = self.cleaned_data.get("empresa")
-        Cliente.objects.create(
-            usuario=user,
-            cpf=cpf,
-            perfil=self.cleaned_data["perfil"],
-            empresa=empresa,
-            criado_por=criado_por,
-        )
+        username = generate_unique_username()
+        with transaction.atomic():
+            user = User.objects.create_user(
+                username=username,
+                password=self.cleaned_data["password"],
+                first_name=nome,
+            )
+            user.is_staff = True
+            user.save()
+            empresa = self.cleaned_data.get("empresa")
+            Cliente.objects.create(
+                usuario=user,
+                cpf=cpf,
+                perfil=self.cleaned_data["perfil"],
+                empresa=empresa,
+                criado_por=criado_por,
+            )
         return user
 
 class ClientePublicoForm(forms.ModelForm):
@@ -54,24 +66,30 @@ class ClientePublicoForm(forms.ModelForm):
         model = Cliente
         fields = ['telefone', 'data_nascimento', 'cpf', 'observacoes']
 
+    def clean_cpf(self):
+        cpf = normalize_cpf(self.cleaned_data.get("cpf"))
+        if not cpf:
+            raise forms.ValidationError("CPF é obrigatório.")
+        if Cliente.objects.filter(cpf=cpf).exists():
+            raise forms.ValidationError("Já existe um cliente com este CPF.")
+        return cpf
+
     def save(self, commit=True):
         nome = self.cleaned_data['nome']
-        username_base = slugify(nome) or 'cliente'
-        username = username_base
-        i = 1
-        while User.objects.filter(username=username).exists():
-            username = f"{username_base}{i}"
-            i += 1
+        cpf = normalize_cpf(self.cleaned_data.get("cpf"))
+        username = generate_unique_username()
         password = User.objects.make_random_password()
-        user = User.objects.create_user(
-            username=username,
-            password=password,
-            first_name=nome,
-            email=self.cleaned_data.get('email')
-        )
-        cliente = super().save(commit=False)
-        cliente.usuario = user
-        cliente.perfil = 'cliente'
-        if commit:
-            cliente.save()
+        with transaction.atomic():
+            user = User.objects.create_user(
+                username=username,
+                password=password,
+                first_name=nome,
+                email=self.cleaned_data.get('email')
+            )
+            cliente = super().save(commit=False)
+            cliente.usuario = user
+            cliente.perfil = 'cliente'
+            cliente.cpf = cpf
+            if commit:
+                cliente.save()
         return cliente

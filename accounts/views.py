@@ -2,9 +2,9 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.utils.text import slugify
 from gestao.models import Cliente, Empresa
 from .forms import UsuarioForm, ClientePublicoForm
+from gestao.utils import normalize_cpf
 
 def custom_login(request):
     if request.method == "POST":
@@ -12,19 +12,10 @@ def custom_login(request):
         password = request.POST.get("password")
         perfil = request.POST.get("perfil")
 
-        username = None
-        if perfil == "cliente":
-            try:
-                cliente = Cliente.objects.get(cpf=identifier)
-                username = cliente.usuario.username
-            except Cliente.DoesNotExist:
-                username = None
-        elif perfil == "superadmin":
-            username = slugify(identifier)
-        else:
-            username = identifier
-
-        user = authenticate(request, username=username, password=password)
+        cpf = normalize_cpf(identifier)
+        user = authenticate(request, cpf=cpf, password=password)
+        if not user and perfil == "superadmin":
+            user = authenticate(request, username=identifier, password=password)
         if user:
             login(request, user)
             user_perfil = getattr(getattr(user, "cliente_gestao", None), "perfil", "")

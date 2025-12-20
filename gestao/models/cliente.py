@@ -1,5 +1,8 @@
+from django.contrib.auth import get_user_model
 from django.db import models
-from django.contrib.auth.models import User
+
+
+User = get_user_model()
 
 class Cliente(models.Model):
     usuario = models.OneToOneField(
@@ -14,7 +17,7 @@ class Cliente(models.Model):
     )
     telefone = models.CharField(max_length=20, blank=True)
     data_nascimento = models.DateField(null=True, blank=True)
-    cpf = models.CharField(max_length=14, default="000.000.000-00")
+    cpf = models.CharField(max_length=11, unique=True)
     PERFIS = (
         ("admin", "Administrador"),
         ("operador", "Operador"),
