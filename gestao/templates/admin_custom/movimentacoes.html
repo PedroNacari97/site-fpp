@@ -1,14 +1,16 @@
 {% extends "admin_custom/base_admin.html" %}
 
-{% block title %}Movimentações de {{ conta.programa.nome }}{% endblock %}
-{% block header_title %}Movimentações de {{ conta.programa.nome }}{% endblock %}
+{% block title %}Movimentações do Programa: {{ conta.programa.nome }} — {{ titular_tipo }}: {{ titular_nome }}{% endblock %}
+{% block header_title %}Movimentações do Programa: {{ conta.programa.nome }} — {{ titular_tipo }}: {{ titular_nome }}{% endblock %}
 
 {% block content %}
 <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-    <h3 class="text-xl font-semibold">Movimentações do Programa: {{ conta.programa.nome }} - Cliente: {{ conta.cliente.usuario.get_full_name|default:conta.cliente.usuario.username }}</h3>
+    <h3 class="text-xl font-semibold">Movimentações do Programa: {{ conta.programa.nome }} — {{ titular_tipo }}: {{ titular_nome }}</h3>
     <div class="flex gap-2">
         <a href="{% url 'admin_transferir_pontos' conta.id %}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded font-bold">Transferir pontos</a>
+        {% if not conta.conta_administrada %}
         <a href="{% url 'admin_nova_movimentacao' conta.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">+ Nova Movimentação</a>
+        {% endif %}
     </div>
 </div>
     {% if conta.programa.is_vinculado %}
@@ -40,7 +42,9 @@
         </tbody>
     </table>
 </div>
+{% if titular_programas_url %}
 <div class="mt-4">
-    <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="bg-zinc-600 hover:bg-zinc-700 text-white px-4 py-2 rounded">Voltar para Programas</a>
+    <a href="{{ titular_programas_url }}" class="bg-zinc-600 hover:bg-zinc-700 text-white px-4 py-2 rounded">Voltar para Programas</a>
 </div>
+{% endif %}
 {% endblock %}

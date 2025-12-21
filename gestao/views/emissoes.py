@@ -219,6 +219,13 @@ def nova_emissao(request):
                 ).select_related("programa").first()
             if not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
+            if form.errors:
+                form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
+            elif emissao.pontos_utilizados and (not conta.valor_medio_por_mil or conta.valor_medio_por_mil <= 0):
+                form.add_error(
+                    "programa",
+                    "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
+                )
             else:
                 valor_referencia_pontos = calcular_valor_referencia_pontos(
                     emissao.pontos_utilizados or 0, conta.valor_medio_por_mil
@@ -226,7 +233,6 @@ def nova_emissao(request):
                 emissao.valor_referencia_pontos = valor_referencia_pontos
                 emissao.economia_obtida = calcular_economia(emissao, valor_referencia_pontos)
                 emissao.save()
-            if not form.errors:
                 total = int(request.POST.get("total_passageiros", 0))
                 for i in range(total):
                     nome = request.POST.get(f"passageiro-{i}-nome")
@@ -295,6 +301,13 @@ def editar_emissao(request, emissao_id):
                 ).select_related("programa").first()
             if not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
+            if form.errors:
+                form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
+            elif emissao.pontos_utilizados and (not conta.valor_medio_por_mil or conta.valor_medio_por_mil <= 0):
+                form.add_error(
+                    "programa",
+                    "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
+                )
             else:
                 valor_referencia_pontos = calcular_valor_referencia_pontos(
                     emissao.pontos_utilizados or 0, conta.valor_medio_por_mil
@@ -302,7 +315,6 @@ def editar_emissao(request, emissao_id):
                 emissao.valor_referencia_pontos = valor_referencia_pontos
                 emissao.economia_obtida = calcular_economia(emissao, valor_referencia_pontos)
                 emissao.save()
-            if not form.errors:
                 emissao.passageiros.all().delete()
                 total = int(request.POST.get("total_passageiros", 0))
                 for i in range(total):

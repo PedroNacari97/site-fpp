@@ -11,7 +11,8 @@ def calcular_valor_referencia_pontos(pontos_utilizados: int, valor_medio_milheir
     """Retorna o custo real dos pontos usados usando o valor médio do cliente."""
 
     pontos = Decimal(pontos_utilizados or 0)
-    return (pontos / Decimal("1000")) * Decimal(valor_medio_milheiro or 0)
+    valor_medio = Decimal(valor_medio_milheiro) if valor_medio_milheiro is not None else Decimal("0")
+    return (pontos / Decimal("1000")) * valor_medio
 
 
 def calcular_economia(emissao: EmissaoPassagem, valor_referencia_pontos: Decimal) -> Decimal:

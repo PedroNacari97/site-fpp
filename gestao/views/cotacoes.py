@@ -206,6 +206,13 @@ def nova_cotacao_voo(request):
             conta = ContaFidelidade.objects.filter(**conta_filters).select_related("programa").first()
             if not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
+            if form.errors:
+                form.add_error(None, "Revise os campos destacados antes de salvar a cotação.")
+            elif form.cleaned_data.get("milhas") and (not conta.valor_medio_por_mil or conta.valor_medio_por_mil <= 0):
+                form.add_error(
+                    "programa",
+                    "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
+                )
             else:
                 cot = form.save()
                 cot.escalas.all().delete()
@@ -297,6 +304,13 @@ def editar_cotacao_voo(request, cotacao_id):
             conta = ContaFidelidade.objects.filter(**conta_filters).select_related("programa").first()
             if not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
+            if form.errors:
+                form.add_error(None, "Revise os campos destacados antes de salvar a cotação.")
+            elif form.cleaned_data.get("milhas") and (not conta.valor_medio_por_mil or conta.valor_medio_por_mil <= 0):
+                form.add_error(
+                    "programa",
+                    "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
+                )
             else:
                 cot = form.save()
                 cot.escalas.all().delete()
