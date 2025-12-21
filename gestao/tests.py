@@ -117,6 +117,8 @@ class ProgramaVinculadoSaldoTest(TestCase):
         saldo = self.conta_vinculada.saldo_pontos
         valor_medio_programa = float(self.conta_vinculada.programa.preco_medio_milheiro)
         self.assertEqual((saldo / 1000) * valor_medio_programa, 3500.0)
+        # O valor médio do milheiro exibido no card deve refletir o programa vinculado, não o programa base
+        self.assertAlmostEqual(self.conta_vinculada.valor_medio_por_mil, 35.0)
 
     def test_nova_movimentacao_redireciona_para_base(self):
         self.assertTrue(self.client.login(username="admin2", password="secret"))
