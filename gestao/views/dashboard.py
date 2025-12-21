@@ -10,10 +10,12 @@ from .permissions import require_admin_or_operator
 
 
 def build_dashboard_metrics(cliente_id=None):
-    clientes_qs = Cliente.objects.filter(perfil="cliente")
-    contas = ContaFidelidade.objects.select_related("programa").filter(cliente__perfil="cliente")
-    emissoes = EmissaoPassagem.objects.filter(cliente__perfil="cliente")
-    hoteis = EmissaoHotel.objects.filter(cliente__perfil="cliente")
+    clientes_qs = Cliente.objects.filter(perfil="cliente", ativo=True)
+    contas = ContaFidelidade.objects.select_related("programa").filter(
+        cliente__perfil="cliente", cliente__ativo=True
+    )
+    emissoes = EmissaoPassagem.objects.filter(cliente__perfil="cliente", cliente__ativo=True)
+    hoteis = EmissaoHotel.objects.filter(cliente__perfil="cliente", cliente__ativo=True)
 
     if cliente_id:
         cliente = clientes_qs.filter(id=cliente_id).first()
@@ -42,8 +44,7 @@ def build_dashboard_metrics(cliente_id=None):
                 "valor_total": (
                     Decimal(conta.saldo_pontos) / Decimal(1000)
                 )
-                * Decimal(conta.valor_medio_por_mil)
-                * conta.programa.preco_medio_milheiro,
+                * Decimal(conta.valor_medio_por_mil),
                 "valor_medio": conta.valor_medio_por_mil,
                 "valor_referencia": conta.programa.preco_medio_milheiro,
                 "conta_id": conta.id,
@@ -103,7 +104,7 @@ def admin_dashboard(request):
         return permission_denied
     cliente_id = request.GET.get("cliente_id")
     data = build_dashboard_metrics(cliente_id)
-    clientes = Cliente.objects.filter(perfil="cliente").order_by("usuario__first_name")
+    clientes = Cliente.objects.filter(perfil="cliente", ativo=True).order_by("usuario__first_name")
     selected_cliente = clientes.filter(id=cliente_id).first() if cliente_id else None
     context = {**data, "clientes": clientes, "selected_cliente": selected_cliente}
     return render(request, "admin_custom/dashboard.html", context)

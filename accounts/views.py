@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from gestao.models import Cliente, Empresa
 from .forms import UsuarioForm, ClientePublicoForm
-from gestao.utils import normalize_cpf
+from gestao.utils import normalize_cpf, sync_cliente_activation
 
 def custom_login(request):
     if request.method == "POST":
@@ -66,6 +66,7 @@ def operator_list(request):
         operador = get_object_or_404(operadores, id=request.GET["toggle"])
         operador.ativo = not operador.ativo
         operador.save(update_fields=["ativo"])
+        sync_cliente_activation(operador)
         messages.success(
             request,
             f"Operador {'ativado' if operador.ativo else 'desativado'} com sucesso."

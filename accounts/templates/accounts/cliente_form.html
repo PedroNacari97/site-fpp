@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -18,5 +19,6 @@
         {{ form.as_p }}
         <button type="submit">Enviar</button>
     </form>
+    <script src="{% static 'gestao/js/forms.js' %}" defer></script>
 </body>
 </html>

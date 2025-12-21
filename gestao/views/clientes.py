@@ -31,7 +31,7 @@ from ..models import (
     CompanhiaAerea,
     AcessoClienteLog,
 )
-from gestao.utils import generate_unique_username, normalize_cpf
+from gestao.utils import generate_unique_username, sync_cliente_activation
 from painel_cliente.views import build_dashboard_context
 from .permissions import require_admin_or_operator
 
@@ -55,7 +55,7 @@ def criar_cliente(request):
             try:
                 with transaction.atomic():
                     username = generate_unique_username()
-                    cpf = normalize_cpf(form.cleaned_data.get("cpf"))
+                    cpf = form.cleaned_data.get("cpf")
                     user = User.objects.create_user(
                         username=username,
                         password=form.cleaned_data["password"],
@@ -64,6 +64,7 @@ def criar_cliente(request):
                         email=form.cleaned_data.get("email", ""),
                     )
 
+                    user.is_active = form.cleaned_data.get("ativo", True)
                     perfil = form.cleaned_data["perfil"]
                     if perfil in ["admin", "operador"]:
                         user.is_staff = True
@@ -101,7 +102,10 @@ def editar_cliente(request, cliente_id):
     if request.method == "POST":
         form = ClienteForm(request.POST, instance=cliente)
         if form.is_valid():
-            form.save()
+            old_ativo = cliente.ativo
+            cliente = form.save()
+            if old_ativo != cliente.ativo:
+                sync_cliente_activation(cliente)
             return redirect("admin_clientes")
     else:
         form = ClienteForm(instance=cliente)
@@ -118,7 +122,8 @@ def admin_clientes(request):
             return HttpResponse("Sem permissão", status=403)
         cli = get_object_or_404(Cliente, id=request.GET["toggle"])
         cli.ativo = not cli.ativo
-        cli.save()
+        cli.save(update_fields=["ativo"])
+        sync_cliente_activation(cli)
         return redirect("admin_clientes")
 
     busca = request.GET.get("busca", "")
@@ -144,7 +149,7 @@ def admin_clientes(request):
 
 
 def programas_do_cliente(request, cliente_id):
-    cliente = get_object_or_404(Cliente, pk=cliente_id)
+    cliente = get_object_or_404(Cliente, pk=cliente_id, perfil="cliente")
     contas = ContaFidelidade.objects.filter(cliente=cliente)
 
     lista_contas = []

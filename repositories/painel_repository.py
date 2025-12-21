@@ -6,8 +6,12 @@ from gestao.models import ContaFidelidade, EmissaoPassagem, EmissaoHotel
 
 def get_contas_by_user(user):
     """Return fidelity accounts related to a user."""
-    return ContaFidelidade.objects.filter(cliente__usuario=user).select_related(
-        "programa"
+    return (
+        ContaFidelidade.objects.filter(
+            cliente__usuario=user, cliente__perfil="cliente", cliente__ativo=True
+        )
+        .select_related("programa")
+        .prefetch_related("movimentacoes")
     )
 
 
