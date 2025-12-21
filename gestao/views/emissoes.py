@@ -227,6 +227,7 @@ def nova_emissao(request):
                 registrar_movimentacao_pontos(
                     conta, emissao, emissao.pontos_utilizados or 0, emissao.valor_referencia_pontos or Decimal("0")
                 )
+                messages.success(request, "Emissão salva com sucesso.")
                 return redirect("admin_emissoes")
     else:
         initial = {"cliente": cliente_id} if cliente_id else {}
@@ -292,6 +293,7 @@ def editar_emissao(request, emissao_id):
                 registrar_movimentacao_pontos(
                     conta, emissao, emissao.pontos_utilizados or 0, emissao.valor_referencia_pontos or Decimal("0")
                 )
+                messages.success(request, "Emissão atualizada com sucesso.")
                 return redirect("admin_emissoes")
     else:
         form = EmissaoPassagemForm(instance=emissao)
