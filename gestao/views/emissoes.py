@@ -4,6 +4,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponse
 from django.contrib import messages
+from decimal import Decimal
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
 from django import forms
@@ -39,6 +40,12 @@ import json
 from datetime import timedelta
 
 from .permissions import require_admin_or_operator
+from gestao.services.emissao_financeiro import (
+    calcular_economia,
+    calcular_valor_referencia_pontos,
+    registrar_movimentacao_pontos,
+)
+from gestao.services.clientes_programas import build_clientes_programas_map
 
 
 def _build_escalas_from_request(request):
@@ -193,21 +200,34 @@ def nova_emissao(request):
             emissao = form.save(commit=False)
             if not emissao.cliente.ativo:
                 return HttpResponse("Cliente inativo", status=403)
-            if emissao.valor_referencia and emissao.valor_pago:
-                emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
-            emissao.save()
-            total = int(request.POST.get("total_passageiros", 0))
-            for i in range(total):
-                nome = request.POST.get(f"passageiro-{i}-nome")
-                doc = request.POST.get(f"passageiro-{i}-documento")
-                cat = request.POST.get(f"passageiro-{i}-categoria")
-                if nome and doc and cat:
-                    Passageiro.objects.create(
-                        emissao=emissao, nome=nome, documento=doc, categoria=cat
-                    )
-            for escala in escalas_payload:
-                Escala.objects.create(emissao=emissao, **escala)
-            return redirect("admin_emissoes")
+            conta = ContaFidelidade.objects.filter(
+                cliente=emissao.cliente, programa=emissao.programa
+            ).select_related("programa").first()
+            if not conta:
+                form.add_error("programa", "Selecione um programa vinculado ao cliente escolhido.")
+            else:
+                valor_referencia_pontos = calcular_valor_referencia_pontos(
+                    emissao.pontos_utilizados or 0, conta.valor_medio_por_mil
+                )
+                emissao.valor_referencia_pontos = valor_referencia_pontos
+                emissao.economia_obtida = calcular_economia(emissao, valor_referencia_pontos)
+                emissao.save()
+            if not form.errors:
+                total = int(request.POST.get("total_passageiros", 0))
+                for i in range(total):
+                    nome = request.POST.get(f"passageiro-{i}-nome")
+                    doc = request.POST.get(f"passageiro-{i}-documento")
+                    cat = request.POST.get(f"passageiro-{i}-categoria")
+                    if nome and doc and cat:
+                        Passageiro.objects.create(
+                            emissao=emissao, nome=nome, documento=doc, categoria=cat
+                        )
+                for escala in escalas_payload:
+                    Escala.objects.create(emissao=emissao, **escala)
+                registrar_movimentacao_pontos(
+                    conta, emissao, emissao.pontos_utilizados or 0, emissao.valor_referencia_pontos or Decimal("0")
+                )
+                return redirect("admin_emissoes")
     else:
         initial = {"cliente": cliente_id} if cliente_id else {}
         form = EmissaoPassagemForm(initial=initial)
@@ -224,6 +244,7 @@ def nova_emissao(request):
             "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
             "aeroportos_json": json.dumps(aeroportos),
             "cliente_id": cliente_id,
+            "cliente_programas_json": json.dumps(build_clientes_programas_map()),
         },
     )
 
@@ -242,23 +263,36 @@ def editar_emissao(request, emissao_id):
         escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
             emissao = form.save(commit=False)
-            if emissao.valor_referencia and emissao.valor_pago:
-                emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
-            emissao.save()
-            emissao.passageiros.all().delete()
-            total = int(request.POST.get("total_passageiros", 0))
-            for i in range(total):
-                nome = request.POST.get(f"passageiro-{i}-nome")
-                doc = request.POST.get(f"passageiro-{i}-documento")
-                cat = request.POST.get(f"passageiro-{i}-categoria")
-                if nome and doc and cat:
-                    Passageiro.objects.create(
-                        emissao=emissao, nome=nome, documento=doc, categoria=cat
-                    )
-            emissao.escalas.all().delete()
-            for escala in escalas_payload:
-                Escala.objects.create(emissao=emissao, **escala)
-            return redirect("admin_emissoes")
+            conta = ContaFidelidade.objects.filter(
+                cliente=emissao.cliente, programa=emissao.programa
+            ).select_related("programa").first()
+            if not conta:
+                form.add_error("programa", "Selecione um programa vinculado ao cliente escolhido.")
+            else:
+                valor_referencia_pontos = calcular_valor_referencia_pontos(
+                    emissao.pontos_utilizados or 0, conta.valor_medio_por_mil
+                )
+                emissao.valor_referencia_pontos = valor_referencia_pontos
+                emissao.economia_obtida = calcular_economia(emissao, valor_referencia_pontos)
+                emissao.save()
+            if not form.errors:
+                emissao.passageiros.all().delete()
+                total = int(request.POST.get("total_passageiros", 0))
+                for i in range(total):
+                    nome = request.POST.get(f"passageiro-{i}-nome")
+                    doc = request.POST.get(f"passageiro-{i}-documento")
+                    cat = request.POST.get(f"passageiro-{i}-categoria")
+                    if nome and doc and cat:
+                        Passageiro.objects.create(
+                            emissao=emissao, nome=nome, documento=doc, categoria=cat
+                        )
+                emissao.escalas.all().delete()
+                for escala in escalas_payload:
+                    Escala.objects.create(emissao=emissao, **escala)
+                registrar_movimentacao_pontos(
+                    conta, emissao, emissao.pontos_utilizados or 0, emissao.valor_referencia_pontos or Decimal("0")
+                )
+                return redirect("admin_emissoes")
     else:
         form = EmissaoPassagemForm(instance=emissao)
     emissoes = EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida")
@@ -288,6 +322,7 @@ def editar_emissao(request, emissao_id):
             "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
             "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
             "aeroportos_json": json.dumps(aeroportos),
+            "cliente_programas_json": json.dumps(build_clientes_programas_map(emissao)),
         },
     )
 

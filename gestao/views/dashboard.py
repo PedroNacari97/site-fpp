@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 from ..models import Cliente, ContaFidelidade, EmissaoHotel, EmissaoPassagem
+from ..value_utils import build_valor_milheiro_map, get_valor_referencia_from_map
 from .permissions import require_admin_or_operator
 
 
@@ -37,20 +38,24 @@ def build_dashboard_metrics(cliente_id=None):
         hoteis = hoteis.filter(cliente_id=cliente_id)
 
     programas_data = []
+    valor_referencia_map = build_valor_milheiro_map()
     total_pontos_unicos = {}
     for conta in contas:
         conta_base = conta.conta_saldo()
         pontos = conta_base.saldo_pontos
-        valor_medio_programa = float(conta.programa.preco_medio_milheiro or 0)
+        valor_medio_programa = float(conta.valor_medio_por_mil or 0)
+        valor_referencia_programa = float(
+            get_valor_referencia_from_map(conta.programa, valor_referencia_map)
+        )
         programas_data.append(
             {
                 "id": conta.programa.id,
                 "nome": conta.programa.nome,
                 "pontos": pontos,
                 "valor_total": (Decimal(pontos) / Decimal(1000))
-                * Decimal(valor_medio_programa),
+                * Decimal(valor_referencia_programa),
                 "valor_medio": valor_medio_programa,
-                "valor_referencia": valor_medio_programa,
+                "valor_referencia": valor_referencia_programa,
                 "conta_id": conta.id,
                 "conta_base_id": conta_base.id,
             }

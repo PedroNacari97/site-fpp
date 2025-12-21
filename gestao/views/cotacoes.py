@@ -8,6 +8,12 @@ from painel_cliente.views import build_dashboard_context
 from django import forms
 from django.db import models
 
+from gestao.services.clientes_programas import build_clientes_programas_map
+from gestao.services.emissao_financeiro import (
+    calcular_economia,
+    calcular_valor_referencia_pontos,
+    registrar_movimentacao_pontos,
+)
 from ..forms import (
     ContaFidelidadeForm,
     ProgramaFidelidadeForm,
@@ -188,39 +194,58 @@ def nova_cotacao_voo(request):
         escalas_payload = _build_escalas_from_request(request)
         escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
-            cot = form.save()
-            cot.escalas.all().delete()
-            for escala in escalas_payload:
-                Escala.objects.create(cotacao=cot, **escala)
-            if cot.status == "emissao" and cot.emissao is None:
-                emissao = EmissaoPassagem.objects.create(
-                    cliente=cot.cliente,
-                    aeroporto_partida=cot.origem,
-                    aeroporto_destino=cot.destino,
-                    data_ida=cot.data_ida,
-                    data_volta=cot.data_volta,
-                    programa=cot.programa,
-                    qtd_passageiros=cot.qtd_passageiros,
-                    companhia_aerea=CompanhiaAerea.objects.filter(
-                        nome=cot.companhia_aerea
-                    ).first(),
-                    valor_referencia=cot.valor_passagem,
-                    valor_pago=cot.valor_vista,
-                    pontos_utilizados=cot.milhas,
-                    detalhes=cot.observacoes,
-                )
-                for escala in cot.escalas.all():
-                    Escala.objects.create(
-                        emissao=emissao,
-                        aeroporto=escala.aeroporto,
-                        duracao=escala.duracao,
-                        cidade=escala.cidade,
-                        tipo=escala.tipo,
-                        ordem=escala.ordem,
+            conta = ContaFidelidade.objects.filter(
+                cliente=form.cleaned_data["cliente"], programa=form.cleaned_data["programa"]
+            ).select_related("programa").first()
+            if not conta:
+                form.add_error("programa", "Selecione um programa vinculado ao cliente escolhido.")
+            else:
+                cot = form.save()
+                cot.escalas.all().delete()
+                for escala in escalas_payload:
+                    Escala.objects.create(cotacao=cot, **escala)
+                if cot.status == "emissao" and cot.emissao is None:
+                    emissao = EmissaoPassagem(
+                        cliente=cot.cliente,
+                        aeroporto_partida=cot.origem,
+                        aeroporto_destino=cot.destino,
+                        data_ida=cot.data_ida,
+                        data_volta=cot.data_volta,
+                        programa=cot.programa,
+                        qtd_passageiros=cot.qtd_passageiros,
+                        companhia_aerea=CompanhiaAerea.objects.filter(
+                            nome=cot.companhia_aerea
+                        ).first(),
+                        valor_referencia=cot.valor_passagem,
+                        valor_pago=cot.valor_vista,
+                        pontos_utilizados=cot.milhas,
+                        detalhes=cot.observacoes,
                     )
-                cot.emissao = emissao
-                cot.save()
-            return redirect("admin_cotacoes_voo")
+                    emissao.valor_referencia_pontos = calcular_valor_referencia_pontos(
+                        emissao.pontos_utilizados, conta.valor_medio_por_mil
+                    )
+                    emissao.economia_obtida = calcular_economia(
+                        emissao, emissao.valor_referencia_pontos
+                    )
+                    emissao.save()
+                    for escala in cot.escalas.all():
+                        Escala.objects.create(
+                            emissao=emissao,
+                            aeroporto=escala.aeroporto,
+                            duracao=escala.duracao,
+                            cidade=escala.cidade,
+                            tipo=escala.tipo,
+                            ordem=escala.ordem,
+                        )
+                    cot.emissao = emissao
+                    cot.save()
+                    registrar_movimentacao_pontos(
+                        conta,
+                        emissao,
+                        emissao.pontos_utilizados or 0,
+                        emissao.valor_referencia_pontos,
+                    )
+                return redirect("admin_cotacoes_voo")
     else:
         form = CotacaoVooForm(initial=initial)
     aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
@@ -232,6 +257,7 @@ def nova_cotacao_voo(request):
             "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
             "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
             "aeroportos_json": json.dumps(aeroportos),
+            "cliente_programas_json": json.dumps(build_clientes_programas_map()),
         },
     )
 
@@ -249,39 +275,58 @@ def editar_cotacao_voo(request, cotacao_id):
         escalas_payload = _build_escalas_from_request(request)
         escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
-            cot = form.save()
-            cot.escalas.all().delete()
-            for escala in escalas_payload:
-                Escala.objects.create(cotacao=cot, **escala)
-            if cot.status == "emissao" and cot.emissao is None:
-                emissao = EmissaoPassagem.objects.create(
-                    cliente=cot.cliente,
-                    aeroporto_partida=cot.origem,
-                    aeroporto_destino=cot.destino,
-                    data_ida=cot.data_ida,
-                    data_volta=cot.data_volta,
-                    programa=cot.programa,
-                    qtd_passageiros=cot.qtd_passageiros,
-                    companhia_aerea=CompanhiaAerea.objects.filter(
-                        nome=cot.companhia_aerea
-                    ).first(),
-                    valor_referencia=cot.valor_passagem,
-                    valor_pago=cot.valor_vista,
-                    pontos_utilizados=cot.milhas,
-                    detalhes=cot.observacoes,
-                )
-                for escala in cot.escalas.all():
-                    Escala.objects.create(
-                        emissao=emissao,
-                        aeroporto=escala.aeroporto,
-                        duracao=escala.duracao,
-                        cidade=escala.cidade,
-                        tipo=escala.tipo,
-                        ordem=escala.ordem,
+            conta = ContaFidelidade.objects.filter(
+                cliente=form.cleaned_data["cliente"], programa=form.cleaned_data["programa"]
+            ).select_related("programa").first()
+            if not conta:
+                form.add_error("programa", "Selecione um programa vinculado ao cliente escolhido.")
+            else:
+                cot = form.save()
+                cot.escalas.all().delete()
+                for escala in escalas_payload:
+                    Escala.objects.create(cotacao=cot, **escala)
+                if cot.status == "emissao" and cot.emissao is None:
+                    emissao = EmissaoPassagem(
+                        cliente=cot.cliente,
+                        aeroporto_partida=cot.origem,
+                        aeroporto_destino=cot.destino,
+                        data_ida=cot.data_ida,
+                        data_volta=cot.data_volta,
+                        programa=cot.programa,
+                        qtd_passageiros=cot.qtd_passageiros,
+                        companhia_aerea=CompanhiaAerea.objects.filter(
+                            nome=cot.companhia_aerea
+                        ).first(),
+                        valor_referencia=cot.valor_passagem,
+                        valor_pago=cot.valor_vista,
+                        pontos_utilizados=cot.milhas,
+                        detalhes=cot.observacoes,
                     )
-                cot.emissao = emissao
-                cot.save()
-            return redirect("admin_cotacoes_voo")
+                    emissao.valor_referencia_pontos = calcular_valor_referencia_pontos(
+                        emissao.pontos_utilizados, conta.valor_medio_por_mil
+                    )
+                    emissao.economia_obtida = calcular_economia(
+                        emissao, emissao.valor_referencia_pontos
+                    )
+                    emissao.save()
+                    for escala in cot.escalas.all():
+                        Escala.objects.create(
+                            emissao=emissao,
+                            aeroporto=escala.aeroporto,
+                            duracao=escala.duracao,
+                            cidade=escala.cidade,
+                            tipo=escala.tipo,
+                            ordem=escala.ordem,
+                        )
+                    cot.emissao = emissao
+                    cot.save()
+                    registrar_movimentacao_pontos(
+                        conta,
+                        emissao,
+                        emissao.pontos_utilizados or 0,
+                        emissao.valor_referencia_pontos,
+                    )
+                return redirect("admin_cotacoes_voo")
     else:
         form = CotacaoVooForm(instance=cotacao)
     aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
@@ -293,6 +338,7 @@ def editar_cotacao_voo(request, cotacao_id):
             "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
             "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
             "aeroportos_json": json.dumps(aeroportos),
+            "cliente_programas_json": json.dumps(build_clientes_programas_map(cotacao)),
         },
     )
 

@@ -165,6 +165,11 @@ class EmissaoPassagemForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             clientes_qs = clientes_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
         self.fields["cliente"].queryset = clientes_qs
+        cliente_id = self.data.get("cliente") or getattr(self.instance, "cliente_id", None)
+        programas_qs = ProgramaFidelidade.objects.filter(contafidelidade__cliente_id=cliente_id) if cliente_id else ProgramaFidelidade.objects.none()
+        if self.instance and self.instance.programa_id and not programas_qs.filter(id=self.instance.programa_id).exists():
+            programas_qs = programas_qs | ProgramaFidelidade.objects.filter(id=self.instance.programa_id)
+        self.fields["programa"].queryset = programas_qs.distinct()
 
     class Meta:
         model = EmissaoPassagem
@@ -230,6 +235,11 @@ class CotacaoVooForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             clientes_qs = clientes_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
         self.fields["cliente"].queryset = clientes_qs
+        cliente_id = self.data.get("cliente") or getattr(self.instance, "cliente_id", None)
+        programas_qs = ProgramaFidelidade.objects.filter(contafidelidade__cliente_id=cliente_id) if cliente_id else ProgramaFidelidade.objects.none()
+        if self.instance and self.instance.programa_id and not programas_qs.filter(id=self.instance.programa_id).exists():
+            programas_qs = programas_qs | ProgramaFidelidade.objects.filter(id=self.instance.programa_id)
+        self.fields["programa"].queryset = programas_qs.distinct()
 
     class Meta:
         model = CotacaoVoo
