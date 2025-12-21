@@ -144,17 +144,19 @@ class AeroportoForm(forms.ModelForm):
 
 
 class EmissaoPassagemForm(forms.ModelForm):
-    qtd_escalas = forms.IntegerField(min_value=0, required=False, initial=0)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for f in [
             'qtd_adultos',
             'qtd_criancas',
             'qtd_bebes',
-            'qtd_escalas',
         ]:
             self.fields[f].required = False
         self.fields['companhia_aerea'].queryset = CompanhiaAerea.objects.all()
+        clientes_qs = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+        if self.instance and self.instance.pk:
+            clientes_qs = clientes_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
+        self.fields["cliente"].queryset = clientes_qs
 
     class Meta:
         model = EmissaoPassagem
@@ -200,9 +202,15 @@ class EmissaoHotelForm(forms.ModelForm):
             'check_out': forms.DateInput(attrs={'type': 'date'}),
                   }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        clientes_qs = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+        if self.instance and self.instance.pk:
+            clientes_qs = clientes_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
+        self.fields["cliente"].queryset = clientes_qs
+
 
 class CotacaoVooForm(forms.ModelForm):
-    qtd_escalas = forms.IntegerField(min_value=0, required=False, initial=0)
     companhia_aerea = forms.ChoiceField(choices=[], required=False)
 
     def __init__(self, *args, **kwargs):
@@ -210,6 +218,10 @@ class CotacaoVooForm(forms.ModelForm):
         self.fields['companhia_aerea'].choices = [
             (c.nome, c.nome) for c in CompanhiaAerea.objects.all()
         ]
+        clientes_qs = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+        if self.instance and self.instance.pk:
+            clientes_qs = clientes_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
+        self.fields["cliente"].queryset = clientes_qs
 
     class Meta:
         model = CotacaoVoo
