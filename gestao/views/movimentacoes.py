@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 
 from gestao.utils import parse_br_date
@@ -85,6 +86,19 @@ def admin_movimentacoes(request, conta_id):
         return render(request, "sem_permissao.html")
     movimentacoes = conta.movimentacoes_compartilhadas.order_by("-data")
     conta_base = conta.conta_saldo()
+    titular_tipo = ""
+    titular_nome = ""
+    titular_programas_url = None
+    if conta.cliente_id:
+        titular_tipo = "Cliente"
+        titular_nome = conta.cliente.usuario.get_full_name() or conta.cliente.usuario.username
+        titular_programas_url = reverse("admin_programas_do_cliente", args=[conta.cliente_id])
+    elif conta.conta_administrada_id:
+        titular_tipo = "Conta Administrada"
+        titular_nome = conta.conta_administrada.nome
+        titular_programas_url = reverse(
+            "admin_programas_da_conta_administrada", args=[conta.conta_administrada_id]
+        )
     return render(
         request,
         "admin_custom/movimentacoes.html",
@@ -92,6 +106,9 @@ def admin_movimentacoes(request, conta_id):
             "conta": conta,
             "conta_base": conta_base,
             "movimentacoes": movimentacoes,
+            "titular_tipo": titular_tipo,
+            "titular_nome": titular_nome,
+            "titular_programas_url": titular_programas_url,
         },
     )
 
