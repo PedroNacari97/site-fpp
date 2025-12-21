@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Q, Sum
+from django.db.models import Q
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -154,13 +154,9 @@ def programas_do_cliente(request, cliente_id):
 
     lista_contas = []
     for conta in contas:
-        saldo_pontos = conta.movimentacoes.aggregate(total=Sum("pontos"))["total"] or 0
-        valor_pago = conta.movimentacoes.aggregate(total=Sum("valor_pago"))["total"] or 0
-
-        if saldo_pontos and valor_pago:
-            valor_medio_milheiro = (valor_pago / saldo_pontos) * 1000
-        else:
-            valor_medio_milheiro = 0
+        saldo_pontos = conta.saldo_pontos
+        valor_pago = conta.valor_total_pago
+        valor_medio_milheiro = conta.valor_medio_por_mil
 
         lista_contas.append(
             {

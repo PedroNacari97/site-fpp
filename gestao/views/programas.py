@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib import messages
+from django.db.models.deletion import ProtectedError
 
 from ..forms import (
     ContaFidelidadeForm,
@@ -86,6 +87,12 @@ def deletar_programa(request, programa_id):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
         return render(request, "sem_permissao.html")
-    ProgramaFidelidade.objects.filter(id=programa_id).delete()
-    messages.success(request, "Programa deletado com sucesso.")
+    try:
+        ProgramaFidelidade.objects.filter(id=programa_id).delete()
+        messages.success(request, "Programa deletado com sucesso.")
+    except ProtectedError:
+        messages.error(
+            request,
+            "Não é possível deletar um programa principal com vínculos ativos.",
+        )
     return redirect("admin_programas")

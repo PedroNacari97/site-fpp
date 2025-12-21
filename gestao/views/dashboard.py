@@ -11,7 +11,9 @@ from .permissions import require_admin_or_operator
 
 def build_dashboard_metrics(cliente_id=None):
     clientes_qs = Cliente.objects.filter(perfil="cliente", ativo=True)
-    contas = ContaFidelidade.objects.select_related("programa").filter(
+    contas = ContaFidelidade.objects.select_related(
+        "programa", "programa__programa_base"
+    ).filter(
         cliente__perfil="cliente", cliente__ativo=True
     )
     emissoes = EmissaoPassagem.objects.filter(cliente__perfil="cliente", cliente__ativo=True)
@@ -35,23 +37,27 @@ def build_dashboard_metrics(cliente_id=None):
         hoteis = hoteis.filter(cliente_id=cliente_id)
 
     programas_data = []
+    total_pontos_unicos = {}
     for conta in contas:
+        conta_base = conta.conta_saldo()
+        pontos = conta_base.saldo_pontos
+        valor_medio_programa = float(conta.programa.preco_medio_milheiro or 0)
         programas_data.append(
             {
                 "id": conta.programa.id,
                 "nome": conta.programa.nome,
-                "pontos": conta.saldo_pontos,
-                "valor_total": (
-                    Decimal(conta.saldo_pontos) / Decimal(1000)
-                )
-                * Decimal(conta.valor_medio_por_mil),
-                "valor_medio": conta.valor_medio_por_mil,
-                "valor_referencia": conta.programa.preco_medio_milheiro,
+                "pontos": pontos,
+                "valor_total": (Decimal(pontos) / Decimal(1000))
+                * Decimal(valor_medio_programa),
+                "valor_medio": valor_medio_programa,
+                "valor_referencia": valor_medio_programa,
                 "conta_id": conta.id,
+                "conta_base_id": conta_base.id,
             }
         )
+        total_pontos_unicos[conta_base.id] = pontos
 
-    total_pontos = sum(p["pontos"] for p in programas_data)
+    total_pontos = sum(total_pontos_unicos.values())
 
     total_emissoes = emissoes.count()
     pontos_utilizados = sum(e.pontos_utilizados or 0 for e in emissoes)
