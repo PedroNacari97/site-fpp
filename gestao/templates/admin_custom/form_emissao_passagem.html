@@ -10,6 +10,21 @@
 <div class="form-wrapper">
 <form method="post">
     {% csrf_token %}
+    {% if form.errors %}
+    <div class="p-4 mb-4 rounded border border-red-200 bg-red-50 text-red-700">
+        <p class="font-semibold mb-2">Não foi possível salvar. Corrija os pontos abaixo:</p>
+        <ul class="list-disc pl-5 space-y-1">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
     <div class="form-title">Formulário de Reserva de Viagem</div>
 
     <div class="section-title">Informações Básicas</div>

@@ -245,6 +245,7 @@ def nova_cotacao_voo(request):
                         emissao.pontos_utilizados or 0,
                         emissao.valor_referencia_pontos,
                     )
+                messages.success(request, "Cotação salva com sucesso.")
                 return redirect("admin_cotacoes_voo")
     else:
         form = CotacaoVooForm(initial=initial)
@@ -326,6 +327,7 @@ def editar_cotacao_voo(request, cotacao_id):
                         emissao.pontos_utilizados or 0,
                         emissao.valor_referencia_pontos,
                     )
+                messages.success(request, "Cotação atualizada com sucesso.")
                 return redirect("admin_cotacoes_voo")
     else:
         form = CotacaoVooForm(instance=cotacao)
