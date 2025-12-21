@@ -6,6 +6,7 @@ from django.urls import reverse
 from gestao.models import (
     Aeroporto,
     Cliente,
+    ContaAdministrada,
     ContaFidelidade,
     EmissaoPassagem,
     Empresa,
@@ -66,4 +67,36 @@ class NovaEmissaoViewTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Não foi possível salvar a emissão")
+        self.assertFalse(EmissaoPassagem.objects.exists())
+
+    def test_nova_emissao_administrada_requires_cliente_and_conta(self):
+        conta_adm = ContaAdministrada.objects.create(nome="Conta ADM", empresa=self.empresa)
+        ContaFidelidade.objects.create(conta_administrada=conta_adm, programa=self.programa)
+        self._login()
+
+        payload = self._post_payload(
+            {
+                "tipo_titular": "administrada",
+                "conta_administrada": str(conta_adm.id),
+                "cliente": str(self.cliente.id),
+            }
+        )
+        response = self.client.post(self.url, data=payload, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, reverse("admin_emissoes"))
+        self.assertTrue(EmissaoPassagem.objects.filter(conta_administrada=conta_adm).exists())
+
+    def test_nova_emissao_blocks_when_milheiro_missing_with_pontos(self):
+        ContaFidelidade.objects.create(cliente=self.cliente, programa=self.programa)
+        self._login()
+
+        response = self.client.post(
+            self.url,
+            data=self._post_payload({"pontos_utilizados": "1000"}),
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Valor médio do milheiro")
         self.assertFalse(EmissaoPassagem.objects.exists())
