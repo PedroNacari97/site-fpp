@@ -7,7 +7,6 @@ from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
 from django import forms
 from django.db import models
-from django.db.models import Q
 
 from ..forms import (
     ContaFidelidadeForm,
@@ -41,6 +40,58 @@ from datetime import timedelta
 from decimal import Decimal
 
 from .permissions import require_admin_or_operator
+
+
+def _build_escalas_from_request(request):
+    escalas = []
+    for tipo in ("ida", "volta"):
+        if not request.POST.get(f"{tipo}_tem_escala"):
+            continue
+        try:
+            total_escalas = int(request.POST.get(f"total_escalas_{tipo}", 0) or 0)
+        except (TypeError, ValueError):
+            total_escalas = 0
+        for i in range(total_escalas):
+            aeroporto_id = request.POST.get(f"escala-{tipo}-{i}-aeroporto")
+            dur = request.POST.get(f"escala-{tipo}-{i}-duracao")
+            cidade = request.POST.get(f"escala-{tipo}-{i}-cidade")
+            if aeroporto_id and dur:
+                try:
+                    h, m = map(int, dur.split(":"))
+                except (TypeError, ValueError):
+                    continue
+                escalas.append(
+                    {
+                        "aeroporto_id": aeroporto_id,
+                        "duracao": timedelta(hours=h, minutes=m),
+                        "cidade": cidade or "",
+                        "tipo": tipo,
+                        "ordem": i + 1,
+                    }
+                )
+    return escalas
+
+
+def _format_escalas(escalas_queryset):
+    escalas_por_tipo = {"ida": [], "volta": []}
+    for e in escalas_queryset:
+        total_seconds = int(e["duracao"].total_seconds())
+        h = total_seconds // 3600
+        m = (total_seconds % 3600) // 60
+        escala_formatada = {
+            "aeroporto_id": e["aeroporto_id"],
+            "duracao": f"{h:02d}:{m:02d}",
+            "cidade": e["cidade"],
+            "ordem": e.get("ordem") or 0,
+        }
+        escalas_por_tipo.get(e.get("tipo") or "ida", escalas_por_tipo["ida"]).append(
+            escala_formatada
+        )
+    for tipo in escalas_por_tipo:
+        escalas_por_tipo[tipo] = sorted(
+            escalas_por_tipo[tipo], key=lambda esc: esc.get("ordem") or 0
+        )
+    return escalas_por_tipo
 
 
 # --- COTAÇÕES ---
@@ -89,7 +140,9 @@ def admin_cotacoes_voo(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     busca = request.GET.get("busca", "")
-    cotacoes = CotacaoVoo.objects.all().select_related(
+    cotacoes = CotacaoVoo.objects.filter(
+        cliente__perfil="cliente", cliente__ativo=True
+    ).select_related(
         "cliente__usuario", "origem", "destino"
     )
     if busca:
@@ -111,6 +164,7 @@ def nova_cotacao_voo(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     initial = {}
+    escalas_por_tipo = {"ida": [], "volta": []}
     emissao_id = request.GET.get("emissao")
     if emissao_id:
         emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
@@ -126,10 +180,18 @@ def nova_cotacao_voo(request):
             "programa": emissao.programa_id,
             "qtd_passageiros": emissao.qtd_passageiros,
         }
+        escalas_por_tipo = _format_escalas(
+            emissao.escalas.values("aeroporto_id", "duracao", "cidade", "tipo", "ordem")
+        )
     if request.method == "POST":
         form = CotacaoVooForm(request.POST)
+        escalas_payload = _build_escalas_from_request(request)
+        escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
             cot = form.save()
+            cot.escalas.all().delete()
+            for escala in escalas_payload:
+                Escala.objects.create(cotacao=cot, **escala)
             if cot.status == "emissao" and cot.emissao is None:
                 emissao = EmissaoPassagem.objects.create(
                     cliente=cot.cliente,
@@ -147,12 +209,31 @@ def nova_cotacao_voo(request):
                     pontos_utilizados=cot.milhas,
                     detalhes=cot.observacoes,
                 )
+                for escala in cot.escalas.all():
+                    Escala.objects.create(
+                        emissao=emissao,
+                        aeroporto=escala.aeroporto,
+                        duracao=escala.duracao,
+                        cidade=escala.cidade,
+                        tipo=escala.tipo,
+                        ordem=escala.ordem,
+                    )
                 cot.emissao = emissao
                 cot.save()
             return redirect("admin_cotacoes_voo")
     else:
         form = CotacaoVooForm(initial=initial)
-    return render(request, "admin_custom/form_cotacao.html", {"form": form})
+    aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
+    return render(
+        request,
+        "admin_custom/form_cotacao.html",
+        {
+            "form": form,
+            "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
+            "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
+            "aeroportos_json": json.dumps(aeroportos),
+        },
+    )
 
 
 @login_required
@@ -160,10 +241,18 @@ def editar_cotacao_voo(request, cotacao_id):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
+    escalas_por_tipo = _format_escalas(
+        cotacao.escalas.values("aeroporto_id", "duracao", "cidade", "tipo", "ordem")
+    )
     if request.method == "POST":
         form = CotacaoVooForm(request.POST, instance=cotacao)
+        escalas_payload = _build_escalas_from_request(request)
+        escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
             cot = form.save()
+            cot.escalas.all().delete()
+            for escala in escalas_payload:
+                Escala.objects.create(cotacao=cot, **escala)
             if cot.status == "emissao" and cot.emissao is None:
                 emissao = EmissaoPassagem.objects.create(
                     cliente=cot.cliente,
@@ -181,12 +270,31 @@ def editar_cotacao_voo(request, cotacao_id):
                     pontos_utilizados=cot.milhas,
                     detalhes=cot.observacoes,
                 )
+                for escala in cot.escalas.all():
+                    Escala.objects.create(
+                        emissao=emissao,
+                        aeroporto=escala.aeroporto,
+                        duracao=escala.duracao,
+                        cidade=escala.cidade,
+                        tipo=escala.tipo,
+                        ordem=escala.ordem,
+                    )
                 cot.emissao = emissao
                 cot.save()
             return redirect("admin_cotacoes_voo")
     else:
         form = CotacaoVooForm(instance=cotacao)
-    return render(request, "admin_custom/form_cotacao.html", {"form": form})
+    aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
+    return render(
+        request,
+        "admin_custom/form_cotacao.html",
+        {
+            "form": form,
+            "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
+            "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
+            "aeroportos_json": json.dumps(aeroportos),
+        },
+    )
 
 
 @login_required

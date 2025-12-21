@@ -23,7 +23,6 @@
             {% else %}
                 <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_dashboard %}{% endblock %}" href="{% url 'admin_dashboard' %}"><span class="sidebar-label">Dashboard</span></a>
                 <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_clientes %}{% endblock %}" href="{% url 'admin_clientes' %}"><span class="sidebar-label">Clientes</span></a>
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_operadores %}{% endblock %}" href="{% url 'operator_list' %}"><span class="sidebar-label">Operadores</span></a>
                 <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_contas %}{% endblock %}" href="{% url 'admin_contas' %}"><span class="sidebar-label">Contas Fidelidade</span></a>
                 <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_cotacoes_voo %}{% endblock %}" href="{% url 'admin_cotacoes_voo' %}"><span class="sidebar-label">Cotações</span></a>
                 <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_emissoes %}{% endblock %}" href="{% url 'admin_emissoes' %}"><span class="sidebar-label">Emissões</span></a>
@@ -43,7 +42,12 @@
                 {% if not request.user.is_superuser %}
                 <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}"><span class="sidebar-label">Auditoria</span></a>
                 {% endif %}
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'user_list' %}"><span class="sidebar-label">Usuários da Empresa</span></a>
+                {% with perfil=request.user.cliente_gestao.perfil %}
+                    {% if perfil == "admin" or request.user.is_superuser %}
+                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'user_list' %}"><span class="sidebar-label">Usuários Administradores</span></a>
+                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_operadores %}{% endblock %}" href="{% url 'operator_list' %}"><span class="sidebar-label">Operadores</span></a>
+                    {% endif %}
+                {% endwith %}
             </div>
              <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'logout' %}"><span class="sidebar-label">Sair</span></a>
         </nav>

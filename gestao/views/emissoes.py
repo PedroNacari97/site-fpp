@@ -41,6 +41,58 @@ from datetime import timedelta
 from .permissions import require_admin_or_operator
 
 
+def _build_escalas_from_request(request):
+    escalas = []
+    for tipo in ("ida", "volta"):
+        if not request.POST.get(f"{tipo}_tem_escala"):
+            continue
+        try:
+            total_escalas = int(request.POST.get(f"total_escalas_{tipo}", 0) or 0)
+        except (TypeError, ValueError):
+            total_escalas = 0
+        for i in range(total_escalas):
+            aeroporto_id = request.POST.get(f"escala-{tipo}-{i}-aeroporto")
+            dur = request.POST.get(f"escala-{tipo}-{i}-duracao")
+            cidade = request.POST.get(f"escala-{tipo}-{i}-cidade")
+            if aeroporto_id and dur:
+                try:
+                    h, m = map(int, dur.split(":"))
+                except (TypeError, ValueError):
+                    continue
+                escalas.append(
+                    {
+                        "aeroporto_id": aeroporto_id,
+                        "duracao": timedelta(hours=h, minutes=m),
+                        "cidade": cidade or "",
+                        "tipo": tipo,
+                        "ordem": i + 1,
+                    }
+                )
+    return escalas
+
+
+def _format_escalas(escalas_queryset):
+    escalas_por_tipo = {"ida": [], "volta": []}
+    for e in escalas_queryset:
+        total_seconds = int(e["duracao"].total_seconds())
+        h = total_seconds // 3600
+        m = (total_seconds % 3600) // 60
+        escala_formatada = {
+            "aeroporto_id": e["aeroporto_id"],
+            "duracao": f"{h:02d}:{m:02d}",
+            "cidade": e["cidade"],
+            "ordem": e.get("ordem") or 0,
+        }
+        escalas_por_tipo.get(e.get("tipo") or "ida", escalas_por_tipo["ida"]).append(
+            escala_formatada
+        )
+    for tipo in escalas_por_tipo:
+        escalas_por_tipo[tipo] = sorted(
+            escalas_por_tipo[tipo], key=lambda esc: esc.get("ordem") or 0
+        )
+    return escalas_por_tipo
+
+
 # --- EMISSÕES ---
 @login_required
 def admin_emissoes(request):
@@ -52,7 +104,9 @@ def admin_emissoes(request):
     data_ini = request.GET.get("data_ini")
     data_fim = request.GET.get("data_fim")
 
-    emissoes = EmissaoPassagem.objects.all().select_related(
+    emissoes = EmissaoPassagem.objects.filter(
+        cliente__perfil="cliente", cliente__ativo=True
+    ).select_related(
         "cliente", "programa", "aeroporto_partida", "aeroporto_destino"
     )
     if programa_id:
@@ -112,7 +166,7 @@ def admin_emissoes(request):
         return response
 
     programas = ProgramaFidelidade.objects.all()
-    clientes = Cliente.objects.all()
+    clientes = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
     return render(
         request,
         "admin_custom/emissoes.html",
@@ -130,8 +184,11 @@ def nova_emissao(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     cliente_id = request.GET.get("cliente_id")
+    escalas_por_tipo = {"ida": [], "volta": []}
     if request.method == "POST":
         form = EmissaoPassagemForm(request.POST)
+        escalas_payload = _build_escalas_from_request(request)
+        escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
             emissao = form.save(commit=False)
             if not emissao.cliente.ativo:
@@ -148,19 +205,8 @@ def nova_emissao(request):
                     Passageiro.objects.create(
                         emissao=emissao, nome=nome, documento=doc, categoria=cat
                     )
-            total_escalas = int(request.POST.get("total_escalas", 0))
-            for i in range(total_escalas):
-                aeroporto_id = request.POST.get(f"escala-{i}-aeroporto")
-                dur = request.POST.get(f"escala-{i}-duracao")
-                cidade = request.POST.get(f"escala-{i}-cidade")
-                if aeroporto_id and dur:
-                    h, m = map(int, dur.split(":"))
-                    Escala.objects.create(
-                        emissao=emissao,
-                        aeroporto_id=aeroporto_id,
-                        duracao=timedelta(hours=h, minutes=m),
-                        cidade=cidade or "",
-                    )
+            for escala in escalas_payload:
+                Escala.objects.create(emissao=emissao, **escala)
             return redirect("admin_emissoes")
     else:
         initial = {"cliente": cliente_id} if cliente_id else {}
@@ -174,7 +220,8 @@ def nova_emissao(request):
             "form": form,
             "emissoes": emissoes,
             "passageiros_json": "[]",
-            "escalas_json": "[]",
+            "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
+            "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
             "aeroportos_json": json.dumps(aeroportos),
             "cliente_id": cliente_id,
         },
@@ -186,8 +233,13 @@ def editar_emissao(request, emissao_id):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     emissao = EmissaoPassagem.objects.get(id=emissao_id)
+    escalas_por_tipo = _format_escalas(
+        emissao.escalas.values("aeroporto_id", "duracao", "cidade", "tipo", "ordem")
+    )
     if request.method == "POST":
         form = EmissaoPassagemForm(request.POST, instance=emissao)
+        escalas_payload = _build_escalas_from_request(request)
+        escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
             emissao = form.save(commit=False)
             if emissao.valor_referencia and emissao.valor_pago:
@@ -204,23 +256,11 @@ def editar_emissao(request, emissao_id):
                         emissao=emissao, nome=nome, documento=doc, categoria=cat
                     )
             emissao.escalas.all().delete()
-            total_escalas = int(request.POST.get("total_escalas", 0))
-            for i in range(total_escalas):
-                aeroporto_id = request.POST.get(f"escala-{i}-aeroporto")
-                dur = request.POST.get(f"escala-{i}-duracao")
-                cidade = request.POST.get(f"escala-{i}-cidade")
-                if aeroporto_id and dur:
-                    h, m = map(int, dur.split(":"))
-                    Escala.objects.create(
-                        emissao=emissao,
-                        aeroporto_id=aeroporto_id,
-                        duracao=timedelta(hours=h, minutes=m),
-                        cidade=cidade or "",
-                    )
+            for escala in escalas_payload:
+                Escala.objects.create(emissao=emissao, **escala)
             return redirect("admin_emissoes")
     else:
         form = EmissaoPassagemForm(instance=emissao)
-        form.fields["qtd_escalas"].initial = emissao.escalas.count()
     emissoes = EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida")
     passageiros = list(
         emissao.passageiros.filter(categoria="adulto").values(
@@ -237,12 +277,6 @@ def editar_emissao(request, emissao_id):
             "nome", "documento", "categoria"
         )
     )
-    escalas = list(emissao.escalas.values("aeroporto_id", "duracao", "cidade"))
-    for e in escalas:
-        total_seconds = int(e["duracao"].total_seconds())
-        h = total_seconds // 3600
-        m = (total_seconds % 3600) // 60
-        e["duracao"] = f"{h:02d}:{m:02d}"
     aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
     return render(
         request,
@@ -251,7 +285,8 @@ def editar_emissao(request, emissao_id):
             "form": form,
             "emissoes": emissoes,
             "passageiros_json": json.dumps(passageiros),
-            "escalas_json": json.dumps(escalas),
+            "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
+            "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
             "aeroportos_json": json.dumps(aeroportos),
         },
     )
