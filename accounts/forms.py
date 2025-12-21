@@ -2,7 +2,12 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from gestao.models import Cliente, Empresa
-from gestao.utils import generate_unique_username, normalize_cpf
+from gestao.utils import (
+    generate_unique_username,
+    normalize_cpf,
+    parse_br_date,
+    validate_cpf_digits,
+)
 
 User = get_user_model()
 
@@ -30,9 +35,7 @@ class UsuarioForm(forms.Form):
         return cleaned
 
     def clean_cpf(self):
-        cpf = normalize_cpf(self.cleaned_data.get("cpf"))
-        if not cpf:
-            raise forms.ValidationError("CPF é obrigatório.")
+        cpf = validate_cpf_digits(self.cleaned_data.get("cpf"))
         if Cliente.objects.filter(cpf=cpf).exists():
             raise forms.ValidationError("Já existe um cliente com este CPF.")
         return cpf
@@ -66,14 +69,25 @@ class ClientePublicoForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = ['telefone', 'data_nascimento', 'cpf', 'observacoes']
+        widgets = {
+            "data_nascimento": forms.TextInput(
+                attrs={
+                    "placeholder": "DD/MM/AAAA",
+                    "data-mask": "date",
+                    "inputmode": "numeric",
+                    "maxlength": "10",
+                }
+            ),
+        }
 
     def clean_cpf(self):
-        cpf = normalize_cpf(self.cleaned_data.get("cpf"))
-        if not cpf:
-            raise forms.ValidationError("CPF é obrigatório.")
+        cpf = validate_cpf_digits(self.cleaned_data.get("cpf"))
         if Cliente.objects.filter(cpf=cpf).exists():
             raise forms.ValidationError("Já existe um cliente com este CPF.")
         return cpf
+
+    def clean_data_nascimento(self):
+        return parse_br_date(self.cleaned_data.get("data_nascimento"), field_label="Data de nascimento")
 
     def save(self, commit=True):
         nome = self.cleaned_data['nome']

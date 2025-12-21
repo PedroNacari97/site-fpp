@@ -55,7 +55,9 @@ def admin_contas(request):
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
     busca = request.GET.get("busca", "")
-    contas = ContaFidelidade.objects.select_related("cliente__usuario", "programa")
+    contas = ContaFidelidade.objects.select_related("cliente__usuario", "programa").filter(
+        cliente__perfil="cliente", cliente__ativo=True
+    )
     if busca:
         contas = contas.filter(
             Q(cliente__usuario__username__icontains=busca)

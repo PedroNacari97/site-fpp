@@ -2,7 +2,12 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
-from gestao.utils import generate_unique_username, normalize_cpf
+from gestao.utils import (
+    generate_unique_username,
+    normalize_cpf,
+    parse_br_date,
+    validate_cpf_digits,
+)
 
 from .models import (
     ContaFidelidade,
@@ -23,6 +28,37 @@ class ContaFidelidadeForm(forms.ModelForm):
     class Meta:
         model = ContaFidelidade
         fields = ['cliente', 'programa', 'clube_periodicidade', 'pontos_clube_mes', 'valor_assinatura_clube', 'data_inicio_clube', 'validade']
+        widgets = {
+            "data_inicio_clube": forms.TextInput(
+                attrs={
+                    "placeholder": "DD/MM/AAAA",
+                    "data-mask": "date",
+                    "inputmode": "numeric",
+                    "maxlength": "10",
+                }
+            ),
+            "validade": forms.TextInput(
+                attrs={
+                    "placeholder": "DD/MM/AAAA",
+                    "data-mask": "date",
+                    "inputmode": "numeric",
+                    "maxlength": "10",
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        qs = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+        if self.instance and self.instance.pk:
+            qs = qs | Cliente.objects.filter(pk=self.instance.cliente_id)
+        self.fields["cliente"].queryset = qs
+
+    def clean_data_inicio_clube(self):
+        return parse_br_date(self.cleaned_data.get("data_inicio_clube"), field_label="Data de início do clube")
+
+    def clean_validade(self):
+        return parse_br_date(self.cleaned_data.get("validade"), field_label="Validade")
 
 
 class ProgramaFidelidadeForm(forms.ModelForm):
@@ -42,6 +78,25 @@ class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = ['usuario', 'telefone', 'data_nascimento', 'cpf', 'perfil', 'observacoes', 'ativo']
+        widgets = {
+            "data_nascimento": forms.TextInput(
+                attrs={
+                    "placeholder": "DD/MM/AAAA",
+                    "data-mask": "date",
+                    "inputmode": "numeric",
+                    "maxlength": "10",
+                }
+            ),
+        }
+
+    def clean_cpf(self):
+        cpf = validate_cpf_digits(self.cleaned_data.get("cpf"))
+        if Cliente.objects.exclude(pk=self.instance.pk).filter(cpf=cpf).exists():
+            raise forms.ValidationError("Já existe um cliente com este CPF.")
+        return cpf
+
+    def clean_data_nascimento(self):
+        return parse_br_date(self.cleaned_data.get("data_nascimento"), field_label="Data de nascimento")
 
 
 class NovoClienteForm(forms.ModelForm):
@@ -61,14 +116,25 @@ class NovoClienteForm(forms.ModelForm):
             "ativo",
             "perfil",
         ]
+        widgets = {
+            "data_nascimento": forms.TextInput(
+                attrs={
+                    "placeholder": "DD/MM/AAAA",
+                    "data-mask": "date",
+                    "inputmode": "numeric",
+                    "maxlength": "10",
+                }
+            ),
+        }
 
     def clean_cpf(self):
-        cpf = normalize_cpf(self.cleaned_data.get("cpf"))
-        if not cpf:
-            raise forms.ValidationError("CPF é obrigatório.")
+        cpf = validate_cpf_digits(self.cleaned_data.get("cpf"))
         if Cliente.objects.filter(cpf=cpf).exists():
             raise forms.ValidationError("Já existe um cliente com este CPF.")
         return cpf
+
+    def clean_data_nascimento(self):
+        return parse_br_date(self.cleaned_data.get("data_nascimento"), field_label="Data de nascimento")
 
 
 class AeroportoForm(forms.ModelForm):
@@ -218,9 +284,7 @@ class EmpresaForm(forms.ModelForm):
         }
 
     def clean_admin_cpf(self):
-        cpf = normalize_cpf(self.cleaned_data.get("admin_cpf"))
-        if not cpf:
-            raise forms.ValidationError("CPF do admin é obrigatório.")
+        cpf = validate_cpf_digits(self.cleaned_data.get("admin_cpf"), field_label="CPF do admin")
         if Cliente.objects.filter(cpf=cpf).exists():
             raise forms.ValidationError("Já existe um cliente com este CPF.")
         return cpf

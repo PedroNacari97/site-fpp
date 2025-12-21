@@ -4,7 +4,7 @@ import re
 from django.db import migrations, models
 
 
-def normalize_cpfs(apps):
+def normalize_cpfs(apps, schema_editor):
     Cliente = apps.get_model("gestao", "Cliente")
     for cliente in Cliente.objects.all():
         digits = re.sub(r"\D", "", cliente.cpf or "")

@@ -22,6 +22,9 @@ class CPFBackend(ModelBackend):
         except Cliente.DoesNotExist:
             return None
 
+        if not cliente.ativo:
+            return None
+
         user = cliente.usuario
         if self.user_can_authenticate(user) and user.check_password(password):
             return user
