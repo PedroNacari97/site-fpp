@@ -8,7 +8,7 @@ from decimal import Decimal
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from painel_cliente.views import build_dashboard_context
 from django import forms
-from django.db import models
+from django.db import models, transaction
 
 from ..forms import (
     ContaFidelidadeForm,
@@ -246,6 +246,41 @@ def nova_emissao(request):
                 emissao.valor_referencia_pontos = valor_referencia_pontos
                 emissao.economia_obtida = calcular_economia(emissao, valor_referencia_pontos)
                 emissao.save()
+
+                total_passageiros_esperado = (emissao.qtd_adultos or 0) + (emissao.qtd_criancas or 0) + (emissao.qtd_bebes or 0)
+                total_passageiros_recebido = int(request.POST.get("total_passageiros", 0))
+
+                if total_passageiros_recebido != total_passageiros_esperado:
+                    emissao.delete()
+                    form.add_error(
+                        None,
+                        f"Inconsistência no número de passageiros. Esperado: {total_passageiros_esperado}, Recebido: {total_passageiros_recebido}. Verifique se todos os passageiros foram preenchidos corretamente.",
+                    )
+                    messages.error(
+                        request, "Não foi possível salvar a emissão. Inconsistência no número de passageiros."
+                    )
+                    emissoes = EmissaoPassagem.objects.all().order_by("-data_ida")
+                    aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
+                    return render(
+                        request,
+                        "admin_custom/form_emissao_passagem.html",
+                        {
+                            "form": form,
+                            "emissoes": emissoes,
+                            "passageiros_json": "[]",
+                            "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
+                            "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
+                            "aeroportos_json": json.dumps(aeroportos),
+                            "cliente_id": cliente_id,
+                            "cliente_programas_json": json.dumps(build_clientes_programas_map(empresa_id=getattr(empresa, "id", None))),
+                            "contas_adm_programas_json": json.dumps(
+                                build_contas_administradas_programas_map(
+                                    empresa_id=getattr(empresa, "id", None)
+                                )
+                            ),
+                        },
+                    )
+
                 total = int(request.POST.get("total_passageiros", 0))
                 for i in range(total):
                     nome = request.POST.get(f"passageiro-{i}-nome")
@@ -311,63 +346,115 @@ def editar_emissao(request, emissao_id):
         escalas_payload = _build_escalas_from_request(request)
         escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
-            emissao = form.save(commit=False)
-            if emissao.conta_administrada_id:
-                conta = ContaFidelidade.objects.filter(
-                    conta_administrada=emissao.conta_administrada,
-                    programa=emissao.programa,
-                ).select_related("programa").first()
-            else:
-                conta = ContaFidelidade.objects.filter(
-                    cliente=emissao.cliente, programa=emissao.programa
-                ).select_related("programa").first()
-            valor_medio_milheiro = None
-            if conta:
-                valor_medio_milheiro = conta.valor_medio_por_mil
-                if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
-                    valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
-            if not conta:
-                form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
-                messages.error(
-                    request,
-                    "Não foi possível salvar a emissão: programa não vinculado ao titular selecionado.",
-                )
-            if form.errors:
-                form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
-            elif emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
-                form.add_error(
-                    "programa",
-                    "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
-                )
-                messages.error(
-                    request,
-                    "Não foi possível salvar a emissão: valor médio do milheiro ausente para o titular.",
-                )
-            else:
-                valor_referencia_pontos = calcular_valor_referencia_pontos(
-                    emissao.pontos_utilizados or 0, valor_medio_milheiro
-                )
-                emissao.valor_referencia_pontos = valor_referencia_pontos
-                emissao.economia_obtida = calcular_economia(emissao, valor_referencia_pontos)
-                emissao.save()
-                emissao.passageiros.all().delete()
-                total = int(request.POST.get("total_passageiros", 0))
-                for i in range(total):
-                    nome = request.POST.get(f"passageiro-{i}-nome")
-                    doc = request.POST.get(f"passageiro-{i}-documento")
-                    cat = request.POST.get(f"passageiro-{i}-categoria")
-                    if nome and doc and cat:
-                        Passageiro.objects.create(
-                            emissao=emissao, nome=nome, documento=doc, categoria=cat
+            with transaction.atomic():
+                emissao = form.save(commit=False)
+                if emissao.conta_administrada_id:
+                    conta = ContaFidelidade.objects.filter(
+                        conta_administrada=emissao.conta_administrada,
+                        programa=emissao.programa,
+                    ).select_related("programa").first()
+                else:
+                    conta = ContaFidelidade.objects.filter(
+                        cliente=emissao.cliente, programa=emissao.programa
+                    ).select_related("programa").first()
+                valor_medio_milheiro = None
+                if conta:
+                    valor_medio_milheiro = conta.valor_medio_por_mil
+                    if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
+                        valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
+                if not conta:
+                    form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
+                    messages.error(
+                        request,
+                        "Não foi possível salvar a emissão: programa não vinculado ao titular selecionado.",
+                    )
+                if form.errors:
+                    form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
+                elif emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
+                    form.add_error(
+                        "programa",
+                        "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
+                    )
+                    messages.error(
+                        request,
+                        "Não foi possível salvar a emissão: valor médio do milheiro ausente para o titular.",
+                    )
+                else:
+                    valor_referencia_pontos = calcular_valor_referencia_pontos(
+                        emissao.pontos_utilizados or 0, valor_medio_milheiro
+                    )
+                    emissao.valor_referencia_pontos = valor_referencia_pontos
+                    emissao.economia_obtida = calcular_economia(emissao, valor_referencia_pontos)
+                    emissao.save()
+
+                    total_passageiros_esperado = (emissao.qtd_adultos or 0) + (emissao.qtd_criancas or 0) + (emissao.qtd_bebes or 0)
+                    total_passageiros_recebido = int(request.POST.get("total_passageiros", 0))
+
+                    if total_passageiros_recebido != total_passageiros_esperado:
+                        transaction.set_rollback(True)
+                        form.add_error(
+                            None,
+                            f"Inconsistência no número de passageiros. Esperado: {total_passageiros_esperado}, Recebido: {total_passageiros_recebido}. Verifique se todos os passageiros foram preenchidos corretamente.",
                         )
-                emissao.escalas.all().delete()
-                for escala in escalas_payload:
-                    Escala.objects.create(emissao=emissao, **escala)
-                registrar_movimentacao_pontos(
-                    conta, emissao, emissao.pontos_utilizados or 0, emissao.valor_referencia_pontos or Decimal("0")
-                )
-                messages.success(request, "Emissão atualizada com sucesso.")
-                return redirect("admin_emissoes")
+                        messages.error(
+                            request,
+                            "Não foi possível salvar a emissão. Inconsistência no número de passageiros.",
+                        )
+                        passageiros = list(
+                            emissao.passageiros.filter(categoria="adulto").values(
+                                "nome", "documento", "categoria"
+                            )
+                        )
+                        passageiros += list(
+                            emissao.passageiros.filter(categoria="crianca").values(
+                                "nome", "documento", "categoria"
+                            )
+                        )
+                        passageiros += list(
+                            emissao.passageiros.filter(categoria="bebe").values(
+                                "nome", "documento", "categoria"
+                            )
+                        )
+                        aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
+                        return render(
+                            request,
+                            "admin_custom/form_emissao_passagem.html",
+                            {
+                                "form": form,
+                                "emissoes": EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida"),
+                                "passageiros_json": json.dumps(passageiros),
+                                "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
+                                "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
+                                "aeroportos_json": json.dumps(aeroportos),
+                                "cliente_programas_json": json.dumps(
+                                    build_clientes_programas_map(emissao, empresa_id=getattr(empresa, "id", None))
+                                ),
+                                "contas_adm_programas_json": json.dumps(
+                                    build_contas_administradas_programas_map(
+                                        empresa_id=getattr(empresa, "id", None), instance=emissao
+                                    )
+                                ),
+                            },
+                        )
+
+                    emissao.passageiros.all().delete()
+                    total = int(request.POST.get("total_passageiros", 0))
+                    for i in range(total):
+                        nome = request.POST.get(f"passageiro-{i}-nome")
+                        doc = request.POST.get(f"passageiro-{i}-documento")
+                        cat = request.POST.get(f"passageiro-{i}-categoria")
+                        if nome and doc and cat:
+                            Passageiro.objects.create(
+                                emissao=emissao, nome=nome, documento=doc, categoria=cat
+                            )
+                    emissao.escalas.all().delete()
+                    for escala in escalas_payload:
+                        Escala.objects.create(emissao=emissao, **escala)
+                    registrar_movimentacao_pontos(
+                        conta, emissao, emissao.pontos_utilizados or 0, emissao.valor_referencia_pontos or Decimal("0")
+                    )
+                    messages.success(request, "Emissão atualizada com sucesso.")
+                    return redirect("admin_emissoes")
             messages.error(
                 request,
                 "Não foi possível salvar a emissão. Corrija os campos destacados e tente novamente.",
