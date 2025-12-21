@@ -10,7 +10,7 @@ def get_contas_by_user(user):
         ContaFidelidade.objects.filter(
             cliente__usuario=user, cliente__perfil="cliente", cliente__ativo=True
         )
-        .select_related("programa")
+        .select_related("programa", "programa__programa_base")
         .prefetch_related("movimentacoes")
     )
 

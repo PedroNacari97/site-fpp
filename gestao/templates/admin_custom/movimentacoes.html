@@ -11,6 +11,12 @@
         <a href="{% url 'admin_nova_movimentacao' conta.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">+ Nova Movimentação</a>
     </div>
 </div>
+    {% if conta.programa.is_vinculado %}
+    <div class="bg-amber-100 text-amber-800 p-3 rounded mb-4">
+        Este programa é vinculado a <strong>{{ conta_base.programa.nome }}</strong>. O saldo e as movimentações são compartilhados e só podem ser alterados pelo programa base.
+        <a class="underline text-amber-900 font-semibold" href="{% url 'admin_movimentacoes' conta_base.id %}">Ir para o programa base</a>
+    </div>
+    {% endif %}
     <table class="min-w-full text-sm">
         <thead class="bg-zinc-700 text-zinc-200">
             <tr>
