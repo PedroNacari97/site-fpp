@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 from services.pdf_service import emissao_pdf_response
 from gestao.models import Cliente
+from gestao.value_utils import build_valor_milheiro_map, get_valor_referencia_from_map
 from repositories.painel_repository import (
     get_contas_by_user,
     get_emissoes_passagem_by_user,
@@ -28,10 +29,14 @@ def build_dashboard_context(user):
     hoteis = get_emissoes_hotel_by_user(user)
 
     contas_info = []
+    valor_referencia_map = build_valor_milheiro_map()
     for conta in contas:
         saldo = conta.saldo_pontos or 0
-        valor_medio = float(conta.programa.preco_medio_milheiro or 0)
-        valor_total = (saldo / 1000) * valor_medio
+        valor_medio = float(conta.valor_medio_por_mil or 0)
+        valor_referencia = float(
+            get_valor_referencia_from_map(conta.programa, valor_referencia_map)
+        )
+        valor_total = (saldo / 1000) * valor_referencia
         contas_info.append(
             {
                 "id": conta.id,
@@ -39,7 +44,7 @@ def build_dashboard_context(user):
                 "saldo_pontos": saldo,
                 "valor_total": valor_total,
                 "valor_medio": valor_medio,
-                "valor_referencia": conta.programa.preco_medio_milheiro,
+                "valor_referencia": valor_referencia,
             }
         )
 

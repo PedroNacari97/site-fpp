@@ -21,6 +21,7 @@
         <div style="flex: 1;">
             <label class="form-label" for="{{ form.programa.id_for_label }}">Programa</label>
             {{ form.programa }}
+            <p id="programa-info" class="text-sm text-gray-500 mt-1"></p>
         </div>
     </div>
 
@@ -162,8 +163,83 @@ const passageirosData = {{ passageiros_json|safe }};
 const escalasIdaData = {{ escalas_ida_json|safe }};
 const escalasVoltaData = {{ escalas_volta_json|safe }};
 const aeroportos = {{ aeroportos_json|safe }};
+const clienteProgramas = {{ cliente_programas_json|safe }};
 
 const passageirosContainer = document.getElementById('passageiros-container');
+const clienteSelect = document.getElementById('id_cliente');
+const programaSelect = document.getElementById('id_programa');
+const programaInfo = document.getElementById('programa-info');
+const pontosField = document.getElementById('id_pontos_utilizados');
+const valorRefPontosField = document.getElementById('id_valor_referencia_pontos');
+const valorReferenciaField = document.getElementById('id_valor_referencia');
+const valorPagoField = document.getElementById('id_valor_pago');
+const economiaField = document.getElementById('id_economia_obtida');
+
+function updateProgramaInfo() {
+    if (!programaInfo) return;
+    const clienteId = clienteSelect ? clienteSelect.value : null;
+    const programas = (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
+    const selected = programas.find(p => String(p.id) === (programaSelect ? programaSelect.value : ""));
+    if (selected) {
+        programaInfo.textContent = `Saldo: ${selected.saldo} pontos • Custo médio: R$ ${Number(selected.valor_medio || 0).toFixed(2)}`;
+    } else if (clienteId) {
+        programaInfo.textContent = "Nenhum programa disponível para o cliente selecionado.";
+    } else {
+        programaInfo.textContent = "";
+    }
+    recalcValoresFinanceiros();
+}
+
+function updateProgramaOptions() {
+    if (!programaSelect) return;
+    const clienteId = clienteSelect ? clienteSelect.value : null;
+    const programas = (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
+    const currentValue = programaSelect.value;
+    programaSelect.innerHTML = '<option value=""></option>';
+    programas.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.nome;
+        programaSelect.appendChild(opt);
+    });
+    if (programas.find(p => String(p.id) === currentValue)) {
+        programaSelect.value = currentValue;
+    }
+    updateProgramaInfo();
+}
+
+function recalcValoresFinanceiros() {
+    const clienteId = clienteSelect ? clienteSelect.value : null;
+    const programas = (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
+    const selected = programas.find(p => String(p.id) === (programaSelect ? programaSelect.value : ""));
+    const pontos = parseFloat(pontosField ? (pontosField.value || 0) : 0);
+    if (selected && valorRefPontosField) {
+        const valorRefPontos = (pontos / 1000) * (selected.valor_medio || 0);
+        valorRefPontosField.value = valorRefPontos.toFixed(2);
+    }
+    const valorRef = parseFloat(valorReferenciaField ? (valorReferenciaField.value || 0) : 0);
+    const valorPago = parseFloat(valorPagoField ? (valorPagoField.value || 0) : 0);
+    const valorRefPts = parseFloat(valorRefPontosField ? (valorRefPontosField.value || 0) : 0);
+    if (economiaField) {
+        economiaField.value = (valorRef - (valorPago + valorRefPts)).toFixed(2);
+    }
+}
+
+if (clienteSelect) {
+    clienteSelect.addEventListener('change', updateProgramaOptions);
+}
+if (programaSelect) {
+    programaSelect.addEventListener('change', updateProgramaInfo);
+}
+if (pontosField) {
+    pontosField.addEventListener('input', recalcValoresFinanceiros);
+}
+if (valorReferenciaField) {
+    valorReferenciaField.addEventListener('input', recalcValoresFinanceiros);
+}
+if (valorPagoField) {
+    valorPagoField.addEventListener('input', recalcValoresFinanceiros);
+}
 function renderPassengerForms() {
     const prev = [];
     passageirosContainer.querySelectorAll('.passageiro-fields').forEach(div => {
@@ -295,5 +371,7 @@ function initEscalaSection(tipo, data){
 }
 initEscalaSection('ida', escalasIdaData);
 initEscalaSection('volta', escalasVoltaData);
+updateProgramaOptions();
+recalcValoresFinanceiros();
 </script>
 {% endblock %}
