@@ -79,12 +79,14 @@ def admin_movimentacoes(request, conta_id):
     conta = get_object_or_404(
         ContaFidelidade, id=conta_id, cliente__perfil="cliente"
     )
-    movimentacoes = conta.movimentacoes.all()
+    movimentacoes = conta.movimentacoes_compartilhadas.order_by("-data")
+    conta_base = conta.conta_saldo()
     return render(
         request,
         "admin_custom/movimentacoes.html",
         {
             "conta": conta,
+            "conta_base": conta_base,
             "movimentacoes": movimentacoes,
         },
     )
@@ -97,6 +99,13 @@ def admin_nova_movimentacao(request, conta_id):
     conta = get_object_or_404(
         ContaFidelidade, id=conta_id, cliente__perfil="cliente"
     )
+    if conta.programa.is_vinculado:
+        base_conta = conta.conta_saldo()
+        messages.error(
+            request,
+            "O saldo é controlado pelo programa base. Crie movimentações direto no programa principal.",
+        )
+        return redirect("admin_movimentacoes", conta_id=base_conta.id)
     if not conta.cliente.ativo:
         return HttpResponse("Cliente inativo", status=403)
     if request.method == "POST":
@@ -123,6 +132,13 @@ def admin_transferir_pontos(request, conta_id):
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
     conta = get_object_or_404(ContaFidelidade, id=conta_id, cliente__perfil="cliente")
+    if conta.programa.is_vinculado:
+        base_conta = conta.conta_saldo()
+        messages.error(
+            request,
+            "Transferências devem ser feitas pelo programa principal vinculado.",
+        )
+        return redirect("admin_transferir_pontos", conta_id=base_conta.id)
     if not conta.cliente.ativo:
         return HttpResponse("Cliente inativo", status=403)
 

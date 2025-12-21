@@ -2,9 +2,25 @@ from django.db import models
 from .cliente import Cliente
 from .programa_fidelidade import ProgramaFidelidade
 
+
 class ContaFidelidade(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     programa = models.ForeignKey(ProgramaFidelidade, on_delete=models.CASCADE)
+
+    @property
+    def programa_base(self):
+        return self.programa.programa_base if self.programa.is_vinculado else None
+
+    def conta_saldo(self):
+        """Conta que efetivamente guarda saldo/movimentações (programa base)."""
+        if not self.programa.is_vinculado:
+            return self
+        return (
+            ContaFidelidade.objects.filter(
+                cliente=self.cliente, programa=self.programa.programa_base
+            ).select_related("programa").first()
+            or self
+        )
 
     @property
     def valor_medio_por_mil(self):
@@ -32,13 +48,19 @@ class ContaFidelidade(models.Model):
 
     @property
     def saldo_pontos(self):
-        movs = self.movimentacoes.all()
+        conta_base = self.conta_saldo()
+        movs = conta_base.movimentacoes.all()
         return sum(m.pontos for m in movs) if movs.exists() else 0
 
     @property
     def valor_total_pago(self):
-        movs = self.movimentacoes.all()
+        conta_base = self.conta_saldo()
+        movs = conta_base.movimentacoes.all()
         return sum(float(m.valor_pago) for m in movs) if movs.exists() else 0
+
+    @property
+    def movimentacoes_compartilhadas(self):
+        return self.conta_saldo().movimentacoes.all()
 
     def __str__(self):
         return f"{self.cliente} - {self.programa}"

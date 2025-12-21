@@ -17,6 +17,8 @@
         <thead class="bg-zinc-700 text-zinc-200">
             <tr>
                 <th class="p-2 text-left font-medium">Nome</th>
+                <th class="p-2 text-left font-medium">Tipo</th>
+                <th class="p-2 text-left font-medium">Programa base</th>
                 <th class="p-2 text-left font-medium">Valor Referência</th>
                 <th class="p-2 text-left font-medium">Descrição</th>
                 <th class="p-2 text-left font-medium">Ações</th>
@@ -26,6 +28,8 @@
             {% for p in programas %}
             <tr class="border-b border-zinc-700">
                 <td class="p-2">{{ p.nome }}</td>
+                <td class="p-2">{{ p.get_tipo_display }}</td>
+                <td class="p-2">{{ p.programa_base|default:"—" }}</td>
                 <td class="p-2">R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
                 <td class="p-2">{{ p.descricao }}</td>
                 <td class="p-2">
@@ -40,4 +44,3 @@
     </table>
 </div>
 {% endblock %}
-

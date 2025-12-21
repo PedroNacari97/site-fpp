@@ -64,7 +64,7 @@ class ContaFidelidadeForm(forms.ModelForm):
 class ProgramaFidelidadeForm(forms.ModelForm):
     class Meta:
         model = ProgramaFidelidade
-        fields = ['nome', 'descricao', 'preco_medio_milheiro']
+        fields = ['nome', 'descricao', 'preco_medio_milheiro', 'tipo', 'programa_base']
         widgets = {
             'descricao': forms.Textarea(attrs={
                 'rows': 4,
@@ -72,6 +72,14 @@ class ProgramaFidelidadeForm(forms.ModelForm):
                 'style': 'resize:vertical; max-height:100px;'
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        base_qs = ProgramaFidelidade.objects.filter(tipo=ProgramaFidelidade.TIPO_PRINCIPAL)
+        if self.instance and self.instance.pk:
+            base_qs = base_qs.exclude(pk=self.instance.pk)
+        self.fields["programa_base"].queryset = base_qs
+        self.fields["programa_base"].required = False
 
 
 class ClienteForm(forms.ModelForm):

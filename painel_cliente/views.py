@@ -30,7 +30,7 @@ def build_dashboard_context(user):
     contas_info = []
     for conta in contas:
         saldo = conta.saldo_pontos or 0
-        valor_medio = conta.valor_medio_por_mil or 0
+        valor_medio = float(conta.programa.preco_medio_milheiro or 0)
         valor_total = (saldo / 1000) * valor_medio
         contas_info.append(
             {
@@ -77,7 +77,7 @@ def dashboard(request):
 def movimentacoes_programa(request, conta_id):
     """List points transactions for a fidelity account."""
     conta = get_conta_by_id_for_user(conta_id, request.user)
-    movimentacoes = conta.movimentacoes.all().order_by("-data")
+    movimentacoes = conta.movimentacoes_compartilhadas.order_by("-data")
 
     return render(
         request,
