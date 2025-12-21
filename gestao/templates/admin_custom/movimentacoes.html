@@ -8,9 +8,7 @@
     <h3 class="text-xl font-semibold">Movimentações do Programa: {{ conta.programa.nome }} — {{ titular_tipo }}: {{ titular_nome }}</h3>
     <div class="flex gap-2">
         <a href="{% url 'admin_transferir_pontos' conta.id %}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded font-bold">Transferir pontos</a>
-        {% if not conta.conta_administrada %}
         <a href="{% url 'admin_nova_movimentacao' conta.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">+ Nova Movimentação</a>
-        {% endif %}
     </div>
 </div>
     {% if conta.programa.is_vinculado %}

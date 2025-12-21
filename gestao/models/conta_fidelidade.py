@@ -16,6 +16,17 @@ class ContaFidelidade(models.Model):
     )
     programa = models.ForeignKey(ProgramaFidelidade, on_delete=models.CASCADE)
 
+    login_programa = models.CharField(
+        max_length=150, blank=True, help_text="Login do titular junto ao programa"
+    )
+    senha_programa = models.CharField(
+        max_length=150, blank=True, help_text="Senha do titular junto ao programa"
+    )
+    titular_programa_info = models.TextField(
+        blank=True,
+        help_text="Informações adicionais do titular (ex.: nome completo, CPF, dados de resgate)",
+    )
+
     def clean(self):
         super().clean()
         if bool(self.cliente) == bool(self.conta_administrada):
