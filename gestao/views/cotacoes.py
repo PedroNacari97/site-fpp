@@ -261,6 +261,11 @@ def nova_cotacao_voo(request):
                     )
                 messages.success(request, "Cotação salva com sucesso.")
                 return redirect("admin_cotacoes_voo")
+        else:
+            messages.error(
+                request,
+                "Não foi possível salvar a cotação. Corrija os campos destacados e tente novamente.",
+            )
     else:
         form = CotacaoVooForm(initial=initial, empresa=empresa)
     aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))

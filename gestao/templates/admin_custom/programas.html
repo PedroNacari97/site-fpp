@@ -20,6 +20,7 @@
                 <th class="p-2 text-left font-medium">Tipo</th>
                 <th class="p-2 text-left font-medium">Programa base</th>
                 <th class="p-2 text-left font-medium">Valor Referência</th>
+                <th class="p-2 text-left font-medium">Qtd. CPFs</th>
                 <th class="p-2 text-left font-medium">Descrição</th>
                 <th class="p-2 text-left font-medium">Ações</th>
             </tr>
@@ -31,6 +32,7 @@
                 <td class="p-2">{{ p.get_tipo_display }}</td>
                 <td class="p-2">{{ p.programa_base|default:"—" }}</td>
                 <td class="p-2">R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
+                <td class="p-2">{{ p.quantidade_cpfs_disponiveis|default:"—" }}</td>
                 <td class="p-2">{{ p.descricao }}</td>
                 <td class="p-2">
                     <a href="{% url 'admin_editar_programa' p.id %}" class="text-blue-400">Editar</a> |

@@ -5,35 +5,48 @@
 {% block content %}
 <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
     <form method="get" class="flex gap-3">
-        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar conta..."  class="bg-zinc-100 border border-zinc-300 rounded px-4 py-2 flex-1 min-w-[320px] max-w-[720px] h-[50px]"
+        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar conta ou programa..."  class="bg-zinc-100 border border-zinc-300 rounded px-4 py-2 flex-1 min-w-[320px] max-w-[720px] h-[50px]"
  />
         <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 flex-1 min-w-[120px] max-w-[520px] h-[50px]">Buscar</button>
     </form>
-    <a href="{% url 'admin_nova_conta_administrada' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Nova Conta Administrada</a>
+    <div class="flex gap-2 flex-wrap">
+        <a href="{% url 'admin_nova_conta' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Nova Conta</a>
+        <a href="{% url 'admin_nova_conta_administrada' %}" class="bg-zinc-700 hover:bg-zinc-800 text-white px-4 py-2 rounded">Novo Titular Administrado</a>
+    </div>
 </div>
     <table class="min-w-full text-sm">
         <thead class="bg-zinc-700 text-zinc-200">
             <tr>
                 <th class="p-2 text-left font-medium">Conta</th>
-                <th class="p-2 text-left font-medium">Observações</th>
+                <th class="p-2 text-left font-medium">Programa</th>
+                <th class="p-2 text-left font-medium">Saldo Pontos</th>
+                <th class="p-2 text-left font-medium">Valor Pago</th>
+                <th class="p-2 text-left font-medium">Valor Médio / mil</th>
                 <th class="p-2 text-left font-medium">Ações</th>
+                <th class="p-2 text-left font-medium">Todos do Titular</th>
             </tr>
         </thead>
         <tbody>
             {% for conta in page_obj %}
             <tr class="border-b border-zinc-700">
                 <td class="p-2">
-                    {{ conta.nome }}
+                    {{ conta.conta_administrada.nome }}
                 </td>
-                <td class="p-2">{{ conta.observacoes|default:"-" }}</td>
+                <td class="p-2">{{ conta.programa.nome }}</td>
+                <td class="p-2">{{ conta.saldo_pontos }}</td>
+                <td class="p-2">R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
+                <td class="p-2">R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
                 <td class="p-2">
-                    <a href="{% url 'admin_editar_conta_administrada' conta.id %}" class="text-blue-400">Editar</a> |
-                    <a href="{% url 'admin_deletar_conta_administrada' conta.id %}" class="text-blue-400">Deletar</a> |
-                    <a href="{% url 'admin_programas_da_conta_administrada' conta.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded mr-2 text-xs">Programas</a>
+                    <a href="{% url 'admin_editar_conta' conta.id %}" class="text-blue-400">Editar</a> |
+                    <a href="{% url 'admin_deletar_conta' conta.id %}" class="text-blue-400">Deletar</a> |
+                    <a href="{% url 'admin_editar_conta_administrada' conta.conta_administrada.id %}" class="text-blue-400">Editar titular</a>
+                </td>
+                <td class="p-2">
+                    <a href="{% url 'admin_programas_da_conta_administrada' conta.conta_administrada.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded mr-2 text-xs">Programas</a>
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="3" class="text-center text-red-400 py-4">Nenhuma conta administrada encontrada.</td></tr>
+            <tr><td colspan="7" class="text-center text-red-400 py-4">Nenhuma conta administrada encontrada.</td></tr>
             {% endfor %}
         </tbody>
     </table>

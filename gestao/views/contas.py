@@ -139,11 +139,21 @@ def admin_contas_administradas(request):
         return permission_denied
     busca = request.GET.get("busca", "")
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
-    contas = ContaAdministrada.objects.filter(
-        empresa=empresa, ativo=True
-    ).select_related("empresa")
+    contas = (
+        ContaFidelidade.objects.filter(
+            conta_administrada__isnull=False,
+            conta_administrada__ativo=True,
+        )
+        .select_related("conta_administrada__empresa", "programa")
+        .prefetch_related("movimentacoes")
+    )
+    if empresa:
+        contas = contas.filter(conta_administrada__empresa=empresa)
     if busca:
-        contas = contas.filter(Q(nome__icontains=busca))
+        contas = contas.filter(
+            Q(conta_administrada__nome__icontains=busca)
+            | Q(programa__nome__icontains=busca)
+        )
     paginator = Paginator(contas, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)

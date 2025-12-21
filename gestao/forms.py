@@ -116,13 +116,24 @@ class ContaFidelidadeForm(forms.ModelForm):
 class ProgramaFidelidadeForm(forms.ModelForm):
     class Meta:
         model = ProgramaFidelidade
-        fields = ['nome', 'descricao', 'preco_medio_milheiro', 'tipo', 'programa_base']
+        fields = [
+            "nome",
+            "descricao",
+            "preco_medio_milheiro",
+            "quantidade_cpfs_disponiveis",
+            "tipo",
+            "programa_base",
+        ]
         widgets = {
             'descricao': forms.Textarea(attrs={
                 'rows': 4,
                 'cols': 40,
                 'style': 'resize:vertical; max-height:100px;'
             }),
+        }
+        labels = {
+            "preco_medio_milheiro": "Preço médio do milheiro (R$)",
+            "quantidade_cpfs_disponiveis": "Quantidade de CPFs disponíveis por programa",
         }
 
     def __init__(self, *args, **kwargs):
