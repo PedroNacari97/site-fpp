@@ -1,24 +1,23 @@
+{% extends "admin_custom/base_admin.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Cadastro de Cliente</title>
-</head>
-<body>
-    <h2>Cadastro de Cliente</h2>
+{% block title %}Cadastro de Cliente{% endblock %}
+{% block header_title %}Cadastro de Cliente{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Formulário padronizado para novos clientes.</p>{% endblock %}
+{% block content %}
+<div class="form-wrapper">
     {% if messages %}
-      <ul>
+      <div class="alert alert-success">
         {% for message in messages %}
-          <li style="color:green">{{ message }}</li>
+          {{ message }}<br>
         {% endfor %}
-      </ul>
+      </div>
     {% endif %}
     <form method="POST">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Enviar</button>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Enviar</button>
+        </div>
     </form>
-    <script src="{% static 'gestao/js/forms.js' %}" defer></script>
-</body>
-</html>
+</div>
+{% endblock %}

@@ -9,10 +9,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{% static 'gestao/admin_custom.css' %}">
     <link rel="stylesheet" href="{% static 'gestao/css/painel.css' %}">
+    <link rel="stylesheet" href="{% static 'gestao/css/admin-theme.css' %}">
+    <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-gray-100 text-black flex" style="font-family: 'Open Sans', sans-serif;">
-        <aside class="bg-[#1a365d] w-60 min-h-screen p-6 fixed shadow text-white transition-all duration-300 relative">
+        <aside class="bg-[#0f172a] w-64 min-h-screen p-6 fixed shadow text-white transition-all duration-300 relative">
         <button id="sidebarToggle" class="absolute top-4 right-4 text-white lg:hidden" aria-label="Alternar menu">☰</button>
         <div class="font-bold tracking-wide mb-8 pl-2 sidebar-label">
             Gestão Admin
@@ -53,29 +55,45 @@
              <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'logout' %}"><span class="sidebar-label">Sair</span></a>
         </nav>
     </aside>
-     <main class="flex-1 ml-60 p-8 transition-all duration-300">
-        <header class="bg-white rounded p-4 mb-6 flex justify-between items-center shadow">
-                        <div class="flex items-center gap-2">
-                <button id="sidebarToggle" class="text-gray-700 lg:hidden" aria-label="Alternar menu">☰</button>
-                <h1 class="text-2xl font-bold">{% block header_title %}Painel Administrativo{% endblock %}</h1>
+     <main class="flex-1 ml-64 p-8 transition-all duration-300">
+        <div class="page-shell">
+            <header class="topbar">
+                <div class="flex items-center gap-3">
+                    <button id="sidebarToggle" class="text-gray-700 lg:hidden" aria-label="Alternar menu">☰</button>
+                    <div>
+                        <p class="eyebrow mb-1">Administração</p>
+                        <h1>Gestão de Pontos</h1>
+                    </div>
+                </div>
+                <div class="user-meta">
+                    <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+                    <a href="{% url 'logout' %}" class="btn btn-ghost">Logout</a>
+                </div>
+            </header>
+
+            <div class="page-header">
+                <div>
+                    <p class="eyebrow">Painel</p>
+                    <h1 class="page-title">{% block header_title %}Painel Administrativo{% endblock %}</h1>
+                    {% block header_subtitle %}{% endblock %}
+                </div>
+                <div class="page-actions">
+                    {% block header_actions %}{% endblock %}
+                </div>
             </div>
-            <div class="flex items-center space-x-2">
-                <span class="text-gray-700">{{ request.user.get_full_name|default:request.user.username }}</span>
-                <a href="{% url 'logout' %}" class="bg-[#3182ce] hover:bg-[#2c5282] text-white px-4 py-2 rounded">Logout</a>
+
+            {% if messages %}
+            <div class="message-stack">
+                {% for message in messages %}
+                <div class="alert {% if 'success' in message.tags %}alert-success{% else %}alert-danger{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
             </div>
-        </header>
-        {% if messages %}
-        <div class="mb-4 space-y-2">
-            {% for message in messages %}
-            <div class="p-3 rounded text-white {% if 'success' in message.tags %}bg-green-500{% else %}bg-red-500{% endif %}">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        <section class="bg-white rounded shadow p-6">
+            {% endif %}
+
             {% block content %}{% endblock %}
-        </section>
+        </div>
     </main>
     {% block extra_body %}{% endblock %}
     <script src="{% static 'gestao/js/admin_layout.js' %}" defer></script>

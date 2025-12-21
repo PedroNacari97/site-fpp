@@ -1,148 +1,73 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block title %}Calculadora de Cotação{% endblock %}
 {% block header_title %}Calculadora de Cotação{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Simule valores com campos alinhados e retorno visual imediato.</p>{% endblock %}
 {% block menu_calculadora %}bg-zinc-700 text-white{% endblock %}
 
-{% block extra_head %}
-<style>
-body {
-  background: #18181b;
-  color: #f4f4f5;
-  font-family: 'Inter', Arial, sans-serif;
-}
-.content {
-  background: #18181b;
-}
-.form-card {
-  background: #1e1e20;
-  border: 1px solid #2f2f33;
-  border-radius: 16px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
-  padding: 32px 40px;
-  max-width: 520px;
-  width: 100%;
-  margin: 0 auto;
-}
-.form-title {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #f4f4f5;
-  margin-bottom: 24px;
-  text-align: center;
-}
-.section-title {
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: #e4e4e7;
-  margin: 26px 0 12px 0;
-}
-.form-group {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-.form-group.single {
-  display: block;
-  margin-bottom: 12px;
-}
-.form-label {
-  font-size: 1rem;
-  color: #e4e4e7;
-  font-weight: 500;
-  display: block;
-  margin-bottom: 6px;
-}
-.form-card input,
-.form-card select,
-.form-card textarea {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #2f2f33;
-  border-radius: 8px;
-  background: #18181b;
-  color: #f4f4f5;
-  font-size: 1rem;
-  margin-bottom: 2px;
-  transition: border 0.2s;
-}
-.form-card input:focus,
-.form-card select:focus,
-.form-card textarea:focus {
-  border-color: #3b82f6;
-  outline: none;
-}
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 22px;
-}
-.btn-primary {
-  background: #3b82f6;
-  color: #fff;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 32px;
-  cursor: pointer;
-  font-size: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  transition: background 0.18s;
-}
-.btn-primary:hover {
-  background: #2563eb;
-}
-</style>
-{% endblock %}
-
 {% block content %}
-<form method="post" class="form-card">
-    {% csrf_token %}
-    <div class="form-title">Calculadora de Cotação</div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.valor_passagem.id_for_label }}">Valor passagem (R$)</label>
-            {{ form.valor_passagem }}
-        </div>
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.taxas.id_for_label }}">Taxas (R$)</label>
-            {{ form.taxas }}
+<section class="surface-card stacked">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Simulação</p>
+            <h2 class="section-title">Calculadora de Cotação</h2>
         </div>
     </div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.milhas.id_for_label }}">Milhas</label>
-            {{ form.milhas }}
+    <form method="post" class="stacked">
+        {% csrf_token %}
+        <div class="form-grid">
+            <div class="form-field">
+                <label class="form-label" for="{{ form.valor_passagem.id_for_label }}">Valor passagem (R$)</label>
+                {{ form.valor_passagem }}
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="{{ form.taxas.id_for_label }}">Taxas (R$)</label>
+                {{ form.taxas }}
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="{{ form.milhas.id_for_label }}">Milhas</label>
+                {{ form.milhas }}
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="{{ form.valor_milheiro.id_for_label }}">Valor milheiro (R$)</label>
+                {{ form.valor_milheiro }}
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="{{ form.parcelas.id_for_label }}">Parcelas</label>
+                {{ form.parcelas }}
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="{{ form.juros.id_for_label }}">Juros (%)</label>
+                {{ form.juros }}
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="{{ form.desconto.id_for_label }}">Desconto (%)</label>
+                {{ form.desconto }}
+            </div>
         </div>
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.valor_milheiro.id_for_label }}">Valor milheiro (R$)</label>
-            {{ form.valor_milheiro }}
+        <div class="form-actions">
+            <button class="btn-primary" type="submit">Calcular</button>
+        </div>
+    </form>
+    {% if resultado %}
+    <div class="section-divider"></div>
+    <div class="stat-grid">
+        <div class="stat-card">
+            <p class="stat-label">Valor parcelado</p>
+            <p class="stat-value">R$ {{ resultado.valor_parcelado }}</p>
+        </div>
+        <div class="stat-card">
+            <p class="stat-label">Valor à vista</p>
+            <p class="stat-value">R$ {{ resultado.valor_vista }}</p>
+        </div>
+        <div class="stat-card">
+            <p class="stat-label">Valor da parcela</p>
+            <p class="stat-value">R$ {{ resultado.parcela }}</p>
+        </div>
+        <div class="stat-card">
+            <p class="stat-label">Economia</p>
+            <p class="stat-value">R$ {{ resultado.economia }}</p>
         </div>
     </div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.parcelas.id_for_label }}">Parcelas</label>
-            {{ form.parcelas }}
-        </div>
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.juros.id_for_label }}">Juros (%)</label>
-            {{ form.juros }}
-        </div>
-    </div>
-    <div class="form-group single">
-        <label class="form-label" for="{{ form.desconto.id_for_label }}">Desconto (%)</label>
-        {{ form.desconto }}
-    </div>
-    <div class="form-actions">
-        <button class="btn-primary" type="submit">Calcular</button>
-    </div>
-</form>
-{% if resultado %}
-<div class="form-card mt-6">
-    <div class="section-title">Resultado</div>
-    <p>Valor parcelado: R$ {{ resultado.valor_parcelado }}</p>
-    <p>Valor à vista: R$ {{ resultado.valor_vista }}</p>
-    <p>Valor da parcela: R$ {{ resultado.parcela }}</p>
-    <p>Economia: R$ {{ resultado.economia }}</p>
-</div>
-{% endif %}
+    {% endif %}
+</section>
 {% endblock %}

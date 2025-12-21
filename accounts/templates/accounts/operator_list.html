@@ -3,6 +3,7 @@
 
 {% block title %}Operadores{% endblock %}
 {% block header_title %}Gerenciar Operadores{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Equipe operacional com status, empresa e ações padronizadas.</p>{% endblock %}
 {% block menu_operadores %}bg-[#2c5282]{% endblock %}
 
 {% block extra_head %}
@@ -10,49 +11,54 @@
 {% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-  <a href="{% url 'user_create' %}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium">
-    Novo Operador
-  </a>
-</div>
+<section class="surface-card stacked">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Operadores</p>
+      <h2 class="section-title">Equipe</h2>
+    </div>
+    <a href="{% url 'user_create' %}" class="btn btn-primary">+ Novo Operador</a>
+  </div>
 
-  <table class="min-w-full border border-zinc-700 text-sm">
-    <thead class="bg-zinc-100 text-zinc-100">
-      <tr>
-        <th class="p-2 text-left font-medium">Nome</th>
-        <th class="p-2 text-left font-medium">CPF</th>
-        <th class="p-2 text-left font-medium">Empresa</th>
-        <th class="p-2 text-left font-medium">Status</th>
-        <th class="p-2 text-left font-medium">Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for u in usuarios %}
-      <tr class="border-b border-zinc-100 hover:bg-zinc-100">
-        <td class="p-2 text-zinc-600">
-          {{ u.nome_completo|default:u.usuario.get_full_name|default:u.usuario.first_name }}
-        </td>
-        <td class="p-2 text-zinc-600">
-          {{ u.cpf|default:"—" }}
-        </td>
-        <td class="p-2 text-zinc-600">
-          {{ u.empresa.nome|default:"—" }}
-        </td>
-        <td class="p-2 text-zinc-600">
-          {% if u.ativo %}<span class="text-green-600 font-semibold">Ativo</span>{% else %}<span class="text-red-600 font-semibold">Inativo</span>{% endif %}
-        </td>
-        <td class="p-2 text-zinc-600">
-          <a href="?toggle={{ u.id }}" class="text-blue-600 hover:text-blue-800">
-            {% if u.ativo %}Desativar{% else %}Ativar{% endif %}
-          </a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="5" class="text-center text-red-400 py-4">Nenhum operador cadastrado.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>CPF</th>
+          <th>Empresa</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in usuarios %}
+        <tr>
+          <td>
+            {{ u.nome_completo|default:u.usuario.get_full_name|default:u.usuario.first_name }}
+          </td>
+          <td>
+            {{ u.cpf|default:"—" }}
+          </td>
+          <td>
+            {{ u.empresa.nome|default:"—" }}
+          </td>
+          <td>
+            {% if u.ativo %}<span class="pill pill-success">Ativo</span>{% else %}<span class="pill pill-danger">Inativo</span>{% endif %}
+          </td>
+          <td>
+            <a href="?toggle={{ u.id }}" class="btn btn-link">
+              {% if u.ativo %}Desativar{% else %}Ativar{% endif %}
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-red-400 py-4">Nenhum operador cadastrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 {% endblock %}

@@ -15,3 +15,22 @@ document.addEventListener("input", (event) => {
     target.value = parts.join("/");
   }
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  const toggleButtons = document.querySelectorAll("[data-filter-toggle]");
+
+  toggleButtons.forEach((btn) => {
+    const root = btn.closest("[data-filters-root]") || document;
+    const panel =
+      root.querySelector("[data-filter-panel]") ||
+      document.querySelector(btn.dataset.target);
+
+    const toggle = () => {
+      if (!panel) return;
+      const isOpen = panel.classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    };
+
+    btn.addEventListener("click", toggle);
+  });
+});

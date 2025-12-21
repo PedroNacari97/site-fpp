@@ -1,66 +1,98 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block title %}Contas Administradas{% endblock %}
 {% block header_title %}Contas Administradas{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Titulares administrados com filtros claros, ações alinhadas e responsividade.</p>{% endblock %}
 {% block menu_contas_adm %}bg-zinc-700 text-white{% endblock %}
+{% block header_actions %}
+<div class="page-actions">
+    <a href="{% url 'admin_nova_conta_administrada' %}" class="btn btn-secondary">+ Novo Titular Administrado</a>
+    <a href="{% url 'admin_nova_conta' %}" class="btn btn-primary">+ Nova Conta</a>
+</div>
+{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-    <form method="get" class="flex gap-3">
-        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar conta ou programa..."  class="bg-zinc-100 border border-zinc-300 rounded px-4 py-2 flex-1 min-w-[320px] max-w-[720px] h-[50px]"
- />
-        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 flex-1 min-w-[120px] max-w-[520px] h-[50px]">Buscar</button>
-    </form>
-    <div class="flex gap-2 flex-wrap">
-        <a href="{% url 'admin_nova_conta' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Nova Conta</a>
-        <a href="{% url 'admin_nova_conta_administrada' %}" class="bg-zinc-700 hover:bg-zinc-800 text-white px-4 py-2 rounded">Novo Titular Administrado</a>
-    </div>
+<div class="stacked">
+    <section class="surface-card filter-panel" data-filters-root>
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Filtros</p>
+                <h2 class="section-title">Buscar contas administradas</h2>
+            </div>
+            <button class="btn btn-ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+        </div>
+        <div class="filter-body is-open" data-filter-panel>
+            <form method="get" class="form-grid">
+                <div class="form-field">
+                    <label class="form-label" for="busca">Conta ou programa</label>
+                    <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar conta ou programa..." />
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                    <a href="{% url 'admin_contas_administradas' %}" class="btn btn-ghost">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="surface-card">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Contas administradas</p>
+                <h2 class="section-title">Titulares e programas</h2>
+                <p class="section-subtitle">Tabelas com rolagem horizontal e botões consistentes.</p>
+            </div>
+            <div class="muted">Total: {{ total_contas }} contas administradas.</div>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Conta</th>
+                        <th>Programa</th>
+                        <th>Saldo Pontos</th>
+                        <th>Valor Pago</th>
+                        <th>Valor Médio / mil</th>
+                        <th>Ações</th>
+                        <th>Todos do Titular</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for conta in page_obj %}
+                    <tr>
+                        <td>
+                            {{ conta.conta_administrada.nome }}
+                        </td>
+                        <td>{{ conta.programa.nome }}</td>
+                        <td>{{ conta.saldo_pontos }}</td>
+                        <td>R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
+                        <td>R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
+                        <td>
+                            <div class="page-actions">
+                                <a href="{% url 'admin_editar_conta' conta.id %}" class="btn btn-link">Editar</a>
+                                <a href="{% url 'admin_deletar_conta' conta.id %}" class="btn btn-link">Deletar</a>
+                                <a href="{% url 'admin_editar_conta_administrada' conta.conta_administrada.id %}" class="btn btn-link">Editar titular</a>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{% url 'admin_programas_da_conta_administrada' conta.conta_administrada.id %}" class="btn btn-secondary">Programas</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-red-400 py-4">Nenhuma conta administrada encontrada.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="table-foot">
+            <div>Mostrando página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</div>
+            <div class="page-actions">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}" class="btn btn-ghost">Anterior</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}" class="btn btn-ghost">Próxima</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
 </div>
-    <table class="min-w-full text-sm">
-        <thead class="bg-zinc-700 text-zinc-200">
-            <tr>
-                <th class="p-2 text-left font-medium">Conta</th>
-                <th class="p-2 text-left font-medium">Programa</th>
-                <th class="p-2 text-left font-medium">Saldo Pontos</th>
-                <th class="p-2 text-left font-medium">Valor Pago</th>
-                <th class="p-2 text-left font-medium">Valor Médio / mil</th>
-                <th class="p-2 text-left font-medium">Ações</th>
-                <th class="p-2 text-left font-medium">Todos do Titular</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for conta in page_obj %}
-            <tr class="border-b border-zinc-700">
-                <td class="p-2">
-                    {{ conta.conta_administrada.nome }}
-                </td>
-                <td class="p-2">{{ conta.programa.nome }}</td>
-                <td class="p-2">{{ conta.saldo_pontos }}</td>
-                <td class="p-2">R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
-                <td class="p-2">R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
-                <td class="p-2">
-                    <a href="{% url 'admin_editar_conta' conta.id %}" class="text-blue-400">Editar</a> |
-                    <a href="{% url 'admin_deletar_conta' conta.id %}" class="text-blue-400">Deletar</a> |
-                    <a href="{% url 'admin_editar_conta_administrada' conta.conta_administrada.id %}" class="text-blue-400">Editar titular</a>
-                </td>
-                <td class="p-2">
-                    <a href="{% url 'admin_programas_da_conta_administrada' conta.conta_administrada.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded mr-2 text-xs">Programas</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="7" class="text-center text-red-400 py-4">Nenhuma conta administrada encontrada.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% if page_obj.has_other_pages %}
-    <div class="mt-4 flex gap-2 justify-center">
-        {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}" class="bg-zinc-700 text-white px-3 py-1 rounded">&lt;</a>
-        {% endif %}
-        <span class="text-zinc-300 px-3 py-1">Página {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}" class="bg-zinc-700 text-white px-3 py-1 rounded">&gt;</a>
-        {% endif %}
-    </div>
-    {% endif %}
-</div>
-<div class="text-zinc-400 mt-4 text-sm">Total: {{ total_contas }} contas administradas.</div>
 {% endblock %}
