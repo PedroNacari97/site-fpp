@@ -1,49 +1,94 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block title %}Cotações do Milheiro{% endblock %}
 {% block header_title %}Cotações do Milheiro{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Valores atualizados de mercado com formulários e listas alinhados.</p>{% endblock %}
 {% block menu_cotacoes %}bg-zinc-700 text-white{% endblock %}
 {% block content %}
-<h2 class="text-blue-500 text-xl font-semibold mb-4">Atualizar cotação do milheiro</h2>
-<form method="post" class="flex flex-wrap gap-3 items-end mb-6">
-    {% csrf_token %}
-    <select name="programa_nome" required class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2">
-        <option value="">-- Programa --</option>
-        {% for p in programas %}
-        <option value="{{ p.nome }}">{{ p.nome }}</option>
-        {% endfor %}
-    </select>
-    <input type="number" step="0.01" min="0" name="valor_mercado" placeholder="Valor mercado" required class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2 w-36" />
-    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Salvar</button>
-</form>
+<div class="stacked">
+    <section class="surface-card stacked">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Valores</p>
+                <h2 class="section-title">Atualizar cotação do milheiro</h2>
+                <p class="section-subtitle">Campos alinhados e feedbacks no topo da tela.</p>
+            </div>
+        </div>
+        <form method="post" class="form-grid">
+            {% csrf_token %}
+            <div class="form-field">
+                <label class="form-label" for="programa_nome">Programa</label>
+                <select name="programa_nome" id="programa_nome" required>
+                    <option value="">-- Programa --</option>
+                    {% for p in programas %}
+                    <option value="{{ p.nome }}">{{ p.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-field">
+                <label class="form-label" for="valor_mercado">Valor mercado</label>
+                <input type="number" step="0.01" min="0" id="valor_mercado" name="valor_mercado" placeholder="Valor mercado" required />
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </section>
 
-<form method="get" class="flex gap-3 mb-6">
-    <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar programa..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
-    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
-</form>
+    <section class="surface-card filter-panel" data-filters-root>
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Filtros</p>
+                <h2 class="section-title">Buscar programa</h2>
+            </div>
+            <button class="btn btn-ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+        </div>
+        <div class="filter-body is-open" data-filter-panel>
+            <form method="get" class="form-grid">
+                <div class="form-field">
+                    <label class="form-label" for="busca">Programa</label>
+                    <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar programa..." />
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                    <a href="{% url 'admin_cotacoes' %}" class="btn btn-ghost">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </section>
 
-    <table class="min-w-full text-sm">
-        <thead class="bg-zinc-700 text-zinc-200">
-            <tr>
-                <th class="p-2 text-left font-medium">Programa</th>
-                <th class="p-2 text-left font-medium">Cotação Mercado</th>
-                <th class="p-2 text-left font-medium">Última atualização</th>
-                <th class="p-2 text-left font-medium">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for cot in cotacoes %}
-            <tr class="border-b border-zinc-700">
-                <td class="p-2">{{ cot.programa_nome }}</td>
-                <td class="p-2">R$ {{ cot.valor_mercado|floatformat:2 }}</td>
-                <td class="p-2">{{ cot.atualizado_em|date:"d/m/Y" }}</td>
-                <td class="p-2"><a href="{% url 'admin_deletar_cotacao' cot.id %}" class="text-blue-400">Deletar</a></td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="4" class="text-center text-red-400 py-4">Nenhuma cotação cadastrada.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <section class="surface-card">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Histórico</p>
+                <h2 class="section-title">Cotações salvas</h2>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Programa</th>
+                        <th>Cotação Mercado</th>
+                        <th>Última atualização</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cot in cotacoes %}
+                    <tr>
+                        <td>{{ cot.programa_nome }}</td>
+                        <td>R$ {{ cot.valor_mercado|floatformat:2 }}</td>
+                        <td>{{ cot.atualizado_em|date:"d/m/Y" }}</td>
+                        <td><a href="{% url 'admin_deletar_cotacao' cot.id %}" class="btn btn-link">Deletar</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-red-400 py-4">Nenhuma cotação cadastrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
 {% endblock %}

@@ -3,39 +3,72 @@
 
 {% block title %}Aeroportos{% endblock %}
 {% block header_title %}Aeroportos{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Base limpa de aeroportos com pesquisa rápida e ações padronizadas.</p>{% endblock %}
 {% block menu_aeroportos %}bg-zinc-700 text-white{% endblock %}
 {% block dados_complementares_open %}open{% endblock %}
-{% block content %}
-<div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-    <form method="get" class="flex gap-3">
-        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." class="bg-zinc-100 border border-zinc-300 rounded px-4 py-2 flex-1 min-w-[220px] max-w-[720px]" />
-        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
-    </form>
-    <a href="{% url 'admin_novo_aeroporto' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Novo Aeroporto</a>
-</div>
-    <table class="min-w-full text-sm">
-        <thead class="bg-zinc-700 text-zinc-200">
-            <tr>
-                <th class="p-2 text-left font-medium">Sigla</th>
-                <th class="p-2 text-left font-medium">Nome</th>
-                <th class="p-2 text-left font-medium">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for a in aeroportos %}
-            <tr class="border-b border-zinc-700">
-                <td class="p-2">{{ a.sigla }}</td>
-                <td class="p-2">{{ a.nome }}</td>
-                <td class="p-2">
-                    <a href="{% url 'admin_editar_aeroporto' a.id %}" class="text-blue-400">Editar</a> |
-                    <a href="{% url 'admin_deletar_aeroporto' a.id %}" class="text-blue-400">Deletar</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="3" class="text-center text-red-400 py-4">Nenhum aeroporto cadastrado.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+{% block header_actions %}
+<div class="page-actions">
+    <a href="{% url 'admin_novo_aeroporto' %}" class="btn btn-primary">+ Novo Aeroporto</a>
 </div>
 {% endblock %}
+{% block content %}
+<div class="stacked">
+    <section class="surface-card filter-panel" data-filters-root>
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Filtros</p>
+                <h2 class="section-title">Buscar aeroportos</h2>
+            </div>
+            <button class="btn btn-ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+        </div>
+        <div class="filter-body is-open" data-filter-panel>
+            <form method="get" class="form-grid">
+                <div class="form-field">
+                    <label class="form-label" for="busca">Sigla ou nome</label>
+                    <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar..." />
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                    <a href="{% url 'admin_aeroportos' %}" class="btn btn-ghost">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </section>
 
+    <section class="surface-card">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Aeroportos</p>
+                <h2 class="section-title">Lista</h2>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Sigla</th>
+                        <th>Nome</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in aeroportos %}
+                    <tr>
+                        <td>{{ a.sigla }}</td>
+                        <td>{{ a.nome }}</td>
+                        <td>
+                            <div class="page-actions">
+                                <a href="{% url 'admin_editar_aeroporto' a.id %}" class="btn btn-link">Editar</a>
+                                <a href="{% url 'admin_deletar_aeroporto' a.id %}" class="btn btn-link">Deletar</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="text-center text-red-400 py-4">Nenhum aeroporto cadastrado.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}
