@@ -45,7 +45,10 @@ from gestao.services.emissao_financeiro import (
     calcular_valor_referencia_pontos,
     registrar_movimentacao_pontos,
 )
-from gestao.services.clientes_programas import build_clientes_programas_map
+from gestao.services.clientes_programas import (
+    build_clientes_programas_map,
+    build_contas_administradas_programas_map,
+)
 
 
 def _build_escalas_from_request(request):
@@ -112,9 +115,13 @@ def admin_emissoes(request):
     data_fim = request.GET.get("data_fim")
 
     emissoes = EmissaoPassagem.objects.filter(
-        cliente__perfil="cliente", cliente__ativo=True
+        Q(cliente__perfil="cliente", cliente__ativo=True) | Q(conta_administrada__isnull=False)
     ).select_related(
-        "cliente", "programa", "aeroporto_partida", "aeroporto_destino"
+        "cliente",
+        "programa",
+        "aeroporto_partida",
+        "aeroporto_destino",
+        "conta_administrada",
     )
     if programa_id:
         emissoes = emissoes.filter(programa_id=programa_id)
@@ -191,20 +198,27 @@ def nova_emissao(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     cliente_id = request.GET.get("cliente_id")
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     escalas_por_tipo = {"ida": [], "volta": []}
     if request.method == "POST":
-        form = EmissaoPassagemForm(request.POST)
+        form = EmissaoPassagemForm(request.POST, empresa=empresa)
         escalas_payload = _build_escalas_from_request(request)
         escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
             emissao = form.save(commit=False)
-            if not emissao.cliente.ativo:
+            if emissao.cliente and not emissao.cliente.ativo:
                 return HttpResponse("Cliente inativo", status=403)
-            conta = ContaFidelidade.objects.filter(
-                cliente=emissao.cliente, programa=emissao.programa
-            ).select_related("programa").first()
+            if emissao.conta_administrada_id:
+                conta = ContaFidelidade.objects.filter(
+                    conta_administrada=emissao.conta_administrada,
+                    programa=emissao.programa,
+                ).select_related("programa").first()
+            else:
+                conta = ContaFidelidade.objects.filter(
+                    cliente=emissao.cliente, programa=emissao.programa
+                ).select_related("programa").first()
             if not conta:
-                form.add_error("programa", "Selecione um programa vinculado ao cliente escolhido.")
+                form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
             else:
                 valor_referencia_pontos = calcular_valor_referencia_pontos(
                     emissao.pontos_utilizados or 0, conta.valor_medio_por_mil
@@ -231,7 +245,7 @@ def nova_emissao(request):
                 return redirect("admin_emissoes")
     else:
         initial = {"cliente": cliente_id} if cliente_id else {}
-        form = EmissaoPassagemForm(initial=initial)
+        form = EmissaoPassagemForm(initial=initial, empresa=empresa)
     emissoes = EmissaoPassagem.objects.all().order_by("-data_ida")
     aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
     return render(
@@ -245,7 +259,12 @@ def nova_emissao(request):
             "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
             "aeroportos_json": json.dumps(aeroportos),
             "cliente_id": cliente_id,
-            "cliente_programas_json": json.dumps(build_clientes_programas_map()),
+            "cliente_programas_json": json.dumps(build_clientes_programas_map(empresa_id=getattr(empresa, "id", None))),
+            "contas_adm_programas_json": json.dumps(
+                build_contas_administradas_programas_map(
+                    empresa_id=getattr(empresa, "id", None)
+                )
+            ),
         },
     )
 
@@ -255,20 +274,27 @@ def editar_emissao(request, emissao_id):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     emissao = EmissaoPassagem.objects.get(id=emissao_id)
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     escalas_por_tipo = _format_escalas(
         emissao.escalas.values("aeroporto_id", "duracao", "cidade", "tipo", "ordem")
     )
     if request.method == "POST":
-        form = EmissaoPassagemForm(request.POST, instance=emissao)
+        form = EmissaoPassagemForm(request.POST, instance=emissao, empresa=empresa)
         escalas_payload = _build_escalas_from_request(request)
         escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
             emissao = form.save(commit=False)
-            conta = ContaFidelidade.objects.filter(
-                cliente=emissao.cliente, programa=emissao.programa
-            ).select_related("programa").first()
+            if emissao.conta_administrada_id:
+                conta = ContaFidelidade.objects.filter(
+                    conta_administrada=emissao.conta_administrada,
+                    programa=emissao.programa,
+                ).select_related("programa").first()
+            else:
+                conta = ContaFidelidade.objects.filter(
+                    cliente=emissao.cliente, programa=emissao.programa
+                ).select_related("programa").first()
             if not conta:
-                form.add_error("programa", "Selecione um programa vinculado ao cliente escolhido.")
+                form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
             else:
                 valor_referencia_pontos = calcular_valor_referencia_pontos(
                     emissao.pontos_utilizados or 0, conta.valor_medio_por_mil
@@ -296,7 +322,7 @@ def editar_emissao(request, emissao_id):
                 messages.success(request, "Emissão atualizada com sucesso.")
                 return redirect("admin_emissoes")
     else:
-        form = EmissaoPassagemForm(instance=emissao)
+        form = EmissaoPassagemForm(instance=emissao, empresa=empresa)
     emissoes = EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida")
     passageiros = list(
         emissao.passageiros.filter(categoria="adulto").values(
@@ -324,7 +350,14 @@ def editar_emissao(request, emissao_id):
             "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
             "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
             "aeroportos_json": json.dumps(aeroportos),
-            "cliente_programas_json": json.dumps(build_clientes_programas_map(emissao)),
+            "cliente_programas_json": json.dumps(
+                build_clientes_programas_map(emissao, empresa_id=getattr(empresa, "id", None))
+            ),
+            "contas_adm_programas_json": json.dumps(
+                build_contas_administradas_programas_map(
+                    empresa_id=getattr(empresa, "id", None), instance=emissao
+                )
+            ),
         },
     )
 

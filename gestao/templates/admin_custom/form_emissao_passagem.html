@@ -30,13 +30,23 @@
     <div class="section-title">Informações Básicas</div>
     <div class="form-group">
         <div style="flex: 1;">
-            <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente</label>
-            {{ form.cliente }}
+            <label class="form-label" for="{{ form.tipo_titular.id_for_label }}">Tipo de emissão</label>
+            {{ form.tipo_titular }}
         </div>
         <div style="flex: 1;">
             <label class="form-label" for="{{ form.programa.id_for_label }}">Programa</label>
             {{ form.programa }}
             <p id="programa-info" class="text-sm text-gray-500 mt-1"></p>
+        </div>
+    </div>
+    <div class="form-group">
+        <div style="flex: 1;" id="cliente-wrapper">
+            <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente</label>
+            {{ form.cliente }}
+        </div>
+        <div style="flex: 1; display:none;" id="conta-adm-wrapper">
+            <label class="form-label" for="{{ form.conta_administrada.id_for_label }}">Conta Administrada</label>
+            {{ form.conta_administrada }}
         </div>
     </div>
 
@@ -179,26 +189,40 @@ const escalasIdaData = {{ escalas_ida_json|safe }};
 const escalasVoltaData = {{ escalas_volta_json|safe }};
 const aeroportos = {{ aeroportos_json|safe }};
 const clienteProgramas = {{ cliente_programas_json|safe }};
+const contasAdmProgramas = {{ contas_adm_programas_json|safe }};
 
 const passageirosContainer = document.getElementById('passageiros-container');
 const clienteSelect = document.getElementById('id_cliente');
 const programaSelect = document.getElementById('id_programa');
 const programaInfo = document.getElementById('programa-info');
+const tipoTitularSelect = document.getElementById('id_tipo_titular');
+const contaAdmSelect = document.getElementById('id_conta_administrada');
+const clienteWrapper = document.getElementById('cliente-wrapper');
+const contaAdmWrapper = document.getElementById('conta-adm-wrapper');
 const pontosField = document.getElementById('id_pontos_utilizados');
 const valorRefPontosField = document.getElementById('id_valor_referencia_pontos');
 const valorReferenciaField = document.getElementById('id_valor_referencia');
 const valorPagoField = document.getElementById('id_valor_pago');
 const economiaField = document.getElementById('id_economia_obtida');
 
+function getProgramasDisponiveis() {
+    const tipo = tipoTitularSelect ? tipoTitularSelect.value : "cliente";
+    if (tipo === "administrada") {
+        const contaId = contaAdmSelect ? contaAdmSelect.value : null;
+        return (contasAdmProgramas && contaId) ? (contasAdmProgramas[contaId] || []) : [];
+    }
+    const clienteId = clienteSelect ? clienteSelect.value : null;
+    return (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
+}
+
 function updateProgramaInfo() {
     if (!programaInfo) return;
-    const clienteId = clienteSelect ? clienteSelect.value : null;
-    const programas = (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
+    const programas = getProgramasDisponiveis();
     const selected = programas.find(p => String(p.id) === (programaSelect ? programaSelect.value : ""));
     if (selected) {
         programaInfo.textContent = `Saldo: ${selected.saldo} pontos • Custo médio: R$ ${Number(selected.valor_medio || 0).toFixed(2)}`;
-    } else if (clienteId) {
-        programaInfo.textContent = "Nenhum programa disponível para o cliente selecionado.";
+    } else if (programas.length) {
+        programaInfo.textContent = "Nenhum programa disponível para o titular selecionado.";
     } else {
         programaInfo.textContent = "";
     }
@@ -207,8 +231,7 @@ function updateProgramaInfo() {
 
 function updateProgramaOptions() {
     if (!programaSelect) return;
-    const clienteId = clienteSelect ? clienteSelect.value : null;
-    const programas = (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
+    const programas = getProgramasDisponiveis();
     const currentValue = programaSelect.value;
     programaSelect.innerHTML = '<option value=""></option>';
     programas.forEach(p => {
@@ -224,8 +247,7 @@ function updateProgramaOptions() {
 }
 
 function recalcValoresFinanceiros() {
-    const clienteId = clienteSelect ? clienteSelect.value : null;
-    const programas = (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
+    const programas = getProgramasDisponiveis();
     const selected = programas.find(p => String(p.id) === (programaSelect ? programaSelect.value : ""));
     const pontos = parseFloat(pontosField ? (pontosField.value || 0) : 0);
     if (selected && valorRefPontosField) {
@@ -240,8 +262,28 @@ function recalcValoresFinanceiros() {
     }
 }
 
+function toggleTitularFields() {
+    const tipo = tipoTitularSelect ? tipoTitularSelect.value : "cliente";
+    if (clienteWrapper && contaAdmWrapper) {
+        if (tipo === "administrada") {
+            clienteWrapper.style.display = "none";
+            contaAdmWrapper.style.display = "block";
+        } else {
+            clienteWrapper.style.display = "block";
+            contaAdmWrapper.style.display = "none";
+        }
+    }
+    updateProgramaOptions();
+}
+
 if (clienteSelect) {
     clienteSelect.addEventListener('change', updateProgramaOptions);
+}
+if (contaAdmSelect) {
+    contaAdmSelect.addEventListener('change', updateProgramaOptions);
+}
+if (tipoTitularSelect) {
+    tipoTitularSelect.addEventListener('change', toggleTitularFields);
 }
 if (programaSelect) {
     programaSelect.addEventListener('change', updateProgramaInfo);
@@ -386,6 +428,7 @@ function initEscalaSection(tipo, data){
 }
 initEscalaSection('ida', escalasIdaData);
 initEscalaSection('volta', escalasVoltaData);
+toggleTitularFields();
 updateProgramaOptions();
 recalcValoresFinanceiros();
 </script>
