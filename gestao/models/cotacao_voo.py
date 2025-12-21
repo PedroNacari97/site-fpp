@@ -1,6 +1,8 @@
 from decimal import Decimal
+from django.core.exceptions import ValidationError
 from django.db import models
 from .cliente import Cliente
+from .conta_administrada import ContaAdministrada
 from .aeroporto import Aeroporto
 from .programa_fidelidade import ProgramaFidelidade
 
@@ -12,7 +14,14 @@ class CotacaoVoo(models.Model):
         ("emissao", "Emissão"),
     )
 
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True, blank=True)
+    conta_administrada = models.ForeignKey(
+        ContaAdministrada,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="cotacoes",
+    )
     companhia_aerea = models.CharField(max_length=100, blank=True)
     origem = models.ForeignKey(
         Aeroporto,
@@ -52,6 +61,11 @@ class CotacaoVoo(models.Model):
         "EmissaoPassagem", on_delete=models.SET_NULL, null=True, blank=True
     )
     criado_em = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        super().clean()
+        if bool(self.cliente) == bool(self.conta_administrada):
+            raise ValidationError("Informe um cliente ou uma conta administrada, mas não ambos.")
 
     def calcular_valores(self):
         base = (Decimal(self.milhas) / Decimal('1000')) * Decimal(self.valor_milheiro) + Decimal(self.taxas)

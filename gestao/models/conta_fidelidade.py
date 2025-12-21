@@ -1,11 +1,33 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from .cliente import Cliente
 from .programa_fidelidade import ProgramaFidelidade
+from .conta_administrada import ContaAdministrada
 
 
 class ContaFidelidade(models.Model):
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True, blank=True)
+    conta_administrada = models.ForeignKey(
+        ContaAdministrada,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="contas_fidelidade",
+    )
     programa = models.ForeignKey(ProgramaFidelidade, on_delete=models.CASCADE)
+
+    def clean(self):
+        super().clean()
+        if bool(self.cliente) == bool(self.conta_administrada):
+            raise ValidationError("Informe um cliente ou uma conta administrada, mas não ambos.")
+
+    @property
+    def empresa(self):
+        if self.cliente_id:
+            return self.cliente.empresa
+        if self.conta_administrada_id:
+            return self.conta_administrada.empresa
+        return None
 
     @property
     def programa_base(self):
@@ -15,12 +37,12 @@ class ContaFidelidade(models.Model):
         """Conta que efetivamente guarda saldo/movimentações (programa base)."""
         if not self.programa.is_vinculado:
             return self
-        return (
-            ContaFidelidade.objects.filter(
-                cliente=self.cliente, programa=self.programa.programa_base
-            ).select_related("programa").first()
-            or self
-        )
+        filtros = {"programa": self.programa.programa_base}
+        if self.cliente_id:
+            filtros["cliente"] = self.cliente
+        if self.conta_administrada_id:
+            filtros["conta_administrada"] = self.conta_administrada
+        return ContaFidelidade.objects.filter(**filtros).select_related("programa").first() or self
 
     @property
     def valor_medio_por_mil(self):
@@ -63,4 +85,5 @@ class ContaFidelidade(models.Model):
         return self.conta_saldo().movimentacoes.all()
 
     def __str__(self):
-        return f"{self.cliente} - {self.programa}"
+        titular = self.cliente or self.conta_administrada
+        return f"{titular} - {self.programa}"

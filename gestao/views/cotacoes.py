@@ -8,7 +8,10 @@ from painel_cliente.views import build_dashboard_context
 from django import forms
 from django.db import models
 
-from gestao.services.clientes_programas import build_clientes_programas_map
+from gestao.services.clientes_programas import (
+    build_clientes_programas_map,
+    build_contas_administradas_programas_map,
+)
 from gestao.services.emissao_financeiro import (
     calcular_economia,
     calcular_valor_referencia_pontos,
@@ -147,9 +150,9 @@ def admin_cotacoes_voo(request):
         return permission_denied
     busca = request.GET.get("busca", "")
     cotacoes = CotacaoVoo.objects.filter(
-        cliente__perfil="cliente", cliente__ativo=True
+        Q(cliente__perfil="cliente", cliente__ativo=True) | Q(conta_administrada__isnull=False)
     ).select_related(
-        "cliente__usuario", "origem", "destino"
+        "cliente__usuario", "origem", "destino", "conta_administrada"
     )
     if busca:
         cotacoes = cotacoes.filter(
@@ -171,6 +174,7 @@ def nova_cotacao_voo(request):
         return permission_denied
     initial = {}
     escalas_por_tipo = {"ida": [], "volta": []}
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     emissao_id = request.GET.get("emissao")
     if emissao_id:
         emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
@@ -190,15 +194,18 @@ def nova_cotacao_voo(request):
             emissao.escalas.values("aeroporto_id", "duracao", "cidade", "tipo", "ordem")
         )
     if request.method == "POST":
-        form = CotacaoVooForm(request.POST)
+        form = CotacaoVooForm(request.POST, empresa=empresa)
         escalas_payload = _build_escalas_from_request(request)
         escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
-            conta = ContaFidelidade.objects.filter(
-                cliente=form.cleaned_data["cliente"], programa=form.cleaned_data["programa"]
-            ).select_related("programa").first()
+            conta_filters = {"programa": form.cleaned_data["programa"]}
+            if form.cleaned_data.get("conta_administrada"):
+                conta_filters["conta_administrada"] = form.cleaned_data["conta_administrada"]
+            else:
+                conta_filters["cliente"] = form.cleaned_data["cliente"]
+            conta = ContaFidelidade.objects.filter(**conta_filters).select_related("programa").first()
             if not conta:
-                form.add_error("programa", "Selecione um programa vinculado ao cliente escolhido.")
+                form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
             else:
                 cot = form.save()
                 cot.escalas.all().delete()
@@ -248,7 +255,7 @@ def nova_cotacao_voo(request):
                 messages.success(request, "Cotação salva com sucesso.")
                 return redirect("admin_cotacoes_voo")
     else:
-        form = CotacaoVooForm(initial=initial)
+        form = CotacaoVooForm(initial=initial, empresa=empresa)
     aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
     return render(
         request,
@@ -258,7 +265,12 @@ def nova_cotacao_voo(request):
             "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
             "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
             "aeroportos_json": json.dumps(aeroportos),
-            "cliente_programas_json": json.dumps(build_clientes_programas_map()),
+            "cliente_programas_json": json.dumps(build_clientes_programas_map(empresa_id=getattr(empresa, "id", None))),
+            "contas_adm_programas_json": json.dumps(
+                build_contas_administradas_programas_map(
+                    empresa_id=getattr(empresa, "id", None)
+                )
+            ),
         },
     )
 
@@ -268,19 +280,23 @@ def editar_cotacao_voo(request, cotacao_id):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     escalas_por_tipo = _format_escalas(
         cotacao.escalas.values("aeroporto_id", "duracao", "cidade", "tipo", "ordem")
     )
     if request.method == "POST":
-        form = CotacaoVooForm(request.POST, instance=cotacao)
+        form = CotacaoVooForm(request.POST, instance=cotacao, empresa=empresa)
         escalas_payload = _build_escalas_from_request(request)
         escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
-            conta = ContaFidelidade.objects.filter(
-                cliente=form.cleaned_data["cliente"], programa=form.cleaned_data["programa"]
-            ).select_related("programa").first()
+            conta_filters = {"programa": form.cleaned_data["programa"]}
+            if form.cleaned_data.get("conta_administrada"):
+                conta_filters["conta_administrada"] = form.cleaned_data["conta_administrada"]
+            else:
+                conta_filters["cliente"] = form.cleaned_data["cliente"]
+            conta = ContaFidelidade.objects.filter(**conta_filters).select_related("programa").first()
             if not conta:
-                form.add_error("programa", "Selecione um programa vinculado ao cliente escolhido.")
+                form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
             else:
                 cot = form.save()
                 cot.escalas.all().delete()
@@ -330,7 +346,7 @@ def editar_cotacao_voo(request, cotacao_id):
                 messages.success(request, "Cotação atualizada com sucesso.")
                 return redirect("admin_cotacoes_voo")
     else:
-        form = CotacaoVooForm(instance=cotacao)
+        form = CotacaoVooForm(instance=cotacao, empresa=empresa)
     aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
     return render(
         request,
@@ -340,7 +356,14 @@ def editar_cotacao_voo(request, cotacao_id):
             "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
             "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
             "aeroportos_json": json.dumps(aeroportos),
-            "cliente_programas_json": json.dumps(build_clientes_programas_map(cotacao)),
+            "cliente_programas_json": json.dumps(
+                build_clientes_programas_map(cotacao, empresa_id=getattr(empresa, "id", None))
+            ),
+            "contas_adm_programas_json": json.dumps(
+                build_contas_administradas_programas_map(
+                    empresa_id=getattr(empresa, "id", None), instance=cotacao
+                )
+            ),
         },
     )
 

@@ -11,6 +11,7 @@ from gestao.utils import (
 
 from .models import (
     ContaFidelidade,
+    ContaAdministrada,
     ProgramaFidelidade,
     Cliente,
     Aeroporto,
@@ -27,7 +28,16 @@ User = get_user_model()
 class ContaFidelidadeForm(forms.ModelForm):
     class Meta:
         model = ContaFidelidade
-        fields = ['cliente', 'programa', 'clube_periodicidade', 'pontos_clube_mes', 'valor_assinatura_clube', 'data_inicio_clube', 'validade']
+        fields = [
+            "cliente",
+            "conta_administrada",
+            "programa",
+            "clube_periodicidade",
+            "pontos_clube_mes",
+            "valor_assinatura_clube",
+            "data_inicio_clube",
+            "validade",
+        ]
         widgets = {
             "data_inicio_clube": forms.TextInput(
                 attrs={
@@ -48,11 +58,26 @@ class ContaFidelidadeForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        empresa = kwargs.pop("empresa", None)
         super().__init__(*args, **kwargs)
-        qs = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+        cliente_qs = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+        conta_adm_qs = ContaAdministrada.objects.filter(ativo=True)
+        if empresa:
+            cliente_qs = cliente_qs.filter(empresa=empresa)
+            conta_adm_qs = conta_adm_qs.filter(empresa=empresa)
         if self.instance and self.instance.pk:
-            qs = qs | Cliente.objects.filter(pk=self.instance.cliente_id)
-        self.fields["cliente"].queryset = qs
+            cliente_qs = cliente_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
+            conta_adm_qs = conta_adm_qs | ContaAdministrada.objects.filter(pk=self.instance.conta_administrada_id)
+        self.fields["cliente"].queryset = cliente_qs
+        self.fields["conta_administrada"].queryset = conta_adm_qs
+
+    def clean(self):
+        cleaned = super().clean()
+        cliente = cleaned.get("cliente")
+        conta_adm = cleaned.get("conta_administrada")
+        if bool(cliente) == bool(conta_adm):
+            raise forms.ValidationError("Selecione um cliente ou uma conta administrada, mas não ambos.")
+        return cleaned
 
     def clean_data_inicio_clube(self):
         return parse_br_date(self.cleaned_data.get("data_inicio_clube"), field_label="Data de início do clube")
@@ -80,6 +105,23 @@ class ProgramaFidelidadeForm(forms.ModelForm):
             base_qs = base_qs.exclude(pk=self.instance.pk)
         self.fields["programa_base"].queryset = base_qs
         self.fields["programa_base"].required = False
+
+
+class ContaAdministradaForm(forms.ModelForm):
+    class Meta:
+        model = ContaAdministrada
+        fields = ["nome", "observacoes", "ativo"]
+        widgets = {
+            "observacoes": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2",
+                }
+            ),
+            "nome": forms.TextInput(
+                attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2"}
+            ),
+        }
 
 
 class ClienteForm(forms.ModelForm):
@@ -152,7 +194,16 @@ class AeroportoForm(forms.ModelForm):
 
 
 class EmissaoPassagemForm(forms.ModelForm):
+    tipo_titular = forms.ChoiceField(
+        choices=(("cliente", "Conta de Cliente"), ("administrada", "Conta Administrada")),
+        initial="cliente",
+    )
+    conta_administrada = forms.ModelChoiceField(
+        queryset=ContaAdministrada.objects.none(), required=False
+    )
+
     def __init__(self, *args, **kwargs):
+        empresa = kwargs.pop("empresa", None)
         super().__init__(*args, **kwargs)
         for f in [
             'qtd_adultos',
@@ -162,19 +213,62 @@ class EmissaoPassagemForm(forms.ModelForm):
             self.fields[f].required = False
         self.fields['companhia_aerea'].queryset = CompanhiaAerea.objects.all()
         clientes_qs = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+        contas_adm_qs = ContaAdministrada.objects.filter(ativo=True)
+        if empresa:
+            clientes_qs = clientes_qs.filter(empresa=empresa)
+            contas_adm_qs = contas_adm_qs.filter(empresa=empresa)
         if self.instance and self.instance.pk:
             clientes_qs = clientes_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
+            contas_adm_qs = contas_adm_qs | ContaAdministrada.objects.filter(pk=self.instance.conta_administrada_id)
         self.fields["cliente"].queryset = clientes_qs
-        cliente_id = self.data.get("cliente") or getattr(self.instance, "cliente_id", None)
-        programas_qs = ProgramaFidelidade.objects.filter(contafidelidade__cliente_id=cliente_id) if cliente_id else ProgramaFidelidade.objects.none()
+        self.fields["conta_administrada"].queryset = contas_adm_qs
+
+        selected_tipo = self.data.get("tipo_titular") or ("administrada" if getattr(self.instance, "conta_administrada_id", None) else "cliente")
+        self.initial.setdefault("tipo_titular", selected_tipo)
+        if selected_tipo == "administrada":
+            self.fields["cliente"].required = False
+            self.fields["conta_administrada"].required = True
+        else:
+            self.fields["conta_administrada"].required = False
+            self.fields["cliente"].required = True
+
+        titular_id = None
+        if selected_tipo == "administrada":
+            titular_id = self.data.get("conta_administrada") or getattr(self.instance, "conta_administrada_id", None)
+            programas_qs = ProgramaFidelidade.objects.filter(
+                contafidelidade__conta_administrada_id=titular_id
+            ) if titular_id else ProgramaFidelidade.objects.none()
+        else:
+            titular_id = self.data.get("cliente") or getattr(self.instance, "cliente_id", None)
+            programas_qs = ProgramaFidelidade.objects.filter(
+                contafidelidade__cliente_id=titular_id
+            ) if titular_id else ProgramaFidelidade.objects.none()
+
         if self.instance and self.instance.programa_id and not programas_qs.filter(id=self.instance.programa_id).exists():
             programas_qs = programas_qs | ProgramaFidelidade.objects.filter(id=self.instance.programa_id)
         self.fields["programa"].queryset = programas_qs.distinct()
 
+    def clean(self):
+        cleaned = super().clean()
+        tipo = cleaned.get("tipo_titular")
+        cliente = cleaned.get("cliente")
+        conta_adm = cleaned.get("conta_administrada")
+        if tipo == "administrada":
+            cleaned["cliente"] = None
+            if not conta_adm:
+                raise forms.ValidationError("Selecione uma conta administrada.")
+        else:
+            cleaned["conta_administrada"] = None
+            if not cliente:
+                raise forms.ValidationError("Selecione um cliente.")
+        return cleaned
+
     class Meta:
         model = EmissaoPassagem
         fields = [
+            'tipo_titular',
             'cliente',
+            'conta_administrada',
             'programa',
             'aeroporto_partida',
             'aeroporto_destino',
@@ -225,26 +319,77 @@ class EmissaoHotelForm(forms.ModelForm):
 
 class CotacaoVooForm(forms.ModelForm):
     companhia_aerea = forms.ChoiceField(choices=[], required=False)
+    tipo_titular = forms.ChoiceField(
+        choices=(("cliente", "Conta de Cliente"), ("administrada", "Conta Administrada")),
+        initial="cliente",
+    )
+    conta_administrada = forms.ModelChoiceField(
+        queryset=ContaAdministrada.objects.none(), required=False
+    )
 
     def __init__(self, *args, **kwargs):
+        empresa = kwargs.pop("empresa", None)
         super().__init__(*args, **kwargs)
         self.fields['companhia_aerea'].choices = [
             (c.nome, c.nome) for c in CompanhiaAerea.objects.all()
         ]
         clientes_qs = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+        contas_adm_qs = ContaAdministrada.objects.filter(ativo=True)
+        if empresa:
+            clientes_qs = clientes_qs.filter(empresa=empresa)
+            contas_adm_qs = contas_adm_qs.filter(empresa=empresa)
         if self.instance and self.instance.pk:
             clientes_qs = clientes_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
+            contas_adm_qs = contas_adm_qs | ContaAdministrada.objects.filter(pk=self.instance.conta_administrada_id)
         self.fields["cliente"].queryset = clientes_qs
-        cliente_id = self.data.get("cliente") or getattr(self.instance, "cliente_id", None)
-        programas_qs = ProgramaFidelidade.objects.filter(contafidelidade__cliente_id=cliente_id) if cliente_id else ProgramaFidelidade.objects.none()
+        self.fields["conta_administrada"].queryset = contas_adm_qs
+
+        selected_tipo = self.data.get("tipo_titular") or ("administrada" if getattr(self.instance, "conta_administrada_id", None) else "cliente")
+        self.initial.setdefault("tipo_titular", selected_tipo)
+        if selected_tipo == "administrada":
+            self.fields["cliente"].required = False
+            self.fields["conta_administrada"].required = True
+        else:
+            self.fields["conta_administrada"].required = False
+            self.fields["cliente"].required = True
+
+        titular_id = None
+        if selected_tipo == "administrada":
+            titular_id = self.data.get("conta_administrada") or getattr(self.instance, "conta_administrada_id", None)
+            programas_qs = ProgramaFidelidade.objects.filter(
+                contafidelidade__conta_administrada_id=titular_id
+            ) if titular_id else ProgramaFidelidade.objects.none()
+        else:
+            titular_id = self.data.get("cliente") or getattr(self.instance, "cliente_id", None)
+            programas_qs = ProgramaFidelidade.objects.filter(
+                contafidelidade__cliente_id=titular_id
+            ) if titular_id else ProgramaFidelidade.objects.none()
+
         if self.instance and self.instance.programa_id and not programas_qs.filter(id=self.instance.programa_id).exists():
             programas_qs = programas_qs | ProgramaFidelidade.objects.filter(id=self.instance.programa_id)
         self.fields["programa"].queryset = programas_qs.distinct()
 
+    def clean(self):
+        cleaned = super().clean()
+        tipo = cleaned.get("tipo_titular")
+        cliente = cleaned.get("cliente")
+        conta_adm = cleaned.get("conta_administrada")
+        if tipo == "administrada":
+            cleaned["cliente"] = None
+            if not conta_adm:
+                raise forms.ValidationError("Selecione uma conta administrada.")
+        else:
+            cleaned["conta_administrada"] = None
+            if not cliente:
+                raise forms.ValidationError("Selecione um cliente.")
+        return cleaned
+
     class Meta:
         model = CotacaoVoo
         fields = [
+            'tipo_titular',
             'cliente',
+            'conta_administrada',
             'companhia_aerea',
             'origem',
             'destino',
