@@ -77,8 +77,12 @@ def admin_movimentacoes(request, conta_id):
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
     conta = get_object_or_404(
-        ContaFidelidade, id=conta_id, cliente__perfil="cliente"
+        ContaFidelidade.objects.select_related("cliente__empresa", "conta_administrada__empresa"),
+        id=conta_id,
     )
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    if empresa and conta.empresa and conta.empresa != empresa:
+        return render(request, "sem_permissao.html")
     movimentacoes = conta.movimentacoes_compartilhadas.order_by("-data")
     conta_base = conta.conta_saldo()
     return render(
@@ -97,8 +101,15 @@ def admin_nova_movimentacao(request, conta_id):
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
     conta = get_object_or_404(
-        ContaFidelidade, id=conta_id, cliente__perfil="cliente"
+        ContaFidelidade.objects.select_related("cliente__empresa", "conta_administrada__empresa"),
+        id=conta_id,
     )
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    if empresa and conta.empresa and conta.empresa != empresa:
+        return render(request, "sem_permissao.html")
+    if conta.conta_administrada_id:
+        messages.error(request, "Movimentações manuais não estão disponíveis para contas administradas.")
+        return redirect("admin_movimentacoes", conta_id=conta.id)
     if conta.programa.is_vinculado:
         base_conta = conta.conta_saldo()
         messages.error(
@@ -131,7 +142,16 @@ def admin_nova_movimentacao(request, conta_id):
 def admin_transferir_pontos(request, conta_id):
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
-    conta = get_object_or_404(ContaFidelidade, id=conta_id, cliente__perfil="cliente")
+    conta = get_object_or_404(
+        ContaFidelidade.objects.select_related("cliente__empresa", "conta_administrada__empresa"),
+        id=conta_id,
+    )
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    if empresa and conta.empresa and conta.empresa != empresa:
+        return render(request, "sem_permissao.html")
+    if conta.conta_administrada_id:
+        messages.error(request, "Transferências manuais não estão disponíveis para contas administradas.")
+        return redirect("admin_movimentacoes", conta_id=conta.id)
     if conta.programa.is_vinculado:
         base_conta = conta.conta_saldo()
         messages.error(

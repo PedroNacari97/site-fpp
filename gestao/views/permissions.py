@@ -10,7 +10,7 @@ def require_admin_or_operator(request):
     "sem_permissao.html" template is rendered.
     """
     if request.user.is_superuser:
-        return render(request, "sem_permissao.html")
+        return None
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil not in ["admin", "operador"]:
         return render(request, "sem_permissao.html")

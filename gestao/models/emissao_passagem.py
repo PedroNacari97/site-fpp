@@ -1,12 +1,21 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from .cliente import Cliente
+from .conta_administrada import ContaAdministrada
 from .programa_fidelidade import ProgramaFidelidade
 from .aeroporto import Aeroporto
 from .companhia_aerea import CompanhiaAerea
 
 
 class EmissaoPassagem(models.Model):
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True, blank=True)
+    conta_administrada = models.ForeignKey(
+        ContaAdministrada,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="emissoes",
+    )
     programa = models.ForeignKey(
         ProgramaFidelidade, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -49,10 +58,16 @@ class EmissaoPassagem(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     detalhes = models.TextField(blank=True)
-    
+
+    def clean(self):
+        super().clean()
+        if bool(self.cliente) == bool(self.conta_administrada):
+            raise ValidationError("Informe um cliente ou uma conta administrada, mas não ambos.")
+
     def save(self, *args, **kwargs):
         self.qtd_passageiros = self.qtd_adultos + self.qtd_criancas + self.qtd_bebes
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.cliente} - {self.programa} - {self.data_ida}"
+        titular = self.cliente or self.conta_administrada
+        return f"{titular} - {self.programa} - {self.data_ida}"

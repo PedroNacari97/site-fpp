@@ -1,0 +1,53 @@
+{% extends "admin_custom/base_admin.html" %}
+{% block title %}Contas Administradas{% endblock %}
+{% block header_title %}Contas Administradas{% endblock %}
+{% block menu_contas_adm %}bg-zinc-700 text-white{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+    <form method="get" class="flex gap-3">
+        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar conta..."  class="bg-zinc-100 border border-zinc-300 rounded px-4 py-2 flex-1 min-w-[320px] max-w-[720px] h-[50px]"
+ />
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 flex-1 min-w-[120px] max-w-[520px] h-[50px]">Buscar</button>
+    </form>
+    <a href="{% url 'admin_nova_conta_administrada' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Nova Conta Administrada</a>
+</div>
+    <table class="min-w-full text-sm">
+        <thead class="bg-zinc-700 text-zinc-200">
+            <tr>
+                <th class="p-2 text-left font-medium">Conta</th>
+                <th class="p-2 text-left font-medium">Observações</th>
+                <th class="p-2 text-left font-medium">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for conta in page_obj %}
+            <tr class="border-b border-zinc-700">
+                <td class="p-2">
+                    {{ conta.nome }}
+                </td>
+                <td class="p-2">{{ conta.observacoes|default:"-" }}</td>
+                <td class="p-2">
+                    <a href="{% url 'admin_editar_conta_administrada' conta.id %}" class="text-blue-400">Editar</a> |
+                    <a href="{% url 'admin_deletar_conta_administrada' conta.id %}" class="text-blue-400">Deletar</a> |
+                    <a href="{% url 'admin_programas_da_conta_administrada' conta.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded mr-2 text-xs">Programas</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-red-400 py-4">Nenhuma conta administrada encontrada.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if page_obj.has_other_pages %}
+    <div class="mt-4 flex gap-2 justify-center">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}" class="bg-zinc-700 text-white px-3 py-1 rounded">&lt;</a>
+        {% endif %}
+        <span class="text-zinc-300 px-3 py-1">Página {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}" class="bg-zinc-700 text-white px-3 py-1 rounded">&gt;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+<div class="text-zinc-400 mt-4 text-sm">Total: {{ total_contas }} contas administradas.</div>
+{% endblock %}
