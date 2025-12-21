@@ -57,6 +57,9 @@ class ContaFidelidade(models.Model):
 
     @property
     def valor_medio_por_mil(self):
+        # Para programas vinculados, usar o valor definido para o programa (não o custo do programa base).
+        if self.programa.is_vinculado and self.programa.preco_medio_milheiro:
+            return float(self.programa.preco_medio_milheiro)
         saldo = self.saldo_pontos
         if saldo > 0:
             return float(self.valor_total_pago) / (saldo / 1000)

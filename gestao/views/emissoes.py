@@ -249,6 +249,11 @@ def nova_emissao(request):
                 )
                 messages.success(request, "Emissão salva com sucesso.")
                 return redirect("admin_emissoes")
+        else:
+            messages.error(
+                request,
+                "Não foi possível salvar a emissão. Corrija os campos destacados e tente novamente.",
+            )
     else:
         initial = {"cliente": cliente_id} if cliente_id else {}
         form = EmissaoPassagemForm(initial=initial, empresa=empresa)

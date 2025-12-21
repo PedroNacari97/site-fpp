@@ -25,6 +25,11 @@ class ProgramaFidelidade(models.Model):
     preco_medio_milheiro = models.DecimalField(
         max_digits=10, decimal_places=2, default=0
     )
+    quantidade_cpfs_disponiveis = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Quantidade total de CPFs disponíveis no programa",
+    )
 
     def clean(self):
         errors = {}
