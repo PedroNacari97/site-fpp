@@ -204,6 +204,11 @@ def nova_cotacao_voo(request):
             else:
                 conta_filters["cliente"] = form.cleaned_data["cliente"]
             conta = ContaFidelidade.objects.filter(**conta_filters).select_related("programa").first()
+            valor_medio_milheiro = None
+            if conta:
+                valor_medio_milheiro = conta.valor_medio_por_mil
+                if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
+                    valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
             if not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
             if form.errors:
@@ -212,7 +217,7 @@ def nova_cotacao_voo(request):
                     request,
                     "Não foi possível salvar a cotação: revise o programa e os campos destacados.",
                 )
-            elif form.cleaned_data.get("milhas") and (not conta.valor_medio_por_mil or conta.valor_medio_por_mil <= 0):
+            elif form.cleaned_data.get("milhas") and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
                 form.add_error(
                     "programa",
                     "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
@@ -244,7 +249,7 @@ def nova_cotacao_voo(request):
                         detalhes=cot.observacoes,
                     )
                     emissao.valor_referencia_pontos = calcular_valor_referencia_pontos(
-                        emissao.pontos_utilizados, conta.valor_medio_por_mil
+                        emissao.pontos_utilizados, valor_medio_milheiro
                     )
                     emissao.economia_obtida = calcular_economia(
                         emissao, emissao.valor_referencia_pontos
@@ -315,6 +320,11 @@ def editar_cotacao_voo(request, cotacao_id):
             else:
                 conta_filters["cliente"] = form.cleaned_data["cliente"]
             conta = ContaFidelidade.objects.filter(**conta_filters).select_related("programa").first()
+            valor_medio_milheiro = None
+            if conta:
+                valor_medio_milheiro = conta.valor_medio_por_mil
+                if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
+                    valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
             if not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
             if form.errors:
@@ -323,7 +333,7 @@ def editar_cotacao_voo(request, cotacao_id):
                     request,
                     "Não foi possível salvar a cotação: revise o programa e os campos destacados.",
                 )
-            elif form.cleaned_data.get("milhas") and (not conta.valor_medio_por_mil or conta.valor_medio_por_mil <= 0):
+            elif form.cleaned_data.get("milhas") and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
                 form.add_error(
                     "programa",
                     "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
