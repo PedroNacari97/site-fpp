@@ -3,112 +3,143 @@
 
 {% block title %}Dashboard{% endblock %}
 {% block header_title %}Dashboard Administrativo{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Visão consolidada dos clientes, emissões e reservas com hierarquia clara de informações.</p>{% endblock %}
 {% block menu_dashboard %}bg-[#2c5282]{% endblock %}
+{% block header_actions %}
+<div class="page-actions">
+  <a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="btn btn-secondary">+ Novo Cliente</a>
+  <a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="btn btn-primary">+ Nova Emissão</a>
+</div>
+{% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="painel-header">
-    <select id="clienteSelect">
-      <option value="">Selecionar Cliente</option>
-      {% for c in clientes %}
-        <option value="{{ c.id }}" {% if selected_cliente and c.id == selected_cliente.id %}selected{% endif %}>{{ c }}</option>
-      {% endfor %}
-    </select>
-
-     <div class="painel-header-actions">
-      <a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="btn-voltar">+ Novo Cliente</a>
-      <a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="btn-voltar">+ Nova Emissão</a>
-    </div>
-  </div>
-
-  <!-- Cards resumo rápido -->
-  <div class="painel-cards">
-    <div class="card">
-      <div class="content">
-        <div class="label">👥 Total de Clientes</div>
-        <div class="valor">{{ total_clientes }}</div>
+<div class="stacked">
+  <section class="surface-card filter-panel" data-filters-root>
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Filtro rápido</p>
+        <p class="section-title">Selecione o cliente para personalizar a visão</p>
       </div>
+      <button class="btn btn-ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
     </div>
-    <div class="card">
-      <div class="content">
-        <div class="label">✈️ Total de Emissões</div>
-        <div class="valor">{{ total_emissoes }}</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="content">
-        <div class="label">💰 Total Economizado</div>
-        <div class="valor">R$ {{ total_economizado|floatformat:2 }}</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Programas -->
-  <h2 class="section-title">Programas</h2>
-  <div class="painel-cards programas-grid scroll-x">
-    {% for prog in programas %}
-      <div class="card">
-        <div class="content">
-          <strong>{{ prog.nome }}</strong>
-          <div class="label">Pontos acumulados</div>
-          <div class="valor">{{ prog.pontos }}</div>
-
-          <div class="label">Valor total</div>
-          <div class="valor">R$ {{ prog.valor_total|floatformat:2 }}</div>
-
-          <div class="label">Valor médio por 1.000</div>
-          <div class="valor">R$ {{ prog.valor_medio|floatformat:2 }}</div>
-
-          <div class="label">Valor de referência atual</div>
-          <div class="valor">R$ {{ prog.valor_referencia|floatformat:2 }}</div>
+    <div class="filter-body is-open" data-filter-panel>
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label" for="clienteSelect">Cliente</label>
+          <select id="clienteSelect">
+            <option value="">Selecionar Cliente</option>
+            {% for c in clientes %}
+              <option value="{{ c.id }}" {% if selected_cliente and c.id == selected_cliente.id %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
         </div>
-        {% if prog.conta_id %}
-          <a href="{% url 'admin_movimentacoes' prog.conta_id %}">Ver movimentações</a>
-        {% endif %}
       </div>
-    {% empty %}
-      <p>Nenhum programa encontrado.</p>
-    {% endfor %}
-  </div>
+      <div class="filter-actions">
+        <span class="muted text-sm">Filtre para enxergar cartões e relatórios com o contexto correto.</span>
+      </div>
+    </div>
+  </section>
 
-  <!-- Resumo -->
-  <h2 class="section-title">Resumo</h2>
-  <div class="painel-cards duas-colunas scroll-x">
-    <div class="card">
-      <div class="content">
-        <strong>Emissões</strong>
-        <ul>
-          <li>Quantidade: <span class="valor">{{ emissoes.qtd }}</span></li>
-          <li>Total de pontos usados: <span class="valor">{{ emissoes.pontos }}</span></li>
-          <li>Valor ref.: <span class="valor">R$ {{ emissoes.valor_referencia|floatformat:2 }}</span></li>
-          <li>Valor pago: <span class="valor">R$ {{ emissoes.valor_pago|floatformat:2 }}</span></li>
-          <li>Economizado: <span class="valor">R$ {{ emissoes.valor_economizado|floatformat:2 }}</span></li>
+  <section class="surface-card stacked">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Indicadores</p>
+        <h2 class="section-title">Resumo rápido</h2>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <p class="stat-label">👥 Total de Clientes</p>
+        <p class="stat-value">{{ total_clientes }}</p>
+        <p class="stat-meta">Base ativa de clientes acompanhados</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">✈️ Total de Emissões</p>
+        <p class="stat-value">{{ total_emissoes }}</p>
+        <p class="stat-meta">Passagens emitidas em todos os programas</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">💰 Total Economizado</p>
+        <p class="stat-value">R$ {{ total_economizado|floatformat:2 }}</p>
+        <p class="stat-meta">Economia acumulada em emissões e reservas</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="surface-card stacked">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Programas</p>
+        <h2 class="section-title">Pontos, valores e referências</h2>
+      </div>
+    </div>
+    <div class="stat-grid">
+      {% for prog in programas %}
+        <div class="stat-card">
+          <p class="stat-label">{{ prog.nome }}</p>
+          <p class="stat-value">{{ prog.pontos }}</p>
+          <p class="stat-meta">Pontos acumulados</p>
+          <div class="section-divider"></div>
+          <p class="label">Valor total</p>
+          <p class="stat-meta">R$ {{ prog.valor_total|floatformat:2 }}</p>
+          <p class="label">Valor médio por 1.000</p>
+          <p class="stat-meta">R$ {{ prog.valor_medio|floatformat:2 }}</p>
+          <p class="label">Valor de referência atual</p>
+          <p class="stat-meta">R$ {{ prog.valor_referencia|floatformat:2 }}</p>
+          {% if prog.conta_id %}
+          <a class="card-link btn btn-link" href="{% url 'admin_movimentacoes' prog.conta_id %}">Ver movimentações</a>
+          {% endif %}
+        </div>
+      {% empty %}
+        <p class="muted">Nenhum programa encontrado.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="surface-card stacked">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Resumo financeiro</p>
+        <h2 class="section-title">Emissões e Hotéis</h2>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <p class="stat-label">Emissões</p>
+        <p class="stat-value">{{ emissoes.qtd }}</p>
+        <p class="stat-meta">Quantidade total de emissões</p>
+        <ul class="list-plain">
+          <li>Total de pontos usados: <strong>{{ emissoes.pontos }}</strong></li>
+          <li>Valor ref.: <strong>R$ {{ emissoes.valor_referencia|floatformat:2 }}</strong></li>
+          <li>Valor pago: <strong>R$ {{ emissoes.valor_pago|floatformat:2 }}</strong></li>
+          <li>Economizado: <strong>R$ {{ emissoes.valor_economizado|floatformat:2 }}</strong></li>
         </ul>
+        <a class="card-link btn btn-link" href="{% url 'admin_emissoes' %}">Ver detalhes</a>
       </div>
-      <a href="{% url 'admin_emissoes' %}">Ver detalhes</a>
-    </div>
 
-    <div class="card">
-      <div class="content">
-        <strong>Hotéis</strong>
-        <ul>
-          <li>Quantidade de reservas: <span class="valor">{{ hoteis.qtd }}</span></li>
-          <li>Valor ref. acumulado: <span class="valor">R$ {{ hoteis.valor_referencia|floatformat:2 }}</span></li>
-          <li>Valor pago: <span class="valor">R$ {{ hoteis.valor_pago|floatformat:2 }}</span></li>
-          <li>Economizado: <span class="valor">R$ {{ hoteis.valor_economizado|floatformat:2 }}</span></li>
+      <div class="stat-card">
+        <p class="stat-label">Hotéis</p>
+        <p class="stat-value">{{ hoteis.qtd }}</p>
+        <p class="stat-meta">Reservas confirmadas</p>
+        <ul class="list-plain">
+          <li>Valor ref. acumulado: <strong>R$ {{ hoteis.valor_referencia|floatformat:2 }}</strong></li>
+          <li>Valor pago: <strong>R$ {{ hoteis.valor_pago|floatformat:2 }}</strong></li>
+          <li>Economizado: <strong>R$ {{ hoteis.valor_economizado|floatformat:2 }}</strong></li>
         </ul>
+        <a class="card-link btn btn-link" href="{% url 'admin_hoteis' %}">Ver detalhes</a>
       </div>
-      <a href="{% url 'admin_hoteis' %}">Ver detalhes</a>
     </div>
-  </div>
+  </section>
 
-  <!-- Gráfico -->
-  <h2 class="section-title">Emissões por programa</h2>
-  <div class="card">
-    <div class="content">
-      <canvas id="emissoesChart"></canvas>
+  <section class="surface-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Distribuição</p>
+        <h2 class="section-title">Emissões por programa</h2>
+      </div>
     </div>
-  </div>
+    <canvas id="emissoesChart"></canvas>
+  </section>
 </div>
 {% endblock %}
 

@@ -3,49 +3,55 @@
 
 {% block title %}Usuários{% endblock %}
 {% block header_title %}Gerenciar Usuários{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Administradores com visual único e tabela responsiva.</p>{% endblock %}
 
 {% block extra_head %}
   <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-  <a href="{% url 'user_create' %}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium">
-    Novo Usuário
-  </a>
-</div>
+<section class="surface-card stacked">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Usuários</p>
+      <h2 class="section-title">Administradores</h2>
+    </div>
+    <a href="{% url 'user_create' %}" class="btn btn-primary">+ Novo Usuário</a>
+  </div>
 
-  <table class="min-w-full border border-zinc-700 text-sm">
-    <thead class="bg-zinc-100 text-zinc-100">
-      <tr>
-        <th class="p-2 text-left font-medium">Nome completo</th>
-        <th class="p-2 text-left font-medium">CPF</th>
-         <th class="p-2 text-left font-medium">Empresa</th>
-        <th class="p-2 text-left font-medium">Perfil</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for u in usuarios %}
-      <tr class="border-b border-zinc-100 hover:bg-zinc-100">
-        <td class="p-2 text-zinc-600">
-          {{ u.nome_completo|default:u.usuario.get_full_name|default:u.usuario.first_name }}
-        </td>
-        <td class="p-2 text-zinc-600">
-          {{ u.cpf|default:"—" }}
-        </td>
-        <td class="p-2 text-zinc-600">
-          {{ u.empresa.nome|default:"—" }}
-        </td>
-        <td class="p-2 text-zinc-600">
-          {{ u.get_perfil_display|default:u.perfil }}
-         </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="4" class="text-center text-red-400 py-4">Nenhum usuário cadastrado.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nome completo</th>
+          <th>CPF</th>
+          <th>Empresa</th>
+          <th>Perfil</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in usuarios %}
+        <tr>
+          <td>
+            {{ u.nome_completo|default:u.usuario.get_full_name|default:u.usuario.first_name }}
+          </td>
+          <td>
+            {{ u.cpf|default:"—" }}
+          </td>
+          <td>
+            {{ u.empresa.nome|default:"—" }}
+          </td>
+          <td>
+            {{ u.get_perfil_display|default:u.perfil }}
+           </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center text-red-400 py-4">Nenhum usuário cadastrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 {% endblock %}

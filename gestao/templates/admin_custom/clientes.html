@@ -2,58 +2,98 @@
 {% load static %}
 {% block title %}Clientes{% endblock %}
 {% block header_title %}Clientes{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Cadastre, pesquise e acompanhe clientes com status e ações consistentes.</p>{% endblock %}
+{% block header_actions %}
+<div class="page-actions">
+    <a href="{% url 'admin_novo_cliente' %}" class="btn btn-primary">+ Novo Cliente</a>
+</div>
+{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Lista de Clientes</h1>
-<form method="get" class="flex w-full items-center gap-3">
-  <input
-    type="text"
-    name="busca"
-    value="{{ busca }}"
-    placeholder="Buscar..."
-    class="bg-zinc-100 border border-zinc-300 rounded px-4 py-2 flex-1 h-10 sm:h-12"
-  />
-  <button
-    type="submit"
-    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 flex-1 min-w-[120px] max-w-[120px] h-[50px]"
-  >
-    Buscar
-  </button>
-</form>
+<div class="stacked">
+    <section class="surface-card filter-panel" data-filters-root>
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Filtros</p>
+                <h2 class="section-title">Buscar clientes</h2>
+            </div>
+            <button class="btn btn-ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+        </div>
+        <div class="filter-body is-open" data-filter-panel>
+            <form method="get" class="form-grid">
+                <div class="form-field">
+                    <label class="form-label" for="busca">Nome ou usuário</label>
+                    <input
+                        type="text"
+                        id="busca"
+                        name="busca"
+                        value="{{ busca }}"
+                        placeholder="Buscar..."
+                    />
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                    <a href="{% url 'admin_clientes' %}" class="btn btn-ghost">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </section>
 
-    <p>Total de clientes: {{ total_clientes }}</p>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Usuário</th>
-                <th>Status</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for cliente in page_obj %}
-            <tr>
-                <td>{{ cliente.usuario.first_name|default:cliente.usuario.username }}</td>
-                <td>{{ cliente.usuario.username }}</td>
-                <td>{% if cliente.ativo %}Ativo{% else %}Inativo{% endif %}</td>
-                <td>
-                    <a href="{% url 'admin_visualizar_cliente' cliente.id %}">Ver</a> |
-                    <a href="{% url 'admin_editar_cliente' cliente.id %}">Editar</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="4">Nenhum cliente encontrado.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}">Anterior</a>
-        {% endif %}
-        <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}">Próxima</a>
-        {% endif %}
+    <section class="surface-card">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Clientes</p>
+                <h2 class="section-title">Lista de clientes</h2>
+                <p class="section-subtitle">Status e ações alinhados em todas as telas.</p>
+            </div>
+            <div class="muted">Total: {{ total_clientes }}</div>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Usuário</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cliente in page_obj %}
+                    <tr>
+                        <td>{{ cliente.usuario.first_name|default:cliente.usuario.username }}</td>
+                        <td>{{ cliente.usuario.username }}</td>
+                        <td>
+                            {% if cliente.ativo %}
+                                <span class="pill pill-success">Ativo</span>
+                            {% else %}
+                                <span class="pill pill-danger">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="flex gap-2">
+                                <a class="btn btn-link" href="{% url 'admin_visualizar_cliente' cliente.id %}">Ver</a>
+                                <a class="btn btn-link" href="{% url 'admin_editar_cliente' cliente.id %}">Editar</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">Nenhum cliente encontrado.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="table-foot">
+            <div>Mostrando página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</div>
+            <div class="page-actions">
+                {% if page_obj.has_previous %}
+                    <a class="btn btn-ghost" href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}">Anterior</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <a class="btn btn-ghost" href="?page={{ page_obj.next_page_number }}&busca={{ busca }}">Próxima</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</div>
 {% endblock %}

@@ -2,47 +2,51 @@
 
 {% block title %}Movimentações do Programa: {{ conta.programa.nome }} — {{ titular_tipo }}: {{ titular_nome }}{% endblock %}
 {% block header_title %}Movimentações do Programa: {{ conta.programa.nome }} — {{ titular_tipo }}: {{ titular_nome }}{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Histórico organizado de pontos e valores com ações no mesmo lugar.</p>{% endblock %}
+{% block header_actions %}
+<div class="page-actions">
+    <a href="{% url 'admin_transferir_pontos' conta.id %}" class="btn btn-secondary">Transferir pontos</a>
+    <a href="{% url 'admin_nova_movimentacao' conta.id %}" class="btn btn-primary">+ Nova Movimentação</a>
+</div>
+{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-    <h3 class="text-xl font-semibold">Movimentações do Programa: {{ conta.programa.nome }} — {{ titular_tipo }}: {{ titular_nome }}</h3>
-    <div class="flex gap-2">
-        <a href="{% url 'admin_transferir_pontos' conta.id %}" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded font-bold">Transferir pontos</a>
-        <a href="{% url 'admin_nova_movimentacao' conta.id %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">+ Nova Movimentação</a>
-    </div>
-</div>
+<section class="surface-card stacked">
     {% if conta.programa.is_vinculado %}
-    <div class="bg-amber-100 text-amber-800 p-3 rounded mb-4">
+    <div class="alert alert-warning bg-amber-100 text-amber-800 border border-amber-200">
         Este programa é vinculado a <strong>{{ conta_base.programa.nome }}</strong>. O saldo e as movimentações são compartilhados e só podem ser alterados pelo programa base.
         <a class="underline text-amber-900 font-semibold" href="{% url 'admin_movimentacoes' conta_base.id %}">Ir para o programa base</a>
     </div>
     {% endif %}
-    <table class="min-w-full text-sm">
-        <thead class="bg-zinc-700 text-zinc-200">
-            <tr>
-                <th class="p-2 text-left font-medium">Data</th>
-                <th class="p-2 text-left font-medium">Pontos</th>
-                <th class="p-2 text-left font-medium">Valor Pago</th>
-                <th class="p-2 text-left font-medium">Descrição</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for mov in movimentacoes %}
-            <tr class="border-b border-zinc-700">
-                <td class="p-2">{{ mov.data|date:"d/m/Y" }}</td>
-                <td class="p-2">{{ mov.pontos }}</td>
-                <td class="p-2">R$ {{ mov.valor_pago|floatformat:2 }}</td>
-                <td class="p-2">{{ mov.descricao }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="4" class="text-center text-red-400 py-4">Nenhuma movimentação lançada.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% if titular_programas_url %}
-<div class="mt-4">
-    <a href="{{ titular_programas_url }}" class="bg-zinc-600 hover:bg-zinc-700 text-white px-4 py-2 rounded">Voltar para Programas</a>
-</div>
-{% endif %}
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Pontos</th>
+                    <th>Valor Pago</th>
+                    <th>Descrição</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mov in movimentacoes %}
+                <tr>
+                    <td>{{ mov.data|date:"d/m/Y" }}</td>
+                    <td>{{ mov.pontos }}</td>
+                    <td>R$ {{ mov.valor_pago|floatformat:2 }}</td>
+                    <td>{{ mov.descricao }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center text-red-400 py-4">Nenhuma movimentação lançada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if titular_programas_url %}
+    <div class="form-actions justify-between">
+        <div></div>
+        <a href="{{ titular_programas_url }}" class="btn btn-ghost">Voltar para Programas</a>
+    </div>
+    {% endif %}
+</section>
 {% endblock %}
