@@ -217,6 +217,11 @@ def nova_emissao(request):
                 conta = ContaFidelidade.objects.filter(
                     cliente=emissao.cliente, programa=emissao.programa
                 ).select_related("programa").first()
+            valor_medio_milheiro = None
+            if conta:
+                valor_medio_milheiro = conta.valor_medio_por_mil
+                if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
+                    valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
             if not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
                 messages.error(
@@ -225,7 +230,7 @@ def nova_emissao(request):
                 )
             if form.errors:
                 form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
-            elif emissao.pontos_utilizados and (not conta.valor_medio_por_mil or conta.valor_medio_por_mil <= 0):
+            elif emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
                 form.add_error(
                     "programa",
                     "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
@@ -236,7 +241,7 @@ def nova_emissao(request):
                 )
             else:
                 valor_referencia_pontos = calcular_valor_referencia_pontos(
-                    emissao.pontos_utilizados or 0, conta.valor_medio_por_mil
+                    emissao.pontos_utilizados or 0, valor_medio_milheiro
                 )
                 emissao.valor_referencia_pontos = valor_referencia_pontos
                 emissao.economia_obtida = calcular_economia(emissao, valor_referencia_pontos)
@@ -316,6 +321,11 @@ def editar_emissao(request, emissao_id):
                 conta = ContaFidelidade.objects.filter(
                     cliente=emissao.cliente, programa=emissao.programa
                 ).select_related("programa").first()
+            valor_medio_milheiro = None
+            if conta:
+                valor_medio_milheiro = conta.valor_medio_por_mil
+                if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
+                    valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
             if not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
                 messages.error(
@@ -324,7 +334,7 @@ def editar_emissao(request, emissao_id):
                 )
             if form.errors:
                 form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
-            elif emissao.pontos_utilizados and (not conta.valor_medio_por_mil or conta.valor_medio_por_mil <= 0):
+            elif emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
                 form.add_error(
                     "programa",
                     "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
@@ -335,7 +345,7 @@ def editar_emissao(request, emissao_id):
                 )
             else:
                 valor_referencia_pontos = calcular_valor_referencia_pontos(
-                    emissao.pontos_utilizados or 0, conta.valor_medio_por_mil
+                    emissao.pontos_utilizados or 0, valor_medio_milheiro
                 )
                 emissao.valor_referencia_pontos = valor_referencia_pontos
                 emissao.economia_obtida = calcular_economia(emissao, valor_referencia_pontos)

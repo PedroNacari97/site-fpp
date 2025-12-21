@@ -87,13 +87,28 @@ class NovaEmissaoViewTest(TestCase):
         self.assertRedirects(response, reverse("admin_emissoes"))
         self.assertTrue(EmissaoPassagem.objects.filter(conta_administrada=conta_adm).exists())
 
-    def test_nova_emissao_blocks_when_milheiro_missing_with_pontos(self):
+    def test_nova_emissao_allows_pontos_with_program_preco_medio(self):
         ContaFidelidade.objects.create(cliente=self.cliente, programa=self.programa)
         self._login()
 
         response = self.client.post(
             self.url,
             data=self._post_payload({"pontos_utilizados": "1000"}),
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, reverse("admin_emissoes"))
+        self.assertTrue(EmissaoPassagem.objects.exists())
+
+    def test_nova_emissao_blocks_when_sem_valor_medio_ou_preco(self):
+        programa_sem_preco = ProgramaFidelidade.objects.create(nome="Programa Sem Preço", preco_medio_milheiro=0)
+        ContaFidelidade.objects.create(cliente=self.cliente, programa=programa_sem_preco)
+        self._login()
+
+        response = self.client.post(
+            self.url,
+            data=self._post_payload({"programa": str(programa_sem_preco.id), "pontos_utilizados": "1000"}),
             follow=True,
         )
 
