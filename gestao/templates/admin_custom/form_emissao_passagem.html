@@ -41,11 +41,11 @@
     </div>
     <div class="form-group">
         <div style="flex: 1;" id="cliente-wrapper">
-            <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente</label>
+            <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente (quem irá viajar)</label>
             {{ form.cliente }}
         </div>
-        <div style="flex: 1; display:none;" id="conta-adm-wrapper">
-            <label class="form-label" for="{{ form.conta_administrada.id_for_label }}">Conta Administrada</label>
+        <div style="flex: 1;" id="conta-adm-wrapper">
+            <label class="form-label" for="{{ form.conta_administrada.id_for_label }}">Conta Administrada (origem dos pontos – opcional)</label>
             {{ form.conta_administrada }}
         </div>
     </div>
@@ -220,7 +220,10 @@ function updateProgramaInfo() {
     const programas = getProgramasDisponiveis();
     const selected = programas.find(p => String(p.id) === (programaSelect ? programaSelect.value : ""));
     if (selected) {
-        programaInfo.textContent = `Saldo: ${selected.saldo} pontos • Custo médio: R$ ${Number(selected.valor_medio || 0).toFixed(2)}`;
+        const cpfsTxt = selected.cpfs_total === null || selected.cpfs_total === undefined
+            ? "CPFs disponíveis: ilimitado"
+            : `CPFs disponíveis: ${selected.cpfs_disponiveis} de ${selected.cpfs_total}`;
+        programaInfo.textContent = `Saldo: ${selected.saldo} pontos • Custo médio: R$ ${Number(selected.valor_medio || 0).toFixed(2)} • ${cpfsTxt}`;
     } else if (programas.length) {
         programaInfo.textContent = "Nenhum programa disponível para o titular selecionado.";
     } else {
@@ -265,13 +268,8 @@ function recalcValoresFinanceiros() {
 function toggleTitularFields() {
     const tipo = tipoTitularSelect ? tipoTitularSelect.value : "cliente";
     if (clienteWrapper && contaAdmWrapper) {
-        if (tipo === "administrada") {
-            clienteWrapper.style.display = "none";
-            contaAdmWrapper.style.display = "block";
-        } else {
-            clienteWrapper.style.display = "block";
-            contaAdmWrapper.style.display = "none";
-        }
+        clienteWrapper.style.display = "block";
+        contaAdmWrapper.style.display = tipo === "administrada" ? "block" : "none";
     }
     updateProgramaOptions();
 }

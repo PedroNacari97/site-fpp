@@ -61,8 +61,8 @@ class EmissaoPassagem(models.Model):
 
     def clean(self):
         super().clean()
-        if bool(self.cliente) == bool(self.conta_administrada):
-            raise ValidationError("Informe um cliente ou uma conta administrada, mas não ambos.")
+        if not self.cliente:
+            raise ValidationError({"cliente": "Selecione o cliente que irá viajar."})
 
     def save(self, *args, **kwargs):
         self.qtd_passageiros = self.qtd_adultos + self.qtd_criancas + self.qtd_bebes
