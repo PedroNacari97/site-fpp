@@ -208,10 +208,18 @@ def nova_cotacao_voo(request):
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
             if form.errors:
                 form.add_error(None, "Revise os campos destacados antes de salvar a cotação.")
+                messages.error(
+                    request,
+                    "Não foi possível salvar a cotação: revise o programa e os campos destacados.",
+                )
             elif form.cleaned_data.get("milhas") and (not conta.valor_medio_por_mil or conta.valor_medio_por_mil <= 0):
                 form.add_error(
                     "programa",
                     "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
+                )
+                messages.error(
+                    request,
+                    "Não foi possível salvar a cotação: valor médio do milheiro ausente para o titular.",
                 )
             else:
                 cot = form.save()
@@ -311,10 +319,18 @@ def editar_cotacao_voo(request, cotacao_id):
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
             if form.errors:
                 form.add_error(None, "Revise os campos destacados antes de salvar a cotação.")
+                messages.error(
+                    request,
+                    "Não foi possível salvar a cotação: revise o programa e os campos destacados.",
+                )
             elif form.cleaned_data.get("milhas") and (not conta.valor_medio_por_mil or conta.valor_medio_por_mil <= 0):
                 form.add_error(
                     "programa",
                     "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
+                )
+                messages.error(
+                    request,
+                    "Não foi possível salvar a cotação: valor médio do milheiro ausente para o titular.",
                 )
             else:
                 cot = form.save()
