@@ -124,9 +124,6 @@ def admin_nova_movimentacao(request, conta_id):
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     if empresa and conta.empresa and conta.empresa != empresa:
         return render(request, "sem_permissao.html")
-    if conta.conta_administrada_id:
-        messages.error(request, "Movimentações manuais não estão disponíveis para contas administradas.")
-        return redirect("admin_movimentacoes", conta_id=conta.id)
     if conta.programa.is_vinculado:
         base_conta = conta.conta_saldo()
         messages.error(
@@ -134,7 +131,7 @@ def admin_nova_movimentacao(request, conta_id):
             "O saldo é controlado pelo programa base. Crie movimentações direto no programa principal.",
         )
         return redirect("admin_movimentacoes", conta_id=base_conta.id)
-    if not conta.cliente.ativo:
+    if conta.cliente_id and not conta.cliente.ativo:
         return HttpResponse("Cliente inativo", status=403)
     if request.method == "POST":
         form = NovaMovimentacaoForm(request.POST)

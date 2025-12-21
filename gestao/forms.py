@@ -32,6 +32,9 @@ class ContaFidelidadeForm(forms.ModelForm):
             "cliente",
             "conta_administrada",
             "programa",
+            "login_programa",
+            "senha_programa",
+            "titular_programa_info",
             "clube_periodicidade",
             "pontos_clube_mes",
             "valor_assinatura_clube",
@@ -55,6 +58,27 @@ class ContaFidelidadeForm(forms.ModelForm):
                     "maxlength": "10",
                 }
             ),
+            "login_programa": forms.TextInput(
+                attrs={
+                    "placeholder": "Login do titular",
+                    "class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2",
+                }
+            ),
+            "senha_programa": forms.PasswordInput(
+                render_value=True,
+                attrs={
+                    "placeholder": "Senha do titular",
+                    "class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2",
+                },
+            ),
+            "titular_programa_info": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "placeholder": "Dados adicionais do titular (nome, CPF, observações de resgate)",
+                    "class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2",
+                    "style": "resize:vertical;",
+                }
+            ),
         }
 
     def __init__(self, *args, **kwargs):
@@ -70,6 +94,9 @@ class ContaFidelidadeForm(forms.ModelForm):
             conta_adm_qs = conta_adm_qs | ContaAdministrada.objects.filter(pk=self.instance.conta_administrada_id)
         self.fields["cliente"].queryset = cliente_qs
         self.fields["conta_administrada"].queryset = conta_adm_qs
+        self.fields["login_programa"].label = "Login (titular do programa)"
+        self.fields["senha_programa"].label = "Senha (titular do programa)"
+        self.fields["titular_programa_info"].label = "Dados do titular"
 
     def clean(self):
         cleaned = super().clean()

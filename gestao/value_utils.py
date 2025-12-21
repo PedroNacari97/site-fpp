@@ -46,4 +46,14 @@ def get_valor_referencia_from_map(
         if valor is not None:
             return valor
 
+    # Sem valor de mercado cadastrado: usa o preço configurado do programa
+    # (ou do programa base, se existir). Evita cair silenciosamente para zero.
+    if programa.is_vinculado and programa.programa_base:
+        base_preco = getattr(programa.programa_base, "preco_medio_milheiro", None)
+        if base_preco:
+            return Decimal(base_preco)
+
+    if getattr(programa, "preco_medio_milheiro", None):
+        return Decimal(programa.preco_medio_milheiro)
+
     return Decimal("0")
