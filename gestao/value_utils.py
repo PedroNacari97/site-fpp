@@ -39,7 +39,7 @@ def get_valor_referencia_from_map(
 
     candidatos = [programa.nome]
     if programa.is_vinculado and programa.programa_base:
-        candidatos.insert(0, programa.programa_base.nome)
+        candidatos.append(programa.programa_base.nome)
 
     for nome in candidatos:
         valor = valores_map.get(_normalize_program_name(nome))

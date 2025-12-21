@@ -35,11 +35,13 @@ class ContaFidelidadeForm(forms.ModelForm):
             "login_programa",
             "senha_programa",
             "titular_programa_info",
+            "observacoes_programa",
             "clube_periodicidade",
             "pontos_clube_mes",
             "valor_assinatura_clube",
             "data_inicio_clube",
             "validade",
+            "quantidade_cpfs_disponiveis",
         ]
         widgets = {
             "data_inicio_clube": forms.TextInput(
@@ -77,6 +79,21 @@ class ContaFidelidadeForm(forms.ModelForm):
                     "placeholder": "Dados adicionais do titular (nome, CPF, observações de resgate)",
                     "class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2",
                     "style": "resize:vertical;",
+                }
+            ),
+            "observacoes_programa": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "placeholder": "Observações gerais sobre o uso desta conta (limitações, preferências de resgate, etc.)",
+                    "class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2",
+                    "style": "resize:vertical;",
+                }
+            ),
+            "quantidade_cpfs_disponiveis": forms.NumberInput(
+                attrs={
+                    "class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2",
+                    "min": 0,
+                    "placeholder": "Deixe vazio para ilimitado",
                 }
             ),
         }
@@ -263,12 +280,8 @@ class EmissaoPassagemForm(forms.ModelForm):
 
         selected_tipo = self.data.get("tipo_titular") or ("administrada" if getattr(self.instance, "conta_administrada_id", None) else "cliente")
         self.initial.setdefault("tipo_titular", selected_tipo)
-        if selected_tipo == "administrada":
-            self.fields["cliente"].required = False
-            self.fields["conta_administrada"].required = True
-        else:
-            self.fields["conta_administrada"].required = False
-            self.fields["cliente"].required = True
+        self.fields["cliente"].required = True
+        self.fields["conta_administrada"].required = selected_tipo == "administrada"
 
         titular_id = None
         if selected_tipo == "administrada":
@@ -291,14 +304,13 @@ class EmissaoPassagemForm(forms.ModelForm):
         tipo = cleaned.get("tipo_titular")
         cliente = cleaned.get("cliente")
         conta_adm = cleaned.get("conta_administrada")
+        if not cliente:
+            raise forms.ValidationError("Selecione o cliente que irá viajar.")
         if tipo == "administrada":
-            cleaned["cliente"] = None
             if not conta_adm:
-                raise forms.ValidationError("Selecione uma conta administrada.")
+                raise forms.ValidationError("Selecione uma conta administrada para usar pontos ou escolha 'Conta de Cliente'.")
         else:
             cleaned["conta_administrada"] = None
-            if not cliente:
-                raise forms.ValidationError("Selecione um cliente.")
         return cleaned
 
     class Meta:
@@ -384,12 +396,8 @@ class CotacaoVooForm(forms.ModelForm):
 
         selected_tipo = self.data.get("tipo_titular") or ("administrada" if getattr(self.instance, "conta_administrada_id", None) else "cliente")
         self.initial.setdefault("tipo_titular", selected_tipo)
-        if selected_tipo == "administrada":
-            self.fields["cliente"].required = False
-            self.fields["conta_administrada"].required = True
-        else:
-            self.fields["conta_administrada"].required = False
-            self.fields["cliente"].required = True
+        self.fields["cliente"].required = True
+        self.fields["conta_administrada"].required = selected_tipo == "administrada"
 
         titular_id = None
         if selected_tipo == "administrada":
@@ -412,14 +420,13 @@ class CotacaoVooForm(forms.ModelForm):
         tipo = cleaned.get("tipo_titular")
         cliente = cleaned.get("cliente")
         conta_adm = cleaned.get("conta_administrada")
+        if not cliente:
+            raise forms.ValidationError("Selecione o cliente que irá viajar.")
         if tipo == "administrada":
-            cleaned["cliente"] = None
             if not conta_adm:
-                raise forms.ValidationError("Selecione uma conta administrada.")
+                raise forms.ValidationError("Selecione uma conta administrada para usar pontos ou escolha 'Conta de Cliente'.")
         else:
             cleaned["conta_administrada"] = None
-            if not cliente:
-                raise forms.ValidationError("Selecione um cliente.")
         return cleaned
 
     class Meta:

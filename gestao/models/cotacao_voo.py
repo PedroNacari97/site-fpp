@@ -64,8 +64,8 @@ class CotacaoVoo(models.Model):
 
     def clean(self):
         super().clean()
-        if bool(self.cliente) == bool(self.conta_administrada):
-            raise ValidationError("Informe um cliente ou uma conta administrada, mas não ambos.")
+        if not self.cliente:
+            raise ValidationError({"cliente": "Selecione o cliente que irá viajar."})
 
     def calcular_valores(self):
         base = (Decimal(self.milhas) / Decimal('1000')) * Decimal(self.valor_milheiro) + Decimal(self.taxas)

@@ -26,6 +26,15 @@ class ContaFidelidade(models.Model):
         blank=True,
         help_text="Informações adicionais do titular (ex.: nome completo, CPF, dados de resgate)",
     )
+    observacoes_programa = models.TextField(
+        blank=True,
+        help_text="Observações gerais sobre o uso do programa para esta conta",
+    )
+    quantidade_cpfs_disponiveis = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Quantidade de CPFs que ainda podem ser utilizados com este programa. Deixe vazio para ilimitado.",
+    )
 
     def clean(self):
         super().clean()
@@ -93,6 +102,31 @@ class ContaFidelidade(models.Model):
         conta_base = self.conta_saldo()
         movs = conta_base.movimentacoes.all()
         return sum(float(m.valor_pago) for m in movs) if movs.exists() else 0
+
+    @property
+    def cpfs_utilizados(self):
+        if self.quantidade_cpfs_disponiveis is None:
+            return None
+        from gestao.models import Passageiro
+
+        filtros = {"emissao__programa_id": self.programa_id}
+        if self.cliente_id:
+            filtros["emissao__cliente_id"] = self.cliente_id
+        if self.conta_administrada_id:
+            filtros["emissao__conta_administrada_id"] = self.conta_administrada_id
+        return (
+            Passageiro.objects.filter(**filtros)
+            .values("documento")
+            .distinct()
+            .count()
+        )
+
+    @property
+    def cpfs_disponiveis(self):
+        if self.quantidade_cpfs_disponiveis is None:
+            return None
+        usados = self.cpfs_utilizados or 0
+        return max(self.quantidade_cpfs_disponiveis - usados, 0)
 
     @property
     def movimentacoes_compartilhadas(self):
