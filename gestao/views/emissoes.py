@@ -219,12 +219,20 @@ def nova_emissao(request):
                 ).select_related("programa").first()
             if not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
+                messages.error(
+                    request,
+                    "Não foi possível salvar a emissão: programa não vinculado ao titular selecionado.",
+                )
             if form.errors:
                 form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
             elif emissao.pontos_utilizados and (not conta.valor_medio_por_mil or conta.valor_medio_por_mil <= 0):
                 form.add_error(
                     "programa",
                     "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
+                )
+                messages.error(
+                    request,
+                    "Não foi possível salvar a emissão: valor médio do milheiro ausente para o titular.",
                 )
             else:
                 valor_referencia_pontos = calcular_valor_referencia_pontos(
@@ -249,6 +257,10 @@ def nova_emissao(request):
                 )
                 messages.success(request, "Emissão salva com sucesso.")
                 return redirect("admin_emissoes")
+            messages.error(
+                request,
+                "Não foi possível salvar a emissão. Corrija os campos destacados e tente novamente.",
+            )
         else:
             messages.error(
                 request,
@@ -306,12 +318,20 @@ def editar_emissao(request, emissao_id):
                 ).select_related("programa").first()
             if not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
+                messages.error(
+                    request,
+                    "Não foi possível salvar a emissão: programa não vinculado ao titular selecionado.",
+                )
             if form.errors:
                 form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
             elif emissao.pontos_utilizados and (not conta.valor_medio_por_mil or conta.valor_medio_por_mil <= 0):
                 form.add_error(
                     "programa",
                     "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
+                )
+                messages.error(
+                    request,
+                    "Não foi possível salvar a emissão: valor médio do milheiro ausente para o titular.",
                 )
             else:
                 valor_referencia_pontos = calcular_valor_referencia_pontos(
@@ -338,6 +358,15 @@ def editar_emissao(request, emissao_id):
                 )
                 messages.success(request, "Emissão atualizada com sucesso.")
                 return redirect("admin_emissoes")
+            messages.error(
+                request,
+                "Não foi possível salvar a emissão. Corrija os campos destacados e tente novamente.",
+            )
+        else:
+            messages.error(
+                request,
+                "Não foi possível salvar a emissão. Corrija os campos destacados e tente novamente.",
+            )
     else:
         form = EmissaoPassagemForm(instance=emissao, empresa=empresa)
     emissoes = EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida")
