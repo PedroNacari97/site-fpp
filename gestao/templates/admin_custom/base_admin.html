@@ -13,9 +13,9 @@
     <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-gray-100 text-black flex" style="font-family: 'Open Sans', sans-serif;">
-        <aside class="bg-[#0f172a] w-64 min-h-screen p-6 fixed shadow text-white transition-all duration-300 relative">
-        <button id="sidebarToggle" class="absolute top-4 right-4 text-white lg:hidden" aria-label="Alternar menu">☰</button>
+<body class="bg-gray-100 text-black flex min-h-screen" style="font-family: 'Open Sans', sans-serif;">
+        <aside data-sidebar aria-hidden="true" class="bg-[#0f172a] w-64 md:w-[200px] lg:w-64 md:fixed md:inset-y-0 md:left-0 md:z-40 lg:static p-6 md:p-4 min-h-screen shadow text-white transition-all duration-300 transform -translate-x-full md:translate-x-0">
+        <button class="absolute top-4 right-4 text-white md:hidden" data-sidebar-toggle aria-label="Alternar menu" aria-expanded="false">☰</button>
         <div class="font-bold tracking-wide mb-8 pl-2 sidebar-label">
             Gestão Admin
         </div>
@@ -55,11 +55,12 @@
              <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'logout' %}"><span class="sidebar-label">Sair</span></a>
         </nav>
     </aside>
-     <main class="flex-1 ml-64 p-8 transition-all duration-300">
+    <div data-sidebar-overlay class="fixed inset-0 bg-black/40 z-30 hidden md:hidden"></div>
+     <main class="flex-1 ml-0 md:ml-[200px] lg:ml-64 p-4 md:p-6 lg:p-8 transition-all duration-300 min-h-screen">
         <div class="page-shell">
             <header class="topbar">
                 <div class="flex items-center gap-3">
-                    <button id="sidebarToggle" class="text-gray-700 lg:hidden" aria-label="Alternar menu">☰</button>
+                    <button class="text-gray-700 md:hidden" data-sidebar-toggle aria-label="Alternar menu" aria-expanded="false">☰</button>
                     <div>
                         <p class="eyebrow mb-1">Administração</p>
                         <h1>Gestão de Pontos</h1>

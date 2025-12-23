@@ -20,8 +20,8 @@
             <button class="btn btn-ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
         </div>
         <div class="filter-body is-open" data-filter-panel>
-            <form method="get" class="form-grid">
-                <div class="form-field">
+            <form method="get" class="form-grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 md:items-end">
+                <div class="form-field md:col-span-2 lg:col-span-3">
                     <label class="form-label" for="busca">Nome ou usuário</label>
                     <input
                         type="text"
@@ -31,9 +31,9 @@
                         placeholder="Buscar..."
                     />
                 </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Buscar</button>
-                    <a href="{% url 'admin_clientes' %}" class="btn btn-ghost">Limpar</a>
+                <div class="form-actions flex gap-2 md:justify-end">
+                    <button type="submit" class="btn btn-primary flex-1 md:flex-none">Buscar</button>
+                    <a href="{% url 'admin_clientes' %}" class="btn btn-ghost flex-1 md:flex-none">Limpar</a>
                 </div>
             </form>
         </div>
@@ -53,7 +53,7 @@
                 <thead>
                     <tr>
                         <th>Nome</th>
-                        <th>Usuário</th>
+                        <th class="hidden md:table-cell">Usuário</th>
                         <th>Status</th>
                         <th>Ações</th>
                     </tr>
@@ -62,7 +62,7 @@
                     {% for cliente in page_obj %}
                     <tr>
                         <td>{{ cliente.usuario.first_name|default:cliente.usuario.username }}</td>
-                        <td>{{ cliente.usuario.username }}</td>
+                        <td class="hidden md:table-cell">{{ cliente.usuario.username }}</td>
                         <td>
                             {% if cliente.ativo %}
                                 <span class="pill pill-success">Ativo</span>
@@ -71,10 +71,13 @@
                             {% endif %}
                         </td>
                         <td>
-                            <div class="flex gap-2">
-                                <a class="btn btn-link" href="{% url 'admin_visualizar_cliente' cliente.id %}">Ver</a>
-                                <a class="btn btn-link" href="{% url 'admin_editar_cliente' cliente.id %}">Editar</a>
-                            </div>
+                            <details class="dropdown">
+                                <summary class="btn btn-icon" aria-label="Ações do cliente">⋮</summary>
+                                <div class="dropdown-panel">
+                                    <a class="" href="{% url 'admin_visualizar_cliente' cliente.id %}">👁️ Ver</a>
+                                    <a class="" href="{% url 'admin_editar_cliente' cliente.id %}">✏️ Editar</a>
+                                </div>
+                            </details>
                         </td>
                     </tr>
                     {% empty %}
