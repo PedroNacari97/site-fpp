@@ -5,14 +5,17 @@
 {% block menu_emissoes %}bg-zinc-700 text-white{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
+<script src="{% static 'gestao/js/form_save_handler.js' %}"></script>
 {% endblock %}
 {% block content %}
 <div class="form-wrapper">
-<form method="post" class="form-shell">
+<form method="post" class="form-shell" novalidate>
     {% csrf_token %}
+    
+    <!-- Mensagens de Erro -->
     {% if form.errors %}
-    <div class="p-4 mb-4 rounded border border-red-200 bg-red-50 text-red-700">
-        <p class="font-semibold mb-2">Não foi possível salvar. Corrija os pontos abaixo:</p>
+    <div class="p-4 mb-4 rounded border border-red-200 bg-red-50 text-red-700" style="border-radius: 0.75rem;">
+        <p class="font-semibold mb-2">❌ Não foi possível salvar. Corrija os pontos abaixo:</p>
         <ul class="list-disc pl-5 space-y-1">
             {% for field in form %}
                 {% for error in field.errors %}
@@ -26,11 +29,13 @@
     </div>
     {% endif %}
 
+    <!-- Cabeçalho do Formulário -->
     <div>
         <div class="form-title">{% if form.instance.pk %}Editar Emissão{% else %}Nova Emissão{% endif %}</div>
         <p class="form-subtitle">Fluxo organizado: titular, programa, voos, passageiros, escalas e valores.</p>
     </div>
 
+    <!-- Seção 1: Identificação -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -41,12 +46,12 @@
         </div>
         <div class="section-grid">
             <div>
-                <label class="form-label" for="{{ form.tipo_titular.id_for_label }}">Tipo de emissão</label>
+                <label class="form-label" for="{{ form.tipo_titular.id_for_label }}">Tipo de emissão <span style="color: #dc2626;">*</span></label>
                 {{ form.tipo_titular }}
                 <p class="helper-text">Defina se a emissão usa um cliente ou uma conta administrada.</p>
             </div>
             <div id="cliente-wrapper">
-                <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente (quem irá viajar)</label>
+                <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente (quem irá viajar) <span style="color: #dc2626;">*</span></label>
                 {{ form.cliente }}
             </div>
             <div id="conta-adm-wrapper">
@@ -57,6 +62,7 @@
         </div>
     </div>
 
+    <!-- Seção 2: Programa de Pontos -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -67,13 +73,14 @@
         </div>
         <div class="section-grid">
             <div>
-                <label class="form-label" for="{{ form.programa.id_for_label }}">Programa</label>
+                <label class="form-label" for="{{ form.programa.id_for_label }}">Programa <span style="color: #dc2626;">*</span></label>
                 {{ form.programa }}
                 <p id="programa-info" class="helper-text mt-1"></p>
             </div>
         </div>
     </div>
 
+    <!-- Seção 3: Detalhes do Voo -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -82,26 +89,31 @@
                 <p class="section-card__description">Siga a ordem natural de preenchimento.</p>
             </div>
         </div>
+        
+        <!-- Voo de Ida -->
         <div>
             <div class="section-title">Voo de ida</div>
             <div class="form-group">
                 <div>
-                    <label class="form-label" for="{{ form.aeroporto_partida.id_for_label }}">Aeroporto de partida</label>
+                    <label class="form-label" for="{{ form.aeroporto_partida.id_for_label }}">Aeroporto de partida <span style="color: #dc2626;">*</span></label>
                     {{ form.aeroporto_partida }}
                 </div>
                 <div>
-                    <label class="form-label" for="{{ form.aeroporto_destino.id_for_label }}">Aeroporto de destino</label>
+                    <label class="form-label" for="{{ form.aeroporto_destino.id_for_label }}">Aeroporto de destino <span style="color: #dc2626;">*</span></label>
                     {{ form.aeroporto_destino }}
                 </div>
             </div>
             <div class="form-group">
                 <div>
-                    <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida</label>
+                    <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span style="color: #dc2626;">*</span></label>
                     {{ form.data_ida }}
                 </div>
             </div>
         </div>
+
         <hr class="section-divider" />
+
+        <!-- Voo de Volta -->
         <div>
             <div class="section-title">Voo de volta (quando existir)</div>
             <div class="form-group">
@@ -114,6 +126,7 @@
         </div>
     </div>
 
+    <!-- Seção 4: Passageiros -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -124,7 +137,7 @@
         </div>
         <div class="form-group">
             <div>
-                <label class="form-label" for="{{ form.qtd_adultos.id_for_label }}">Adultos</label>
+                <label class="form-label" for="{{ form.qtd_adultos.id_for_label }}">Adultos <span style="color: #dc2626;">*</span></label>
                 {{ form.qtd_adultos }}
             </div>
             <div>
@@ -144,6 +157,7 @@
         </div>
     </div>
 
+    <!-- Seção 5: Escalas -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -153,6 +167,7 @@
             </div>
         </div>
         <div class="scale-grid">
+            <!-- Escalas de Ida -->
             <div class="scale-card">
                 <div class="section-title">Escalas do voo de ida</div>
                 <div class="toggle-row">
@@ -162,7 +177,7 @@
                         <p class="helper-text">Habilite para registrar conexões e tempos de espera.</p>
                     </div>
                 </div>
-                <div id="escala-ida-wrapper">
+                <div id="escala-ida-wrapper" style="display: none;">
                     <div class="form-group">
                         <div>
                             <label class="form-label" for="id_qtd_escalas_ida">Quantidade de escalas na ida</label>
@@ -173,6 +188,8 @@
                     <div id="escalas-ida-container"></div>
                 </div>
             </div>
+
+            <!-- Escalas de Volta -->
             <div class="scale-card">
                 <div class="section-title">Escalas do voo de volta</div>
                 <div class="toggle-row">
@@ -182,7 +199,7 @@
                         <p class="helper-text">Controle o retorno separadamente.</p>
                     </div>
                 </div>
-                <div id="escala-volta-wrapper">
+                <div id="escala-volta-wrapper" style="display: none;">
                     <div class="form-group">
                         <div>
                             <label class="form-label" for="id_qtd_escalas_volta">Quantidade de escalas na volta</label>
@@ -196,6 +213,7 @@
         </div>
     </div>
 
+    <!-- Seção 6: Companhia e Localizador -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -206,16 +224,17 @@
         </div>
         <div class="form-group">
             <div>
-                <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea</label>
+                <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea <span style="color: #dc2626;">*</span></label>
                 {{ form.companhia_aerea }}
             </div>
             <div>
-                <label class="form-label" for="{{ form.localizador.id_for_label }}">Localizador</label>
+                <label class="form-label" for="{{ form.localizador.id_for_label }}">Localizador <span style="color: #dc2626;">*</span></label>
                 {{ form.localizador }}
             </div>
         </div>
     </div>
 
+    <!-- Seção 7: Valores e Pontos -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -226,11 +245,11 @@
         </div>
         <div class="form-group">
             <div>
-                <label class="form-label" for="{{ form.valor_referencia.id_for_label }}">Valor de referência (R$)</label>
+                <label class="form-label" for="{{ form.valor_referencia.id_for_label }}">Valor de referência (R$) <span style="color: #dc2626;">*</span></label>
                 {{ form.valor_referencia }}
             </div>
             <div>
-                <label class="form-label" for="{{ form.valor_pago.id_for_label }}">Valor pago (R$)</label>
+                <label class="form-label" for="{{ form.valor_pago.id_for_label }}">Valor pago (R$) <span style="color: #dc2626;">*</span></label>
                 {{ form.valor_pago }}
             </div>
         </div>
@@ -250,6 +269,7 @@
         </div>
     </div>
 
+    <!-- Seção 8: Observações -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -264,6 +284,7 @@
         </div>
     </div>
 
+    <!-- Seção 9: Resumo Visual -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -292,9 +313,10 @@
         </div>
     </div>
 
+    <!-- Botões de Ação -->
     <div class="form-actions">
         <a href="{% url 'admin_emissoes' %}" class="btn btn-secondary">Cancelar</a>
-        <button class="btn-primary" type="submit">Salvar emissão</button>
+        <button class="btn-primary" type="submit">💾 Salvar emissão</button>
     </div>
 </form>
 </div>
@@ -416,6 +438,7 @@ if (valorReferenciaField) {
 if (valorPagoField) {
     valorPagoField.addEventListener('input', recalcValoresFinanceiros);
 }
+
 function renderPassengerForms() {
     const prev = [];
     passageirosContainer.querySelectorAll('.passageiro-fields').forEach(div => {
@@ -463,6 +486,7 @@ function renderPassengerForms() {
         }
     });
 }
+
 ['id_qtd_adultos','id_qtd_criancas','id_qtd_bebes'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.addEventListener('input', renderPassengerForms);
@@ -545,14 +569,14 @@ function initEscalaSection(tipo, data){
     qtdInput.addEventListener('input', renderEscalas);
     renderEscalas();
 }
+
 initEscalaSection('ida', escalasIdaData);
 initEscalaSection('volta', escalasVoltaData);
 toggleTitularFields();
 updateProgramaOptions();
-recalcValoresFinanceiros();
 
 function updateResumoVisual(){
-    const origem = document.getElementById('id_aeroporto_partida');
+    const partida = document.getElementById('id_aeroporto_partida');
     const destino = document.getElementById('id_aeroporto_destino');
     const dataIda = document.getElementById('id_data_ida');
     const dataVolta = document.getElementById('id_data_volta');
@@ -561,10 +585,11 @@ function updateResumoVisual(){
     const bebes = document.getElementById('id_qtd_bebes');
     const valorRef = document.getElementById('id_valor_referencia');
     const valorPago = document.getElementById('id_valor_pago');
+    const pontos = document.getElementById('id_pontos_utilizados');
 
     if(resumoTrechos){
-        if(origem && destino && origem.value && destino.value){
-            resumoTrechos.textContent = `${origem.options[origem.selectedIndex]?.text || origem.value} → ${destino.options[destino.selectedIndex]?.text || destino.value}`;
+        if(partida && partida.value && destino && destino.value){
+            resumoTrechos.textContent = `${partida.options[partida.selectedIndex]?.text || partida.value} → ${destino.options[destino.selectedIndex]?.text || destino.value}`;
         } else {
             resumoTrechos.textContent = "Preencha partida e destino.";
         }
@@ -575,16 +600,17 @@ function updateResumoVisual(){
         resumoDatas.textContent = `${idaTxt} • ${voltaTxt}`;
     }
     if(resumoPassageiros){
-        const ad = parseInt(adultos && adultos.value ? adultos.value : 0) || 0;
-        const cr = parseInt(criancas && criancas.value ? criancas.value : 0) || 0;
-        const bb = parseInt(bebes && bebes.value ? bebes.value : 0) || 0;
-        resumoPassageiros.textContent = `${ad} adulto(s), ${cr} criança(s), ${bb} bebê(s)`;
+        const qtdAdultos = adultos && adultos.value ? parseInt(adultos.value) : 0;
+        const qtdCriancas = criancas && criancas.value ? parseInt(criancas.value) : 0;
+        const qtdBebes = bebes && bebes.value ? parseInt(bebes.value) : 0;
+        const total = qtdAdultos + qtdCriancas + qtdBebes;
+        resumoPassageiros.textContent = `${total} passageiro(s) (${qtdAdultos}A, ${qtdCriancas}C, ${qtdBebes}B)`;
     }
     if(resumoValores){
-        const refTxt = valorRef && valorRef.value ? `Ref.: R$ ${valorRef.value}` : "Ref. não informada";
-        const pagoTxt = valorPago && valorPago.value ? `Pago: R$ ${valorPago.value}` : "Pago não informado";
-        const pontosTxt = pontosField && pontosField.value ? `${pontosField.value} pontos` : "Pontos não informados";
-        resumoValores.textContent = `${refTxt} • ${pagoTxt} • ${pontosTxt}`;
+        const valorRefTxt = valorRef && valorRef.value ? `Ref: R$ ${valorRef.value}` : "Referência não informada";
+        const valorPagoTxt = valorPago && valorPago.value ? `Pago: R$ ${valorPago.value}` : "Valor não informado";
+        const pontosTxt = pontos && pontos.value ? `${pontos.value} pontos` : "Pontos não informados";
+        resumoValores.textContent = `${valorRefTxt} • ${valorPagoTxt} • ${pontosTxt}`;
     }
 }
 

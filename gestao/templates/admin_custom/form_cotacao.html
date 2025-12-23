@@ -5,14 +5,17 @@
 {% block menu_cotacoes_voo %}bg-zinc-700 text-white{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
+<script src="{% static 'gestao/js/form_save_handler.js' %}"></script>
 {% endblock %}
 {% block content %}
 <div class="form-wrapper">
-<form method="post" class="form-shell">
+<form method="post" class="form-shell" novalidate>
     {% csrf_token %}
+    
+    <!-- Mensagens de Erro -->
     {% if form.errors %}
-    <div class="p-4 mb-4 rounded border border-red-200 bg-red-50 text-red-700">
-        <p class="font-semibold mb-2">Não foi possível salvar. Corrija os pontos abaixo:</p>
+    <div class="p-4 mb-4 rounded border border-red-200 bg-red-50 text-red-700" style="border-radius: 0.75rem;">
+        <p class="font-semibold mb-2">❌ Não foi possível salvar. Corrija os pontos abaixo:</p>
         <ul class="list-disc pl-5 space-y-1">
             {% for field in form %}
                 {% for error in field.errors %}
@@ -26,11 +29,13 @@
     </div>
     {% endif %}
 
+    <!-- Cabeçalho do Formulário -->
     <div>
         <div class="form-title">{% if form.instance.pk %}Editar Cotação de Viagem{% else %}Formulário de Cotação de Viagem{% endif %}</div>
         <p class="form-subtitle">Organize a cotação em passos claros: titular, programa, voos, escalas, passageiros e valores.</p>
     </div>
 
+    <!-- Seção 1: Identificação -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -41,12 +46,12 @@
         </div>
         <div class="section-grid">
             <div>
-                <label class="form-label" for="{{ form.tipo_titular.id_for_label }}">Tipo de titular</label>
+                <label class="form-label" for="{{ form.tipo_titular.id_for_label }}">Tipo de titular <span style="color: #dc2626;">*</span></label>
                 {{ form.tipo_titular }}
                 <p class="helper-text">Escolha entre cliente direto ou conta administrada.</p>
             </div>
             <div id="cliente-wrapper">
-                <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente (quem irá viajar)</label>
+                <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente (quem irá viajar) <span style="color: #dc2626;">*</span></label>
                 {{ form.cliente }}
                 <p class="helper-text">Mostrado somente quando o titular for um cliente.</p>
             </div>
@@ -58,6 +63,7 @@
         </div>
     </div>
 
+    <!-- Seção 2: Programa de Pontos -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -68,13 +74,14 @@
         </div>
         <div class="section-grid">
             <div>
-                <label class="form-label" for="{{ form.programa.id_for_label }}">Programa selecionado</label>
+                <label class="form-label" for="{{ form.programa.id_for_label }}">Programa selecionado <span style="color: #dc2626;">*</span></label>
                 {{ form.programa }}
                 <p id="programa-info" class="helper-text mt-1"></p>
             </div>
         </div>
     </div>
 
+    <!-- Seção 3: Detalhes da Viagem -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -83,26 +90,31 @@
                 <p class="section-card__description">Preencha os trechos na ordem natural para evitar erros.</p>
             </div>
         </div>
+        
+        <!-- Voo de Ida -->
         <div>
             <div class="section-title">Voo de ida</div>
             <div class="form-group">
                 <div>
-                    <label class="form-label" for="{{ form.origem.id_for_label }}">Aeroporto de partida</label>
+                    <label class="form-label" for="{{ form.origem.id_for_label }}">Aeroporto de partida <span style="color: #dc2626;">*</span></label>
                     {{ form.origem }}
                 </div>
                 <div>
-                    <label class="form-label" for="{{ form.destino.id_for_label }}">Aeroporto de destino</label>
+                    <label class="form-label" for="{{ form.destino.id_for_label }}">Aeroporto de destino <span style="color: #dc2626;">*</span></label>
                     {{ form.destino }}
                 </div>
             </div>
             <div class="form-group">
                 <div>
-                    <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida</label>
+                    <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span style="color: #dc2626;">*</span></label>
                     {{ form.data_ida }}
                 </div>
             </div>
         </div>
+
         <hr class="section-divider" />
+
+        <!-- Voo de Volta -->
         <div>
             <div class="section-title">Voo de volta (quando existir)</div>
             <div class="form-group">
@@ -115,6 +127,7 @@
         </div>
     </div>
 
+    <!-- Seção 4: Passageiros -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -125,16 +138,17 @@
         </div>
         <div class="form-group">
             <div>
-                <label class="form-label" for="{{ form.qtd_passageiros.id_for_label }}">Quantidade de passageiros</label>
+                <label class="form-label" for="{{ form.qtd_passageiros.id_for_label }}">Quantidade de passageiros <span style="color: #dc2626;">*</span></label>
                 {{ form.qtd_passageiros }}
             </div>
             <div>
-                <label class="form-label" for="{{ form.classe.id_for_label }}">Classe</label>
+                <label class="form-label" for="{{ form.classe.id_for_label }}">Classe <span style="color: #dc2626;">*</span></label>
                 {{ form.classe }}
             </div>
         </div>
     </div>
 
+    <!-- Seção 5: Escalas -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -144,6 +158,7 @@
             </div>
         </div>
         <div class="scale-grid">
+            <!-- Escalas de Ida -->
             <div class="scale-card">
                 <div class="section-title">Escalas do voo de ida</div>
                 <div class="toggle-row">
@@ -153,7 +168,7 @@
                         <p class="helper-text">Habilite para registrar conexões e tempos de espera.</p>
                     </div>
                 </div>
-                <div id="escala-ida-wrapper">
+                <div id="escala-ida-wrapper" style="display: none;">
                     <div class="form-group">
                         <div>
                             <label class="form-label" for="id_qtd_escalas_ida">Quantidade de escalas na ida</label>
@@ -164,6 +179,8 @@
                     <div id="escalas-ida-container"></div>
                 </div>
             </div>
+
+            <!-- Escalas de Volta -->
             <div class="scale-card">
                 <div class="section-title">Escalas do voo de volta</div>
                 <div class="toggle-row">
@@ -173,7 +190,7 @@
                         <p class="helper-text">Configure as conexões do retorno sem afetar a ida.</p>
                     </div>
                 </div>
-                <div id="escala-volta-wrapper">
+                <div id="escala-volta-wrapper" style="display: none;">
                     <div class="form-group">
                         <div>
                             <label class="form-label" for="id_qtd_escalas_volta">Quantidade de escalas na volta</label>
@@ -187,6 +204,7 @@
         </div>
     </div>
 
+    <!-- Seção 6: Companhia e Observações -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -197,7 +215,7 @@
         </div>
         <div class="section-grid">
             <div>
-                <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea</label>
+                <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea <span style="color: #dc2626;">*</span></label>
                 {{ form.companhia_aerea }}
             </div>
             <div class="form-group single">
@@ -207,6 +225,7 @@
         </div>
     </div>
 
+    <!-- Seção 7: Uso de Pontos e Valores -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -217,11 +236,11 @@
         </div>
         <div class="form-group">
             <div>
-                <label class="form-label" for="{{ form.valor_passagem.id_for_label }}">Valor da passagem (R$)</label>
+                <label class="form-label" for="{{ form.valor_passagem.id_for_label }}">Valor da passagem (R$) <span style="color: #dc2626;">*</span></label>
                 {{ form.valor_passagem }}
             </div>
             <div>
-                <label class="form-label" for="{{ form.taxas.id_for_label }}">Taxas (R$)</label>
+                <label class="form-label" for="{{ form.taxas.id_for_label }}">Taxas (R$) <span style="color: #dc2626;">*</span></label>
                 {{ form.taxas }}
             </div>
         </div>
@@ -257,12 +276,13 @@
         </div>
         <div class="form-group">
             <div>
-                <label class="form-label" for="{{ form.status.id_for_label }}">Status</label>
+                <label class="form-label" for="{{ form.status.id_for_label }}">Status <span style="color: #dc2626;">*</span></label>
                 {{ form.status }}
             </div>
         </div>
     </div>
 
+    <!-- Seção 8: Resumo Visual -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -291,12 +311,14 @@
         </div>
     </div>
 
+    <!-- Botões de Ação -->
     <div class="form-actions">
         <a href="{% url 'admin_cotacoes_voo' %}" class="btn btn-secondary">Cancelar</a>
-        <button class="btn-primary" type="submit">Salvar cotação</button>
+        <button class="btn-primary" type="submit">💾 Salvar cotação</button>
     </div>
 </form>
 </div>
+
 <script>
 const escalasIdaData = {{ escalas_ida_json|safe }};
 const escalasVoltaData = {{ escalas_volta_json|safe }};
@@ -457,6 +479,7 @@ function initEscalaSection(tipo, data){
     qtdInput.addEventListener('input', renderEscalas);
     renderEscalas();
 }
+
 initEscalaSection('ida', escalasIdaData);
 initEscalaSection('volta', escalasVoltaData);
 toggleTitularFields();
