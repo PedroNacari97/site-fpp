@@ -119,6 +119,8 @@ def admin_contas(request):
             | Q(cliente__usuario__first_name__icontains=busca)
             | Q(programa__nome__icontains=busca)
         )
+    # ✅ CORREÇÃO: Adicionar order_by para evitar UnorderedObjectListWarning
+    contas = contas.order_by("cliente__usuario__first_name", "programa__nome")
     paginator = Paginator(contas, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -128,9 +130,9 @@ def admin_contas(request):
         {
             "page_obj": page_obj,
             "busca": busca,
-        "total_contas": contas.count(),
-    },
-)
+            "total_contas": contas.count(),
+        },
+    )
 
 
 @login_required
@@ -154,6 +156,8 @@ def admin_contas_administradas(request):
             Q(conta_administrada__nome__icontains=busca)
             | Q(programa__nome__icontains=busca)
         )
+    # ✅ CORREÇÃO: Adicionar order_by para evitar UnorderedObjectListWarning
+    contas = contas.order_by("conta_administrada__nome", "programa__nome")
     paginator = Paginator(contas, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -178,7 +182,8 @@ def programas_da_conta_administrada(request, conta_id):
         id=conta_id,
         empresa=empresa,
     )
-    contas = ContaFidelidade.objects.filter(conta_administrada=conta).select_related("programa")
+    # ✅ CORREÇÃO: Adicionar order_by para consistência
+    contas = ContaFidelidade.objects.filter(conta_administrada=conta).select_related("programa").order_by("programa__nome")
     lista_contas = []
     for c in contas:
         lista_contas.append(

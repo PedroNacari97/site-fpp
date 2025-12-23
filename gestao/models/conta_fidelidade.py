@@ -66,9 +66,24 @@ class ContaFidelidade(models.Model):
 
     @property
     def valor_medio_por_mil(self):
-        # Para programas vinculados, usar o valor definido para o programa (não o custo do programa base).
-        if self.programa.is_vinculado and self.programa.preco_medio_milheiro:
-            return float(self.programa.preco_medio_milheiro)
+        """
+        Calcula o valor médio por mil pontos para este programa.
+        
+        IMPORTANTE: O valor médio é SEMPRE calculado dividindo o valor pago
+        pela quantidade de pontos, independente se é programa base ou vinculado.
+        
+        Fórmula: valor_pago / (saldo_pontos / 1000)
+        
+        Exemplo:
+        - Azul Pelo Mundo: R$ 610 / (44.000 / 1000) = R$ 13.86 por mil
+        - Livelo: R$ 915 / (30.000 / 1000) = R$ 30.50 por mil
+        - Smiles: R$ 915 / (60.000 / 1000) = R$ 15.25 por mil
+        
+        O preco_medio_milheiro do programa é para o VALOR DE REFERÊNCIA,
+        não para o custo médio calculado.
+        """
+        
+        # Sempre calcular com saldo/valor da conta base
         saldo = self.saldo_pontos
         if saldo > 0:
             return float(self.valor_total_pago) / (saldo / 1000)
