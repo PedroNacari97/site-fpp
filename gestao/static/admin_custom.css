@@ -11,6 +11,8 @@ body {
     background-color: var(--bg);
     color: var(--heading);
     font-family: 'Open Sans', sans-serif;
+    min-height: 100vh;
+    scroll-behavior: smooth;
 }
 
 a {
@@ -77,28 +79,143 @@ button:hover {
 }
 
 /* Sidebar collapse */
-aside {
-    transition: transform 0.3s;
+[data-sidebar] {
+    transition: transform 0.3s ease, width 0.3s ease;
 }
+
 main {
-    transition: margin-left 0.3s;
+    transition: margin-left 0.3s ease, padding 0.3s ease;
 }
+
 .sidebar-label {
-    transition: opacity 0.3s;
+    transition: opacity 0.3s ease;
 }
-body.sidebar-collapsed aside {
-    transform: translateX(-100%);
-    
+
+body.sidebar-open {
+    overflow: hidden;
 }
-body.sidebar-collapsed main {
-    margin-left: 5px;
+
+body.sidebar-open [data-sidebar] {
+    transform: translateX(0);
 }
-body.sidebar-collapsed .sidebar-label {
+
+body.sidebar-open [data-sidebar-overlay] {
+    display: block;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown summary {
+    list-style: none;
+}
+
+.dropdown summary::-webkit-details-marker {
     display: none;
 }
-body.sidebar-collapsed aside nav a {
+
+.dropdown .btn-icon {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.75rem;
+    background: #0f172a;
+    color: #e5e7eb;
+    border: 1px solid var(--border);
+    cursor: pointer;
 }
-body.sidebar-collapsed aside details > div {
-    display: none;
+
+.dropdown-panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.5rem);
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    box-shadow: 0 15px 30px rgba(15, 23, 42, 0.12);
+    padding: 0.5rem;
+    min-width: 12rem;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.dropdown-panel a {
+    padding: 0.45rem 0.5rem;
+    border-radius: 0.65rem;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.dropdown-panel a:hover {
+    background-color: #f1f5f9;
+}
+
+@media (max-width: 1023px) {
+    [data-sidebar] {
+        width: 200px;
+    }
+    main {
+        margin-left: 200px;
+        padding: 1.5rem;
+    }
+    th,
+    td {
+        padding: 8px;
+        font-size: 0.875rem;
+    }
+    .dropdown .btn-icon {
+        width: 2rem;
+        height: 2rem;
+    }
+}
+
+@media (max-width: 767px) {
+    [data-sidebar] {
+        position: fixed;
+        width: 100%;
+        max-width: 256px;
+        transform: translateX(-100%);
+        z-index: 40;
+    }
+    main {
+        margin-left: 0;
+        padding: 1rem;
+    }
+    th,
+    td {
+        padding: 6px;
+        font-size: 0.75rem;
+    }
+    body:not(.sidebar-open) [data-sidebar-overlay] {
+        display: none;
+    }
+}
+
+/* Fluid Typography */
+h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); }
+h2 { font-size: clamp(1.25rem, 4vw, 2rem); }
+p { font-size: clamp(0.875rem, 2vw, 1rem); }
+
+/* Fluid Spacing */
+.p-8 { padding: clamp(1rem, 5vw, 2rem); }
+.p-6 { padding: clamp(0.75rem, 4vw, 1.5rem); }
+.p-4 { padding: clamp(0.65rem, 3vw, 1rem); }
+.gap-4 { gap: clamp(0.5rem, 3vw, 1rem); }
+.gap-3 { gap: clamp(0.35rem, 2.5vw, 0.75rem); }
+.gap-2 { gap: clamp(0.25rem, 2vw, 0.65rem); }
+
+@media (min-width: 1024px) {
+    body.sidebar-open [data-sidebar-overlay] {
+        display: none;
+    }
 }
