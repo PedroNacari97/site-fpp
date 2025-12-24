@@ -38,7 +38,7 @@ body {
 }
 
 .page-container {
-  max-width: 1280px;
+  max-width: 1560px;
   margin: 0 auto;
   width: 100%;
   display: flex;
@@ -63,6 +63,18 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.sidebar details > summary {
+  list-style: none;
+}
+
+.sidebar details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.sidebar details[open] > summary {
+  background: rgba(44, 82, 130, 0.35);
 }
 
 .sidebar-toggle {
