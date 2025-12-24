@@ -112,6 +112,7 @@ a:hover {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 1.25rem 1.5rem;
+  margin-bottom: 1.875rem;
 }
 
 .section-heading {
@@ -198,7 +199,7 @@ a:hover {
 .stat-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .stat-card {
@@ -433,12 +434,18 @@ textarea {
   .page-title {
     font-size: 1.5rem;
   }
+  .stat-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
 }
 
 @media (max-width: 768px) {
   .page-actions {
     width: 100%;
     justify-content: flex-start;
+  }
+  .stat-grid {
+    grid-template-columns: 1fr;
   }
   .table-wrapper {
     margin: 0 -1rem;

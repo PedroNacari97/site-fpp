@@ -117,8 +117,8 @@ header .user-info, .header .user-info {
 .card, .panel {
   background: var(--surface);
   border-radius: var(--radius);
-  padding: 15px;
-  margin-bottom: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
   transition: all 0.3s ease;
@@ -148,6 +148,10 @@ p, span {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
+}
+
+.section {
+  margin-bottom: 30px;
 }
 
 /* ========== FORMULÁRIOS ========== */
@@ -356,6 +360,7 @@ button.btn-danger:hover, .btn-danger:hover {
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
   overflow-x: auto;
+  width: 100%;
 }
 
 table {
@@ -499,13 +504,16 @@ body.dark-mode .btn-delete {
 
 .filter-buttons, .filter-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   margin-top: 10px;
   flex-wrap: wrap;
 }
 
 .filter-buttons button, .filter-actions button {
-  padding: 8px 16px;
+  padding: 10px 20px;
+  height: 44px;
+  flex: 1;
+  min-width: 120px;
   font-size: 12px;
 }
 
@@ -589,9 +597,38 @@ body.dark-mode .btn-delete {
 
 .painel-cards {
   display: grid;
-  gap: 12px;
-  margin-bottom: 15px;
+  gap: 16px;
+  margin-bottom: 20px;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: linear-gradient(180deg, #2c5aa0 0%, #1e3f66 100%);
+  color: #ffffff;
+  padding: 8px 12px;
+  z-index: 999;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mobile-header h1 {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mobile-header .menu-toggle {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px 12px;
 }
 
 /* ========== RESPONSIVIDADE - TABLET (até 1024px) ========== */
@@ -620,17 +657,8 @@ body.dark-mode .btn-delete {
 
 /* ========== RESPONSIVIDADE - MOBILE (até 768px) ========== */
 @media (max-width: 768px) {
-  /* Barra azul fixa no topo */
-  body::before {
-    content: '';
-    display: block;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 50px;
-    background: linear-gradient(180deg, #2c5aa0 0%, #1e3f66 100%);
-    z-index: 999;
+  .mobile-header {
+    display: flex;
   }
 
   .sidebar {
@@ -665,41 +693,8 @@ body.dark-mode .btn-delete {
     margin-top: 0;
   }
 
-  header, .header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 50px;
-    padding: 8px 12px;
-    margin-bottom: 0;
-    z-index: 1001;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-  }
-
-  header h1, .header h1 {
-    font-size: 14px;
+  .topbar {
     display: none;
-  }
-
-  header .user-info, .header .user-info {
-    font-size: 11px;
-    gap: 8px;
-  }
-
-  .menu-toggle {
-    background: transparent;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 18px;
-    font-weight: 600;
-    display: block !important;
-    order: -1;
   }
 
   form {
@@ -724,6 +719,16 @@ body.dark-mode .btn-delete {
   }
 
   .form-actions button, .form-buttons button {
+    width: 100%;
+  }
+
+  .filter-buttons,
+  .filter-actions {
+    flex-direction: column;
+  }
+
+  .filter-buttons button,
+  .filter-actions button {
     width: 100%;
   }
 
