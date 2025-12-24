@@ -2,103 +2,17 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
-    <title>{% block title %}Administração{% endblock %} - Gestão de Pontos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{% static 'gestao/admin_custom.css' %}">
-    <link rel="stylesheet" href="{% static 'gestao/css/painel.css' %}">
-    <link rel="stylesheet" href="{% static 'gestao/css/admin-theme.css' %}">
-    <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
-    {% block extra_head %}{% endblock %}
+    <title>{% block title %}Painel do Cliente{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'painel_cliente/painel.css' %}">
+    {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-gray-100 text-black flex min-h-screen" style="font-family: 'Open Sans', sans-serif;">
-        <aside data-sidebar aria-hidden="true" class="bg-[#0f172a] w-64 md:w-[200px] lg:w-64 md:fixed md:inset-y-0 md:left-0 md:z-40 lg:static p-6 md:p-4 min-h-screen shadow text-white transition-all duration-300 transform -translate-x-full md:translate-x-0">
-        <button class="absolute top-4 right-4 text-white md:hidden" data-sidebar-toggle aria-label="Alternar menu" aria-expanded="false">☰</button>
-        <div class="font-bold tracking-wide mb-8 pl-2 sidebar-label">
-            Gestão Admin
-        </div>
-        <nav class="flex flex-col space-y-2">
-             {% if request.user.is_superuser %}
-                <a class="block px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_empresas %}{% endblock %}" href="{% url 'admin_empresas' %}">Empresas</a>
-            {% else %}
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_dashboard %}{% endblock %}" href="{% url 'admin_dashboard' %}"><span class="sidebar-label">Dashboard</span></a>
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_clientes %}{% endblock %}" href="{% url 'admin_clientes' %}"><span class="sidebar-label">Clientes</span></a>
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_contas %}{% endblock %}" href="{% url 'admin_contas' %}"><span class="sidebar-label">Contas Fidelidade</span></a>
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_contas_adm %}{% endblock %}" href="{% url 'admin_contas_administradas' %}"><span class="sidebar-label">Contas Administradas</span></a>
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_cotacoes_voo %}{% endblock %}" href="{% url 'admin_cotacoes_voo' %}"><span class="sidebar-label">Cotações</span></a>
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_emissoes %}{% endblock %}" href="{% url 'admin_emissoes' %}"><span class="sidebar-label">Emissões</span></a>
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_hoteis %}{% endblock %}" href="{% url 'admin_hoteis' %}"><span class="sidebar-label">Hotéis</span></a>
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_calculadora %}{% endblock %}" href="{% url 'admin_calculadora_cotacao' %}"><span class="sidebar-label">Calculadora</span></a>
-                <details class="pt-4 group" {% block dados_complementares_open %}{% endblock %}>
-                    <summary class="px-3 py-2 rounded cursor-pointer hover:bg-[#2c5282] focus:outline-none flex items-center"><span class="sidebar-label">Dados Complementares</span></summary>
-                    <div class="mt-2 ml-4 flex flex-col space-y-2">
-                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_aeroportos %}{% endblock %}" href="{% url 'admin_aeroportos' %}"><span class="sidebar-label">Aeroporto</span></a>
-                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_companhias %}{% endblock %}" href="{% url 'admin_companhias' %}"><span class="sidebar-label">Companhia Aérea</span></a>
-                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_programas %}{% endblock %}" href="{% url 'admin_programas' %}"><span class="sidebar-label">Programa de Pontos</span></a>
-                    </div>
-                </details>
-            {% endif %}
-            <div class="pt-4">
-                <p class="px-3 text-gray-300 uppercase text-xs mb-2 sidebar-label">Administrativo</p>
-                {% if not request.user.is_superuser %}
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}"><span class="sidebar-label">Auditoria</span></a>
-                {% endif %}
-                {% with perfil=request.user.cliente_gestao.perfil %}
-                    {% if perfil == "admin" or request.user.is_superuser %}
-                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'user_list' %}"><span class="sidebar-label">Usuários Administradores</span></a>
-                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_operadores %}{% endblock %}" href="{% url 'operator_list' %}"><span class="sidebar-label">Operadores</span></a>
-                    {% endif %}
-                {% endwith %}
-            </div>
-             <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'logout' %}"><span class="sidebar-label">Sair</span></a>
-        </nav>
-    </aside>
-    <div data-sidebar-overlay class="fixed inset-0 bg-black/40 z-30 hidden md:hidden"></div>
-     <main class="flex-1 ml-0 md:ml-[200px] lg:ml-64 p-4 md:p-6 lg:p-8 transition-all duration-300 min-h-screen">
-        <div class="page-shell">
-            <header class="topbar">
-                <div class="flex items-center gap-3">
-                    <button class="text-gray-700 md:hidden" data-sidebar-toggle aria-label="Alternar menu" aria-expanded="false">☰</button>
-                    <div>
-                        <p class="eyebrow mb-1">Administração</p>
-                        <h1>Gestão de Pontos</h1>
-                    </div>
-                </div>
-                <div class="user-meta">
-                    <span>{{ request.user.get_full_name|default:request.user.username }}</span>
-                    <a href="{% url 'logout' %}" class="btn btn-ghost">Logout</a>
-                </div>
-            </header>
-
-            <div class="page-header">
-                <div>
-                    <p class="eyebrow">Painel</p>
-                    <h1 class="page-title">{% block header_title %}Painel Administrativo{% endblock %}</h1>
-                    {% block header_subtitle %}{% endblock %}
-                </div>
-                <div class="page-actions">
-                    {% block header_actions %}{% endblock %}
-                </div>
-            </div>
-
-            {% if messages %}
-            <div class="message-stack">
-                {% for message in messages %}
-                <div class="alert {% if 'success' in message.tags %}alert-success{% else %}alert-danger{% endif %}">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            {% block content %}{% endblock %}
-        </div>
-    </main>
-    {% block extra_body %}{% endblock %}
-    <script src="{% static 'gestao/js/admin_layout.js' %}" defer></script>
+<body class="{% block body_class %}{% endblock %}">
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
     <script src="{% static 'gestao/js/forms.js' %}" defer></script>
-    <script src="{% static 'gestao/js/sidebar.js' %}" defer></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
