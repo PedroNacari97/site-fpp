@@ -1,0 +1,27 @@
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Open Sans', sans-serif;
+}
+
+h1,
+h2,
+.section-title,
+.valor {
+  color: var(--color-heading);
+}
+
+.section-title {
+  margin-top: var(--space-xl);
+  margin-bottom: var(--space-sm);
+}
+
+.label {
+  font-size: 1.06rem;
+  color: var(--color-muted);
+}
+
+.valor {
+  font-size: 1.6rem;
+  font-weight: 700;
+}

@@ -17,27 +17,27 @@
     {% if form.username %}
     <div class="section-title">Dados Pessoais</div>
     <div class="form-group">
-        <div style="flex: 1;">
+        <div class="flex-1">
             <label class="form-label" for="{{ form.first_name.id_for_label }}">Nome</label>
             {{ form.first_name }}
         </div>
-        <div style="flex: 1;">
+        <div class="flex-1">
             <label class="form-label" for="{{ form.last_name.id_for_label }}">Sobrenome</label>
             {{ form.last_name }}
         </div>
     </div>
     <div class="form-group">
-        <div style="flex: 1;">
+        <div class="flex-1">
             <label class="form-label" for="{{ form.cpf.id_for_label }}">CPF</label>
             {{ form.cpf }}
         </div>
-        <div style="flex: 1;">
+        <div class="flex-1">
             <label class="form-label" for="{{ form.email.id_for_label }}">Email</label>
             {{ form.email }}
         </div>
     </div>
     <div class="form-group">
-        <div style="flex: 1;">
+        <div class="flex-1">
             <label class="form-label" for="{{ form.data_nascimento.id_for_label }}">Data nascimento</label>
             {{ form.data_nascimento }}
         </div>
@@ -45,11 +45,11 @@
 
     <div class="section-title">Contato</div>
     <div class="form-group">
-        <div style="flex: 1;">
+        <div class="flex-1">
             <label class="form-label" for="{{ form.telefone.id_for_label }}">Telefone</label>
             {{ form.telefone }}
         </div>
-        <div style="flex: 1;">
+        <div class="flex-1">
             <label class="form-label" for="{{ form.ativo.id_for_label }}">Ativo</label>
             {{ form.ativo }}
         </div>
@@ -61,19 +61,19 @@
 
     <div class="section-title">Dados de Acesso</div>
     <div class="form-group">
-        <div style="flex: 1;">
+        <div class="flex-1">
             <label class="form-label" for="{{ form.username.id_for_label }}">Usuário</label>
             {{ form.username }}
             {% if form.username.errors %}<div class="text-red-600 text-sm mt-1">{{ form.username.errors }}</div>{% endif %}
         </div>
-        <div style="flex: 1;">
+        <div class="flex-1">
             <label class="form-label" for="{{ form.password.id_for_label }}">Senha</label>
             {{ form.password }}
             {% if form.password.errors %}<div class="text-red-600 text-sm mt-1">{{ form.password.errors }}</div>{% endif %}
         </div>
     </div>
     <div class="form-group">
-        <div style="flex: 1;">
+        <div class="flex-1">
             <label class="form-label" for="{{ form.perfil.id_for_label }}">Tipo de Acesso</label>
             {{ form.perfil }}
         </div>

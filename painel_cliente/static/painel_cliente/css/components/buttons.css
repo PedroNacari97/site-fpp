@@ -1,0 +1,34 @@
+button,
+input[type="submit"] {
+  width: 100%;
+  background: var(--color-primary);
+  color: var(--color-surface);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 0;
+  font-size: 1.05rem;
+  margin-top: 18px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.25s;
+}
+
+button:hover,
+input[type="submit"]:hover {
+  background: var(--color-primary-dark);
+}
+
+.btn-voltar {
+  background: var(--color-primary);
+  color: var(--color-surface);
+  border: none;
+  padding: 8px 20px;
+  border-radius: var(--radius-xs);
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: var(--space-md);
+}
+
+.btn-voltar:hover {
+  background: var(--color-primary-dark);
+}
