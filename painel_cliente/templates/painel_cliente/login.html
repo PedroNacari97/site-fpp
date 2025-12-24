@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-    <img src="{% static 'painel_cliente/ncfly_logo.png' %}" alt="Logo NCfly" style="width: 200px; height: auto; display: block;margin: 0 auto 20px;">
-    <link rel="stylesheet" href="{% static 'painel_cliente/painel.css' %}">
+    <link rel="stylesheet" href="{% static 'painel_cliente/css/main.css' %}">
 </head>
 <body class="login-page">
     <div class="login-container">
+        <img class="login-logo" src="{% static 'painel_cliente/ncfly_logo.png' %}" alt="Logo NCfly">
         <h2>Entrar</h2>
         {% if form.errors %}
             <p class="erro">Usuário ou senha incorretos. Tente novamente.</p>
@@ -26,5 +26,6 @@
             <button type="submit">Entrar</button>
         </form>
     </div>
+    <script type="module" src="{% static 'painel_cliente/js/app.js' %}" defer></script>
 </body>
 </html>
