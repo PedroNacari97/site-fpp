@@ -1,104 +1,507 @@
-/* Fundo geral com gradiente escuro */
-body {
+/* ============================================
+   CSS RESPONSIVO - LOGIN NCFLY
+   Cores Claras e Suaves - Não Cansa a Vista
+   ============================================ */
+
+/* ========== RESET E ESTILOS GLOBAIS ========== */
+* {
   margin: 0;
   padding: 0;
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg, #0c0f1a, #1a1f2b);
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #f0f4f8 0%, #e8f0f7 100%);
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  padding: 20px;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
-/* Container central */
-.login-wrapper {
+/* ========== CONTAINER PRINCIPAL ========== */
+.login-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-}
-
-/* Card de login com sombra e cantos arredondados */
-.login-card {
-  background-color: #2a2d36;
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+  min-height: 100vh;
   width: 100%;
-  max-width: 400px;
-  color: #fff;
 }
 
-/* Logo estilizada */
-.logo {
-  text-align: center;
+/* ========== CARD DE LOGIN ========== */
+.login-container {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(51, 102, 153, 0.08);
+  padding: 50px 40px;
+  width: 100%;
+  max-width: 420px;
+  animation: slideIn 0.6s ease-out;
+  position: relative;
+  border: 1px solid rgba(200, 220, 240, 0.5);
+}
+
+/* Animação de Entrada */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== LOGO ========== */
+.login-logo {
+  width: 120px;
+  height: auto;
+  display: block;
+  margin: 0 auto 24px;
+  max-width: 100%;
+}
+
+/* ========== TÍTULOS ========== */
+.login-container h2 {
   font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 16px;
-  color: #e0e0e0;
-}
-.logo span {
-  color: #d69e2e;
-}
-
-/* Título de boas-vindas */
-h1 {
+  font-weight: 700;
+  color: #2c5aa0;
+  margin-bottom: 12px;
   text-align: center;
-  color: #ff8c42;
-  font-size: 22px;
-  margin-bottom: 30px;
+  letter-spacing: -0.5px;
 }
 
-/* Mensagens de erro */
-.messages {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 20px;
+.login-container p {
+  font-size: 14px;
+  color: #7a92a8;
   text-align: center;
-  color: #ff4d4d;
+  margin-bottom: 32px;
+  line-height: 1.5;
 }
 
-/* Labels dos inputs */
+/* ========== LABELS ========== */
 label {
   display: block;
-  margin-bottom: 6px;
-  color: #cccccc;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a6fa5;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-/* Campos de texto e select */
-input,
+/* ========== CAMPOS DE INPUT ========== */
+input[type="text"],
+input[type="password"],
 select {
   width: 100%;
-  padding: 12px 10px;
-  margin-bottom: 18px;
-  background-color: #1e1f24;
-  color: white;
-  border: 1px solid #444;
-  border-radius: 8px;
-  outline: none;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  border: 2px solid #d4e4f0;
+  border-radius: 10px;
   font-size: 15px;
-}
-input:focus,
-select:focus {
-  border: 1px solid #ff9f43;
-  box-shadow: 0 0 5px #ff9f43aa;
+  color: #2c3e50;
+  background: #f8fbfd;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
-/* Botão com gradiente e efeito hover */
+/* Placeholder */
+input::placeholder {
+  color: #a8bcc8;
+}
+
+/* Estados de Foco */
+input[type="text"]:focus,
+input[type="password"]:focus,
+select:focus {
+  outline: none;
+  border-color: #5a8cc4;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(90, 140, 196, 0.1);
+}
+
+/* Preenchimento */
+input[type="text"]:not(:placeholder-shown),
+input[type="password"]:not(:placeholder-shown) {
+  border-color: #5a8cc4;
+}
+
+/* Select Customizado */
+select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235a8cc4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  padding-right: 40px;
+}
+
+/* ========== BOTÃO ========== */
+button[type="submit"],
 button {
   width: 100%;
   padding: 14px;
+  margin-top: 8px;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(90deg, #ff8c42, #e0b43d);
-  color: white;
+  background: linear-gradient(135deg, #5a8cc4 0%, #4a7ab8 100%);
+  color: #ffffff;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(90, 140, 196, 0.25);
 }
+
+button[type="submit"]:hover,
 button:hover {
-  box-shadow: 0 0 12px rgba(255, 165, 0, 0.5);
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(90, 140, 196, 0.35);
+  background: linear-gradient(135deg, #4a7ab8 0%, #3a6aaa 100%);
+}
+
+button[type="submit"]:active,
+button:active {
+  transform: translateY(0);
+}
+
+button[type="submit"]:disabled,
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ========== MENSAGENS DE ERRO ========== */
+.erro {
+  background: #fce8e8;
+  color: #c85a5a;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  border-left: 4px solid #c85a5a;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+/* ============================================
+   RESPONSIVIDADE - TABLET (até 768px)
+   ============================================ */
+@media (max-width: 768px) {
+  body {
+    padding: 16px;
+  }
+
+  .login-container {
+    padding: 40px 30px;
+    max-width: 100%;
+    border-radius: 14px;
+  }
+
+  .login-container h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .login-container p {
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+
+  label {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  select {
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+
+  button[type="submit"],
+  button {
+    padding: 12px;
+    font-size: 15px;
+    margin-top: 6px;
+  }
+}
+
+/* ============================================
+   RESPONSIVIDADE - MOBILE (até 480px)
+   ============================================ */
+@media (max-width: 480px) {
+  body {
+    padding: 12px;
+    min-height: 100vh;
+  }
+
+  .login-page {
+    min-height: auto;
+    padding: 20px 0;
+  }
+
+  .login-container {
+    padding: 32px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(51, 102, 153, 0.06);
+    max-width: 100%;
+  }
+
+  .login-logo {
+    width: 80px;
+    margin: 0 auto 16px;
+  }
+
+  .login-container h2 {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+
+  .login-container p {
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+
+  label {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  select {
+    padding: 11px 12px;
+    margin-bottom: 14px;
+    font-size: 16px;
+    border-radius: 6px;
+  }
+
+  button[type="submit"],
+  button {
+    padding: 11px;
+    font-size: 14px;
+    margin-top: 4px;
+    border-radius: 6px;
+  }
+
+  button[type="submit"]:hover,
+  button:hover {
+    transform: translateY(-1px);
+  }
+
+  .erro {
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+}
+
+/* ============================================
+   RESPONSIVIDADE - SMALL MOBILE (até 360px)
+   ============================================ */
+@media (max-width: 360px) {
+  .login-container {
+    padding: 24px 16px;
+  }
+
+  .login-container h2 {
+    font-size: 18px;
+  }
+
+  .login-container p {
+    font-size: 11px;
+    margin-bottom: 16px;
+  }
+
+  .login-logo {
+    width: 60px;
+    margin: 0 auto 12px;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  select {
+    padding: 10px 10px;
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+
+  button[type="submit"],
+  button {
+    padding: 10px;
+    font-size: 13px;
+  }
+}
+
+/* ============================================
+   RESPONSIVIDADE - NOTEBOOK/DESKTOP (acima de 1024px)
+   ============================================ */
+@media (min-width: 1024px) {
+  body {
+    padding: 40px;
+  }
+
+  .login-container {
+    padding: 60px 50px;
+    max-width: 480px;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(51, 102, 153, 0.1);
+  }
+
+  .login-logo {
+    width: 140px;
+    margin: 0 auto 32px;
+  }
+
+  .login-container h2 {
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+
+  .login-container p {
+    font-size: 15px;
+    margin-bottom: 40px;
+  }
+
+  label {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  select {
+    padding: 16px 18px;
+    margin-bottom: 24px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+
+  button[type="submit"],
+  button {
+    padding: 16px;
+    font-size: 17px;
+    margin-top: 12px;
+    border-radius: 12px;
+  }
+
+  button[type="submit"]:hover,
+  button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(90, 140, 196, 0.4);
+  }
+}
+
+/* ============================================
+   RESPONSIVIDADE - LARGE DESKTOP (acima de 1440px)
+   ============================================ */
+@media (min-width: 1440px) {
+  .login-container {
+    max-width: 520px;
+    padding: 70px 60px;
+  }
+
+  .login-logo {
+    width: 160px;
+  }
+
+  .login-container h2 {
+    font-size: 36px;
+  }
+
+  .login-container p {
+    font-size: 16px;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  select {
+    padding: 18px 20px;
+    font-size: 17px;
+  }
+
+  button[type="submit"],
+  button {
+    padding: 18px;
+    font-size: 18px;
+  }
+}
+
+/* ============================================
+   ACESSIBILIDADE
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================
+   ORIENTAÇÃO - LANDSCAPE
+   ============================================ */
+@media (max-height: 500px) and (orientation: landscape) {
+  body {
+    min-height: auto;
+    padding: 10px;
+  }
+
+  .login-container {
+    padding: 30px 25px;
+    max-width: 100%;
+  }
+
+  .login-logo {
+    width: 60px;
+    margin: 0 auto 12px;
+  }
+
+  .login-container h2 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .login-container p {
+    font-size: 11px;
+    margin-bottom: 12px;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  select {
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  button[type="submit"],
+  button {
+    padding: 8px;
+    font-size: 13px;
+  }
 }

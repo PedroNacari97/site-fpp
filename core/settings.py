@@ -9,16 +9,13 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "chave-super-secreta-para-dev")
 DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() in ("1", "true", "yes")
 
 ALLOWED_HOSTS = [
-    "site-fpp.onrender.com",   # domínio do Render deste serviço
-    ".onrender.com",           # qualquer subdomínio do Render (opcional, mas prático)
-    "localhost",
-    "127.0.0.1",
+    "*",  # permite qualquer domínio temporariamente
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://site-fpp.onrender.com",
-    "https://.onrender.com",  # opcional para futuros subdomínios
+    "https://*",
 ]
+
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
