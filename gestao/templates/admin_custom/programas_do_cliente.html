@@ -3,9 +3,7 @@
 {% block header_title %}Programas de Fidelidade de {{ cliente.usuario.get_full_name|default:cliente.usuario.username }}{% endblock %}
 {% block header_subtitle %}<p class="page-subtitle">Todos os programas do cliente com saldos, valores e acesso rápido às movimentações.</p>{% endblock %}
 {% block header_actions %}
-<div class="page-actions">
-    <a href="{% url 'admin_contas' %}" class="btn btn-ghost">Voltar para Contas</a>
-</div>
+<a href="{% url 'admin_contas' %}" class="btn btn-ghost">Voltar para Contas</a>
 {% endblock %}
 
 {% block content %}

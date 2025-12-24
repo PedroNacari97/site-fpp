@@ -24,4 +24,13 @@ document.addEventListener("DOMContentLoaded", () => {
             document.body.classList.remove("sidebar-open");
         });
     }
+
+    const handleResize = () => {
+        if (window.innerWidth >= 768) {
+            document.body.classList.remove("sidebar-open");
+        }
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize();
 });

@@ -107,44 +107,45 @@
     <div data-sidebar-overlay class="fixed inset-0 bg-black/40 z-30 hidden"></div>
 
     <!-- ===== CONTEÚDO ===== -->
-    <main class="content p-4 md:p-6 lg:p-8 min-h-screen">
+    <main class="content">
+        <div class="page-container">
+            <!-- TOPBAR DESKTOP -->
+            <header class="topbar hidden md:flex items-center justify-between">
+                <div>
+                    <p class="eyebrow mb-1">Administração</p>
+                    <h1>Gestão de Pontos</h1>
+                </div>
+                <div class="user-meta">
+                    <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+                    <a href="{% url 'logout' %}" class="btn btn-ghost">Logout</a>
+                </div>
+            </header>
 
-        <!-- TOPBAR DESKTOP -->
-        <header class="topbar hidden md:flex items-center justify-between mb-6">
-            <div>
-                <p class="eyebrow mb-1">Administração</p>
-                <h1>Gestão de Pontos</h1>
+            <div class="page-header">
+                <div>
+                    <p class="eyebrow">Painel</p>
+                    <h1 class="page-title">
+                        {% block header_title %}Painel Administrativo{% endblock %}
+                    </h1>
+                    {% block header_subtitle %}{% endblock %}
+                </div>
+                <div class="page-actions">
+                    {% block header_actions %}{% endblock %}
+                </div>
             </div>
-            <div class="user-meta">
-                <span>{{ request.user.get_full_name|default:request.user.username }}</span>
-                <a href="{% url 'logout' %}" class="btn btn-ghost">Logout</a>
-            </div>
-        </header>
 
-        <div class="page-header mb-6">
-            <div>
-                <p class="eyebrow">Painel</p>
-                <h1 class="page-title">
-                    {% block header_title %}Painel Administrativo{% endblock %}
-                </h1>
-                {% block header_subtitle %}{% endblock %}
+            {% if messages %}
+            <div class="message-stack">
+                {% for message in messages %}
+                <div class="alert {% if 'success' in message.tags %}alert-success{% else %}alert-danger{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
             </div>
-            <div class="page-actions">
-                {% block header_actions %}{% endblock %}
-            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
         </div>
-
-        {% if messages %}
-        <div class="message-stack">
-            {% for message in messages %}
-            <div class="alert {% if 'success' in message.tags %}alert-success{% else %}alert-danger{% endif %}">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        {% block content %}{% endblock %}
     </main>
 
 </div>
