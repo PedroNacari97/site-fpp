@@ -7,14 +7,20 @@
     --primary: #2563eb;
 }
 
+/* ===== Base ===== */
+
 body {
     background-color: var(--bg);
     color: var(--heading);
     font-family: 'Open Sans', sans-serif;
     min-height: 100vh;
     scroll-behavior: smooth;
+
+    /* Layout definitivo */
+    display: flex;
 }
 
+/* Links */
 a {
     color: var(--primary);
     text-decoration: none;
@@ -24,6 +30,8 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
+/* ===== Tabelas ===== */
 
 table {
     width: 100%;
@@ -45,6 +53,8 @@ th {
 tr:nth-child(even) {
     background-color: #f8fafc;
 }
+
+/* ===== Formulários ===== */
 
 input,
 select,
@@ -70,38 +80,80 @@ button:hover {
     filter: brightness(0.97);
 }
 
-.linha1 {
-    background-color: var(--surface);
+/* ===== Layout Principal ===== */
+
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    min-height: 100vh;
+    transition: width 0.3s ease;
 }
 
-.linha2 {
-    background-color: #f8fafc;
+/* Conteúdo */
+.content {
+    flex: 1;
+    min-width: 0;
+    padding: 1rem;
+    transition: padding 0.3s ease;
 }
 
-/* Sidebar collapse */
-[data-sidebar] {
-    transition: transform 0.3s ease, width 0.3s ease;
-}
-
-main {
-    transition: margin-left 0.3s ease, padding 0.3s ease;
-}
+/* ===== Sidebar Labels ===== */
 
 .sidebar-label {
     transition: opacity 0.3s ease;
 }
 
-body.sidebar-open {
-    overflow: hidden;
+/* ===== Sidebar Colapsada ===== */
+
+.sidebar.collapsed {
+    width: 64px;
 }
 
-body.sidebar-open [data-sidebar] {
-    transform: translateX(0);
+.sidebar.collapsed .sidebar-label {
+    display: none;
 }
 
-body.sidebar-open [data-sidebar-overlay] {
-    display: block;
+.sidebar.collapsed nav a {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
 }
+
+/* ===== Overlay (mobile) ===== */
+
+[data-sidebar-overlay] {
+    display: none;
+}
+
+/* ===== Mobile ===== */
+
+@media (max-width: 767px) {
+    [data-sidebar] {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        width: 256px;
+        transform: translateX(-100%);
+        z-index: 40;
+        transition: transform 0.3s ease;
+    }
+
+    body.sidebar-open [data-sidebar] {
+        transform: translateX(0);
+    }
+
+    body.sidebar-open [data-sidebar-overlay] {
+        display: block;
+    }
+
+    .content {
+        padding: 1rem;
+    }
+}
+
+/* ===== Utilidades ===== */
 
 .table-wrapper {
     overflow-x: auto;
@@ -160,62 +212,8 @@ body.sidebar-open [data-sidebar-overlay] {
     background-color: #f1f5f9;
 }
 
-@media (max-width: 1023px) {
-    [data-sidebar] {
-        width: 200px;
-    }
-    main {
-        margin-left: 200px;
-        padding: 1.5rem;
-    }
-    th,
-    td {
-        padding: 8px;
-        font-size: 0.875rem;
-    }
-    .dropdown .btn-icon {
-        width: 2rem;
-        height: 2rem;
-    }
-}
+/* ===== Tipografia Fluida ===== */
 
-@media (max-width: 767px) {
-    [data-sidebar] {
-        position: fixed;
-        width: 100%;
-        max-width: 256px;
-        transform: translateX(-100%);
-        z-index: 40;
-    }
-    main {
-        margin-left: 0;
-        padding: 1rem;
-    }
-    th,
-    td {
-        padding: 6px;
-        font-size: 0.75rem;
-    }
-    body:not(.sidebar-open) [data-sidebar-overlay] {
-        display: none;
-    }
-}
-
-/* Fluid Typography */
 h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); }
 h2 { font-size: clamp(1.25rem, 4vw, 2rem); }
-p { font-size: clamp(0.875rem, 2vw, 1rem); }
-
-/* Fluid Spacing */
-.p-8 { padding: clamp(1rem, 5vw, 2rem); }
-.p-6 { padding: clamp(0.75rem, 4vw, 1.5rem); }
-.p-4 { padding: clamp(0.65rem, 3vw, 1rem); }
-.gap-4 { gap: clamp(0.5rem, 3vw, 1rem); }
-.gap-3 { gap: clamp(0.35rem, 2.5vw, 0.75rem); }
-.gap-2 { gap: clamp(0.25rem, 2vw, 0.65rem); }
-
-@media (min-width: 1024px) {
-    body.sidebar-open [data-sidebar-overlay] {
-        display: none;
-    }
-}
+p  { font-size: clamp(0.875rem, 2vw, 1rem); }
