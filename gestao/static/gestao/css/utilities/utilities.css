@@ -1,0 +1,11 @@
+.is-hidden {
+  display: none;
+}
+
+.required-asterisk {
+  color: var(--color-danger);
+}
+
+.alert-rounded {
+  border-radius: var(--radius-lg);
+}

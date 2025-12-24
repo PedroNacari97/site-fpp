@@ -14,7 +14,7 @@
     
     <!-- Mensagens de Erro -->
     {% if form.errors %}
-    <div class="p-4 mb-4 rounded border border-red-200 bg-red-50 text-red-700" style="border-radius: 0.75rem;">
+    <div class="p-4 mb-4 rounded border border-red-200 bg-red-50 text-red-700 alert-rounded">
         <p class="font-semibold mb-2">❌ Não foi possível salvar. Corrija os pontos abaixo:</p>
         <ul class="list-disc pl-5 space-y-1">
             {% for field in form %}
@@ -46,12 +46,12 @@
         </div>
         <div class="section-grid">
             <div>
-                <label class="form-label" for="{{ form.tipo_titular.id_for_label }}">Tipo de titular <span style="color: #dc2626;">*</span></label>
+                <label class="form-label" for="{{ form.tipo_titular.id_for_label }}">Tipo de titular <span class="required-asterisk">*</span></label>
                 {{ form.tipo_titular }}
                 <p class="helper-text">Escolha entre cliente direto ou conta administrada.</p>
             </div>
             <div id="cliente-wrapper">
-                <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente (quem irá viajar) <span style="color: #dc2626;">*</span></label>
+                <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente (quem irá viajar) <span class="required-asterisk">*</span></label>
                 {{ form.cliente }}
                 <p class="helper-text">Mostrado somente quando o titular for um cliente.</p>
             </div>
@@ -74,7 +74,7 @@
         </div>
         <div class="section-grid">
             <div>
-                <label class="form-label" for="{{ form.programa.id_for_label }}">Programa selecionado <span style="color: #dc2626;">*</span></label>
+                <label class="form-label" for="{{ form.programa.id_for_label }}">Programa selecionado <span class="required-asterisk">*</span></label>
                 {{ form.programa }}
                 <p id="programa-info" class="helper-text mt-1"></p>
             </div>
@@ -96,17 +96,17 @@
             <div class="section-title">Voo de ida</div>
             <div class="form-group">
                 <div>
-                    <label class="form-label" for="{{ form.origem.id_for_label }}">Aeroporto de partida <span style="color: #dc2626;">*</span></label>
+                    <label class="form-label" for="{{ form.origem.id_for_label }}">Aeroporto de partida <span class="required-asterisk">*</span></label>
                     {{ form.origem }}
                 </div>
                 <div>
-                    <label class="form-label" for="{{ form.destino.id_for_label }}">Aeroporto de destino <span style="color: #dc2626;">*</span></label>
+                    <label class="form-label" for="{{ form.destino.id_for_label }}">Aeroporto de destino <span class="required-asterisk">*</span></label>
                     {{ form.destino }}
                 </div>
             </div>
             <div class="form-group">
                 <div>
-                    <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span style="color: #dc2626;">*</span></label>
+                    <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span class="required-asterisk">*</span></label>
                     {{ form.data_ida }}
                 </div>
             </div>
@@ -138,11 +138,11 @@
         </div>
         <div class="form-group">
             <div>
-                <label class="form-label" for="{{ form.qtd_passageiros.id_for_label }}">Quantidade de passageiros <span style="color: #dc2626;">*</span></label>
+                <label class="form-label" for="{{ form.qtd_passageiros.id_for_label }}">Quantidade de passageiros <span class="required-asterisk">*</span></label>
                 {{ form.qtd_passageiros }}
             </div>
             <div>
-                <label class="form-label" for="{{ form.classe.id_for_label }}">Classe <span style="color: #dc2626;">*</span></label>
+                <label class="form-label" for="{{ form.classe.id_for_label }}">Classe <span class="required-asterisk">*</span></label>
                 {{ form.classe }}
             </div>
         </div>
@@ -168,7 +168,7 @@
                         <p class="helper-text">Habilite para registrar conexões e tempos de espera.</p>
                     </div>
                 </div>
-                <div id="escala-ida-wrapper" style="display: none;">
+                <div id="escala-ida-wrapper" class="is-hidden">
                     <div class="form-group">
                         <div>
                             <label class="form-label" for="id_qtd_escalas_ida">Quantidade de escalas na ida</label>
@@ -190,7 +190,7 @@
                         <p class="helper-text">Configure as conexões do retorno sem afetar a ida.</p>
                     </div>
                 </div>
-                <div id="escala-volta-wrapper" style="display: none;">
+                <div id="escala-volta-wrapper" class="is-hidden">
                     <div class="form-group">
                         <div>
                             <label class="form-label" for="id_qtd_escalas_volta">Quantidade de escalas na volta</label>
@@ -215,7 +215,7 @@
         </div>
         <div class="section-grid">
             <div>
-                <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea <span style="color: #dc2626;">*</span></label>
+                <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea <span class="required-asterisk">*</span></label>
                 {{ form.companhia_aerea }}
             </div>
             <div class="form-group single">
@@ -236,11 +236,11 @@
         </div>
         <div class="form-group">
             <div>
-                <label class="form-label" for="{{ form.valor_passagem.id_for_label }}">Valor da passagem (R$) <span style="color: #dc2626;">*</span></label>
+                <label class="form-label" for="{{ form.valor_passagem.id_for_label }}">Valor da passagem (R$) <span class="required-asterisk">*</span></label>
                 {{ form.valor_passagem }}
             </div>
             <div>
-                <label class="form-label" for="{{ form.taxas.id_for_label }}">Taxas (R$) <span style="color: #dc2626;">*</span></label>
+                <label class="form-label" for="{{ form.taxas.id_for_label }}">Taxas (R$) <span class="required-asterisk">*</span></label>
                 {{ form.taxas }}
             </div>
         </div>
@@ -276,7 +276,7 @@
         </div>
         <div class="form-group">
             <div>
-                <label class="form-label" for="{{ form.status.id_for_label }}">Status <span style="color: #dc2626;">*</span></label>
+                <label class="form-label" for="{{ form.status.id_for_label }}">Status <span class="required-asterisk">*</span></label>
                 {{ form.status }}
             </div>
         </div>
