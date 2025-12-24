@@ -4,9 +4,7 @@
 {% block header_title %}Clientes{% endblock %}
 {% block header_subtitle %}<p class="page-subtitle">Cadastre, pesquise e acompanhe clientes com status e ações consistentes.</p>{% endblock %}
 {% block header_actions %}
-<div class="page-actions">
-    <a href="{% url 'admin_novo_cliente' %}" class="btn btn-primary">+ Novo Cliente</a>
-</div>
+<a href="{% url 'admin_novo_cliente' %}" class="btn btn-primary">+ Novo Cliente</a>
 {% endblock %}
 
 {% block content %}

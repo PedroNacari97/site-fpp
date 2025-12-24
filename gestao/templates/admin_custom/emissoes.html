@@ -4,10 +4,8 @@
 {% block header_subtitle %}<p class="page-subtitle">Organização única para voos, passageiros e resultados financeiros.</p>{% endblock %}
 {% block menu_emissoes %}bg-zinc-700 text-white{% endblock %}
 {% block header_actions %}
-<div class="page-actions">
-    <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}export=excel" class="btn btn-secondary">Exportar Excel</a>
-    <a href="{% url 'admin_nova_emissao' %}" class="btn btn-primary">+ Nova Emissão</a>
-</div>
+<a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}export=excel" class="btn btn-secondary">Exportar Excel</a>
+<a href="{% url 'admin_nova_emissao' %}" class="btn btn-primary">+ Nova Emissão</a>
 {% endblock %}
 
 {% block content %}

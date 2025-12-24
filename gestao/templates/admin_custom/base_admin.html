@@ -85,6 +85,23 @@
                 <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_calculadora %}{% endblock %}" href="{% url 'admin_calculadora_cotacao' %}">
                     <span class="sidebar-label">Calculadora</span>
                 </a>
+
+                <details class="pt-4 group" {% block dados_complementares_open %}{% endblock %}>
+                    <summary class="px-3 py-2 rounded cursor-pointer hover:bg-[#2c5282] focus:outline-none flex items-center">
+                        <span class="sidebar-label">Dados Complementares</span>
+                    </summary>
+                    <div class="mt-2 ml-4 flex flex-col space-y-2">
+                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_aeroportos %}{% endblock %}" href="{% url 'admin_aeroportos' %}">
+                            <span class="sidebar-label">Aeroporto</span>
+                        </a>
+                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_companhias %}{% endblock %}" href="{% url 'admin_companhias' %}">
+                            <span class="sidebar-label">Companhia Aérea</span>
+                        </a>
+                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_programas %}{% endblock %}" href="{% url 'admin_programas' %}">
+                            <span class="sidebar-label">Programa de Pontos</span>
+                        </a>
+                    </div>
+                </details>
             {% endif %}
 
             <div class="pt-4">
@@ -92,9 +109,22 @@
                     Administrativo
                 </p>
 
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'admin_auditoria' %}">
+                {% if not request.user.is_superuser %}
+                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}">
                     <span class="sidebar-label">Auditoria</span>
                 </a>
+                {% endif %}
+
+                {% with perfil=request.user.cliente_gestao.perfil %}
+                    {% if perfil == "admin" or request.user.is_superuser %}
+                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'user_list' %}">
+                            <span class="sidebar-label">Usuários Administradores</span>
+                        </a>
+                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_operadores %}{% endblock %}" href="{% url 'operator_list' %}">
+                            <span class="sidebar-label">Operadores</span>
+                        </a>
+                    {% endif %}
+                {% endwith %}
 
                 <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'logout' %}">
                     <span class="sidebar-label">Sair</span>
@@ -107,44 +137,45 @@
     <div data-sidebar-overlay class="fixed inset-0 bg-black/40 z-30 hidden"></div>
 
     <!-- ===== CONTEÚDO ===== -->
-    <main class="content p-4 md:p-6 lg:p-8 min-h-screen">
+    <main class="content">
+        <div class="page-container">
+            <!-- TOPBAR DESKTOP -->
+            <header class="topbar hidden md:flex items-center justify-between">
+                <div>
+                    <p class="eyebrow mb-1">Administração</p>
+                    <h1>Gestão de Pontos</h1>
+                </div>
+                <div class="user-meta">
+                    <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+                    <a href="{% url 'logout' %}" class="btn btn-ghost">Logout</a>
+                </div>
+            </header>
 
-        <!-- TOPBAR DESKTOP -->
-        <header class="topbar hidden md:flex items-center justify-between mb-6">
-            <div>
-                <p class="eyebrow mb-1">Administração</p>
-                <h1>Gestão de Pontos</h1>
+            <div class="page-header">
+                <div>
+                    <p class="eyebrow">Painel</p>
+                    <h1 class="page-title">
+                        {% block header_title %}Painel Administrativo{% endblock %}
+                    </h1>
+                    {% block header_subtitle %}{% endblock %}
+                </div>
+                <div class="page-actions">
+                    {% block header_actions %}{% endblock %}
+                </div>
             </div>
-            <div class="user-meta">
-                <span>{{ request.user.get_full_name|default:request.user.username }}</span>
-                <a href="{% url 'logout' %}" class="btn btn-ghost">Logout</a>
-            </div>
-        </header>
 
-        <div class="page-header mb-6">
-            <div>
-                <p class="eyebrow">Painel</p>
-                <h1 class="page-title">
-                    {% block header_title %}Painel Administrativo{% endblock %}
-                </h1>
-                {% block header_subtitle %}{% endblock %}
+            {% if messages %}
+            <div class="message-stack">
+                {% for message in messages %}
+                <div class="alert {% if 'success' in message.tags %}alert-success{% else %}alert-danger{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
             </div>
-            <div class="page-actions">
-                {% block header_actions %}{% endblock %}
-            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
         </div>
-
-        {% if messages %}
-        <div class="message-stack">
-            {% for message in messages %}
-            <div class="alert {% if 'success' in message.tags %}alert-success{% else %}alert-danger{% endif %}">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        {% block content %}{% endblock %}
     </main>
 
 </div>
