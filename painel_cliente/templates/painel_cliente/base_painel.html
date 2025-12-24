@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Painel do Cliente{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'painel_cliente/painel.css' %}">
+    <link rel="stylesheet" href="{% static 'painel_cliente/css/main.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -13,6 +13,7 @@
         {% block content %}{% endblock %}
     </div>
     <script src="{% static 'gestao/js/forms.js' %}" defer></script>
+    <script type="module" src="{% static 'painel_cliente/js/app.js' %}" defer></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

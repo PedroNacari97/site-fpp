@@ -1,0 +1,76 @@
+.container {
+  max-width: 1400px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+
+.painel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.painel-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.painel-cards.programas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-lg);
+}
+
+.status-message {
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .painel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .painel-cards {
+    flex-direction: column;
+  }
+
+  .painel-cards.programas-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: var(--space-md);
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    margin: 20px auto;
+  }
+
+  .card {
+    padding: var(--space-sm);
+  }
+
+  input[type="text"],
+  input[type="password"],
+  select {
+    font-size: 16px;
+  }
+}

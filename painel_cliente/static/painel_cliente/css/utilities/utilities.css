@@ -1,0 +1,13 @@
+.text-center {
+  text-align: center;
+}
+
+.entrada {
+  color: var(--color-success);
+  font-weight: 700;
+}
+
+.saida {
+  color: var(--color-danger);
+  font-weight: 700;
+}
