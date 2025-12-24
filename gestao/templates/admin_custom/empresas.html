@@ -6,9 +6,7 @@
 {% block header_subtitle %}<p class="page-subtitle">Visão clara das empresas, perfis administrativos e limites de operadores.</p>{% endblock %}
 {% block menu_empresas %}bg-[#2c5282]{% endblock %}
 {% block header_actions %}
-<div class="page-actions">
-  <a href="{% url 'admin_criar_empresa' %}" class="btn btn-primary">+ Nova Empresa</a>
-</div>
+<a href="{% url 'admin_criar_empresa' %}" class="btn btn-primary">+ Nova Empresa</a>
 {% endblock %}
 
 {% block content %}

@@ -4,10 +4,8 @@
 {% block header_subtitle %}<p class="page-subtitle">Titulares administrados com filtros claros, ações alinhadas e responsividade.</p>{% endblock %}
 {% block menu_contas_adm %}bg-zinc-700 text-white{% endblock %}
 {% block header_actions %}
-<div class="page-actions">
-    <a href="{% url 'admin_nova_conta_administrada' %}" class="btn btn-secondary">+ Novo Titular Administrado</a>
-    <a href="{% url 'admin_nova_conta' %}" class="btn btn-primary">+ Nova Conta</a>
-</div>
+<a href="{% url 'admin_nova_conta_administrada' %}" class="btn btn-secondary">+ Novo Titular Administrado</a>
+<a href="{% url 'admin_nova_conta' %}" class="btn btn-primary">+ Nova Conta</a>
 {% endblock %}
 {% block content %}
 <div class="stacked">

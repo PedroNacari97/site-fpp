@@ -6,10 +6,8 @@
 {% block header_subtitle %}<p class="page-subtitle">Visão consolidada dos clientes, emissões e reservas com hierarquia clara de informações.</p>{% endblock %}
 {% block menu_dashboard %}bg-[#2c5282]{% endblock %}
 {% block header_actions %}
-<div class="page-actions">
-  <a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="btn btn-secondary">+ Novo Cliente</a>
-  <a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="btn btn-primary">+ Nova Emissão</a>
-</div>
+<a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="btn btn-secondary">+ Novo Cliente</a>
+<a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="btn btn-primary">+ Nova Emissão</a>
 {% endblock %}
 
 {% block content %}
