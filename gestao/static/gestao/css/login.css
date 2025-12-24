@@ -48,6 +48,27 @@ body {
   border: 1px solid rgba(200, 220, 240, 0.5);
 }
 
+.dark-mode-toggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: auto;
+  padding: 6px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: none;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.dark-mode-toggle:hover {
+  transform: none;
+  background: transparent;
+  box-shadow: none;
+}
+
 /* Animação de Entrada */
 @keyframes slideIn {
   from {
@@ -183,6 +204,39 @@ button[type="submit"]:disabled,
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* ========== DARK MODE ========== */
+body.dark-mode {
+  background: #1a1a2e;
+  color: #e0e0e0;
+}
+
+body.dark-mode .login-container {
+  background: #0f3460;
+  border-color: #1e5a96;
+}
+
+body.dark-mode label {
+  color: #cbd7e6;
+}
+
+body.dark-mode input[type="text"],
+body.dark-mode input[type="password"],
+body.dark-mode select {
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border-color: #1e5a96;
+}
+
+body.dark-mode input[type="text"]:focus,
+body.dark-mode input[type="password"]:focus,
+body.dark-mode select:focus {
+  box-shadow: 0 0 0 4px rgba(30, 90, 150, 0.35);
+}
+
+body.dark-mode button[type="submit"] {
+  background: linear-gradient(135deg, #3b6ba5 0%, #2c5aa0 100%);
 }
 
 /* ========== MENSAGENS DE ERRO ========== */

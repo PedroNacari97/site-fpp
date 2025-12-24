@@ -14,6 +14,13 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-gray-100 text-black flex min-h-screen" style="font-family: 'Open Sans', sans-serif;">
+    <header class="mobile-header">
+        <button class="menu-toggle" data-sidebar-toggle aria-label="Alternar menu" aria-expanded="false">☰</button>
+        <h1>Gestão de Pontos</h1>
+        <div class="user-info">
+            <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+        </div>
+    </header>
         <aside data-sidebar aria-hidden="true" class="bg-[#0f172a] w-64 md:w-[200px] lg:w-64 md:fixed md:inset-y-0 md:left-0 md:z-40 lg:static p-6 md:p-4 min-h-screen shadow text-white transition-all duration-300 transform -translate-x-full md:translate-x-0">
         <button class="absolute top-4 right-4 text-white md:hidden" data-sidebar-toggle aria-label="Alternar menu" aria-expanded="false">☰</button>
         <div class="font-bold tracking-wide mb-8 pl-2 sidebar-label">

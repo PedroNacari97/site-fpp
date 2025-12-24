@@ -10,6 +10,7 @@
 </head>
 <body class="login-page">
   <div class="login-container">
+    <button class="dark-mode-toggle" id="darkModeToggle" type="button" aria-label="Alternar modo escuro">🌙</button>
     <img src="{% static 'painel_cliente/ncfly_logo.png' %}" alt="Logo NCfly" class="login-logo">
     <h2>Bem-vindo ao NCfly</h2>
     {% if messages %}
@@ -35,5 +36,21 @@
       <button type="submit">Entrar</button>
     </form>
   </div>
+  <script>
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const savedMode = localStorage.getItem('darkMode');
+
+    if (savedMode === 'enabled') {
+      document.body.classList.add('dark-mode');
+      darkModeToggle.textContent = '☀️';
+    }
+
+    darkModeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+      darkModeToggle.textContent = isDark ? '☀️' : '🌙';
+    });
+  </script>
 </body>
 </html>
