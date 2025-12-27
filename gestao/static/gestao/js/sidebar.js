@@ -21,4 +21,13 @@ document.addEventListener("DOMContentLoaded", () => {
   openButton.addEventListener("click", openSidebar);
   closeButton.addEventListener("click", closeSidebar);
   overlay.addEventListener("click", closeSidebar);
+
+  const navLinks = sidebar.querySelectorAll("a.nav-item");
+  navLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      if (window.innerWidth < 768) {
+        closeSidebar();
+      }
+    });
+  });
 });
