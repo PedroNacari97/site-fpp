@@ -202,26 +202,28 @@
         </header>
 
         <main class="app-main">
-            <div class="page-header">
-                <div>
-                    {% block header_subtitle %}{% endblock %}
+            <div class="page-shell">
+                <div class="page-header">
+                    <div>
+                        {% block header_subtitle %}{% endblock %}
+                    </div>
+                    <div class="page-actions">
+                        {% block header_actions %}{% endblock %}
+                    </div>
                 </div>
-                <div class="page-actions">
-                    {% block header_actions %}{% endblock %}
-                </div>
-            </div>
 
-            {% if messages %}
-            <div class="message-stack">
-                {% for message in messages %}
-                <div class="alert {% if 'success' in message.tags %}alert-success{% else %}alert-danger{% endif %}">
-                    {{ message }}
+                {% if messages %}
+                <div class="message-stack">
+                    {% for message in messages %}
+                    <div class="alert {% if 'success' in message.tags %}alert-success{% else %}alert-danger{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
-            {% endif %}
+                {% endif %}
 
-            {% block content %}{% endblock %}
+                {% block content %}{% endblock %}
+            </div>
         </main>
     </div>
 </div>
