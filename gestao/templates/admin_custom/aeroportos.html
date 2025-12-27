@@ -4,10 +4,10 @@
 {% block title %}Aeroportos{% endblock %}
 {% block header_title %}Aeroportos{% endblock %}
 {% block header_subtitle %}<p class="page-subtitle">Base limpa de aeroportos com pesquisa rápida e ações padronizadas.</p>{% endblock %}
-{% block menu_aeroportos %}bg-zinc-700 text-white{% endblock %}
+{% block menu_aeroportos %}is-active{% endblock %}
 {% block dados_complementares_open %}open{% endblock %}
 {% block header_actions %}
-<a href="{% url 'admin_novo_aeroporto' %}" class="btn btn-primary">+ Novo Aeroporto</a>
+<a href="{% url 'admin_novo_aeroporto' %}" class="btn">+ Novo Aeroporto</a>
 {% endblock %}
 {% block content %}
 <div class="stacked">
@@ -17,7 +17,7 @@
                 <p class="eyebrow">Filtros</p>
                 <h2 class="section-title">Buscar aeroportos</h2>
             </div>
-            <button class="btn btn-ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+            <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
         </div>
         <div class="filter-body is-open" data-filter-panel>
             <form method="get" class="form-grid">
@@ -26,8 +26,8 @@
                     <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar..." />
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Buscar</button>
-                    <a href="{% url 'admin_aeroportos' %}" class="btn btn-ghost">Limpar</a>
+                    <button type="submit" class="btn">Buscar</button>
+                    <a href="{% url 'admin_aeroportos' %}" class="btn btn--ghost">Limpar</a>
                 </div>
             </form>
         </div>
@@ -56,8 +56,8 @@
                         <td>{{ a.nome }}</td>
                         <td>
                             <div class="page-actions">
-                                <a href="{% url 'admin_editar_aeroporto' a.id %}" class="btn btn-link">Editar</a>
-                                <a href="{% url 'admin_deletar_aeroporto' a.id %}" class="btn btn-link">Deletar</a>
+                                <a href="{% url 'admin_editar_aeroporto' a.id %}" class="btn btn--ghost">Editar</a>
+                                <a href="{% url 'admin_deletar_aeroporto' a.id %}" class="btn btn--ghost">Deletar</a>
                             </div>
                         </td>
                     </tr>

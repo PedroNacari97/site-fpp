@@ -1,9 +1,12 @@
 {% extends 'painel_cliente/base_painel.html' %}
 
 {% block title %}Emissões de Hotéis{% endblock %}
+{% block page_title %}Emissões de Hotéis{% endblock %}
 
 {% block content %}
-        <h1>Emissões de Hotéis</h1>
+        <div class="page-actions">
+            <a class="btn btn--ghost btn--sm" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
+        </div>
         <table>
             <thead>
                 <tr>

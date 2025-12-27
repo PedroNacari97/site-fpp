@@ -2,10 +2,10 @@
 {% block title %}Contas Administradas{% endblock %}
 {% block header_title %}Contas Administradas{% endblock %}
 {% block header_subtitle %}<p class="page-subtitle">Titulares administrados com filtros claros, ações alinhadas e responsividade.</p>{% endblock %}
-{% block menu_contas_adm %}bg-zinc-700 text-white{% endblock %}
+{% block menu_contas_adm %}is-active{% endblock %}
 {% block header_actions %}
-<a href="{% url 'admin_nova_conta_administrada' %}" class="btn btn-secondary">+ Novo Titular Administrado</a>
-<a href="{% url 'admin_nova_conta' %}" class="btn btn-primary">+ Nova Conta</a>
+<a href="{% url 'admin_nova_conta_administrada' %}" class="btn btn--outline">+ Novo Titular Administrado</a>
+<a href="{% url 'admin_nova_conta' %}" class="btn">+ Nova Conta</a>
 {% endblock %}
 {% block content %}
 <div class="stacked">
@@ -15,7 +15,7 @@
                 <p class="eyebrow">Filtros</p>
                 <h2 class="section-title">Buscar contas administradas</h2>
             </div>
-            <button class="btn btn-ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+            <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
         </div>
         <div class="filter-body is-open" data-filter-panel>
             <form method="get" class="form-grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 md:items-end">
@@ -24,8 +24,8 @@
                     <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar conta ou programa..." />
                 </div>
                 <div class="form-actions flex gap-2 md:justify-end">
-                    <button type="submit" class="btn btn-primary flex-1 md:flex-none">Buscar</button>
-                    <a href="{% url 'admin_contas_administradas' %}" class="btn btn-ghost flex-1 md:flex-none">Limpar</a>
+                    <button type="submit" class="btn flex-1 md:flex-none">Buscar</button>
+                    <a href="{% url 'admin_contas_administradas' %}" class="btn btn--ghost flex-1 md:flex-none">Limpar</a>
                 </div>
             </form>
         </div>
@@ -75,7 +75,7 @@
                             </details>
                         </td>
                         <td class="hidden lg:table-cell">
-                            <a href="{% url 'admin_programas_da_conta_administrada' conta.conta_administrada.id %}" class="btn btn-secondary">Programas</a>
+                            <a href="{% url 'admin_programas_da_conta_administrada' conta.conta_administrada.id %}" class="btn btn--outline">Programas</a>
                         </td>
                     </tr>
                     {% empty %}
@@ -88,10 +88,10 @@
             <div>Mostrando página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</div>
             <div class="page-actions">
                 {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}" class="btn btn-ghost">Anterior</a>
+                <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}" class="btn btn--ghost">Anterior</a>
                 {% endif %}
                 {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}" class="btn btn-ghost">Próxima</a>
+                <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}" class="btn btn--ghost">Próxima</a>
                 {% endif %}
             </div>
         </div>

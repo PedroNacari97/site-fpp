@@ -4,10 +4,10 @@
 {% block title %}Dashboard{% endblock %}
 {% block header_title %}Dashboard Administrativo{% endblock %}
 {% block header_subtitle %}<p class="page-subtitle">Visão consolidada dos clientes, emissões e reservas com hierarquia clara de informações.</p>{% endblock %}
-{% block menu_dashboard %}bg-[#2c5282]{% endblock %}
+{% block menu_dashboard %}is-active{% endblock %}
 {% block header_actions %}
-<a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="btn btn-secondary">+ Novo Cliente</a>
-<a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="btn btn-primary">+ Nova Emissão</a>
+<a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="btn btn--outline">+ Novo Cliente</a>
+<a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="btn">+ Nova Emissão</a>
 {% endblock %}
 
 {% block content %}
@@ -18,7 +18,7 @@
         <p class="eyebrow">Filtro rápido</p>
         <p class="section-title">Selecione o cliente para personalizar a visão</p>
       </div>
-      <button class="btn btn-ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+      <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
     </div>
     <div class="filter-body is-open" data-filter-panel>
       <div class="form-grid">
@@ -85,7 +85,7 @@
           <p class="label">Valor de referência atual</p>
           <p class="stat-meta">R$ {{ prog.valor_referencia|floatformat:2 }}</p>
           {% if prog.conta_id %}
-          <a class="card-link btn btn-link" href="{% url 'admin_movimentacoes' prog.conta_id %}">Ver movimentações</a>
+          <a class="card-link btn btn--ghost" href="{% url 'admin_movimentacoes' prog.conta_id %}">Ver movimentações</a>
           {% endif %}
         </div>
       {% empty %}
@@ -112,7 +112,7 @@
           <li>Valor pago: <strong>R$ {{ emissoes.valor_pago|floatformat:2 }}</strong></li>
           <li>Economizado: <strong>R$ {{ emissoes.valor_economizado|floatformat:2 }}</strong></li>
         </ul>
-        <a class="card-link btn btn-link" href="{% url 'admin_emissoes' %}">Ver detalhes</a>
+        <a class="card-link btn btn--ghost" href="{% url 'admin_emissoes' %}">Ver detalhes</a>
       </div>
 
       <div class="stat-card">
@@ -124,7 +124,7 @@
           <li>Valor pago: <strong>R$ {{ hoteis.valor_pago|floatformat:2 }}</strong></li>
           <li>Economizado: <strong>R$ {{ hoteis.valor_economizado|floatformat:2 }}</strong></li>
         </ul>
-        <a class="card-link btn btn-link" href="{% url 'admin_hoteis' %}">Ver detalhes</a>
+        <a class="card-link btn btn--ghost" href="{% url 'admin_hoteis' %}">Ver detalhes</a>
       </div>
     </div>
   </section>

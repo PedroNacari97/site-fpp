@@ -1,10 +1,12 @@
 {% extends 'painel_cliente/base_painel.html' %}
 
 {% block title %}Emissões Detalhadas{% endblock %}
+{% block page_title %}Emissões Detalhadas{% endblock %}
 
 {% block content %}
-        <a class="back-link" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
-        <h1>Emissões Detalhadas</h1>
+        <div class="page-actions">
+            <a class="btn btn--ghost btn--sm" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
+        </div>
         <table>
             <thead>
                 <tr>
@@ -40,7 +42,7 @@
                     <td>{{ emissao.pontos_utilizados }}</td>
                     <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
                     <td>{{ emissao.detalhes|default:"—" }}</td>
-                    <td><a href="{% url 'emissao_pdf' emissao.id %}">PDF</a></td>
+                    <td><a class="btn btn--ghost btn--sm" href="{% url 'emissao_pdf' emissao.id %}">PDF</a></td>
                 </tr>
                 {% empty %}
                 <tr>

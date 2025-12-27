@@ -3,7 +3,7 @@
 {% block header_title %}Programas de Fidelidade de {{ cliente.usuario.get_full_name|default:cliente.usuario.username }}{% endblock %}
 {% block header_subtitle %}<p class="page-subtitle">Todos os programas do cliente com saldos, valores e acesso rápido às movimentações.</p>{% endblock %}
 {% block header_actions %}
-<a href="{% url 'admin_contas' %}" class="btn btn-ghost">Voltar para Contas</a>
+<a href="{% url 'admin_contas' %}" class="btn btn--ghost">Voltar para Contas</a>
 {% endblock %}
 
 {% block content %}
@@ -33,7 +33,7 @@
                     <td>R$ {{ c.valor_pago|floatformat:2 }}</td>
                     <td>R$ {{ c.valor_medio_milheiro|floatformat:2 }}</td>
                     <td>
-                        <a href="{% url 'admin_movimentacoes' c.conta.id %}" class="btn btn-link">Movimentações</a>
+                        <a href="{% url 'admin_movimentacoes' c.conta.id %}" class="btn btn--ghost">Movimentações</a>
                     </td>
                 </tr>
                 {% empty %}

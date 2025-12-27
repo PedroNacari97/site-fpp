@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}{% if form.instance.pk %}Editar Cotação{% else %}Nova Cotação de Voo{% endif %}{% endblock %}
 {% block header_title %}{% if form.instance.pk %}Editar Cotação{% else %}Nova Cotação de Voo{% endif %}{% endblock %}
-{% block menu_cotacoes_voo %}bg-zinc-700 text-white{% endblock %}
+{% block menu_cotacoes_voo %}is-active{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
 <script src="{% static 'gestao/js/form_save_handler.js' %}"></script>
@@ -313,8 +313,8 @@
 
     <!-- Botões de Ação -->
     <div class="form-actions">
-        <a href="{% url 'admin_cotacoes_voo' %}" class="btn btn-secondary">Cancelar</a>
-        <button class="btn-primary" type="submit">💾 Salvar cotação</button>
+        <a href="{% url 'admin_cotacoes_voo' %}" class="btn btn--outline">Cancelar</a>
+        <button class="btn" type="submit">💾 Salvar cotação</button>
     </div>
 </form>
 </div>

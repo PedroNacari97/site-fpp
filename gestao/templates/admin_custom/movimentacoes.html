@@ -4,8 +4,8 @@
 {% block header_title %}Movimentações do Programa: {{ conta.programa.nome }} — {{ titular_tipo }}: {{ titular_nome }}{% endblock %}
 {% block header_subtitle %}<p class="page-subtitle">Histórico organizado de pontos e valores com ações no mesmo lugar.</p>{% endblock %}
 {% block header_actions %}
-<a href="{% url 'admin_transferir_pontos' conta.id %}" class="btn btn-secondary">Transferir pontos</a>
-<a href="{% url 'admin_nova_movimentacao' conta.id %}" class="btn btn-primary">+ Nova Movimentação</a>
+<a href="{% url 'admin_transferir_pontos' conta.id %}" class="btn btn--outline">Transferir pontos</a>
+<a href="{% url 'admin_nova_movimentacao' conta.id %}" class="btn">+ Nova Movimentação</a>
 {% endblock %}
 
 {% block content %}
@@ -43,7 +43,7 @@
     {% if titular_programas_url %}
     <div class="form-actions justify-between">
         <div></div>
-        <a href="{{ titular_programas_url }}" class="btn btn-ghost">Voltar para Programas</a>
+        <a href="{{ titular_programas_url }}" class="btn btn--ghost">Voltar para Programas</a>
     </div>
     {% endif %}
 </section>

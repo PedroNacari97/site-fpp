@@ -1,9 +1,12 @@
 {% extends 'painel_cliente/base_painel.html' %}
 
 {% block title %}Movimentações de Pontos{% endblock %}
+{% block page_title %}Movimentações de Pontos{% endblock %}
 
 {% block content %}
-        <a class="back-link" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
+        <div class="page-actions">
+            <a class="btn btn--ghost btn--sm" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
+        </div>
         <h1>Extrato - {{ conta.programa.nome }}</h1>
         <table>
             <thead>
