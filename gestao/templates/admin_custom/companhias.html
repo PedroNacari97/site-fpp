@@ -2,10 +2,10 @@
 {% block title %}Companhias Aéreas{% endblock %}
 {% block header_title %}Companhias Aéreas{% endblock %}
 {% block header_subtitle %}<p class="page-subtitle">Catálogo organizado de companhias com filtros e ações consistentes.</p>{% endblock %}
-{% block menu_companhias %}bg-zinc-700 text-white{% endblock %}
+{% block menu_companhias %}is-active{% endblock %}
 {% block dados_complementares_open %}open{% endblock %}
 {% block header_actions %}
-<a href="{% url 'admin_nova_companhia' %}" class="btn btn-primary">+ Nova Companhia</a>
+<a href="{% url 'admin_nova_companhia' %}" class="btn">+ Nova Companhia</a>
 {% endblock %}
 {% block content %}
 <div class="stacked">
@@ -15,7 +15,7 @@
         <p class="eyebrow">Filtros</p>
         <h2 class="section-title">Buscar companhias</h2>
       </div>
-      <button class="btn btn-ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+      <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
     </div>
     <div class="filter-body is-open" data-filter-panel>
       <form method="get" class="form-grid">
@@ -24,8 +24,8 @@
           <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar..." />
         </div>
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Buscar</button>
-          <a href="{% url 'admin_companhias' %}" class="btn btn-ghost">Limpar</a>
+          <button type="submit" class="btn">Buscar</button>
+          <a href="{% url 'admin_companhias' %}" class="btn btn--ghost">Limpar</a>
         </div>
       </form>
     </div>
@@ -54,8 +54,8 @@
             <td><a href="{{ companhia.site_url }}" target="_blank">{{ companhia.site_url }}</a></td>
             <td>
               <div class="page-actions">
-                <a href="{% url 'admin_editar_companhia' companhia.id %}" class="btn btn-link">Editar</a>
-                <a href="{% url 'admin_deletar_companhia' companhia.id %}" class="btn btn-link">Deletar</a>
+                <a href="{% url 'admin_editar_companhia' companhia.id %}" class="btn btn--ghost">Editar</a>
+                <a href="{% url 'admin_deletar_companhia' companhia.id %}" class="btn btn--ghost">Deletar</a>
               </div>
             </td>
           </tr>

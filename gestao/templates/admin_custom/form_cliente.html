@@ -3,7 +3,7 @@
 
 {% block title %}{% if form.instance.pk %}Editar Cliente{% else %}Novo Cliente{% endif %}{% endblock %}
 {% block header_title %}{% if form.instance.pk %}Editar Cliente{% else %}Novo Cliente{% endif %}{% endblock %}
-{% block menu_clientes %}bg-[#2c5282]{% endblock %}
+{% block menu_clientes %}is-active{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
@@ -88,7 +88,7 @@
         {% endfor %}
     {% endif %}
     <div class="form-actions">
-        <button type="submit" class="btn-primary">Salvar</button>
+        <button type="submit" class="btn">Salvar</button>
     </div>
 </form>
 </div>

@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}{% if form.instance.pk %}Editar Conta Fidelidade{% else %}Nova Conta Fidelidade{% endif %}{% endblock %}
 {% block header_title %}{% if form.instance.pk %}Editar Conta Fidelidade{% else %}Nova Conta Fidelidade{% endif %}{% endblock %}
-{% block menu_contas %}bg-zinc-700 text-white{% endblock %}
+{% block menu_contas %}is-active{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
 {% endblock %}
@@ -97,7 +97,7 @@
         {% if form.validade.errors %}<div class="text-red-400 text-sm mt-1">{{ form.validade.errors }}</div>{% endif %}
     </div>
     <div class="form-actions">
-        <button type="submit" class="btn-primary">Salvar</button>
+        <button type="submit" class="btn">Salvar</button>
     </div>
 </form>
 </div>

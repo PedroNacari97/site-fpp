@@ -2,10 +2,10 @@
 {% block title %}Emissões Detalhadas{% endblock %}
 {% block header_title %}Emissões Detalhadas{% endblock %}
 {% block header_subtitle %}<p class="page-subtitle">Organização única para voos, passageiros e resultados financeiros.</p>{% endblock %}
-{% block menu_emissoes %}bg-zinc-700 text-white{% endblock %}
+{% block menu_emissoes %}is-active{% endblock %}
 {% block header_actions %}
-<a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}export=excel" class="btn btn-secondary">Exportar Excel</a>
-<a href="{% url 'admin_nova_emissao' %}" class="btn btn-primary">+ Nova Emissão</a>
+<a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}export=excel" class="btn btn--outline">Exportar Excel</a>
+<a href="{% url 'admin_nova_emissao' %}" class="btn">+ Nova Emissão</a>
 {% endblock %}
 
 {% block content %}
@@ -16,7 +16,7 @@
                 <p class="eyebrow">Filtros</p>
                 <h2 class="section-title">Buscar emissões</h2>
             </div>
-            <button class="btn btn-ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+            <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
         </div>
         <div class="filter-body is-open" data-filter-panel>
             <form method="get" class="form-grid">
@@ -53,8 +53,8 @@
                     <input type="date" id="data_fim" name="data_fim" value="{{ params.data_fim|default_if_none:'' }}" />
                 </div>
                 <div class="form-actions">
-                    <button class="btn btn-primary">Filtrar</button>
-                    <a href="{% url 'admin_emissoes' %}" class="btn btn-ghost">Limpar</a>
+                    <button class="btn">Filtrar</button>
+                    <a href="{% url 'admin_emissoes' %}" class="btn btn--ghost">Limpar</a>
                 </div>
             </form>
         </div>
@@ -108,9 +108,9 @@
                         <td>{{ e.detalhes }}</td>
                         <td>
                             <div class="page-actions">
-                                <a href="{% url 'admin_emissao_pdf' e.id %}" class="btn btn-link">PDF</a>
-                                <a href="{% url 'admin_editar_emissao' e.id %}" class="btn btn-link">Editar</a>
-                                <a href="{% url 'admin_deletar_emissao' e.id %}" class="btn btn-link">Deletar</a>
+                                <a href="{% url 'admin_emissao_pdf' e.id %}" class="btn btn--ghost">PDF</a>
+                                <a href="{% url 'admin_editar_emissao' e.id %}" class="btn btn--ghost">Editar</a>
+                                <a href="{% url 'admin_deletar_emissao' e.id %}" class="btn btn--ghost">Deletar</a>
                             </div>
                         </td>
                     </tr>

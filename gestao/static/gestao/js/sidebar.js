@@ -1,36 +1,24 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const sidebar = document.querySelector("[data-sidebar]");
-    const overlay = document.querySelector("[data-sidebar-overlay]");
-    const toggleButtons = document.querySelectorAll("[data-sidebar-toggle]");
+  const sidebar = document.querySelector("[data-sidebar]");
+  const overlay = document.querySelector("[data-sidebar-overlay]");
+  const openButton = document.querySelector("[data-sidebar-open]");
+  const closeButton = document.querySelector("[data-sidebar-close]");
 
-    if (!sidebar || toggleButtons.length === 0) return;
+  if (!sidebar || !overlay || !openButton || !closeButton) {
+    return;
+  }
 
-    toggleButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            // Desktop: colapsa sidebar
-            if (window.innerWidth >= 768) {
-                sidebar.classList.toggle("collapsed");
-            } 
-            // Mobile: abre/fecha sidebar
-            else {
-                document.body.classList.toggle("sidebar-open");
-            }
-        });
-    });
+  const openSidebar = () => {
+    sidebar.classList.add("is-open");
+    overlay.classList.add("is-visible");
+  };
 
-    // Fecha sidebar mobile ao clicar no overlay
-    if (overlay) {
-        overlay.addEventListener("click", () => {
-            document.body.classList.remove("sidebar-open");
-        });
-    }
+  const closeSidebar = () => {
+    sidebar.classList.remove("is-open");
+    overlay.classList.remove("is-visible");
+  };
 
-    const handleResize = () => {
-        if (window.innerWidth >= 768) {
-            document.body.classList.remove("sidebar-open");
-        }
-    };
-
-    window.addEventListener("resize", handleResize);
-    handleResize();
+  openButton.addEventListener("click", openSidebar);
+  closeButton.addEventListener("click", closeSidebar);
+  overlay.addEventListener("click", closeSidebar);
 });

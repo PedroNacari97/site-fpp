@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}{% if form.instance.pk %}Editar Emissão{% else %}Nova Emissão{% endif %}{% endblock %}
 {% block header_title %}{% if form.instance.pk %}Editar Emissão{% else %}Nova Emissão{% endif %}{% endblock %}
-{% block menu_emissoes %}bg-zinc-700 text-white{% endblock %}
+{% block menu_emissoes %}is-active{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
 <script src="{% static 'gestao/js/form_save_handler.js' %}"></script>
@@ -315,8 +315,8 @@
 
     <!-- Botões de Ação -->
     <div class="form-actions">
-        <a href="{% url 'admin_emissoes' %}" class="btn btn-secondary">Cancelar</a>
-        <button class="btn-primary" type="submit">💾 Salvar emissão</button>
+        <a href="{% url 'admin_emissoes' %}" class="btn btn--outline">Cancelar</a>
+        <button class="btn" type="submit">💾 Salvar emissão</button>
     </div>
 </form>
 </div>

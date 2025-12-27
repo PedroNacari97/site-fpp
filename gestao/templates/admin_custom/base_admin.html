@@ -2,7 +2,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <title>{% block title %}Administração{% endblock %} - Gestão de Pontos</title>
@@ -15,148 +14,196 @@
     {% block extra_head %}{% endblock %}
 </head>
 
-<body class="bg-gray-100 text-black min-h-screen">
+<body>
+<div class="app-shell">
+    <div class="sidebar-overlay" data-sidebar-overlay></div>
 
-<!-- ===== MOBILE HEADER ===== -->
-<header class="mobile-header md:hidden flex items-center justify-between px-4 py-3 bg-white shadow">
-    <button class="menu-toggle" data-sidebar-toggle aria-label="Abrir menu">☰</button>
-    <h1 class="font-bold">Gestão de Pontos</h1>
-    <span class="text-sm">
-        {{ request.user.get_full_name|default:request.user.username }}
-    </span>
-</header>
-
-<!-- ===== LAYOUT ===== -->
-<div class="app-layout">
-
-    <!-- ===== SIDEBAR ===== -->
-    <aside
-        data-sidebar
-        id="sidebar"
-        class="sidebar bg-[#0f172a] text-white shadow transition-all duration-300">
-
-        <!-- BOTÃO DESKTOP -->
-        <button
-            class="sidebar-toggle hidden md:flex items-center justify-center"
-            data-sidebar-toggle
-            aria-label="Colapsar menu">
-            ☰
-        </button>
-
-        <div class="font-bold tracking-wide mb-8 pl-4 sidebar-label">
-            Gestão Admin
+    <aside class="sidebar" data-sidebar>
+        <div class="sidebar-header">
+            <h1 class="sidebar-title">Gestão Admin</h1>
+            <button class="icon-button sidebar-close" type="button" aria-label="Fechar menu" data-sidebar-close>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18 6 6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                </svg>
+            </button>
         </div>
 
-        <nav class="flex flex-col space-y-2 px-2">
-
+        <nav class="sidebar-nav">
             {% if request.user.is_superuser %}
-                <a class="px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'admin_empresas' %}">
-                    <span class="sidebar-label">Empresas</span>
+                <a class="nav-item {% block menu_empresas %}{% endblock %}" href="{% url 'admin_empresas' %}">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 10h18v11H3z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M7 10V3h10v7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                    <span>Empresas</span>
                 </a>
             {% else %}
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_dashboard %}{% endblock %}" href="{% url 'admin_dashboard' %}">
-                    <span class="sidebar-label">Dashboard</span>
+                <a class="nav-item {% block menu_dashboard %}{% endblock %}" href="{% url 'admin_dashboard' %}">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 12 12 3l9 9" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M9 21V9h6v12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                    <span>Dashboard</span>
                 </a>
 
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_clientes %}{% endblock %}" href="{% url 'admin_clientes' %}">
-                    <span class="sidebar-label">Clientes</span>
+                <a class="nav-item {% block menu_clientes %}{% endblock %}" href="{% url 'admin_clientes' %}">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <circle cx="8.5" cy="7" r="4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M20 8v6M23 11h-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                    <span>Clientes</span>
                 </a>
 
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_contas %}{% endblock %}" href="{% url 'admin_contas' %}">
-                    <span class="sidebar-label">Contas Fidelidade</span>
+                <a class="nav-item {% block menu_contas %}{% endblock %}" href="{% url 'admin_contas' %}">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 4h16v16H4z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M8 2v4M16 2v4M4 10h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                    <span>Contas Fidelidade</span>
                 </a>
 
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_contas_adm %}{% endblock %}" href="{% url 'admin_contas_administradas' %}">
-                    <span class="sidebar-label">Contas Administradas</span>
+                <a class="nav-item {% block menu_contas_adm %}{% endblock %}" href="{% url 'admin_contas_administradas' %}">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 7h18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M3 12h18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M3 17h18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                    <span>Contas Administradas</span>
                 </a>
 
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_cotacoes_voo %}{% endblock %}" href="{% url 'admin_cotacoes_voo' %}">
-                    <span class="sidebar-label">Cotações</span>
+                <a class="nav-item {% block menu_cotacoes_voo %}{% endblock %}" href="{% url 'admin_cotacoes_voo' %}">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2 12h20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M5 12l6-6M5 12l6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                    <span>Cotações</span>
                 </a>
 
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_emissoes %}{% endblock %}" href="{% url 'admin_emissoes' %}">
-                    <span class="sidebar-label">Emissões</span>
+                <a class="nav-item {% block menu_emissoes %}{% endblock %}" href="{% url 'admin_emissoes' %}">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 4h16v16H4z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M7 7h10M7 11h10M7 15h6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                    <span>Emissões</span>
                 </a>
 
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_hoteis %}{% endblock %}" href="{% url 'admin_hoteis' %}">
-                    <span class="sidebar-label">Hotéis</span>
+                <a class="nav-item {% block menu_hoteis %}{% endblock %}" href="{% url 'admin_hoteis' %}">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 20h18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M4 20V7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v13" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M8 14h.01M12 14h.01M16 14h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                    <span>Hotéis</span>
                 </a>
 
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_calculadora %}{% endblock %}" href="{% url 'admin_calculadora_cotacao' %}">
-                    <span class="sidebar-label">Calculadora</span>
+                <a class="nav-item {% block menu_calculadora %}{% endblock %}" href="{% url 'admin_calculadora_cotacao' %}">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6 4h12v16H6z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M8 8h8M8 12h2M14 12h2M8 16h2M14 16h2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                    <span>Calculadora</span>
                 </a>
 
-                <details class="pt-4 group" {% block dados_complementares_open %}{% endblock %}>
-                    <summary class="px-3 py-2 rounded cursor-pointer hover:bg-[#2c5282] focus:outline-none flex items-center">
-                        <span class="sidebar-label">Dados Complementares</span>
+                <details class="nav-group" {% block dados_complementares_open %}{% endblock %}>
+                    <summary class="nav-item nav-item--summary">
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 4h16v16H4z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                            <path d="M8 12h8M12 8v8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        </svg>
+                        <span>Dados Complementares</span>
                     </summary>
-                    <div class="mt-2 ml-4 flex flex-col space-y-2">
-                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_aeroportos %}{% endblock %}" href="{% url 'admin_aeroportos' %}">
-                            <span class="sidebar-label">Aeroporto</span>
+                    <div class="nav-subitems">
+                        <a class="nav-item {% block menu_aeroportos %}{% endblock %}" href="{% url 'admin_aeroportos' %}">
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M2 12h20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                                <path d="M6 16l6-6 6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                            </svg>
+                            <span>Aeroporto</span>
                         </a>
-                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_companhias %}{% endblock %}" href="{% url 'admin_companhias' %}">
-                            <span class="sidebar-label">Companhia Aérea</span>
+                        <a class="nav-item {% block menu_companhias %}{% endblock %}" href="{% url 'admin_companhias' %}">
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M2 8l10 4 10-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                                <path d="M2 12l10 4 10-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                            </svg>
+                            <span>Companhia Aérea</span>
                         </a>
-                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_programas %}{% endblock %}" href="{% url 'admin_programas' %}">
-                            <span class="sidebar-label">Programa de Pontos</span>
+                        <a class="nav-item {% block menu_programas %}{% endblock %}" href="{% url 'admin_programas' %}">
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M4 4h16v6H4z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                                <path d="M4 14h16v6H4z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                            </svg>
+                            <span>Programa de Pontos</span>
                         </a>
                     </div>
                 </details>
             {% endif %}
 
-            <div class="pt-4">
-                <p class="px-3 text-gray-300 uppercase text-xs mb-2 sidebar-label">
-                    Administrativo
-                </p>
+            <div class="sidebar-divider"></div>
 
-                {% if not request.user.is_superuser %}
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}">
-                    <span class="sidebar-label">Auditoria</span>
-                </a>
+            <p class="sidebar-section">Administrativo</p>
+
+            {% if not request.user.is_superuser %}
+            <a class="nav-item {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 6v6l4 2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                </svg>
+                <span>Auditoria</span>
+            </a>
+            {% endif %}
+
+            {% with perfil=request.user.cliente_gestao.perfil %}
+                {% if perfil == "admin" or request.user.is_superuser %}
+                    <a class="nav-item" href="{% url 'user_list' %}">
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                            <circle cx="8.5" cy="7" r="4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        </svg>
+                        <span>Usuários Administradores</span>
+                    </a>
+                    <a class="nav-item {% block menu_operadores %}{% endblock %}" href="{% url 'operator_list' %}">
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 6v6l4 2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        </svg>
+                        <span>Operadores</span>
+                    </a>
                 {% endif %}
+            {% endwith %}
 
-                {% with perfil=request.user.cliente_gestao.perfil %}
-                    {% if perfil == "admin" or request.user.is_superuser %}
-                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'user_list' %}">
-                            <span class="sidebar-label">Usuários Administradores</span>
-                        </a>
-                        <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282] {% block menu_operadores %}{% endblock %}" href="{% url 'operator_list' %}">
-                            <span class="sidebar-label">Operadores</span>
-                        </a>
-                    {% endif %}
-                {% endwith %}
-
-                <a class="flex items-center px-3 py-2 rounded hover:bg-[#2c5282]" href="{% url 'logout' %}">
-                    <span class="sidebar-label">Sair</span>
-                </a>
-            </div>
+            <a class="nav-item" href="{% url 'logout' %}">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    <path d="M10 17l5-5-5-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    <path d="M15 12H3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                </svg>
+                <span>Sair</span>
+            </a>
         </nav>
     </aside>
 
-    <!-- OVERLAY MOBILE -->
-    <div data-sidebar-overlay class="fixed inset-0 bg-black/40 z-30 hidden"></div>
+    <div class="app-shell__content">
+        <header class="app-header">
+            <div class="app-header__left">
+                <button class="icon-button menu-button" type="button" aria-label="Abrir menu" data-sidebar-open>
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                </button>
+                <h2 class="app-header__title">
+                    {% block header_title %}Painel Administrativo{% endblock %}
+                </h2>
+            </div>
+            <div class="app-header__actions">
+                <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+                <a href="{% url 'logout' %}" class="btn btn--outline btn--sm">Logout</a>
+            </div>
+        </header>
 
-    <!-- ===== CONTEÚDO ===== -->
-    <main class="content">
-        <div class="page-container">
-            <!-- TOPBAR DESKTOP -->
-            <header class="topbar hidden md:flex items-center justify-between">
-                <div>
-                    <p class="eyebrow mb-1">Administração</p>
-                    <h1>Gestão de Pontos</h1>
-                </div>
-                <div class="user-meta">
-                    <span>{{ request.user.get_full_name|default:request.user.username }}</span>
-                    <a href="{% url 'logout' %}" class="btn btn-ghost">Logout</a>
-                </div>
-            </header>
-
+        <main class="app-main">
             <div class="page-header">
                 <div>
-                    <p class="eyebrow">Painel</p>
-                    <h1 class="page-title">
-                        {% block header_title %}Painel Administrativo{% endblock %}
-                    </h1>
                     {% block header_subtitle %}{% endblock %}
                 </div>
                 <div class="page-actions">
@@ -175,9 +222,8 @@
             {% endif %}
 
             {% block content %}{% endblock %}
-        </div>
-    </main>
-
+        </main>
+    </div>
 </div>
 
 {% block extra_body %}{% endblock %}

@@ -3,7 +3,7 @@
 
 {% block title %}Nova Empresa{% endblock %}
 {% block header_title %}Nova Empresa{% endblock %}
-{% block menu_empresas %}bg-[#2c5282]{% endblock %}
+{% block menu_empresas %}is-active{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
@@ -46,7 +46,7 @@
       {{ form.admin_password }}
     </div>
     <div class="form-actions">
-      <button type="submit" class="btn-primary">Salvar</button>
+      <button type="submit" class="btn">Salvar</button>
     </div>
   </form>
 </div>
