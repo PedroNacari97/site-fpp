@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const toggles = document.querySelectorAll("[data-sidebar-toggle]");
+  const toggles = document.querySelectorAll("[data-sidebar-toggle], [data-sidebar-open]");
   const sidebar = document.querySelector("[data-sidebar]");
   const overlay = document.querySelector("[data-sidebar-overlay]");
   const body = document.body;
