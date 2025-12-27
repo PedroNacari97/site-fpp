@@ -9,16 +9,17 @@
 
     <link rel="stylesheet" href="{% static 'gestao/admin_custom.css' %}">
     <link rel="stylesheet" href="{% static 'gestao/css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'gestao/css/layout.css' %}">
     <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
 
     {% block extra_head %}{% endblock %}
 </head>
 
 <body>
-<div class="app-shell">
+<div class="app-shell fpp-layout">
     <div class="sidebar-overlay" data-sidebar-overlay></div>
 
-    <aside class="sidebar" data-sidebar>
+    <aside class="sidebar fpp-sidebar" data-sidebar>
         <div class="sidebar-header">
             <h1 class="sidebar-title">Gestão Admin</h1>
             <button class="icon-button sidebar-close" type="button" aria-label="Fechar menu" data-sidebar-close>
@@ -201,28 +202,30 @@
             </div>
         </header>
 
-        <main class="app-main">
-            <div class="page-shell">
-                <div class="page-header">
-                    <div>
-                        {% block header_subtitle %}{% endblock %}
+        <main class="app-main fpp-main">
+            <div class="fpp-container">
+                <div class="page-shell">
+                    <div class="page-header fpp-header">
+                        <div>
+                            {% block header_subtitle %}{% endblock %}
+                        </div>
+                        <div class="page-actions fpp-actions">
+                            {% block header_actions %}{% endblock %}
+                        </div>
                     </div>
-                    <div class="page-actions">
-                        {% block header_actions %}{% endblock %}
-                    </div>
-                </div>
 
-                {% if messages %}
-                <div class="message-stack">
-                    {% for message in messages %}
-                    <div class="alert {% if 'success' in message.tags %}alert-success{% else %}alert-danger{% endif %}">
-                        {{ message }}
+                    {% if messages %}
+                    <div class="message-stack">
+                        {% for message in messages %}
+                        <div class="alert {% if 'success' in message.tags %}alert-success{% else %}alert-danger{% endif %}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
+                    {% endif %}
 
-                {% block content %}{% endblock %}
+                    {% block content %}{% endblock %}
+                </div>
             </div>
         </main>
     </div>

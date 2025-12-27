@@ -12,7 +12,7 @@
   --danger: #dc2626;
   --radius: 16px;
   --shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
-  --page-max-width: none;
+  --page-max-width: 1280px;
 }
 
 body {
@@ -128,7 +128,6 @@ a:hover {
   max-width: var(--page-max-width);
   margin: 0;
   padding: 0 0 2.5rem;
-  width: 100%;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -759,7 +758,7 @@ textarea {
 .app-main {
   flex: 1;
   overflow: auto;
-  padding: 24px;
+  padding: 0;
   background: var(--shell-bg);
 }
 
@@ -878,6 +877,6 @@ textarea {
 
 @media (max-width: 640px) {
   .app-main {
-    padding: 20px;
+    padding: 0;
   }
 }
