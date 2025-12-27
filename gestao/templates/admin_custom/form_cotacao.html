@@ -68,11 +68,12 @@
     <div class="section-card">
         <div class="section-card__header">
             <div>
-                <p class="eyebrow">Trechos do voo</p>
-                <h2 class="section-card__title">Voo de ida</h2>
-                <p class="section-card__description">Informe origem, destino e companhia aérea.</p>
+                <p class="eyebrow">Detalhes do voo</p>
+                <h2 class="section-card__title">Trechos e horários</h2>
+                <p class="section-card__description">Siga a ordem natural de preenchimento.</p>
             </div>
         </div>
+        <div class="section-title">Voo de ida</div>
         <div class="form-grid form-grid--3">
             <div>
                 <label class="form-label" for="{{ form.origem.id_for_label }}">IATA origem <span class="required-asterisk">*</span></label>
@@ -87,16 +88,14 @@
                 {{ form.companhia_aerea }}
             </div>
         </div>
-    </div>
-
-    <div class="section-card">
-        <div class="section-card__header">
+        <div class="form-grid form-grid--3">
             <div>
-                <p class="eyebrow">Horários</p>
-                <h2 class="section-card__title">Datas e horários</h2>
-                <p class="section-card__description">Separe os horários de ida e volta para evitar erros.</p>
+                <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span class="required-asterisk">*</span></label>
+                {{ form.data_ida }}
             </div>
         </div>
+        <hr class="section-divider" />
+        <div class="section-title">Voo de volta (quando existir)</div>
         <div class="toggle-row">
             <label class="toggle-pill" for="possui-volta">
                 <input type="checkbox" id="possui-volta" class="w-4 h-4" />
@@ -104,15 +103,13 @@
             </label>
             <p class="helper-text">Ative para informar o retorno.</p>
         </div>
-        <div class="form-grid form-grid--3">
-            <div>
-                <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span class="required-asterisk">*</span></label>
-                {{ form.data_ida }}
-            </div>
-            <div id="horario-volta" class="collapse-section">
-                <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data e horário da volta</label>
-                {{ form.data_volta }}
-                <p class="helper-text">Deixe vazio caso a viagem seja somente de ida.</p>
+        <div id="horario-volta" class="collapse-section">
+            <div class="form-grid form-grid--3">
+                <div>
+                    <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data e horário da volta</label>
+                    {{ form.data_volta }}
+                    <p class="helper-text">Deixe vazio caso a viagem seja somente de ida.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -141,8 +138,8 @@
         <div class="section-card__header">
             <div>
                 <p class="eyebrow">Escalas</p>
-                <h2 class="section-card__title">Conexões por trecho</h2>
-                <p class="section-card__description">Ative somente quando houver conexões.</p>
+                <h2 class="section-card__title">Escalas separadas por trecho</h2>
+                <p class="section-card__description">Ative somente quando houver conexões na ida ou na volta.</p>
             </div>
         </div>
         <div class="scale-grid">
@@ -151,7 +148,7 @@
                 <div class="toggle-row">
                     <input type="checkbox" id="ida-tem-escala" name="ida_tem_escala" class="w-4 h-4">
                     <div>
-                        <strong>Possui escala na ida?</strong>
+                        <strong>Adicionar escalas na ida</strong>
                         <p class="helper-text">Habilite para registrar conexões e tempos de espera.</p>
                     </div>
                 </div>
@@ -160,6 +157,10 @@
                         <div class="form-field--compact">
                             <label class="form-label" for="id_qtd_escalas_ida">Quantidade de escalas</label>
                             <input type="number" name="qtd_escalas_ida" id="id_qtd_escalas_ida" min="1" value="0" />
+                        </div>
+                        <div class="form-field--compact">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" class="btn btn--outline btn--sm" data-add-escala="ida">+ Adicionar escala</button>
                         </div>
                     </div>
                     <input type="hidden" name="total_escalas_ida" id="id_total_escalas_ida" value="0" />
@@ -172,7 +173,7 @@
                 <div class="toggle-row">
                     <input type="checkbox" id="volta-tem-escala" name="volta_tem_escala" class="w-4 h-4">
                     <div>
-                        <strong>Possui escala na volta?</strong>
+                        <strong>Adicionar escalas na volta</strong>
                         <p class="helper-text">Configure as conexões do retorno sem afetar a ida.</p>
                     </div>
                 </div>
@@ -181,6 +182,10 @@
                         <div class="form-field--compact">
                             <label class="form-label" for="id_qtd_escalas_volta">Quantidade de escalas</label>
                             <input type="number" name="qtd_escalas_volta" id="id_qtd_escalas_volta" min="1" value="0" />
+                        </div>
+                        <div class="form-field--compact">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" class="btn btn--outline btn--sm" data-add-escala="volta">+ Adicionar escala</button>
                         </div>
                     </div>
                     <input type="hidden" name="total_escalas_volta" id="id_total_escalas_volta" value="0" />
@@ -377,6 +382,7 @@ function initEscalaSection(tipo, data){
     const container = document.getElementById(`escalas-${tipo}-container`);
     const totalField = document.getElementById(`id_total_escalas_${tipo}`);
     const wrapper = document.getElementById(`escala-${tipo}-wrapper`);
+    const addButton = document.querySelector(`[data-add-escala="${tipo}"]`);
 
     if(!checkbox || !qtdInput || !container || !totalField || !wrapper){
         return;
@@ -421,7 +427,7 @@ function initEscalaSection(tipo, data){
             div.innerHTML = `
                 <label class="form-label">Escala ${i+1} - Aeroporto</label>
                 <select name="escala-${tipo}-${i}-aeroporto" required>${options}</select>
-                <label class="form-label">Duração</label>
+                <label class="form-label">Horário da escala</label>
                 <input type="time" name="escala-${tipo}-${i}-duracao" required />
                 <label class="form-label">Cidade/País (opcional)</label>
                 <input type="text" name="escala-${tipo}-${i}-cidade" />
@@ -445,6 +451,14 @@ function initEscalaSection(tipo, data){
 
     checkbox.addEventListener('change', renderEscalas);
     qtdInput.addEventListener('input', renderEscalas);
+    if (addButton) {
+        addButton.addEventListener('click', () => {
+            checkbox.checked = true;
+            const current = parseInt(qtdInput.value || 0);
+            qtdInput.value = current ? current + 1 : 1;
+            renderEscalas();
+        });
+    }
     renderEscalas();
 }
 
