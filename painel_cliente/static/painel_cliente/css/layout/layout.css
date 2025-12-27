@@ -19,7 +19,7 @@
   overflow-y: auto;
 }
 
-.sidebar.is-open {
+body.sidebar-open .sidebar {
   transform: translateX(0);
 }
 
@@ -33,7 +33,7 @@
   transition: opacity 0.2s ease-in-out;
 }
 
-.sidebar-overlay.is-visible {
+body.sidebar-open .sidebar-overlay {
   opacity: 1;
   pointer-events: auto;
 }

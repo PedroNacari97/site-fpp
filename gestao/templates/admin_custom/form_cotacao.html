@@ -11,8 +11,7 @@
 <div class="form-wrapper">
 <form method="post" class="form-shell" novalidate>
     {% csrf_token %}
-    
-    <!-- Mensagens de Erro -->
+
     {% if form.errors %}
     <div class="p-4 mb-4 rounded border border-red-200 bg-red-50 text-red-700 alert-rounded">
         <p class="font-semibold mb-2">❌ Não foi possível salvar. Corrija os pontos abaixo:</p>
@@ -29,50 +28,35 @@
     </div>
     {% endif %}
 
-    <!-- Cabeçalho do Formulário -->
     <div>
         <div class="form-title">{% if form.instance.pk %}Editar Cotação de Viagem{% else %}Formulário de Cotação de Viagem{% endif %}</div>
-        <p class="form-subtitle">Organize a cotação em passos claros: titular, programa, voos, escalas, passageiros e valores.</p>
+        <p class="form-subtitle">Organize a cotação em passos claros: cliente, trechos, horários, escalas e valores.</p>
     </div>
 
-    <!-- Seção 1: Identificação -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
-                <p class="eyebrow">Identificação</p>
-                <h2 class="section-card__title">Titular e origem dos pontos</h2>
-                <p class="section-card__description">Defina quem irá viajar e, se necessário, qual conta administrada fornecerá pontos.</p>
+                <p class="eyebrow">Dados do cliente</p>
+                <h2 class="section-card__title">Cliente</h2>
+                <p class="section-card__description">Defina quem irá viajar e a origem dos pontos.</p>
             </div>
         </div>
-        <div class="section-grid">
+        <div class="form-grid form-grid--3">
             <div>
                 <label class="form-label" for="{{ form.tipo_titular.id_for_label }}">Tipo de titular <span class="required-asterisk">*</span></label>
                 {{ form.tipo_titular }}
                 <p class="helper-text">Escolha entre cliente direto ou conta administrada.</p>
             </div>
-            <div id="cliente-wrapper">
-                <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente (quem irá viajar) <span class="required-asterisk">*</span></label>
+            <div id="cliente-wrapper" class="form-field--center">
+                <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente <span class="required-asterisk">*</span></label>
                 {{ form.cliente }}
                 <p class="helper-text">Mostrado somente quando o titular for um cliente.</p>
             </div>
             <div id="conta-adm-wrapper">
-                <label class="form-label" for="{{ form.conta_administrada.id_for_label }}">Conta administrada (origem dos pontos)</label>
+                <label class="form-label" for="{{ form.conta_administrada.id_for_label }}">Conta administrada</label>
                 {{ form.conta_administrada }}
                 <p class="helper-text">Opcional. Use quando o saldo vier de um titular administrado.</p>
             </div>
-        </div>
-    </div>
-
-    <!-- Seção 2: Programa de Pontos -->
-    <div class="section-card">
-        <div class="section-card__header">
-            <div>
-                <p class="eyebrow">Programa de pontos</p>
-                <h2 class="section-card__title">Escolha o programa</h2>
-                <p class="section-card__description">Selecionado automaticamente conforme o titular e suas contas.</p>
-            </div>
-        </div>
-        <div class="section-grid">
             <div>
                 <label class="form-label" for="{{ form.programa.id_for_label }}">Programa selecionado <span class="required-asterisk">*</span></label>
                 {{ form.programa }}
@@ -81,53 +65,58 @@
         </div>
     </div>
 
-    <!-- Seção 3: Detalhes da Viagem -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
-                <p class="eyebrow">Detalhes da viagem</p>
-                <h2 class="section-card__title">Voos de ida e volta</h2>
-                <p class="section-card__description">Preencha os trechos na ordem natural para evitar erros.</p>
+                <p class="eyebrow">Trechos do voo</p>
+                <h2 class="section-card__title">Voo de ida</h2>
+                <p class="section-card__description">Informe origem, destino e companhia aérea.</p>
             </div>
         </div>
-        
-        <!-- Voo de Ida -->
-        <div>
-            <div class="section-title">Voo de ida</div>
-            <div class="form-group">
-                <div>
-                    <label class="form-label" for="{{ form.origem.id_for_label }}">Aeroporto de partida <span class="required-asterisk">*</span></label>
-                    {{ form.origem }}
-                </div>
-                <div>
-                    <label class="form-label" for="{{ form.destino.id_for_label }}">Aeroporto de destino <span class="required-asterisk">*</span></label>
-                    {{ form.destino }}
-                </div>
+        <div class="form-grid form-grid--3">
+            <div>
+                <label class="form-label" for="{{ form.origem.id_for_label }}">IATA origem <span class="required-asterisk">*</span></label>
+                {{ form.origem }}
             </div>
-            <div class="form-group">
-                <div>
-                    <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span class="required-asterisk">*</span></label>
-                    {{ form.data_ida }}
-                </div>
+            <div>
+                <label class="form-label" for="{{ form.destino.id_for_label }}">IATA destino <span class="required-asterisk">*</span></label>
+                {{ form.destino }}
             </div>
-        </div>
-
-        <hr class="section-divider" />
-
-        <!-- Voo de Volta -->
-        <div>
-            <div class="section-title">Voo de volta (quando existir)</div>
-            <div class="form-group">
-                <div>
-                    <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data e horário da volta</label>
-                    {{ form.data_volta }}
-                    <p class="helper-text">Deixe vazio caso a viagem seja somente de ida.</p>
-                </div>
+            <div>
+                <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea <span class="required-asterisk">*</span></label>
+                {{ form.companhia_aerea }}
             </div>
         </div>
     </div>
 
-    <!-- Seção 4: Passageiros -->
+    <div class="section-card">
+        <div class="section-card__header">
+            <div>
+                <p class="eyebrow">Horários</p>
+                <h2 class="section-card__title">Datas e horários</h2>
+                <p class="section-card__description">Separe os horários de ida e volta para evitar erros.</p>
+            </div>
+        </div>
+        <div class="toggle-row">
+            <label class="toggle-pill" for="possui-volta">
+                <input type="checkbox" id="possui-volta" class="w-4 h-4" />
+                Possui volta?
+            </label>
+            <p class="helper-text">Ative para informar o retorno.</p>
+        </div>
+        <div class="form-grid form-grid--3">
+            <div>
+                <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span class="required-asterisk">*</span></label>
+                {{ form.data_ida }}
+            </div>
+            <div id="horario-volta" class="collapse-section">
+                <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data e horário da volta</label>
+                {{ form.data_volta }}
+                <p class="helper-text">Deixe vazio caso a viagem seja somente de ida.</p>
+            </div>
+        </div>
+    </div>
+
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -136,42 +125,40 @@
                 <p class="section-card__description">Informe o total de viajantes e a classe de serviço.</p>
             </div>
         </div>
-        <div class="form-group">
-            <div>
+        <div class="form-grid form-grid--3">
+            <div class="form-field--compact">
                 <label class="form-label" for="{{ form.qtd_passageiros.id_for_label }}">Quantidade de passageiros <span class="required-asterisk">*</span></label>
                 {{ form.qtd_passageiros }}
             </div>
-            <div>
+            <div class="form-field--compact">
                 <label class="form-label" for="{{ form.classe.id_for_label }}">Classe <span class="required-asterisk">*</span></label>
                 {{ form.classe }}
             </div>
         </div>
     </div>
 
-    <!-- Seção 5: Escalas -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
                 <p class="eyebrow">Escalas</p>
-                <h2 class="section-card__title">Escalas do voo</h2>
-                <p class="section-card__description">Ative somente quando houver conexões. Cada trecho tem sua própria lista.</p>
+                <h2 class="section-card__title">Conexões por trecho</h2>
+                <p class="section-card__description">Ative somente quando houver conexões.</p>
             </div>
         </div>
         <div class="scale-grid">
-            <!-- Escalas de Ida -->
             <div class="scale-card">
                 <div class="section-title">Escalas do voo de ida</div>
                 <div class="toggle-row">
                     <input type="checkbox" id="ida-tem-escala" name="ida_tem_escala" class="w-4 h-4">
                     <div>
-                        <strong>Adicionar escalas na ida</strong>
+                        <strong>Possui escala na ida?</strong>
                         <p class="helper-text">Habilite para registrar conexões e tempos de espera.</p>
                     </div>
                 </div>
                 <div id="escala-ida-wrapper" class="is-hidden">
-                    <div class="form-group">
-                        <div>
-                            <label class="form-label" for="id_qtd_escalas_ida">Quantidade de escalas na ida</label>
+                    <div class="form-grid form-grid--3">
+                        <div class="form-field--compact">
+                            <label class="form-label" for="id_qtd_escalas_ida">Quantidade de escalas</label>
                             <input type="number" name="qtd_escalas_ida" id="id_qtd_escalas_ida" min="1" value="0" />
                         </div>
                     </div>
@@ -180,20 +167,19 @@
                 </div>
             </div>
 
-            <!-- Escalas de Volta -->
             <div class="scale-card">
                 <div class="section-title">Escalas do voo de volta</div>
                 <div class="toggle-row">
                     <input type="checkbox" id="volta-tem-escala" name="volta_tem_escala" class="w-4 h-4">
                     <div>
-                        <strong>Adicionar escalas na volta</strong>
+                        <strong>Possui escala na volta?</strong>
                         <p class="helper-text">Configure as conexões do retorno sem afetar a ida.</p>
                     </div>
                 </div>
                 <div id="escala-volta-wrapper" class="is-hidden">
-                    <div class="form-group">
-                        <div>
-                            <label class="form-label" for="id_qtd_escalas_volta">Quantidade de escalas na volta</label>
+                    <div class="form-grid form-grid--3">
+                        <div class="form-field--compact">
+                            <label class="form-label" for="id_qtd_escalas_volta">Quantidade de escalas</label>
                             <input type="number" name="qtd_escalas_volta" id="id_qtd_escalas_volta" min="1" value="0" />
                         </div>
                     </div>
@@ -204,68 +190,54 @@
         </div>
     </div>
 
-    <!-- Seção 6: Companhia e Observações -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
-                <p class="eyebrow">Companhia e observações</p>
-                <h2 class="section-card__title">Detalhes complementares</h2>
-                <p class="section-card__description">Registre a companhia aérea e qualquer observação importante.</p>
-            </div>
-        </div>
-        <div class="section-grid">
-            <div>
-                <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea <span class="required-asterisk">*</span></label>
-                {{ form.companhia_aerea }}
-            </div>
-            <div class="form-group single">
-                <label class="form-label" for="{{ form.observacoes.id_for_label }}">Observações</label>
-                {{ form.observacoes }}
-            </div>
-        </div>
-    </div>
-
-    <!-- Seção 7: Uso de Pontos e Valores -->
-    <div class="section-card">
-        <div class="section-card__header">
-            <div>
-                <p class="eyebrow">Uso de pontos e valores</p>
+                <p class="eyebrow">Valores e milhas</p>
                 <h2 class="section-card__title">Resumo financeiro</h2>
-                <p class="section-card__description">Separe valores de passagem, taxas e condições de pagamento.</p>
+                <p class="section-card__description">Mantenha valores e milhas juntos para comparação.</p>
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-grid form-grid--3">
             <div>
                 <label class="form-label" for="{{ form.valor_passagem.id_for_label }}">Valor da passagem (R$) <span class="required-asterisk">*</span></label>
                 {{ form.valor_passagem }}
             </div>
-            <div>
-                <label class="form-label" for="{{ form.taxas.id_for_label }}">Taxas (R$) <span class="required-asterisk">*</span></label>
-                {{ form.taxas }}
-            </div>
-        </div>
-        <div class="form-group">
-            <div>
+            <div class="form-field--compact">
                 <label class="form-label" for="{{ form.milhas.id_for_label }}">Pontos/milhas</label>
                 {{ form.milhas }}
             </div>
-            <div>
+            <div class="form-field--compact">
                 <label class="form-label" for="{{ form.valor_milheiro.id_for_label }}">Valor do milheiro (R$)</label>
                 {{ form.valor_milheiro }}
             </div>
         </div>
-        <div class="form-group">
+    </div>
+
+    <div class="section-card">
+        <div class="section-card__header">
             <div>
+                <p class="eyebrow">Taxas</p>
+                <h2 class="section-card__title">Taxas e condições</h2>
+                <p class="section-card__description">Controle taxas, parcelas e validade da proposta.</p>
+            </div>
+        </div>
+        <div class="form-grid form-grid--3">
+            <div>
+                <label class="form-label" for="{{ form.taxas.id_for_label }}">Taxas (R$) <span class="required-asterisk">*</span></label>
+                {{ form.taxas }}
+            </div>
+            <div class="form-field--compact">
                 <label class="form-label" for="{{ form.parcelas.id_for_label }}">Parcelas sem juros</label>
                 {{ form.parcelas }}
             </div>
-            <div>
+            <div class="form-field--compact">
                 <label class="form-label" for="{{ form.juros.id_for_label }}">Juros (%)</label>
                 {{ form.juros }}
             </div>
         </div>
-        <div class="form-group">
-            <div>
+        <div class="form-grid form-grid--3">
+            <div class="form-field--compact">
                 <label class="form-label" for="{{ form.desconto.id_for_label }}">Desconto (%)</label>
                 {{ form.desconto }}
             </div>
@@ -273,45 +245,19 @@
                 <label class="form-label" for="{{ form.validade.id_for_label }}">Validade da cotação</label>
                 {{ form.validade }}
             </div>
-        </div>
-        <div class="form-group">
             <div>
                 <label class="form-label" for="{{ form.status.id_for_label }}">Status <span class="required-asterisk">*</span></label>
                 {{ form.status }}
             </div>
         </div>
-    </div>
-
-    <!-- Seção 8: Resumo Visual -->
-    <div class="section-card">
-        <div class="section-card__header">
+        <div class="form-grid form-grid--1">
             <div>
-                <p class="eyebrow">Resumo visual</p>
-                <h2 class="section-card__title">Conferência rápida</h2>
-                <p class="section-card__description">Atualizado conforme você preenche os campos.</p>
-            </div>
-        </div>
-        <div class="summary-grid">
-            <div class="summary-pill">
-                <span>Trechos</span>
-                <div id="resumo-trechos">Preencha origem e destino.</div>
-            </div>
-            <div class="summary-pill">
-                <span>Datas</span>
-                <div id="resumo-datas">Inclua as datas de ida e volta.</div>
-            </div>
-            <div class="summary-pill">
-                <span>Passageiros</span>
-                <div id="resumo-passageiros">Informe quantidade e classe.</div>
-            </div>
-            <div class="summary-pill">
-                <span>Valores</span>
-                <div id="resumo-valores">Valores e pontos ainda não preenchidos.</div>
+                <label class="form-label" for="{{ form.observacoes.id_for_label }}">Observações</label>
+                {{ form.observacoes }}
             </div>
         </div>
     </div>
 
-    <!-- Botões de Ação -->
     <div class="form-actions">
         <a href="{% url 'admin_cotacoes_voo' %}" class="btn btn--outline">Cancelar</a>
         <button class="btn" type="submit">💾 Salvar cotação</button>
@@ -337,6 +283,28 @@ const resumoTrechos = document.getElementById('resumo-trechos');
 const resumoDatas = document.getElementById('resumo-datas');
 const resumoPassageiros = document.getElementById('resumo-passageiros');
 const resumoValores = document.getElementById('resumo-valores');
+const possuiVoltaToggle = document.getElementById('possui-volta');
+const horarioVolta = document.getElementById('horario-volta');
+const dataVoltaField = document.getElementById('id_data_volta');
+
+function setVoltaVisibility() {
+    if (!horarioVolta) return;
+    const shouldShow = (possuiVoltaToggle && possuiVoltaToggle.checked) || (dataVoltaField && dataVoltaField.value);
+    horarioVolta.classList.toggle('is-visible', shouldShow);
+    if (possuiVoltaToggle) {
+        possuiVoltaToggle.checked = shouldShow;
+    }
+}
+
+if (possuiVoltaToggle) {
+    setVoltaVisibility();
+    possuiVoltaToggle.addEventListener('change', () => {
+        if (!possuiVoltaToggle.checked && dataVoltaField) {
+            dataVoltaField.value = '';
+        }
+        setVoltaVisibility();
+    });
+}
 
 function getProgramasDisponiveis() {
     const tipo = tipoTitularSelect ? tipoTitularSelect.value : "cliente";
@@ -520,14 +488,5 @@ function updateResumoVisual(){
         resumoValores.textContent = `${valorTxt} • ${taxaTxt} • ${milhasTxt}`;
     }
 }
-
-['id_origem','id_destino','id_data_ida','id_data_volta','id_qtd_passageiros','id_classe','id_valor_passagem','id_taxas','id_milhas'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el){
-        el.addEventListener('input', updateResumoVisual);
-        el.addEventListener('change', updateResumoVisual);
-    }
-});
-updateResumoVisual();
 </script>
 {% endblock %}
