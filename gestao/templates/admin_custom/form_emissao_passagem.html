@@ -11,8 +11,7 @@
 <div class="form-wrapper">
 <form method="post" class="form-shell" novalidate>
     {% csrf_token %}
-    
-    <!-- Mensagens de Erro -->
+
     {% if form.errors %}
     <div class="p-4 mb-4 rounded border border-red-200 bg-red-50 text-red-700 alert-rounded">
         <p class="font-semibold mb-2">❌ Não foi possível salvar. Corrija os pontos abaixo:</p>
@@ -29,49 +28,34 @@
     </div>
     {% endif %}
 
-    <!-- Cabeçalho do Formulário -->
     <div>
         <div class="form-title">{% if form.instance.pk %}Editar Emissão{% else %}Nova Emissão{% endif %}</div>
-        <p class="form-subtitle">Fluxo organizado: titular, programa, voos, passageiros, escalas e valores.</p>
+        <p class="form-subtitle">Fluxo organizado: cliente, trechos, horários, passageiros, escalas e valores.</p>
     </div>
 
-    <!-- Seção 1: Identificação -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
-                <p class="eyebrow">Identificação</p>
-                <h2 class="section-card__title">Titular e conta de pontos</h2>
-                <p class="section-card__description">Mostre apenas o que importa para o tipo de titular escolhido.</p>
+                <p class="eyebrow">Dados do cliente</p>
+                <h2 class="section-card__title">Cliente</h2>
+                <p class="section-card__description">Selecione o cliente e a origem dos pontos da emissão.</p>
             </div>
         </div>
-        <div class="section-grid">
+        <div class="form-grid form-grid--3">
             <div>
                 <label class="form-label" for="{{ form.tipo_titular.id_for_label }}">Tipo de emissão <span class="required-asterisk">*</span></label>
                 {{ form.tipo_titular }}
-                <p class="helper-text">Defina se a emissão usa um cliente ou uma conta administrada.</p>
+                <p class="helper-text">Defina se a emissão usa cliente ou conta administrada.</p>
             </div>
-            <div id="cliente-wrapper">
-                <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente (quem irá viajar) <span class="required-asterisk">*</span></label>
+            <div id="cliente-wrapper" class="form-field--center">
+                <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente <span class="required-asterisk">*</span></label>
                 {{ form.cliente }}
             </div>
             <div id="conta-adm-wrapper">
-                <label class="form-label" for="{{ form.conta_administrada.id_for_label }}">Conta administrada (origem dos pontos)</label>
+                <label class="form-label" for="{{ form.conta_administrada.id_for_label }}">Conta administrada</label>
                 {{ form.conta_administrada }}
                 <p class="helper-text">Aparece apenas quando o titular for administrado.</p>
             </div>
-        </div>
-    </div>
-
-    <!-- Seção 2: Programa de Pontos -->
-    <div class="section-card">
-        <div class="section-card__header">
-            <div>
-                <p class="eyebrow">Programa de pontos</p>
-                <h2 class="section-card__title">Selecione o programa</h2>
-                <p class="section-card__description">Disponível conforme o titular e o saldo.</p>
-            </div>
-        </div>
-        <div class="section-grid">
             <div>
                 <label class="form-label" for="{{ form.programa.id_for_label }}">Programa <span class="required-asterisk">*</span></label>
                 {{ form.programa }}
@@ -80,53 +64,58 @@
         </div>
     </div>
 
-    <!-- Seção 3: Detalhes do Voo -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
-                <p class="eyebrow">Detalhes do voo</p>
-                <h2 class="section-card__title">Trechos e horários</h2>
-                <p class="section-card__description">Siga a ordem natural de preenchimento.</p>
+                <p class="eyebrow">Trechos do voo</p>
+                <h2 class="section-card__title">Voo de ida</h2>
+                <p class="section-card__description">Informe origem, destino e companhia aérea.</p>
             </div>
         </div>
-        
-        <!-- Voo de Ida -->
-        <div>
-            <div class="section-title">Voo de ida</div>
-            <div class="form-group">
-                <div>
-                    <label class="form-label" for="{{ form.aeroporto_partida.id_for_label }}">Aeroporto de partida <span class="required-asterisk">*</span></label>
-                    {{ form.aeroporto_partida }}
-                </div>
-                <div>
-                    <label class="form-label" for="{{ form.aeroporto_destino.id_for_label }}">Aeroporto de destino <span class="required-asterisk">*</span></label>
-                    {{ form.aeroporto_destino }}
-                </div>
+        <div class="form-grid form-grid--3">
+            <div>
+                <label class="form-label" for="{{ form.aeroporto_partida.id_for_label }}">IATA origem <span class="required-asterisk">*</span></label>
+                {{ form.aeroporto_partida }}
             </div>
-            <div class="form-group">
-                <div>
-                    <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span class="required-asterisk">*</span></label>
-                    {{ form.data_ida }}
-                </div>
+            <div>
+                <label class="form-label" for="{{ form.aeroporto_destino.id_for_label }}">IATA destino <span class="required-asterisk">*</span></label>
+                {{ form.aeroporto_destino }}
             </div>
-        </div>
-
-        <hr class="section-divider" />
-
-        <!-- Voo de Volta -->
-        <div>
-            <div class="section-title">Voo de volta (quando existir)</div>
-            <div class="form-group">
-                <div>
-                    <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data e horário da volta</label>
-                    {{ form.data_volta }}
-                    <p class="helper-text">Deixe vazio caso o bilhete seja somente de ida.</p>
-                </div>
+            <div>
+                <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea <span class="required-asterisk">*</span></label>
+                {{ form.companhia_aerea }}
             </div>
         </div>
     </div>
 
-    <!-- Seção 4: Passageiros -->
+    <div class="section-card">
+        <div class="section-card__header">
+            <div>
+                <p class="eyebrow">Horários</p>
+                <h2 class="section-card__title">Datas e horários</h2>
+                <p class="section-card__description">Separe os horários de ida e volta para evitar erros.</p>
+            </div>
+        </div>
+        <div class="toggle-row">
+            <label class="toggle-pill" for="possui-volta">
+                <input type="checkbox" id="possui-volta" class="w-4 h-4" />
+                Possui volta?
+            </label>
+            <p class="helper-text">Ative para informar o retorno.</p>
+        </div>
+        <div class="form-grid form-grid--3">
+            <div>
+                <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span class="required-asterisk">*</span></label>
+                {{ form.data_ida }}
+            </div>
+            <div id="horario-volta" class="collapse-section">
+                <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data e horário da volta</label>
+                {{ form.data_volta }}
+                <p class="helper-text">Deixe vazio caso seja somente ida.</p>
+            </div>
+        </div>
+    </div>
+
     <div class="section-card">
         <div class="section-card__header">
             <div>
@@ -135,16 +124,16 @@
                 <p class="section-card__description">Informe quantidades para gerar os formulários individuais.</p>
             </div>
         </div>
-        <div class="form-group">
-            <div>
+        <div class="form-grid form-grid--3">
+            <div class="form-field--compact">
                 <label class="form-label" for="{{ form.qtd_adultos.id_for_label }}">Adultos <span class="required-asterisk">*</span></label>
                 {{ form.qtd_adultos }}
             </div>
-            <div>
+            <div class="form-field--compact">
                 <label class="form-label" for="{{ form.qtd_criancas.id_for_label }}">Crianças</label>
                 {{ form.qtd_criancas }}
             </div>
-            <div>
+            <div class="form-field--compact">
                 <label class="form-label" for="{{ form.qtd_bebes.id_for_label }}">Bebês</label>
                 {{ form.qtd_bebes }}
             </div>
@@ -157,30 +146,28 @@
         </div>
     </div>
 
-    <!-- Seção 5: Escalas -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
                 <p class="eyebrow">Escalas</p>
-                <h2 class="section-card__title">Escalas separadas por trecho</h2>
-                <p class="section-card__description">Ative apenas quando houver conexões na ida ou na volta.</p>
+                <h2 class="section-card__title">Conexões por trecho</h2>
+                <p class="section-card__description">Ative apenas quando houver escalas na ida ou na volta.</p>
             </div>
         </div>
         <div class="scale-grid">
-            <!-- Escalas de Ida -->
             <div class="scale-card">
                 <div class="section-title">Escalas do voo de ida</div>
                 <div class="toggle-row">
                     <input type="checkbox" id="ida-tem-escala" name="ida_tem_escala" class="w-4 h-4">
                     <div>
-                        <strong>Adicionar escalas na ida</strong>
+                        <strong>Possui escala na ida?</strong>
                         <p class="helper-text">Habilite para registrar conexões e tempos de espera.</p>
                     </div>
                 </div>
                 <div id="escala-ida-wrapper" class="is-hidden">
-                    <div class="form-group">
-                        <div>
-                            <label class="form-label" for="id_qtd_escalas_ida">Quantidade de escalas na ida</label>
+                    <div class="form-grid form-grid--3">
+                        <div class="form-field--compact">
+                            <label class="form-label" for="id_qtd_escalas_ida">Quantidade de escalas</label>
                             <input type="number" name="qtd_escalas_ida" id="id_qtd_escalas_ida" min="1" value="0" />
                         </div>
                     </div>
@@ -189,20 +176,19 @@
                 </div>
             </div>
 
-            <!-- Escalas de Volta -->
             <div class="scale-card">
                 <div class="section-title">Escalas do voo de volta</div>
                 <div class="toggle-row">
                     <input type="checkbox" id="volta-tem-escala" name="volta_tem_escala" class="w-4 h-4">
                     <div>
-                        <strong>Adicionar escalas na volta</strong>
+                        <strong>Possui escala na volta?</strong>
                         <p class="helper-text">Controle o retorno separadamente.</p>
                     </div>
                 </div>
                 <div id="escala-volta-wrapper" class="is-hidden">
-                    <div class="form-group">
-                        <div>
-                            <label class="form-label" for="id_qtd_escalas_volta">Quantidade de escalas na volta</label>
+                    <div class="form-grid form-grid--3">
+                        <div class="form-field--compact">
+                            <label class="form-label" for="id_qtd_escalas_volta">Quantidade de escalas</label>
                             <input type="number" name="qtd_escalas_volta" id="id_qtd_escalas_volta" min="1" value="0" />
                         </div>
                     </div>
@@ -213,107 +199,60 @@
         </div>
     </div>
 
-    <!-- Seção 6: Companhia e Localizador -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
-                <p class="eyebrow">Companhia e localizador</p>
-                <h2 class="section-card__title">Dados do bilhete</h2>
-                <p class="section-card__description">Consolide as informações do emissor e código de reserva.</p>
-            </div>
-        </div>
-        <div class="form-group">
-            <div>
-                <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea <span class="required-asterisk">*</span></label>
-                {{ form.companhia_aerea }}
-            </div>
-            <div>
-                <label class="form-label" for="{{ form.localizador.id_for_label }}">Localizador <span class="required-asterisk">*</span></label>
-                {{ form.localizador }}
-            </div>
-        </div>
-    </div>
-
-    <!-- Seção 7: Valores e Pontos -->
-    <div class="section-card">
-        <div class="section-card__header">
-            <div>
-                <p class="eyebrow">Valores e pontos</p>
+                <p class="eyebrow">Valores e milhas</p>
                 <h2 class="section-card__title">Resumo financeiro</h2>
-                <p class="section-card__description">Valores claros para comparação de custo e economia.</p>
+                <p class="section-card__description">Mantenha valores e milhas juntos para comparação.</p>
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-grid form-grid--3">
+            <div class="form-field--compact">
+                <label class="form-label" for="{{ form.pontos_utilizados.id_for_label }}">Quantidade de milhas</label>
+                {{ form.pontos_utilizados }}
+            </div>
+            <div class="form-field--compact">
+                <label class="form-label" for="{{ form.valor_referencia_pontos.id_for_label }}">Valor do milheiro (R$)</label>
+                {{ form.valor_referencia_pontos }}
+            </div>
+            <div class="form-field--compact">
+                <label class="form-label" for="{{ form.valor_pago.id_for_label }}">Taxa da companhia (R$) <span class="required-asterisk">*</span></label>
+                {{ form.valor_pago }}
+            </div>
+        </div>
+        <div class="form-grid form-grid--3">
             <div>
                 <label class="form-label" for="{{ form.valor_referencia.id_for_label }}">Valor de referência (R$) <span class="required-asterisk">*</span></label>
                 {{ form.valor_referencia }}
             </div>
             <div>
-                <label class="form-label" for="{{ form.valor_pago.id_for_label }}">Valor pago (R$) <span class="required-asterisk">*</span></label>
-                {{ form.valor_pago }}
+                <label class="form-label" for="{{ form.economia_obtida.id_for_label }}">Economia obtida (R$)</label>
+                {{ form.economia_obtida }}
             </div>
-        </div>
-        <div class="form-group">
-            <div>
-                <label class="form-label" for="{{ form.pontos_utilizados.id_for_label }}">Pontos utilizados</label>
-                {{ form.pontos_utilizados }}
-            </div>
-            <div>
-                <label class="form-label" for="{{ form.valor_referencia_pontos.id_for_label }}">Referência dos pontos (R$)</label>
-                {{ form.valor_referencia_pontos }}
-            </div>
-        </div>
-        <div class="form-group single">
-            <label class="form-label" for="{{ form.economia_obtida.id_for_label }}">Economia obtida (R$)</label>
-            {{ form.economia_obtida }}
         </div>
     </div>
 
-    <!-- Seção 8: Observações -->
     <div class="section-card">
         <div class="section-card__header">
             <div>
-                <p class="eyebrow">Observações</p>
-                <h2 class="section-card__title">Detalhes do atendimento</h2>
-                <p class="section-card__description">Adicione instruções, preferências ou alertas.</p>
+                <p class="eyebrow">Taxas</p>
+                <h2 class="section-card__title">Detalhes adicionais</h2>
+                <p class="section-card__description">Adicione localizador e observações relevantes.</p>
             </div>
         </div>
-        <div class="form-group single">
-            <label class="form-label" for="{{ form.detalhes.id_for_label }}">Detalhes</label>
-            {{ form.detalhes }}
-        </div>
-    </div>
-
-    <!-- Seção 9: Resumo Visual -->
-    <div class="section-card">
-        <div class="section-card__header">
+        <div class="form-grid form-grid--2">
             <div>
-                <p class="eyebrow">Resumo visual</p>
-                <h2 class="section-card__title">Conferência rápida</h2>
-                <p class="section-card__description">Acompanhe os principais pontos conforme o preenchimento.</p>
+                <label class="form-label" for="{{ form.localizador.id_for_label }}">Localizador <span class="required-asterisk">*</span></label>
+                {{ form.localizador }}
             </div>
-        </div>
-        <div class="summary-grid">
-            <div class="summary-pill">
-                <span>Trechos</span>
-                <div id="resumo-trechos">Preencha partida e destino.</div>
-            </div>
-            <div class="summary-pill">
-                <span>Datas</span>
-                <div id="resumo-datas">Datas de ida e volta pendentes.</div>
-            </div>
-            <div class="summary-pill">
-                <span>Passageiros</span>
-                <div id="resumo-passageiros">Informe adultos, crianças e bebês.</div>
-            </div>
-            <div class="summary-pill">
-                <span>Valores</span>
-                <div id="resumo-valores">Valores e pontos ainda não preenchidos.</div>
+            <div>
+                <label class="form-label" for="{{ form.detalhes.id_for_label }}">Observações</label>
+                {{ form.detalhes }}
             </div>
         </div>
     </div>
 
-    <!-- Botões de Ação -->
     <div class="form-actions">
         <a href="{% url 'admin_emissoes' %}" class="btn btn--outline">Cancelar</a>
         <button class="btn" type="submit">💾 Salvar emissão</button>
@@ -346,6 +285,28 @@ const resumoTrechos = document.getElementById('resumo-trechos');
 const resumoDatas = document.getElementById('resumo-datas');
 const resumoPassageiros = document.getElementById('resumo-passageiros');
 const resumoValores = document.getElementById('resumo-valores');
+const possuiVoltaToggle = document.getElementById('possui-volta');
+const horarioVolta = document.getElementById('horario-volta');
+const dataVoltaField = document.getElementById('id_data_volta');
+
+function setVoltaVisibility() {
+    if (!horarioVolta) return;
+    const shouldShow = (possuiVoltaToggle && possuiVoltaToggle.checked) || (dataVoltaField && dataVoltaField.value);
+    horarioVolta.classList.toggle('is-visible', shouldShow);
+    if (possuiVoltaToggle) {
+        possuiVoltaToggle.checked = shouldShow;
+    }
+}
+
+if (possuiVoltaToggle) {
+    setVoltaVisibility();
+    possuiVoltaToggle.addEventListener('change', () => {
+        if (!possuiVoltaToggle.checked && dataVoltaField) {
+            dataVoltaField.value = '';
+        }
+        setVoltaVisibility();
+    });
+}
 
 function getProgramasDisponiveis() {
     const tipo = tipoTitularSelect ? tipoTitularSelect.value : "cliente";
@@ -543,7 +504,7 @@ function initEscalaSection(tipo, data){
             div.innerHTML = `
                 <label class="form-label">Escala ${i+1} - Aeroporto</label>
                 <select name="escala-${tipo}-${i}-aeroporto" required>${options}</select>
-                <label class="form-label">Duração</label>
+                <label class="form-label">Horário da escala</label>
                 <input type="time" name="escala-${tipo}-${i}-duracao" required />
                 <label class="form-label">Cidade/País (opcional)</label>
                 <input type="text" name="escala-${tipo}-${i}-cidade" />
@@ -576,20 +537,20 @@ toggleTitularFields();
 updateProgramaOptions();
 
 function updateResumoVisual(){
-    const partida = document.getElementById('id_aeroporto_partida');
+    const origem = document.getElementById('id_aeroporto_partida');
     const destino = document.getElementById('id_aeroporto_destino');
     const dataIda = document.getElementById('id_data_ida');
     const dataVolta = document.getElementById('id_data_volta');
     const adultos = document.getElementById('id_qtd_adultos');
     const criancas = document.getElementById('id_qtd_criancas');
     const bebes = document.getElementById('id_qtd_bebes');
-    const valorRef = document.getElementById('id_valor_referencia');
+    const valorReferencia = document.getElementById('id_valor_referencia');
     const valorPago = document.getElementById('id_valor_pago');
     const pontos = document.getElementById('id_pontos_utilizados');
 
     if(resumoTrechos){
-        if(partida && partida.value && destino && destino.value){
-            resumoTrechos.textContent = `${partida.options[partida.selectedIndex]?.text || partida.value} → ${destino.options[destino.selectedIndex]?.text || destino.value}`;
+        if(origem && origem.value && destino && destino.value){
+            resumoTrechos.textContent = `${origem.options[origem.selectedIndex]?.text || origem.value} → ${destino.options[destino.selectedIndex]?.text || destino.value}`;
         } else {
             resumoTrechos.textContent = "Preencha partida e destino.";
         }
@@ -600,27 +561,15 @@ function updateResumoVisual(){
         resumoDatas.textContent = `${idaTxt} • ${voltaTxt}`;
     }
     if(resumoPassageiros){
-        const qtdAdultos = adultos && adultos.value ? parseInt(adultos.value) : 0;
-        const qtdCriancas = criancas && criancas.value ? parseInt(criancas.value) : 0;
-        const qtdBebes = bebes && bebes.value ? parseInt(bebes.value) : 0;
-        const total = qtdAdultos + qtdCriancas + qtdBebes;
-        resumoPassageiros.textContent = `${total} passageiro(s) (${qtdAdultos}A, ${qtdCriancas}C, ${qtdBebes}B)`;
+        const qtd = (parseInt(adultos?.value || 0) + parseInt(criancas?.value || 0) + parseInt(bebes?.value || 0));
+        resumoPassageiros.textContent = `${qtd} passageiro(s)`;
     }
     if(resumoValores){
-        const valorRefTxt = valorRef && valorRef.value ? `Ref: R$ ${valorRef.value}` : "Referência não informada";
-        const valorPagoTxt = valorPago && valorPago.value ? `Pago: R$ ${valorPago.value}` : "Valor não informado";
-        const pontosTxt = pontos && pontos.value ? `${pontos.value} pontos` : "Pontos não informados";
-        resumoValores.textContent = `${valorRefTxt} • ${valorPagoTxt} • ${pontosTxt}`;
+        const valorTxt = valorReferencia && valorReferencia.value ? `Referência R$ ${valorReferencia.value}` : "Valor de referência não informado";
+        const pagoTxt = valorPago && valorPago.value ? `Pago R$ ${valorPago.value}` : "Valor pago não informado";
+        const pontosTxt = pontos && pontos.value ? `${pontos.value} milhas` : "Milhas não informadas";
+        resumoValores.textContent = `${valorTxt} • ${pagoTxt} • ${pontosTxt}`;
     }
 }
-
-['id_aeroporto_partida','id_aeroporto_destino','id_data_ida','id_data_volta','id_qtd_adultos','id_qtd_criancas','id_qtd_bebes','id_valor_referencia','id_valor_pago','id_pontos_utilizados'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el){
-        el.addEventListener('input', updateResumoVisual);
-        el.addEventListener('change', updateResumoVisual);
-    }
-});
-updateResumoVisual();
 </script>
 {% endblock %}

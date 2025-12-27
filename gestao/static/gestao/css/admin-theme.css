@@ -616,7 +616,7 @@ textarea {
   color: var(--shell-text);
 }
 
-.sidebar.is-open {
+body.sidebar-open .sidebar {
   transform: translateX(0);
 }
 
@@ -630,7 +630,7 @@ textarea {
   transition: opacity 0.2s ease-in-out;
 }
 
-.sidebar-overlay.is-visible {
+body.sidebar-open .sidebar-overlay {
   opacity: 1;
   pointer-events: auto;
 }
