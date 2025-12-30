@@ -60,6 +60,8 @@
                 <label class="form-label" for="{{ form.programa.id_for_label }}">Programa <span class="required-asterisk">*</span></label>
                 {{ form.programa }}
                 <p id="programa-info" class="helper-text mt-1"></p>
+                <p id="cpf-consumo-info" class="helper-text mt-1"></p>
+                <p id="cpf-limite-error" class="helper-text mt-1 text-red-500"></p>
             </div>
         </div>
     </div>
@@ -260,7 +262,7 @@
 
     <div class="form-actions">
         <a href="{% url 'admin_emissoes' %}" class="btn btn--outline">Cancelar</a>
-        <button class="btn" type="submit">💾 Salvar emissão</button>
+        <button class="btn" type="submit" id="submit-emissao">💾 Salvar emissão</button>
     </div>
 </form>
 </div>
@@ -277,6 +279,8 @@ const passageirosContainer = document.getElementById('passageiros-container');
 const clienteSelect = document.getElementById('id_cliente');
 const programaSelect = document.getElementById('id_programa');
 const programaInfo = document.getElementById('programa-info');
+const cpfConsumoInfo = document.getElementById('cpf-consumo-info');
+const cpfLimiteError = document.getElementById('cpf-limite-error');
 const tipoTitularSelect = document.getElementById('id_tipo_titular');
 const contaAdmSelect = document.getElementById('id_conta_administrada');
 const clienteWrapper = document.getElementById('cliente-wrapper');
@@ -286,6 +290,7 @@ const valorRefPontosField = document.getElementById('id_valor_referencia_pontos'
 const valorReferenciaField = document.getElementById('id_valor_referencia');
 const valorPagoField = document.getElementById('id_valor_pago');
 const economiaField = document.getElementById('id_economia_obtida');
+const submitButton = document.getElementById('submit-emissao');
 const resumoTrechos = document.getElementById('resumo-trechos');
 const resumoDatas = document.getElementById('resumo-datas');
 const resumoPassageiros = document.getElementById('resumo-passageiros');
@@ -337,6 +342,7 @@ function updateProgramaInfo() {
     } else {
         programaInfo.textContent = "";
     }
+    updateCpfLimite();
     recalcValoresFinanceiros();
 }
 
@@ -451,6 +457,7 @@ function renderPassengerForms() {
             if(cat && p.categoria) cat.value = p.categoria;
         }
     });
+    updateCpfLimite();
 }
 
 ['id_qtd_adultos','id_qtd_criancas','id_qtd_bebes'].forEach(id=>{
@@ -458,6 +465,59 @@ function renderPassengerForms() {
     if(el) el.addEventListener('input', renderPassengerForms);
 });
 renderPassengerForms();
+
+function normalizeCpf(value) {
+    return (value || "").replace(/\D/g, "");
+}
+
+function updateCpfLimite() {
+    if (!cpfConsumoInfo) return;
+    const programas = getProgramasDisponiveis();
+    const selected = programas.find(p => String(p.id) === (programaSelect ? programaSelect.value : ""));
+    if (!selected) {
+        cpfConsumoInfo.textContent = "";
+        if (cpfLimiteError) cpfLimiteError.textContent = "";
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.setAttribute("aria-disabled", "false");
+        }
+        return;
+    }
+
+    const documentos = Array.from(
+        passageirosContainer.querySelectorAll('input[name^="passageiro-"][name$="-documento"]')
+    )
+        .map((input) => normalizeCpf(input.value))
+        .filter(Boolean);
+    const cpfsUnicos = new Set(documentos);
+    const cpfsUsados = new Set((selected.cpfs_usados_list || []).map(normalizeCpf));
+    const cpfsNovos = new Set([...cpfsUnicos].filter((cpf) => !cpfsUsados.has(cpf)));
+    const consumo = cpfsNovos.size;
+
+    const ilimitado = selected.cpfs_total === null || selected.cpfs_total === undefined;
+    if (ilimitado) {
+        cpfConsumoInfo.textContent = `CPFs nesta emissão: ${consumo} • Disponíveis: ilimitado`;
+    } else {
+        cpfConsumoInfo.textContent = `CPFs nesta emissão: ${consumo} • Disponíveis: ${selected.cpfs_disponiveis} de ${selected.cpfs_total}`;
+    }
+
+    const excedeu = !ilimitado && consumo > (selected.cpfs_disponiveis || 0);
+    if (cpfLimiteError) {
+        cpfLimiteError.textContent = excedeu
+            ? "Limite de CPFs excedido para este programa. Revise os documentos informados."
+            : "";
+    }
+    if (submitButton) {
+        submitButton.disabled = excedeu;
+        submitButton.setAttribute("aria-disabled", excedeu ? "true" : "false");
+    }
+}
+
+passageirosContainer.addEventListener('input', (event) => {
+    if (event.target && event.target.name && event.target.name.includes('-documento')) {
+        updateCpfLimite();
+    }
+});
 
 function initEscalaSection(tipo, data){
     const checkbox = document.getElementById(`${tipo}-tem-escala`);

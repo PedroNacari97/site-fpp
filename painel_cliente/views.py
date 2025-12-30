@@ -3,6 +3,7 @@
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+import re
 
 from services.pdf_service import emissao_pdf_response
 from gestao.models import Cliente
@@ -14,6 +15,17 @@ from repositories.painel_repository import (
     get_conta_by_id_for_user,
     get_emissao_passagem_for_user,
 )
+
+
+EMISSAO_REGEX = re.compile(r"Emissão #(\d+)")
+
+
+def _annotate_emissao_id(movimentacoes):
+    movs = list(movimentacoes)
+    for mov in movs:
+        match = EMISSAO_REGEX.search(mov.descricao or "")
+        mov.emissao_id = int(match.group(1)) if match else None
+    return movs
 
 @login_required
 def sair(request):
@@ -82,7 +94,9 @@ def dashboard(request):
 def movimentacoes_programa(request, conta_id):
     """List points transactions for a fidelity account."""
     conta = get_conta_by_id_for_user(conta_id, request.user)
-    movimentacoes = conta.movimentacoes_compartilhadas.order_by("-data")
+    movimentacoes = _annotate_emissao_id(
+        conta.movimentacoes_compartilhadas.order_by("-data")
+    )
 
     return render(
         request,
