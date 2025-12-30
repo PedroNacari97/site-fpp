@@ -74,6 +74,7 @@ body {
 .app-shell__content {
   margin-left: 256px;
   width: calc(100% - 256px);
+  transition: transform 0.3s ease;
 }
 
 .app-header {
@@ -127,6 +128,10 @@ body {
 
   body.sidebar-open .app-shell .sidebar {
     transform: translateX(0);
+  }
+
+  body.sidebar-open .app-shell__content {
+    transform: translateX(var(--sidebar-width));
   }
 
   .app-shell__content {

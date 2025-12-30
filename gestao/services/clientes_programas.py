@@ -3,7 +3,8 @@
 from typing import Dict, List, Tuple
 from django.db.models import Count, Q
 
-from gestao.models import ContaFidelidade, Passageiro
+from gestao.models import ContaFidelidade, Passageiro, EmissaoPassagem
+from gestao.utils import normalize_cpf
 
 Key = Tuple[int, int, int]
 
@@ -32,7 +33,37 @@ def _build_cpfs_map(empresa_id=None) -> Dict[Key, int]:
     }
 
 
-def build_clientes_programas_map(instance=None, empresa_id=None) -> Dict[int, List[dict]]:
+def _build_cpfs_sets_map(empresa_id=None, exclude_emissao_id=None) -> Dict[Key, set]:
+    """Retorna um mapa (programa_id, cliente_id, conta_adm_id) -> conjunto de CPFs normalizados."""
+
+    filtros = Q(emissao__programa__isnull=False)
+    if empresa_id:
+        filtros &= (
+            Q(emissao__cliente__empresa_id=empresa_id)
+            | Q(emissao__conta_administrada__empresa_id=empresa_id)
+        )
+    cpfs_qs = Passageiro.objects.filter(filtros)
+    if exclude_emissao_id:
+        cpfs_qs = cpfs_qs.exclude(emissao_id=exclude_emissao_id)
+    cpfs_map: Dict[Key, set] = {}
+    for row in cpfs_qs.values(
+        "emissao__programa_id", "emissao__cliente_id", "emissao__conta_administrada_id", "documento"
+    ):
+        key = (
+            row["emissao__programa_id"],
+            row["emissao__cliente_id"],
+            row["emissao__conta_administrada_id"],
+        )
+        normalized = normalize_cpf(row["documento"])
+        if not normalized:
+            continue
+        cpfs_map.setdefault(key, set()).add(normalized)
+    return cpfs_map
+
+
+def build_clientes_programas_map(
+    instance=None, empresa_id=None, exclude_emissao_id=None
+) -> Dict[int, List[dict]]:
     """Retorna um mapa ``cliente_id -> lista de programas e saldos``."""
 
     contas = ContaFidelidade.objects.filter(
@@ -42,11 +73,14 @@ def build_clientes_programas_map(instance=None, empresa_id=None) -> Dict[int, Li
     ).select_related("programa", "cliente__usuario")
     if empresa_id:
         contas = contas.filter(cliente__empresa_id=empresa_id)
-    cpfs_map = _build_cpfs_map(empresa_id)
+    if instance and exclude_emissao_id is None and isinstance(instance, EmissaoPassagem):
+        exclude_emissao_id = getattr(instance, "id", None)
+    cpfs_sets_map = _build_cpfs_sets_map(empresa_id, exclude_emissao_id)
     data = {}
     for conta in contas:
         key = (conta.programa_id, conta.cliente_id, None)
-        cpfs_usados = cpfs_map.get(key, 0)
+        cpfs_usados_list = sorted(cpfs_sets_map.get(key, set()))
+        cpfs_usados = len(cpfs_usados_list)
         limite_cpfs = conta.quantidade_cpfs_disponiveis
         cpfs_disponiveis = None if limite_cpfs is None else max(limite_cpfs - cpfs_usados, 0)
         data.setdefault(conta.cliente_id, [])
@@ -58,6 +92,8 @@ def build_clientes_programas_map(instance=None, empresa_id=None) -> Dict[int, Li
                 "valor_medio": float(conta.valor_medio_por_mil or 0),
                 "cpfs_disponiveis": cpfs_disponiveis,
                 "cpfs_total": limite_cpfs,
+                "cpfs_usados": cpfs_usados,
+                "cpfs_usados_list": cpfs_usados_list,
             }
         )
 
@@ -73,12 +109,16 @@ def build_clientes_programas_map(instance=None, empresa_id=None) -> Dict[int, Li
                     "valor_medio": 0,
                     "cpfs_disponiveis": instance.quantidade_cpfs_disponiveis,
                     "cpfs_total": instance.quantidade_cpfs_disponiveis,
+                    "cpfs_usados": 0,
+                    "cpfs_usados_list": [],
                 }
             )
     return data
 
 
-def build_contas_administradas_programas_map(empresa_id=None, instance=None) -> Dict[int, List[dict]]:
+def build_contas_administradas_programas_map(
+    empresa_id=None, instance=None, exclude_emissao_id=None
+) -> Dict[int, List[dict]]:
     """Retorna um mapa ``conta_administrada_id -> lista de programas e saldos``."""
 
     contas = ContaFidelidade.objects.filter(
@@ -88,11 +128,14 @@ def build_contas_administradas_programas_map(empresa_id=None, instance=None) -> 
     if empresa_id:
         contas = contas.filter(conta_administrada__empresa_id=empresa_id)
 
-    cpfs_map = _build_cpfs_map(empresa_id)
+    if instance and exclude_emissao_id is None and isinstance(instance, EmissaoPassagem):
+        exclude_emissao_id = getattr(instance, "id", None)
+    cpfs_sets_map = _build_cpfs_sets_map(empresa_id, exclude_emissao_id)
     data: Dict[int, List[dict]] = {}
     for conta in contas:
         key = (conta.programa_id, None, conta.conta_administrada_id)
-        cpfs_usados = cpfs_map.get(key, 0)
+        cpfs_usados_list = sorted(cpfs_sets_map.get(key, set()))
+        cpfs_usados = len(cpfs_usados_list)
         limite_cpfs = conta.quantidade_cpfs_disponiveis
         cpfs_disponiveis = None if limite_cpfs is None else max(limite_cpfs - cpfs_usados, 0)
         data.setdefault(conta.conta_administrada_id, [])
@@ -104,6 +147,8 @@ def build_contas_administradas_programas_map(empresa_id=None, instance=None) -> 
                 "valor_medio": float(conta.valor_medio_por_mil or 0),
                 "cpfs_disponiveis": cpfs_disponiveis,
                 "cpfs_total": limite_cpfs,
+                "cpfs_usados": cpfs_usados,
+                "cpfs_usados_list": cpfs_usados_list,
             }
         )
 
@@ -119,6 +164,8 @@ def build_contas_administradas_programas_map(empresa_id=None, instance=None) -> 
                     "valor_medio": 0,
                     "cpfs_disponiveis": instance.quantidade_cpfs_disponiveis,
                     "cpfs_total": instance.quantidade_cpfs_disponiveis,
+                    "cpfs_usados": 0,
+                    "cpfs_usados_list": [],
                 }
             )
     return data

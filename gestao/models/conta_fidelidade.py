@@ -3,6 +3,7 @@ from django.db import models
 from .cliente import Cliente
 from .programa_fidelidade import ProgramaFidelidade
 from .conta_administrada import ContaAdministrada
+from gestao.utils import normalize_cpf
 
 
 class ContaFidelidade(models.Model):
@@ -129,12 +130,12 @@ class ContaFidelidade(models.Model):
             filtros["emissao__cliente_id"] = self.cliente_id
         if self.conta_administrada_id:
             filtros["emissao__conta_administrada_id"] = self.conta_administrada_id
-        return (
-            Passageiro.objects.filter(**filtros)
-            .values("documento")
-            .distinct()
-            .count()
-        )
+        cpfs = set()
+        for documento in Passageiro.objects.filter(**filtros).values_list("documento", flat=True):
+            normalized = normalize_cpf(documento)
+            if normalized:
+                cpfs.add(normalized)
+        return len(cpfs)
 
     @property
     def cpfs_disponiveis(self):

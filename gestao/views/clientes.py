@@ -157,6 +157,9 @@ def programas_do_cliente(request, cliente_id):
         saldo_pontos = conta.saldo_pontos
         valor_pago = conta.valor_total_pago
         valor_medio_milheiro = conta.valor_medio_por_mil
+        cpfs_usados = conta.cpfs_utilizados
+        cpfs_total = conta.quantidade_cpfs_disponiveis
+        cpfs_disponiveis = conta.cpfs_disponiveis
 
         lista_contas.append(
             {
@@ -164,6 +167,9 @@ def programas_do_cliente(request, cliente_id):
                 "saldo_pontos": saldo_pontos,
                 "valor_pago": valor_pago,
                 "valor_medio_milheiro": valor_medio_milheiro,
+                "cpfs_usados": cpfs_usados,
+                "cpfs_total": cpfs_total,
+                "cpfs_disponiveis": cpfs_disponiveis,
             }
         )
 

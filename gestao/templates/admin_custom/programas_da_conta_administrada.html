@@ -23,6 +23,9 @@
                     <th>Saldo Pontos</th>
                     <th>Valor Pago</th>
                     <th>Valor Médio / mil</th>
+                    <th>Limite total de CPF</th>
+                    <th>CPFs já utilizados</th>
+                    <th>CPFs disponíveis</th>
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -33,13 +36,16 @@
                     <td>{{ c.saldo_pontos }}</td>
                     <td>R$ {{ c.valor_pago|floatformat:2 }}</td>
                     <td>R$ {{ c.valor_medio_milheiro|floatformat:2 }}</td>
+                    <td>{% if c.cpfs_total is None %}Ilimitado{% else %}{{ c.cpfs_total }}{% endif %}</td>
+                    <td>{% if c.cpfs_usados is None %}—{% else %}{{ c.cpfs_usados }}{% endif %}</td>
+                    <td>{% if c.cpfs_disponiveis is None %}Ilimitado{% else %}{{ c.cpfs_disponiveis }}{% endif %}</td>
                     <td>
                         <a href="{% url 'admin_movimentacoes' c.conta.id %}" class="btn btn--ghost">Movimentações</a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="text-center text-red-400 py-4">Nenhum programa encontrado para esta conta administrada.</td>
+                    <td colspan="8" class="text-center text-red-400 py-4">Nenhum programa encontrado para esta conta administrada.</td>
                 </tr>
                 {% endfor %}
             </tbody>

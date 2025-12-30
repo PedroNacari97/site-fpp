@@ -1,4 +1,5 @@
 from decimal import Decimal, ROUND_HALF_UP
+import re
 
 from django import forms
 from django.contrib import messages
@@ -13,6 +14,17 @@ from gestao.utils import parse_br_date
 
 from ..models import ContaFidelidade, Movimentacao
 from .permissions import require_admin_or_operator
+
+
+EMISSAO_REGEX = re.compile(r"Emissão #(\d+)")
+
+
+def _annotate_emissao_id(movimentacoes):
+    movs = list(movimentacoes)
+    for mov in movs:
+        match = EMISSAO_REGEX.search(mov.descricao or "")
+        mov.emissao_id = int(match.group(1)) if match else None
+    return movs
 
 
 class NovaMovimentacaoForm(forms.ModelForm):
@@ -84,7 +96,9 @@ def admin_movimentacoes(request, conta_id):
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     if empresa and conta.empresa and conta.empresa != empresa:
         return render(request, "sem_permissao.html")
-    movimentacoes = conta.movimentacoes_compartilhadas.order_by("-data")
+    movimentacoes = _annotate_emissao_id(
+        conta.movimentacoes_compartilhadas.order_by("-data")
+    )
     conta_base = conta.conta_saldo()
     titular_tipo = ""
     titular_nome = ""

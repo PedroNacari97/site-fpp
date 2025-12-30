@@ -21,7 +21,13 @@
                 {% for mov in movimentacoes %}
                 <tr>
                     <td>{{ mov.data|date:"d/m/Y" }}</td>
-                    <td>{{ mov.descricao|default:"—" }}</td>
+                    <td>
+                        {% if mov.emissao_id %}
+                            <a href="{% url 'emissao_pdf' mov.emissao_id %}" class="underline">{{ mov.descricao|default:"—" }}</a>
+                        {% else %}
+                            {{ mov.descricao|default:"—" }}
+                        {% endif %}
+                    </td>
                     <td class="{% if mov.pontos >= 0 %}entrada{% else %}saida{% endif %}">
                         {{ mov.pontos }}
                     </td>

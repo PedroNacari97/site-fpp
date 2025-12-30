@@ -86,6 +86,7 @@ body.sidebar-open .sidebar-overlay {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: transform 0.3s ease;
 }
 
 .app-header {
@@ -96,6 +97,9 @@ body.sidebar-open .sidebar-overlay {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 30;
 }
 
 .app-header__left {
@@ -193,6 +197,10 @@ body.sidebar-open .sidebar-overlay {
 @media (max-width: 1023px) {
   .app-shell__content {
     width: 100%;
+  }
+
+  body.sidebar-open .app-shell__content {
+    transform: translateX(256px);
   }
 }
 

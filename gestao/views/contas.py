@@ -192,6 +192,9 @@ def programas_da_conta_administrada(request, conta_id):
                 "saldo_pontos": c.saldo_pontos,
                 "valor_pago": c.valor_total_pago,
                 "valor_medio_milheiro": c.valor_medio_por_mil,
+                "cpfs_usados": c.cpfs_utilizados,
+                "cpfs_total": c.quantidade_cpfs_disponiveis,
+                "cpfs_disponiveis": c.cpfs_disponiveis,
             }
         )
     return render(

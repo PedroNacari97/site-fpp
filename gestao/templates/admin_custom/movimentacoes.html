@@ -32,7 +32,13 @@
                     <td>{{ mov.data|date:"d/m/Y" }}</td>
                     <td>{{ mov.pontos }}</td>
                     <td>R$ {{ mov.valor_pago|floatformat:2 }}</td>
-                    <td>{{ mov.descricao }}</td>
+                    <td>
+                        {% if mov.emissao_id %}
+                            <a href="{% url 'admin_editar_emissao' mov.emissao_id %}" class="underline">{{ mov.descricao }}</a>
+                        {% else %}
+                            {{ mov.descricao }}
+                        {% endif %}
+                    </td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="4" class="text-center text-red-400 py-4">Nenhuma movimentação lançada.</td></tr>
