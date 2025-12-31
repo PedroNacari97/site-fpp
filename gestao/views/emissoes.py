@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from decimal import Decimal
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
@@ -286,18 +286,83 @@ def admin_emissoes(request):
             )
         return response
 
-    programas = ProgramaFidelidade.objects.all()
-    clientes = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
-    return render(
-        request,
-        "admin_custom/emissoes.html",
-        {
-            "emissoes": emissoes,
-            "programas": programas,
-            "clientes": clientes,
-            "params": request.GET,
-        },
+    redirect_target = "/adm/emissoes"
+    if request.META.get("QUERY_STRING"):
+        redirect_target = f"{redirect_target}?{request.META['QUERY_STRING']}"
+    return redirect(redirect_target)
+
+
+@login_required
+def api_emissoes(request):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    programa_id = request.GET.get("programa")
+    cliente_id = request.GET.get("cliente")
+    emissor_parceiro_id = request.GET.get("emissor_parceiro_id")
+    q = request.GET.get("q")
+    data_ini = request.GET.get("data_ini")
+    data_fim = request.GET.get("data_fim")
+
+    emissoes = EmissaoPassagem.objects.filter(
+        Q(cliente__perfil="cliente", cliente__ativo=True) | Q(conta_administrada__isnull=False)
+    ).select_related(
+        "cliente",
+        "programa",
+        "aeroporto_partida",
+        "aeroporto_destino",
+        "conta_administrada",
+        "emissor_parceiro",
     )
+    if programa_id:
+        emissoes = emissoes.filter(programa_id=programa_id)
+    if cliente_id:
+        emissoes = emissoes.filter(cliente_id=cliente_id)
+    if emissor_parceiro_id:
+        emissoes = emissoes.filter(emissor_parceiro_id=emissor_parceiro_id)
+    if q:
+        emissoes = emissoes.filter(
+            Q(aeroporto_partida__sigla__icontains=q)
+            | Q(aeroporto_destino__sigla__icontains=q)
+            | Q(aeroporto_partida__nome__icontains=q)
+            | Q(aeroporto_destino__nome__icontains=q)
+            | Q(cliente__usuario__username__icontains=q)
+        )
+    if data_ini:
+        emissoes = emissoes.filter(data_ida__gte=data_ini)
+    if data_fim:
+        emissoes = emissoes.filter(data_volta__lte=data_fim)
+
+    resultados = []
+    for emissao in emissoes.order_by("-data_ida"):
+        resultados.append(
+            {
+                "id": emissao.id,
+                "cliente": str(emissao.cliente),
+                "programa": str(emissao.programa),
+                "aeroporto_partida": str(emissao.aeroporto_partida) if emissao.aeroporto_partida else None,
+                "aeroporto_destino": str(emissao.aeroporto_destino) if emissao.aeroporto_destino else None,
+                "data_ida": emissao.data_ida.isoformat() if emissao.data_ida else None,
+                "data_volta": emissao.data_volta.isoformat() if emissao.data_volta else None,
+                "qtd_passageiros": emissao.qtd_passageiros or 0,
+                "valor_referencia": float(emissao.valor_referencia or 0),
+                "valor_taxas": float(emissao.valor_taxas or 0),
+                "pontos_utilizados": emissao.pontos_utilizados or 0,
+                "economia_obtida": float(emissao.economia_obtida or 0),
+                "detalhes": emissao.detalhes,
+            }
+        )
+
+    programas = ProgramaFidelidade.objects.all().order_by("nome")
+    clientes = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+    payload = {
+        "resultados": resultados,
+        "programas": [{"id": programa.id, "nome": programa.nome} for programa in programas],
+        "clientes": [
+            {"id": cliente.id, "nome": cliente.usuario.get_full_name() or cliente.usuario.username}
+            for cliente in clientes
+        ],
+    }
+    return JsonResponse(payload)
 
 
 @login_required

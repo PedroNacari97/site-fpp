@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect
 
 from ..models import (
     Cliente,
@@ -196,29 +196,10 @@ def build_dashboard_metrics(view_type="clientes", entity_id=None):
 def admin_dashboard(request):
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
-    view_type = request.GET.get("view", "clientes")
-    cliente_id = request.GET.get("cliente_id")
-    conta_id = request.GET.get("conta_id")
-    emissor_id = request.GET.get("emissor_id")
-    entity_id = cliente_id if view_type == "clientes" else conta_id if view_type == "contas" else emissor_id
-    data = build_dashboard_metrics(view_type, entity_id)
-    clientes = Cliente.objects.filter(perfil="cliente", ativo=True).order_by("usuario__first_name")
-    contas_adm = ContaAdministrada.objects.filter(ativo=True).order_by("nome")
-    emissores = EmissorParceiro.objects.filter(ativo=True).order_by("nome")
-    selected_cliente = clientes.filter(id=cliente_id).first() if cliente_id else None
-    selected_conta = contas_adm.filter(id=conta_id).first() if conta_id else None
-    selected_emissor = emissores.filter(id=emissor_id).first() if emissor_id else None
-    context = {
-        **data,
-        "clientes": clientes,
-        "contas_administradas": contas_adm,
-        "emissores_parceiros": emissores,
-        "selected_cliente": selected_cliente,
-        "selected_conta": selected_conta,
-        "selected_emissor": selected_emissor,
-        "view_type": view_type,
-    }
-    return render(request, "admin_custom/dashboard.html", context)
+    redirect_target = "/adm/"
+    if request.META.get("QUERY_STRING"):
+        redirect_target = f"{redirect_target}?{request.META['QUERY_STRING']}"
+    return redirect(redirect_target)
 
 
 @login_required
@@ -228,4 +209,31 @@ def api_dashboard(request):
     view_type = request.GET.get("view", "clientes")
     entity_id = request.GET.get("cliente_id") if view_type == "clientes" else request.GET.get("conta_id") if view_type == "contas" else request.GET.get("emissor_id")
     data = build_dashboard_metrics(view_type, entity_id)
-    return JsonResponse(data)
+    clientes = Cliente.objects.filter(perfil="cliente", ativo=True).order_by("usuario__first_name")
+    contas_adm = ContaAdministrada.objects.filter(ativo=True).order_by("nome")
+    emissores = EmissorParceiro.objects.filter(ativo=True).order_by("nome")
+    payload = {
+        **data,
+        "clientes": [
+            {"id": cliente.id, "nome": cliente.usuario.get_full_name() or cliente.usuario.username}
+            for cliente in clientes
+        ],
+        "contas_administradas": [{"id": conta.id, "nome": conta.nome} for conta in contas_adm],
+        "emissores_parceiros": [{"id": emissor.id, "nome": emissor.nome} for emissor in emissores],
+        "view_type": view_type,
+    }
+    return JsonResponse(payload)
+
+
+@login_required
+def api_cards(request):
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
+    data = build_dashboard_metrics()
+    payload = {
+        "total_titulares": data["total_titulares"],
+        "total_emissoes": data["total_emissoes"],
+        "total_pontos": data["total_pontos"],
+        "total_economizado": data["total_economizado"],
+    }
+    return JsonResponse(payload)
