@@ -19,7 +19,7 @@
                     <th>Localizador</th>
                     <th>Programa</th>
                     <th>Valor Referência</th>
-                    <th>Valor Pago</th>
+                    <th>Taxas</th>
                     <th>Pontos Utilizados</th>
                     <th>Economia Obtida</th>
                     <th>Detalhes</th>
@@ -38,7 +38,7 @@
                     <td>{{ emissao.localizador }}</td>
                     <td>{{ emissao.programa.nome }}</td>
                     <td>R$ {{ emissao.valor_referencia|floatformat:2 }}</td>
-                    <td>R$ {{ emissao.valor_pago|floatformat:2 }}</td>
+                    <td>R$ {{ emissao.valor_taxas|floatformat:2 }}</td>
                     <td>{{ emissao.pontos_utilizados }}</td>
                     <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
                     <td>{{ emissao.detalhes|default:"—" }}</td>
