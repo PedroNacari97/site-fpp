@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.db import models
 from .cliente import Cliente
@@ -81,8 +82,15 @@ class EmissaoPassagem(models.Model):
 
     def save(self, *args, **kwargs):
         self.qtd_passageiros = self.qtd_adultos + self.qtd_criancas + self.qtd_bebes
-        if self.emissor_parceiro_id and self.valor_milheiro_parceiro is not None and self.valor_venda_final is not None:
-            self.lucro = self.valor_venda_final - self.valor_milheiro_parceiro
+        if (
+            self.emissor_parceiro_id
+            and self.valor_milheiro_parceiro is not None
+            and self.valor_venda_final is not None
+        ):
+            pontos = Decimal(self.pontos_utilizados or 0)
+            valor_milheiro = Decimal(self.valor_milheiro_parceiro)
+            custo_total = (pontos / Decimal("1000")) * valor_milheiro
+            self.lucro = Decimal(self.valor_venda_final) - custo_total
         elif not self.emissor_parceiro_id:
             self.lucro = None
         super().save(*args, **kwargs)

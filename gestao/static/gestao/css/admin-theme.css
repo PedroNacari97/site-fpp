@@ -38,10 +38,12 @@ body {
   background: var(--bg);
 }
 
+.fpp-container,
 .page-container {
   max-width: var(--page-max-width);
   margin: 0 auto;
   width: 100%;
+  padding: 0 24px;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -125,10 +127,9 @@ a:hover {
 }
 
 .page-shell {
-  max-width: var(--page-max-width);
+  width: 100%;
   margin: 0;
   padding: 0 0 2.5rem;
-  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;

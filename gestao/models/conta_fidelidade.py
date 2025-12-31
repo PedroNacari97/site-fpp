@@ -121,15 +121,16 @@ class ContaFidelidade(models.Model):
 
     @property
     def cpfs_utilizados(self):
-        if self.quantidade_cpfs_disponiveis is None:
+        limite = (
+            self.programa.quantidade_cpfs_disponiveis
+            if self.programa.quantidade_cpfs_disponiveis is not None
+            else self.quantidade_cpfs_disponiveis
+        )
+        if limite is None:
             return None
         from gestao.models import Passageiro
 
         filtros = {"emissao__programa_id": self.programa_id}
-        if self.cliente_id:
-            filtros["emissao__cliente_id"] = self.cliente_id
-        if self.conta_administrada_id:
-            filtros["emissao__conta_administrada_id"] = self.conta_administrada_id
         cpfs = set()
         for cpf in Passageiro.objects.filter(**filtros).values_list("cpf", flat=True):
             normalized = normalize_cpf(cpf)
@@ -139,10 +140,15 @@ class ContaFidelidade(models.Model):
 
     @property
     def cpfs_disponiveis(self):
-        if self.quantidade_cpfs_disponiveis is None:
+        limite = (
+            self.programa.quantidade_cpfs_disponiveis
+            if self.programa.quantidade_cpfs_disponiveis is not None
+            else self.quantidade_cpfs_disponiveis
+        )
+        if limite is None:
             return None
         usados = self.cpfs_utilizados or 0
-        return max(self.quantidade_cpfs_disponiveis - usados, 0)
+        return max(limite - usados, 0)
 
     @property
     def movimentacoes_compartilhadas(self):

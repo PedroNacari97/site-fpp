@@ -49,6 +49,7 @@ from gestao.services.emissao_financeiro import (
 from gestao.services.clientes_programas import (
     build_clientes_programas_map,
     build_contas_administradas_programas_map,
+    build_programas_fidelidade_map,
 )
 from gestao.services.cpf_limite import validar_limite_cpfs
 from gestao.utils import normalize_cpf, parse_br_date, validate_cpf_digits
@@ -323,12 +324,15 @@ def nova_emissao(request):
                 conta = ContaFidelidade.objects.filter(
                     cliente=emissao.cliente, programa=emissao.programa
                 ).select_related("programa").first()
+            emissao_parceiro = bool(emissao.emissor_parceiro_id)
             valor_medio_milheiro = None
-            if conta:
+            if not emissao_parceiro and conta:
                 valor_medio_milheiro = conta.valor_medio_por_mil
                 if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
                     valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
-            if not conta:
+            elif emissao_parceiro:
+                valor_medio_milheiro = float(emissao.valor_milheiro_parceiro or 0)
+            if not conta and not emissao_parceiro:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
                 messages.error(
                     request,
@@ -336,7 +340,7 @@ def nova_emissao(request):
                 )
             if form.errors:
                 form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
-            elif emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
+            elif not emissao_parceiro and emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
                 form.add_error(
                     "programa",
                     "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
@@ -352,7 +356,7 @@ def nova_emissao(request):
                     form.add_error(None, err)
                 cpfs = [p.get("cpf") for p in passageiros if p.get("cpf")]
                 try:
-                    validar_limite_cpfs(conta, cpfs)
+                    validar_limite_cpfs(emissao.programa, cpfs)
                 except ValidationError as exc:
                     form.add_error(None, exc.message)
                 if form.errors:
@@ -402,6 +406,9 @@ def nova_emissao(request):
                                     "emissor_parceiros_json": json.dumps(
                                         _build_emissor_parceiros_map(empresa)
                                     ),
+                                    "programas_parceiros_json": json.dumps(
+                                        build_programas_fidelidade_map(empresa_id=getattr(empresa, "id", None))
+                                    ),
                                 },
                             )
 
@@ -419,12 +426,13 @@ def nova_emissao(request):
                             )
                         for escala in escalas_payload:
                             Escala.objects.create(emissao=emissao, **escala)
-                        registrar_movimentacao_pontos(
-                            conta,
-                            emissao,
-                            emissao.pontos_utilizados or 0,
-                            emissao.valor_referencia_pontos or Decimal("0"),
-                        )
+                        if conta:
+                            registrar_movimentacao_pontos(
+                                conta,
+                                emissao,
+                                emissao.pontos_utilizados or 0,
+                                emissao.valor_referencia_pontos or Decimal("0"),
+                            )
                         messages.success(request, "Emissão salva com sucesso.")
                         return redirect("admin_emissoes")
             messages.error(
@@ -459,6 +467,9 @@ def nova_emissao(request):
                 )
             ),
             "emissor_parceiros_json": json.dumps(_build_emissor_parceiros_map(empresa)),
+            "programas_parceiros_json": json.dumps(
+                build_programas_fidelidade_map(empresa_id=getattr(empresa, "id", None))
+            ),
         },
     )
 
@@ -488,12 +499,15 @@ def editar_emissao(request, emissao_id):
                     conta = ContaFidelidade.objects.filter(
                         cliente=emissao.cliente, programa=emissao.programa
                     ).select_related("programa").first()
+                emissao_parceiro = bool(emissao.emissor_parceiro_id)
                 valor_medio_milheiro = None
-                if conta:
+                if not emissao_parceiro and conta:
                     valor_medio_milheiro = conta.valor_medio_por_mil
                     if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
                         valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
-                if not conta:
+                elif emissao_parceiro:
+                    valor_medio_milheiro = float(emissao.valor_milheiro_parceiro or 0)
+                if not conta and not emissao_parceiro:
                     form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
                     messages.error(
                         request,
@@ -501,7 +515,7 @@ def editar_emissao(request, emissao_id):
                     )
                 if form.errors:
                     form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
-                elif emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
+                elif not emissao_parceiro and emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
                     form.add_error(
                         "programa",
                         "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
@@ -517,7 +531,7 @@ def editar_emissao(request, emissao_id):
                         form.add_error(None, err)
                     cpfs = [p.get("cpf") for p in passageiros if p.get("cpf")]
                     try:
-                        validar_limite_cpfs(conta, cpfs, emissao_id=emissao.id)
+                        validar_limite_cpfs(emissao.programa, cpfs, emissao_id=emissao.id)
                     except ValidationError as exc:
                         form.add_error(None, exc.message)
                     if form.errors:
@@ -584,6 +598,11 @@ def editar_emissao(request, emissao_id):
                                 ),
                                 "emissor_parceiros_json": json.dumps(
                                     _build_emissor_parceiros_map(empresa)
+                                ),
+                                "programas_parceiros_json": json.dumps(
+                                    build_programas_fidelidade_map(
+                                        empresa_id=getattr(empresa, "id", None), exclude_emissao_id=emissao.id
+                                    )
                                 ),
                             },
                         )
@@ -666,6 +685,11 @@ def editar_emissao(request, emissao_id):
                                 "emissor_parceiros_json": json.dumps(
                                     _build_emissor_parceiros_map(empresa)
                                 ),
+                                "programas_parceiros_json": json.dumps(
+                                    build_programas_fidelidade_map(
+                                        empresa_id=getattr(empresa, "id", None), exclude_emissao_id=emissao.id
+                                    )
+                                ),
                             },
                         )
 
@@ -685,9 +709,10 @@ def editar_emissao(request, emissao_id):
                     emissao.escalas.all().delete()
                     for escala in escalas_payload:
                         Escala.objects.create(emissao=emissao, **escala)
-                    registrar_movimentacao_pontos(
-                        conta, emissao, emissao.pontos_utilizados or 0, emissao.valor_referencia_pontos or Decimal("0")
-                    )
+                    if conta:
+                        registrar_movimentacao_pontos(
+                            conta, emissao, emissao.pontos_utilizados or 0, emissao.valor_referencia_pontos or Decimal("0")
+                        )
                     messages.success(request, "Emissão atualizada com sucesso.")
                     return redirect("admin_emissoes")
             messages.error(
@@ -758,6 +783,11 @@ def editar_emissao(request, emissao_id):
                 )
             ),
             "emissor_parceiros_json": json.dumps(_build_emissor_parceiros_map(empresa)),
+            "programas_parceiros_json": json.dumps(
+                build_programas_fidelidade_map(
+                    empresa_id=getattr(empresa, "id", None), exclude_emissao_id=emissao.id
+                )
+            ),
         },
     )
 
