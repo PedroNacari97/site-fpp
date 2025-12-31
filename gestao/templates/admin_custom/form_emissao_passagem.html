@@ -54,7 +54,7 @@
             <div id="conta-adm-wrapper">
                 <label class="form-label" for="{{ form.conta_administrada.id_for_label }}">Conta administrada <span class="required-asterisk">*</span></label>
                 {{ form.conta_administrada }}
-                <p class="helper-text">Aparece quando a emissão usa conta administrada ou emissor parceiro.</p>
+                <p class="helper-text">Aparece quando a emissão usa conta administrada.</p>
             </div>
         </div>
         <div class="form-grid form-grid--3">
@@ -240,7 +240,7 @@
             <div class="form-field--compact" id="valor-milheiro-parceiro-wrapper">
                 <label class="form-label" for="{{ form.valor_milheiro_parceiro.id_for_label }}">Valor do milheiro (R$)</label>
                 {{ form.valor_milheiro_parceiro }}
-                <p class="helper-text">Preenchido automaticamente para contas próprias e manual para emissor parceiro.</p>
+                <p class="helper-text">Automático para conta do cliente e manual para conta administrada ou emissor parceiro.</p>
             </div>
             <div class="form-field--compact" id="valor-venda-final-wrapper">
                 <label class="form-label" for="{{ form.valor_venda_final.id_for_label }}">Valor final ao cliente (R$)</label>
@@ -297,6 +297,7 @@ const escalasVoltaData = {{ escalas_volta_json|safe }};
 const aeroportos = {{ aeroportos_json|safe }};
 const clienteProgramas = {{ cliente_programas_json|safe }};
 const contasAdmProgramas = {{ contas_adm_programas_json|safe }};
+const empresaProgramas = {{ empresa_programas_json|safe }};
 
 const passageirosContainer = document.getElementById('passageiros-container');
 const clienteSelect = document.getElementById('id_cliente');
@@ -338,7 +339,7 @@ if (valorRefPontosField) {
     valorRefPontosField.readOnly = true;
 }
 if (custoParceiroField) {
-    custoParceiroField.readOnly = true;
+    custoParceiroField.readOnly = getTipoEmissao() === "cliente";
 }
 
 function setVoltaVisibility() {
@@ -366,9 +367,12 @@ function getTipoEmissao() {
 
 function getProgramasDisponiveis() {
     const tipo = getTipoEmissao();
-    if (tipo === "administrada" || tipo === "parceiro") {
+    if (tipo === "administrada") {
         const contaId = contaAdmSelect ? contaAdmSelect.value : null;
         return (contasAdmProgramas && contaId) ? (contasAdmProgramas[contaId] || []) : [];
+    }
+    if (tipo === "parceiro") {
+        return empresaProgramas || [];
     }
     const clienteId = clienteSelect ? clienteSelect.value : null;
     return (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
@@ -426,43 +430,45 @@ function recalcValoresFinanceiros() {
     const selected = programas.find(p => String(p.id) === (programaSelect ? programaSelect.value : ""));
     const pontos = parseFloat(pontosField ? (pontosField.value || 0) : 0);
     const tipo = getTipoEmissao();
-    const valorMilheiro = tipo === "parceiro"
-        ? parseFloat(custoParceiroField ? (custoParceiroField.value || 0) : 0)
-        : (selected ? (selected.valor_medio || 0) : 0);
-    if (custoParceiroField && tipo !== "parceiro") {
+    const valorMilheiro = tipo === "cliente"
+        ? (selected ? (selected.valor_medio || 0) : 0)
+        : parseFloat(custoParceiroField ? (custoParceiroField.value || 0) : 0);
+    if (custoParceiroField && tipo === "cliente") {
         custoParceiroField.value = valorMilheiro ? Number(valorMilheiro).toFixed(2) : "";
     }
-    const valorRefPontos = (pontos / 1000) * (valorMilheiro || 0);
+    const custoMilhas = (pontos / 1000) * (valorMilheiro || 0);
     if (valorRefPontosField) {
-        valorRefPontosField.value = valorRefPontos.toFixed(2);
+        valorRefPontosField.value = custoMilhas.toFixed(2);
     }
     const valorRef = parseFloat(valorReferenciaField ? (valorReferenciaField.value || 0) : 0);
     const valorPago = parseFloat(valorPagoField ? (valorPagoField.value || 0) : 0);
-    const valorRefPts = parseFloat(valorRefPontosField ? (valorRefPontosField.value || 0) : 0);
+    const custoTotal = tipo === "parceiro" ? custoMilhas : (custoMilhas + valorPago);
+    const vendaRaw = vendaFinalField ? vendaFinalField.value : "";
+    const hasVenda = vendaRaw !== "" && vendaRaw !== null;
+    const valorVenda = parseFloat(vendaRaw || 0);
     if (economiaField) {
-        economiaField.value = (valorRef - (valorPago + valorRefPts)).toFixed(2);
+        economiaField.value = hasVenda
+            ? (valorRef - valorVenda).toFixed(2)
+            : custoTotal.toFixed(2);
     }
-    updateLucro(valorRefPontos);
+    if (lucroField) {
+        if (hasVenda) {
+            const baseLucro = tipo === "parceiro" ? custoMilhas : custoTotal;
+            lucroField.value = (valorVenda - baseLucro).toFixed(2);
+        } else if (custoTotal || valorRef) {
+            lucroField.value = "0.00";
+        } else {
+            lucroField.value = "";
+        }
+    }
     updateResumoVisual();
-}
-
-function updateLucro(custoTotal) {
-    if (!lucroField) return;
-    const custo = parseFloat(valorRefPontosField ? (valorRefPontosField.value || 0) : 0);
-    const venda = parseFloat(vendaFinalField ? (vendaFinalField.value || 0) : 0);
-    const custoBase = custoTotal !== undefined ? custoTotal : custo;
-    if (custoBase || venda) {
-        lucroField.value = (venda - custoBase).toFixed(2);
-    } else {
-        lucroField.value = "";
-    }
 }
 
 function toggleTitularFields() {
     const tipo = getTipoEmissao();
     if (clienteWrapper && contaAdmWrapper) {
         clienteWrapper.style.display = "block";
-        contaAdmWrapper.style.display = (tipo === "administrada" || tipo === "parceiro") ? "block" : "none";
+        contaAdmWrapper.style.display = tipo === "administrada" ? "block" : "none";
     }
     if (emissorParceiroWrapper) {
         emissorParceiroWrapper.style.display = tipo === "parceiro" ? "block" : "none";
@@ -480,7 +486,7 @@ function toggleTitularFields() {
         emissorParceiroSelect.value = "";
     }
     if (custoParceiroField) {
-        custoParceiroField.readOnly = tipo !== "parceiro";
+        custoParceiroField.readOnly = tipo === "cliente";
     }
     updateProgramaOptions();
 }
@@ -753,7 +759,7 @@ initEscalaSection('ida', escalasIdaData);
 initEscalaSection('volta', escalasVoltaData);
 toggleTitularFields();
 updateProgramaOptions();
-updateLucro();
+recalcValoresFinanceiros();
 
 function updateResumoVisual(){
     const origem = document.getElementById('id_aeroporto_partida');

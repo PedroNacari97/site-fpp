@@ -298,23 +298,33 @@ class EmissaoPassagemForm(forms.ModelForm):
                 selected_tipo = "cliente"
         self.initial.setdefault("tipo_emissao", selected_tipo)
         self.fields["cliente"].required = True
-        self.fields["conta_administrada"].required = selected_tipo in ("administrada", "parceiro")
+        self.fields["conta_administrada"].required = selected_tipo == "administrada"
 
         titular_id = None
         emissor_parceiro_id = self.data.get("emissor_parceiro") or getattr(
             self.instance, "emissor_parceiro_id", None
         )
-        if selected_tipo in ("administrada", "parceiro"):
+        if selected_tipo == "administrada":
             titular_id = self.data.get("conta_administrada") or getattr(self.instance, "conta_administrada_id", None)
             programas_qs = ProgramaFidelidade.objects.filter(
                 contafidelidade__conta_administrada_id=titular_id
             ) if titular_id else ProgramaFidelidade.objects.none()
+        elif selected_tipo == "parceiro":
+            if empresa:
+                programas_qs = ProgramaFidelidade.objects.filter(
+                    contafidelidade__cliente__empresa=empresa
+                ) | ProgramaFidelidade.objects.filter(
+                    contafidelidade__conta_administrada__empresa=empresa
+                )
+            else:
+                programas_qs = ProgramaFidelidade.objects.all()
         else:
             titular_id = self.data.get("cliente") or getattr(self.instance, "cliente_id", None)
             programas_qs = ProgramaFidelidade.objects.filter(
                 contafidelidade__cliente_id=titular_id
             ) if titular_id else ProgramaFidelidade.objects.none()
 
+        programas_qs = programas_qs.distinct()
         if self.instance and self.instance.programa_id and not programas_qs.filter(id=self.instance.programa_id).exists():
             programas_qs = programas_qs | ProgramaFidelidade.objects.filter(id=self.instance.programa_id)
         self.fields["programa"].queryset = programas_qs.distinct()
@@ -330,18 +340,16 @@ class EmissaoPassagemForm(forms.ModelForm):
         if tipo == "administrada":
             if not conta_adm:
                 raise forms.ValidationError("Selecione uma conta administrada para usar pontos ou escolha 'Conta de Cliente'.")
+            if cleaned.get("pontos_utilizados") and cleaned.get("valor_milheiro_parceiro") in (None, ""):
+                raise forms.ValidationError("Informe o valor do milheiro usado na conta administrada.")
         elif tipo != "parceiro":
             cleaned["conta_administrada"] = None
         if tipo == "parceiro":
             if not emissor_parceiro:
                 raise forms.ValidationError("Selecione o emissor parceiro para este tipo de emissão.")
-            if not conta_adm:
-                raise forms.ValidationError("Selecione a conta administrada que será usada na emissão do emissor parceiro.")
-            programa = cleaned.get("programa")
-            if cleaned.get("valor_milheiro_parceiro") in (None, ""):
+            if cleaned.get("valor_milheiro_parceiro") in (None, "") and cleaned.get("pontos_utilizados"):
                 raise forms.ValidationError("Informe o valor do milheiro negociado com o emissor parceiro.")
-            if cleaned.get("valor_venda_final") in (None, ""):
-                raise forms.ValidationError("Informe o valor final de venda ao cliente.")
+            cleaned["conta_administrada"] = None
         else:
             cleaned["emissor_parceiro"] = None
         return cleaned
