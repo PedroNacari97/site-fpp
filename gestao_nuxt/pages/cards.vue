@@ -1,43 +1,60 @@
 <script setup lang="ts">
 definePageMeta({
   title: 'Cards e Resumos',
-  subtitle: 'Indicadores estratégicos com foco em performance e uso de pontos.',
+  subtitle: 'Indicadores consolidados do painel.',
 });
 
-const cards = [
-  { title: 'Saldo médio por cliente', value: '24.860 pts', detail: 'Base ativa' },
-  { title: 'Emissões expressas', value: '38%', detail: 'Últimos 30 dias' },
-  { title: 'Taxa de aprovação', value: '92%', detail: 'Equipe de emissões' },
-  { title: 'Top programa', value: 'Smiles', detail: '45% das emissões' },
-];
+type CardsData = {
+  total_titulares: number;
+  total_emissoes: number;
+  total_pontos: number;
+  total_economizado: number;
+};
 
-const summaries = [
-  { label: 'Tickets abertos', value: '12' },
-  { label: 'Solicitações urgentes', value: '3' },
-  { label: 'Clientes inativos', value: '14' },
-];
+const { data, pending, error } = await useFetch<CardsData>('/cards', {
+  baseURL: '/adm/api',
+  credentials: 'include',
+});
+
+const formatNumber = (value: number) =>
+  new Intl.NumberFormat('pt-BR').format(value ?? 0);
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+    value ?? 0,
+  );
 </script>
 
 <template>
-  <section class="content-stack">
-    <div class="stats-grid">
-      <article v-for="card in cards" :key="card.title" class="stat-card">
-        <p class="stat-label">{{ card.title }}</p>
-        <div class="stat-value">
-          <span>{{ card.value }}</span>
-          <span class="stat-trend">{{ card.detail }}</span>
-        </div>
-      </article>
-    </div>
+  <section class="stacked">
+    <section v-if="error" class="surface-card">
+      <p>Não foi possível carregar os indicadores.</p>
+    </section>
 
-    <section class="surface-card">
-      <h3 class="section-title">Resumo operacional</h3>
-      <div class="summary-grid">
-        <div v-for="summary in summaries" :key="summary.label" class="summary-card">
-          <span class="summary-label">{{ summary.label }}</span>
-          <strong class="summary-value">{{ summary.value }}</strong>
-        </div>
-      </div>
+    <section v-else-if="pending" class="surface-card">
+      <p>Carregando indicadores...</p>
+    </section>
+
+    <section v-else class="stat-grid">
+      <article class="stat-card">
+        <p class="stat-label">Titulares ativos</p>
+        <p class="stat-value">{{ formatNumber(data?.total_titulares ?? 0) }}</p>
+        <p class="stat-meta">Clientes, contas e parceiros</p>
+      </article>
+      <article class="stat-card">
+        <p class="stat-label">Emissões</p>
+        <p class="stat-value">{{ formatNumber(data?.total_emissoes ?? 0) }}</p>
+        <p class="stat-meta">Total registrado</p>
+      </article>
+      <article class="stat-card">
+        <p class="stat-label">Pontos</p>
+        <p class="stat-value">{{ formatNumber(data?.total_pontos ?? 0) }}</p>
+        <p class="stat-meta">Saldo consolidado</p>
+      </article>
+      <article class="stat-card">
+        <p class="stat-label">Economia</p>
+        <p class="stat-value">{{ formatCurrency(data?.total_economizado ?? 0) }}</p>
+        <p class="stat-meta">Acumulado</p>
+      </article>
     </section>
   </section>
 </template>
