@@ -2,6 +2,7 @@ from .clientes import *
 from .cotacoes import *
 from .emissoes import *
 from .companhias import *
+from .emissores_parceiros import *
 from .programas import *
 from .contas import *
 from .aeroportos import *

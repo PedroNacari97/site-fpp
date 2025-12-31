@@ -20,6 +20,7 @@ from .models import (
     CotacaoVoo,
     CompanhiaAerea,
     Empresa,
+    EmissorParceiro,
 )
 
 
@@ -272,6 +273,11 @@ class EmissaoPassagemForm(forms.ModelForm):
         if empresa:
             clientes_qs = clientes_qs.filter(empresa=empresa)
             contas_adm_qs = contas_adm_qs.filter(empresa=empresa)
+            self.fields["emissor_parceiro"].queryset = EmissorParceiro.objects.filter(
+                empresa=empresa, ativo=True
+            )
+        else:
+            self.fields["emissor_parceiro"].queryset = EmissorParceiro.objects.filter(ativo=True)
         if self.instance and self.instance.pk:
             clientes_qs = clientes_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
             contas_adm_qs = contas_adm_qs | ContaAdministrada.objects.filter(pk=self.instance.conta_administrada_id)
@@ -284,7 +290,14 @@ class EmissaoPassagemForm(forms.ModelForm):
         self.fields["conta_administrada"].required = selected_tipo == "administrada"
 
         titular_id = None
-        if selected_tipo == "administrada":
+        emissor_parceiro_id = self.data.get("emissor_parceiro") or getattr(
+            self.instance, "emissor_parceiro_id", None
+        )
+        if emissor_parceiro_id:
+            programas_qs = ProgramaFidelidade.objects.filter(
+                emissores_parceiros__id=emissor_parceiro_id
+            )
+        elif selected_tipo == "administrada":
             titular_id = self.data.get("conta_administrada") or getattr(self.instance, "conta_administrada_id", None)
             programas_qs = ProgramaFidelidade.objects.filter(
                 contafidelidade__conta_administrada_id=titular_id
@@ -306,11 +319,24 @@ class EmissaoPassagemForm(forms.ModelForm):
         conta_adm = cleaned.get("conta_administrada")
         if not cliente:
             raise forms.ValidationError("Selecione o cliente que irá viajar.")
+        emissor_parceiro = cleaned.get("emissor_parceiro")
         if tipo == "administrada":
             if not conta_adm:
                 raise forms.ValidationError("Selecione uma conta administrada para usar pontos ou escolha 'Conta de Cliente'.")
         else:
             cleaned["conta_administrada"] = None
+        if emissor_parceiro:
+            programa = cleaned.get("programa")
+            if programa and not emissor_parceiro.programas.filter(id=programa.id).exists():
+                raise forms.ValidationError("Selecione um programa disponível para o emissor parceiro.")
+            if cleaned.get("valor_milheiro_parceiro") in (None, ""):
+                raise forms.ValidationError("Informe o valor do milheiro negociado com o emissor parceiro.")
+            if cleaned.get("valor_venda_final") in (None, ""):
+                raise forms.ValidationError("Informe o valor final de venda ao cliente.")
+        else:
+            cleaned["valor_milheiro_parceiro"] = None
+            cleaned["valor_venda_final"] = None
+            cleaned["lucro"] = None
         return cleaned
 
     class Meta:
@@ -320,6 +346,7 @@ class EmissaoPassagemForm(forms.ModelForm):
             'cliente',
             'conta_administrada',
             'programa',
+            'emissor_parceiro',
             'aeroporto_partida',
             'aeroporto_destino',
             'data_ida',
@@ -335,10 +362,16 @@ class EmissaoPassagemForm(forms.ModelForm):
             'valor_referencia_pontos',
             'economia_obtida',
             'detalhes',
+            'valor_milheiro_parceiro',
+            'valor_venda_final',
+            'lucro',
         ]
         widgets = {
             'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'valor_milheiro_parceiro': forms.NumberInput(attrs={'step': '0.01'}),
+            'valor_venda_final': forms.NumberInput(attrs={'step': '0.01'}),
+            'lucro': forms.NumberInput(attrs={'step': '0.01', 'readonly': 'readonly'}),
         }
         
 
@@ -365,6 +398,15 @@ class EmissaoHotelForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             clientes_qs = clientes_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
         self.fields["cliente"].queryset = clientes_qs
+
+
+class EmissorParceiroForm(forms.ModelForm):
+    class Meta:
+        model = EmissorParceiro
+        fields = ["nome", "programas", "ativo", "observacoes"]
+        widgets = {
+            "observacoes": forms.Textarea(attrs={"rows": 3}),
+        }
 
 
 class CotacaoVooForm(forms.ModelForm):

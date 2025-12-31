@@ -56,6 +56,13 @@
                 {{ form.conta_administrada }}
                 <p class="helper-text">Aparece apenas quando o titular for administrado.</p>
             </div>
+        </div>
+        <div class="form-grid form-grid--3">
+            <div>
+                <label class="form-label" for="{{ form.emissor_parceiro.id_for_label }}">Emissor parceiro</label>
+                {{ form.emissor_parceiro }}
+                <p class="helper-text">Opcional. Se selecionado, o programa virá do parceiro.</p>
+            </div>
             <div>
                 <label class="form-label" for="{{ form.programa.id_for_label }}">Programa <span class="required-asterisk">*</span></label>
                 {{ form.programa }}
@@ -229,6 +236,21 @@
             </div>
         </div>
         <div class="form-grid form-grid--3">
+            <div class="form-field--compact">
+                <label class="form-label" for="{{ form.valor_milheiro_parceiro.id_for_label }}">Custo do parceiro (R$)</label>
+                {{ form.valor_milheiro_parceiro }}
+                <p class="helper-text">Obrigatório quando houver emissor parceiro.</p>
+            </div>
+            <div class="form-field--compact">
+                <label class="form-label" for="{{ form.valor_venda_final.id_for_label }}">Venda ao cliente (R$)</label>
+                {{ form.valor_venda_final }}
+            </div>
+            <div class="form-field--compact">
+                <label class="form-label" for="{{ form.lucro.id_for_label }}">Lucro (R$)</label>
+                {{ form.lucro }}
+            </div>
+        </div>
+        <div class="form-grid form-grid--3">
             <div>
                 <label class="form-label" for="{{ form.valor_referencia.id_for_label }}">Valor de referência (R$) <span class="required-asterisk">*</span></label>
                 {{ form.valor_referencia }}
@@ -274,6 +296,7 @@ const escalasVoltaData = {{ escalas_volta_json|safe }};
 const aeroportos = {{ aeroportos_json|safe }};
 const clienteProgramas = {{ cliente_programas_json|safe }};
 const contasAdmProgramas = {{ contas_adm_programas_json|safe }};
+const emissorParceiroProgramas = {{ emissor_parceiros_json|safe }};
 
 const passageirosContainer = document.getElementById('passageiros-container');
 const clienteSelect = document.getElementById('id_cliente');
@@ -283,12 +306,16 @@ const cpfConsumoInfo = document.getElementById('cpf-consumo-info');
 const cpfLimiteError = document.getElementById('cpf-limite-error');
 const tipoTitularSelect = document.getElementById('id_tipo_titular');
 const contaAdmSelect = document.getElementById('id_conta_administrada');
+const emissorParceiroSelect = document.getElementById('id_emissor_parceiro');
 const clienteWrapper = document.getElementById('cliente-wrapper');
 const contaAdmWrapper = document.getElementById('conta-adm-wrapper');
 const pontosField = document.getElementById('id_pontos_utilizados');
 const valorRefPontosField = document.getElementById('id_valor_referencia_pontos');
 const valorReferenciaField = document.getElementById('id_valor_referencia');
 const valorPagoField = document.getElementById('id_valor_pago');
+const custoParceiroField = document.getElementById('id_valor_milheiro_parceiro');
+const vendaFinalField = document.getElementById('id_valor_venda_final');
+const lucroField = document.getElementById('id_lucro');
 const economiaField = document.getElementById('id_economia_obtida');
 const submitButton = document.getElementById('submit-emissao');
 const resumoTrechos = document.getElementById('resumo-trechos');
@@ -298,6 +325,10 @@ const resumoValores = document.getElementById('resumo-valores');
 const possuiVoltaToggle = document.getElementById('possui-volta');
 const horarioVolta = document.getElementById('horario-volta');
 const dataVoltaField = document.getElementById('id_data_volta');
+
+if (lucroField) {
+    lucroField.readOnly = true;
+}
 
 function setVoltaVisibility() {
     if (!horarioVolta) return;
@@ -320,12 +351,20 @@ if (possuiVoltaToggle) {
 
 function getProgramasDisponiveis() {
     const tipo = tipoTitularSelect ? tipoTitularSelect.value : "cliente";
+    let programas = [];
     if (tipo === "administrada") {
         const contaId = contaAdmSelect ? contaAdmSelect.value : null;
-        return (contasAdmProgramas && contaId) ? (contasAdmProgramas[contaId] || []) : [];
+        programas = (contasAdmProgramas && contaId) ? (contasAdmProgramas[contaId] || []) : [];
+    } else {
+        const clienteId = clienteSelect ? clienteSelect.value : null;
+        programas = (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
     }
-    const clienteId = clienteSelect ? clienteSelect.value : null;
-    return (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
+    const emissorId = emissorParceiroSelect ? emissorParceiroSelect.value : null;
+    if (emissorId && emissorParceiroProgramas && emissorParceiroProgramas[emissorId]) {
+        const allowedIds = emissorParceiroProgramas[emissorId];
+        programas = programas.filter((p) => allowedIds.includes(p.id));
+    }
+    return programas;
 }
 
 function updateProgramaInfo() {
@@ -377,7 +416,17 @@ function recalcValoresFinanceiros() {
     if (economiaField) {
         economiaField.value = (valorRef - (valorPago + valorRefPts)).toFixed(2);
     }
+    updateLucro();
     updateResumoVisual();
+}
+
+function updateLucro() {
+    if (!lucroField) return;
+    const custo = parseFloat(custoParceiroField ? (custoParceiroField.value || 0) : 0);
+    const venda = parseFloat(vendaFinalField ? (vendaFinalField.value || 0) : 0);
+    if (custo || venda) {
+        lucroField.value = (venda - custo).toFixed(2);
+    }
 }
 
 function toggleTitularFields() {
@@ -398,6 +447,9 @@ if (contaAdmSelect) {
 if (tipoTitularSelect) {
     tipoTitularSelect.addEventListener('change', toggleTitularFields);
 }
+if (emissorParceiroSelect) {
+    emissorParceiroSelect.addEventListener('change', updateProgramaOptions);
+}
 if (programaSelect) {
     programaSelect.addEventListener('change', updateProgramaInfo);
 }
@@ -410,6 +462,12 @@ if (valorReferenciaField) {
 if (valorPagoField) {
     valorPagoField.addEventListener('input', recalcValoresFinanceiros);
 }
+if (custoParceiroField) {
+    custoParceiroField.addEventListener('input', updateLucro);
+}
+if (vendaFinalField) {
+    vendaFinalField.addEventListener('input', updateLucro);
+}
 
 function renderPassengerForms() {
     const prev = [];
@@ -417,7 +475,12 @@ function renderPassengerForms() {
         const idx = div.dataset.index;
         prev[idx] = {
             nome: div.querySelector(`input[name="passageiro-${idx}-nome"]`).value,
-            documento: div.querySelector(`input[name="passageiro-${idx}-documento"]`).value,
+            cpf: div.querySelector(`input[name="passageiro-${idx}-cpf"]`).value,
+            rg: div.querySelector(`input[name="passageiro-${idx}-rg"]`).value,
+            passaporte: div.querySelector(`input[name="passageiro-${idx}-passaporte"]`).value,
+            passaporte_validade: div.querySelector(`input[name="passageiro-${idx}-passaporte-validade"]`).value,
+            data_nascimento: div.querySelector(`input[name="passageiro-${idx}-data-nascimento"]`).value,
+            observacoes: div.querySelector(`textarea[name="passageiro-${idx}-observacoes"]`).value,
             categoria: div.querySelector(`input[name="passageiro-${idx}-categoria"]`).value,
         };
     });
@@ -437,8 +500,18 @@ function renderPassengerForms() {
             div.innerHTML = `
                 <label class="form-label">${cat.nome} ${i+1} - Nome</label>
                 <input type="text" name="passageiro-${index}-nome" required />
-                <label class="form-label">Documento</label>
-                <input type="text" name="passageiro-${index}-documento" required />
+                <label class="form-label">CPF</label>
+                <input type="text" name="passageiro-${index}-cpf" required />
+                <label class="form-label">RG (opcional)</label>
+                <input type="text" name="passageiro-${index}-rg" />
+                <label class="form-label">Passaporte (opcional)</label>
+                <input type="text" name="passageiro-${index}-passaporte" />
+                <label class="form-label">Validade do passaporte</label>
+                <input type="date" name="passageiro-${index}-passaporte-validade" min="${new Date().toISOString().split('T')[0]}" />
+                <label class="form-label">Data de nascimento</label>
+                <input type="date" name="passageiro-${index}-data-nascimento" />
+                <label class="form-label">Observações</label>
+                <textarea name="passageiro-${index}-observacoes" rows="2"></textarea>
                 <input type="hidden" name="passageiro-${index}-categoria" value="${cat.valor}" />
             `;
             passageirosContainer.appendChild(div);
@@ -449,11 +522,21 @@ function renderPassengerForms() {
     const data = prev.length ? prev : passageirosData;
     data.forEach((p, idx) => {
         const nome = document.getElementsByName(`passageiro-${idx}-nome`)[0];
-        const doc = document.getElementsByName(`passageiro-${idx}-documento`)[0];
+        const cpf = document.getElementsByName(`passageiro-${idx}-cpf`)[0];
+        const rg = document.getElementsByName(`passageiro-${idx}-rg`)[0];
+        const passaporte = document.getElementsByName(`passageiro-${idx}-passaporte`)[0];
+        const passaporteValidade = document.getElementsByName(`passageiro-${idx}-passaporte-validade`)[0];
+        const dataNascimento = document.getElementsByName(`passageiro-${idx}-data-nascimento`)[0];
+        const observacoes = document.getElementsByName(`passageiro-${idx}-observacoes`)[0];
         const cat = document.getElementsByName(`passageiro-${idx}-categoria`)[0];
         if(p){
             if(nome) nome.value = p.nome;
-            if(doc) doc.value = p.documento;
+            if(cpf) cpf.value = p.cpf;
+            if(rg) rg.value = p.rg || "";
+            if(passaporte) passaporte.value = p.passaporte || "";
+            if(passaporteValidade) passaporteValidade.value = p.passaporte_validade || "";
+            if(dataNascimento) dataNascimento.value = p.data_nascimento || "";
+            if(observacoes) observacoes.value = p.observacoes || "";
             if(cat && p.categoria) cat.value = p.categoria;
         }
     });
@@ -484,12 +567,12 @@ function updateCpfLimite() {
         return;
     }
 
-    const documentos = Array.from(
-        passageirosContainer.querySelectorAll('input[name^="passageiro-"][name$="-documento"]')
+    const cpfs = Array.from(
+        passageirosContainer.querySelectorAll('input[name^="passageiro-"][name$="-cpf"]')
     )
         .map((input) => normalizeCpf(input.value))
         .filter(Boolean);
-    const cpfsUnicos = new Set(documentos);
+    const cpfsUnicos = new Set(cpfs);
     const cpfsUsados = new Set((selected.cpfs_usados_list || []).map(normalizeCpf));
     const cpfsNovos = new Set([...cpfsUnicos].filter((cpf) => !cpfsUsados.has(cpf)));
     const consumo = cpfsNovos.size;
@@ -504,7 +587,7 @@ function updateCpfLimite() {
     const excedeu = !ilimitado && consumo > (selected.cpfs_disponiveis || 0);
     if (cpfLimiteError) {
         cpfLimiteError.textContent = excedeu
-            ? "Limite de CPFs excedido para este programa. Revise os documentos informados."
+            ? "Limite de CPFs excedido para este programa. Revise os CPFs informados."
             : "";
     }
     if (submitButton) {
@@ -514,7 +597,7 @@ function updateCpfLimite() {
 }
 
 passageirosContainer.addEventListener('input', (event) => {
-    if (event.target && event.target.name && event.target.name.includes('-documento')) {
+    if (event.target && event.target.name && event.target.name.includes('-cpf')) {
         updateCpfLimite();
     }
 });
@@ -609,6 +692,7 @@ initEscalaSection('ida', escalasIdaData);
 initEscalaSection('volta', escalasVoltaData);
 toggleTitularFields();
 updateProgramaOptions();
+updateLucro();
 
 function updateResumoVisual(){
     const origem = document.getElementById('id_aeroporto_partida');

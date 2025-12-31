@@ -5,6 +5,7 @@ const initSidebarToggle = () => {
   const sidebar = document.querySelector("[data-sidebar]");
   const overlay = document.querySelector("[data-sidebar-overlay]");
   const openButton = document.querySelector("[data-sidebar-open]");
+  const closeButton = document.querySelector("[data-sidebar-close]");
   const body = document.body;
 
   if (!sidebar || !overlay || !openButton) {
@@ -24,6 +25,9 @@ const initSidebarToggle = () => {
   };
 
   openButton.addEventListener("click", openSidebar);
+  if (closeButton) {
+    closeButton.addEventListener("click", closeSidebar);
+  }
   overlay.addEventListener("click", closeSidebar);
 
   const navLinks = sidebar.querySelectorAll("a.nav-item");

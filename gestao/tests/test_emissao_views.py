@@ -45,6 +45,9 @@ class NovaEmissaoViewTest(TestCase):
             "qtd_criancas": "0",
             "qtd_bebes": "0",
             "total_passageiros": "1",
+            "passageiro-0-nome": "Maria Teste",
+            "passageiro-0-cpf": "123.456.789-00",
+            "passageiro-0-categoria": "adulto",
         }
         if extra:
             payload.update(extra)
