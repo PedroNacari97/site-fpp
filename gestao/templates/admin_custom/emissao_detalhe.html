@@ -66,11 +66,11 @@
         <p class="value">{% if emissao.economia_obtida %}R$ {{ emissao.economia_obtida|floatformat:2 }}{% else %}—{% endif %}</p>
       </div>
       <div>
-        <p class="label">Custo parceiro</p>
+        <p class="label">Valor do milheiro parceiro</p>
         <p class="value">{% if emissao.valor_milheiro_parceiro %}R$ {{ emissao.valor_milheiro_parceiro|floatformat:2 }}{% else %}—{% endif %}</p>
       </div>
       <div>
-        <p class="label">Venda ao cliente</p>
+        <p class="label">Valor final ao cliente</p>
         <p class="value">{% if emissao.valor_venda_final %}R$ {{ emissao.valor_venda_final|floatformat:2 }}{% else %}—{% endif %}</p>
       </div>
       <div>

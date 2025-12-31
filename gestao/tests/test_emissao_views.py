@@ -32,7 +32,7 @@ class NovaEmissaoViewTest(TestCase):
 
     def _post_payload(self, extra=None):
         payload = {
-            "tipo_titular": "cliente",
+            "tipo_emissao": "cliente",
             "cliente": str(self.cliente.id),
             "programa": str(self.programa.id),
             "aeroporto_partida": str(self.aeroporto_origem.id),
@@ -79,7 +79,7 @@ class NovaEmissaoViewTest(TestCase):
 
         payload = self._post_payload(
             {
-                "tipo_titular": "administrada",
+                "tipo_emissao": "administrada",
                 "conta_administrada": str(conta_adm.id),
                 "cliente": str(self.cliente.id),
             }

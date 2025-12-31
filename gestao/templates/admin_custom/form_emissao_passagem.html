@@ -43,9 +43,9 @@
         </div>
         <div class="form-grid form-grid--3">
             <div>
-                <label class="form-label" for="{{ form.tipo_titular.id_for_label }}">Tipo de emissão <span class="required-asterisk">*</span></label>
-                {{ form.tipo_titular }}
-                <p class="helper-text">Defina se a emissão usa cliente ou conta administrada.</p>
+                <label class="form-label" for="{{ form.tipo_emissao.id_for_label }}">Tipo de emissão <span class="required-asterisk">*</span></label>
+                {{ form.tipo_emissao }}
+                <p class="helper-text">Selecione a origem da emissão: cliente, conta administrada ou emissor parceiro.</p>
             </div>
             <div id="cliente-wrapper" class="form-field--center">
                 <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente <span class="required-asterisk">*</span></label>
@@ -58,15 +58,16 @@
             </div>
         </div>
         <div class="form-grid form-grid--3">
-            <div>
+            <div id="emissor-parceiro-wrapper">
                 <label class="form-label" for="{{ form.emissor_parceiro.id_for_label }}">Emissor parceiro</label>
                 {{ form.emissor_parceiro }}
-                <p class="helper-text">Opcional. Se selecionado, o programa virá do parceiro.</p>
+                <p class="helper-text">Obrigatório quando o tipo de emissão for emissor parceiro.</p>
             </div>
             <div>
                 <label class="form-label" for="{{ form.programa.id_for_label }}">Programa <span class="required-asterisk">*</span></label>
                 {{ form.programa }}
                 <p id="programa-info" class="helper-text mt-1"></p>
+                <p id="cpf-usados-info" class="helper-text mt-1"></p>
                 <p id="cpf-consumo-info" class="helper-text mt-1"></p>
                 <p id="cpf-limite-error" class="helper-text mt-1 text-red-500"></p>
             </div>
@@ -227,7 +228,7 @@
                 {{ form.pontos_utilizados }}
             </div>
             <div class="form-field--compact">
-                <label class="form-label" for="{{ form.valor_referencia_pontos.id_for_label }}">Valor do milheiro (R$)</label>
+                <label class="form-label" for="{{ form.valor_referencia_pontos.id_for_label }}">Custo das milhas (R$)</label>
                 {{ form.valor_referencia_pontos }}
             </div>
             <div class="form-field--compact">
@@ -236,16 +237,16 @@
             </div>
         </div>
         <div class="form-grid form-grid--3">
-            <div class="form-field--compact">
-                <label class="form-label" for="{{ form.valor_milheiro_parceiro.id_for_label }}">Custo do parceiro (R$)</label>
+            <div class="form-field--compact" id="valor-milheiro-parceiro-wrapper">
+                <label class="form-label" for="{{ form.valor_milheiro_parceiro.id_for_label }}">Valor do milheiro (R$)</label>
                 {{ form.valor_milheiro_parceiro }}
-                <p class="helper-text">Obrigatório quando houver emissor parceiro.</p>
+                <p class="helper-text">Obrigatório para emissor parceiro.</p>
             </div>
-            <div class="form-field--compact">
-                <label class="form-label" for="{{ form.valor_venda_final.id_for_label }}">Venda ao cliente (R$)</label>
+            <div class="form-field--compact" id="valor-venda-final-wrapper">
+                <label class="form-label" for="{{ form.valor_venda_final.id_for_label }}">Valor final ao cliente (R$)</label>
                 {{ form.valor_venda_final }}
             </div>
-            <div class="form-field--compact">
+            <div class="form-field--compact" id="lucro-wrapper">
                 <label class="form-label" for="{{ form.lucro.id_for_label }}">Lucro (R$)</label>
                 {{ form.lucro }}
             </div>
@@ -297,18 +298,24 @@ const aeroportos = {{ aeroportos_json|safe }};
 const clienteProgramas = {{ cliente_programas_json|safe }};
 const contasAdmProgramas = {{ contas_adm_programas_json|safe }};
 const emissorParceiroProgramas = {{ emissor_parceiros_json|safe }};
+const programasParceiro = {{ programas_parceiros_json|safe }};
 
 const passageirosContainer = document.getElementById('passageiros-container');
 const clienteSelect = document.getElementById('id_cliente');
 const programaSelect = document.getElementById('id_programa');
 const programaInfo = document.getElementById('programa-info');
+const cpfUsadosInfo = document.getElementById('cpf-usados-info');
 const cpfConsumoInfo = document.getElementById('cpf-consumo-info');
 const cpfLimiteError = document.getElementById('cpf-limite-error');
-const tipoTitularSelect = document.getElementById('id_tipo_titular');
+const tipoEmissaoSelect = document.getElementById('id_tipo_emissao');
 const contaAdmSelect = document.getElementById('id_conta_administrada');
 const emissorParceiroSelect = document.getElementById('id_emissor_parceiro');
 const clienteWrapper = document.getElementById('cliente-wrapper');
 const contaAdmWrapper = document.getElementById('conta-adm-wrapper');
+const emissorParceiroWrapper = document.getElementById('emissor-parceiro-wrapper');
+const valorMilheiroParceiroWrapper = document.getElementById('valor-milheiro-parceiro-wrapper');
+const valorVendaFinalWrapper = document.getElementById('valor-venda-final-wrapper');
+const lucroWrapper = document.getElementById('lucro-wrapper');
 const pontosField = document.getElementById('id_pontos_utilizados');
 const valorRefPontosField = document.getElementById('id_valor_referencia_pontos');
 const valorReferenciaField = document.getElementById('id_valor_referencia');
@@ -328,6 +335,9 @@ const dataVoltaField = document.getElementById('id_data_volta');
 
 if (lucroField) {
     lucroField.readOnly = true;
+}
+if (valorRefPontosField) {
+    valorRefPontosField.readOnly = true;
 }
 
 function setVoltaVisibility() {
@@ -349,22 +359,26 @@ if (possuiVoltaToggle) {
     });
 }
 
+function getTipoEmissao() {
+    return tipoEmissaoSelect ? tipoEmissaoSelect.value : "cliente";
+}
+
 function getProgramasDisponiveis() {
-    const tipo = tipoTitularSelect ? tipoTitularSelect.value : "cliente";
-    let programas = [];
+    const tipo = getTipoEmissao();
+    if (tipo === "parceiro") {
+        const emissorId = emissorParceiroSelect ? emissorParceiroSelect.value : null;
+        if (!emissorId || !emissorParceiroProgramas || !programasParceiro) {
+            return [];
+        }
+        const allowedIds = emissorParceiroProgramas[emissorId] || [];
+        return programasParceiro.filter((p) => allowedIds.includes(p.id));
+    }
     if (tipo === "administrada") {
         const contaId = contaAdmSelect ? contaAdmSelect.value : null;
-        programas = (contasAdmProgramas && contaId) ? (contasAdmProgramas[contaId] || []) : [];
-    } else {
-        const clienteId = clienteSelect ? clienteSelect.value : null;
-        programas = (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
+        return (contasAdmProgramas && contaId) ? (contasAdmProgramas[contaId] || []) : [];
     }
-    const emissorId = emissorParceiroSelect ? emissorParceiroSelect.value : null;
-    if (emissorId && emissorParceiroProgramas && emissorParceiroProgramas[emissorId]) {
-        const allowedIds = emissorParceiroProgramas[emissorId];
-        programas = programas.filter((p) => allowedIds.includes(p.id));
-    }
-    return programas;
+    const clienteId = clienteSelect ? clienteSelect.value : null;
+    return (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
 }
 
 function updateProgramaInfo() {
@@ -375,11 +389,23 @@ function updateProgramaInfo() {
         const cpfsTxt = selected.cpfs_total === null || selected.cpfs_total === undefined
             ? "CPFs disponíveis: ilimitado"
             : `CPFs disponíveis: ${selected.cpfs_disponiveis} de ${selected.cpfs_total}`;
-        programaInfo.textContent = `Saldo: ${selected.saldo} pontos • Custo médio: R$ ${Number(selected.valor_medio || 0).toFixed(2)} • ${cpfsTxt}`;
+        if (selected.saldo !== undefined) {
+            programaInfo.textContent = `Saldo: ${selected.saldo} pontos • Custo médio: R$ ${Number(selected.valor_medio || 0).toFixed(2)} • ${cpfsTxt}`;
+        } else {
+            programaInfo.textContent = `Referência do milheiro: R$ ${Number(selected.valor_medio || 0).toFixed(2)} • ${cpfsTxt}`;
+        }
+        if (cpfUsadosInfo) {
+            const usadosList = selected.cpfs_usados_list || [];
+            cpfUsadosInfo.textContent = usadosList.length
+                ? `CPFs usados no programa: ${usadosList.join(", ")}`
+                : "CPFs usados no programa: nenhum";
+        }
     } else if (programas.length) {
         programaInfo.textContent = "Nenhum programa disponível para o titular selecionado.";
+        if (cpfUsadosInfo) cpfUsadosInfo.textContent = "";
     } else {
         programaInfo.textContent = "";
+        if (cpfUsadosInfo) cpfUsadosInfo.textContent = "";
     }
     updateCpfLimite();
     recalcValoresFinanceiros();
@@ -406,8 +432,12 @@ function recalcValoresFinanceiros() {
     const programas = getProgramasDisponiveis();
     const selected = programas.find(p => String(p.id) === (programaSelect ? programaSelect.value : ""));
     const pontos = parseFloat(pontosField ? (pontosField.value || 0) : 0);
-    if (selected && valorRefPontosField) {
-        const valorRefPontos = (pontos / 1000) * (selected.valor_medio || 0);
+    const tipo = getTipoEmissao();
+    const valorMilheiro = tipo === "parceiro"
+        ? parseFloat(custoParceiroField ? (custoParceiroField.value || 0) : 0)
+        : (selected ? (selected.valor_medio || 0) : 0);
+    const valorRefPontos = (pontos / 1000) * (valorMilheiro || 0);
+    if (valorRefPontosField) {
         valorRefPontosField.value = valorRefPontos.toFixed(2);
     }
     const valorRef = parseFloat(valorReferenciaField ? (valorReferenciaField.value || 0) : 0);
@@ -416,24 +446,53 @@ function recalcValoresFinanceiros() {
     if (economiaField) {
         economiaField.value = (valorRef - (valorPago + valorRefPts)).toFixed(2);
     }
-    updateLucro();
+    updateLucro(valorRefPontos);
     updateResumoVisual();
 }
 
-function updateLucro() {
+function updateLucro(custoTotal) {
     if (!lucroField) return;
-    const custo = parseFloat(custoParceiroField ? (custoParceiroField.value || 0) : 0);
+    if (getTipoEmissao() !== "parceiro") {
+        lucroField.value = "";
+        return;
+    }
+    const custo = parseFloat(valorRefPontosField ? (valorRefPontosField.value || 0) : 0);
     const venda = parseFloat(vendaFinalField ? (vendaFinalField.value || 0) : 0);
-    if (custo || venda) {
-        lucroField.value = (venda - custo).toFixed(2);
+    const custoBase = custoTotal !== undefined ? custoTotal : custo;
+    if (custoBase || venda) {
+        lucroField.value = (venda - custoBase).toFixed(2);
     }
 }
 
 function toggleTitularFields() {
-    const tipo = tipoTitularSelect ? tipoTitularSelect.value : "cliente";
+    const tipo = getTipoEmissao();
     if (clienteWrapper && contaAdmWrapper) {
         clienteWrapper.style.display = "block";
         contaAdmWrapper.style.display = tipo === "administrada" ? "block" : "none";
+    }
+    if (emissorParceiroWrapper) {
+        emissorParceiroWrapper.style.display = tipo === "parceiro" ? "block" : "none";
+    }
+    if (valorMilheiroParceiroWrapper) {
+        valorMilheiroParceiroWrapper.style.display = tipo === "parceiro" ? "block" : "none";
+    }
+    if (valorVendaFinalWrapper) {
+        valorVendaFinalWrapper.style.display = tipo === "parceiro" ? "block" : "none";
+    }
+    if (lucroWrapper) {
+        lucroWrapper.style.display = tipo === "parceiro" ? "block" : "none";
+    }
+    if (tipo !== "parceiro" && emissorParceiroSelect) {
+        emissorParceiroSelect.value = "";
+    }
+    if (tipo !== "parceiro" && custoParceiroField) {
+        custoParceiroField.value = "";
+    }
+    if (tipo !== "parceiro" && vendaFinalField) {
+        vendaFinalField.value = "";
+    }
+    if (tipo !== "parceiro" && lucroField) {
+        lucroField.value = "";
     }
     updateProgramaOptions();
 }
@@ -444,8 +503,8 @@ if (clienteSelect) {
 if (contaAdmSelect) {
     contaAdmSelect.addEventListener('change', updateProgramaOptions);
 }
-if (tipoTitularSelect) {
-    tipoTitularSelect.addEventListener('change', toggleTitularFields);
+if (tipoEmissaoSelect) {
+    tipoEmissaoSelect.addEventListener('change', toggleTitularFields);
 }
 if (emissorParceiroSelect) {
     emissorParceiroSelect.addEventListener('change', updateProgramaOptions);
@@ -463,10 +522,10 @@ if (valorPagoField) {
     valorPagoField.addEventListener('input', recalcValoresFinanceiros);
 }
 if (custoParceiroField) {
-    custoParceiroField.addEventListener('input', updateLucro);
+    custoParceiroField.addEventListener('input', recalcValoresFinanceiros);
 }
 if (vendaFinalField) {
-    vendaFinalField.addEventListener('input', updateLucro);
+    vendaFinalField.addEventListener('input', recalcValoresFinanceiros);
 }
 
 function renderPassengerForms() {

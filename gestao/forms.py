@@ -250,8 +250,12 @@ class AeroportoForm(forms.ModelForm):
 
 
 class EmissaoPassagemForm(forms.ModelForm):
-    tipo_titular = forms.ChoiceField(
-        choices=(("cliente", "Conta de Cliente"), ("administrada", "Conta Administrada")),
+    tipo_emissao = forms.ChoiceField(
+        choices=(
+            ("cliente", "Conta do Cliente"),
+            ("administrada", "Conta Administrada"),
+            ("parceiro", "Emissor Parceiro"),
+        ),
         initial="cliente",
     )
     conta_administrada = forms.ModelChoiceField(
@@ -284,8 +288,15 @@ class EmissaoPassagemForm(forms.ModelForm):
         self.fields["cliente"].queryset = clientes_qs
         self.fields["conta_administrada"].queryset = contas_adm_qs
 
-        selected_tipo = self.data.get("tipo_titular") or ("administrada" if getattr(self.instance, "conta_administrada_id", None) else "cliente")
-        self.initial.setdefault("tipo_titular", selected_tipo)
+        selected_tipo = self.data.get("tipo_emissao")
+        if not selected_tipo:
+            if getattr(self.instance, "emissor_parceiro_id", None):
+                selected_tipo = "parceiro"
+            elif getattr(self.instance, "conta_administrada_id", None):
+                selected_tipo = "administrada"
+            else:
+                selected_tipo = "cliente"
+        self.initial.setdefault("tipo_emissao", selected_tipo)
         self.fields["cliente"].required = True
         self.fields["conta_administrada"].required = selected_tipo == "administrada"
 
@@ -293,9 +304,11 @@ class EmissaoPassagemForm(forms.ModelForm):
         emissor_parceiro_id = self.data.get("emissor_parceiro") or getattr(
             self.instance, "emissor_parceiro_id", None
         )
-        if emissor_parceiro_id:
-            programas_qs = ProgramaFidelidade.objects.filter(
-                emissores_parceiros__id=emissor_parceiro_id
+        if selected_tipo == "parceiro":
+            programas_qs = (
+                ProgramaFidelidade.objects.filter(emissores_parceiros__id=emissor_parceiro_id)
+                if emissor_parceiro_id
+                else ProgramaFidelidade.objects.none()
             )
         elif selected_tipo == "administrada":
             titular_id = self.data.get("conta_administrada") or getattr(self.instance, "conta_administrada_id", None)
@@ -314,7 +327,7 @@ class EmissaoPassagemForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        tipo = cleaned.get("tipo_titular")
+        tipo = cleaned.get("tipo_emissao")
         cliente = cleaned.get("cliente")
         conta_adm = cleaned.get("conta_administrada")
         if not cliente:
@@ -325,7 +338,9 @@ class EmissaoPassagemForm(forms.ModelForm):
                 raise forms.ValidationError("Selecione uma conta administrada para usar pontos ou escolha 'Conta de Cliente'.")
         else:
             cleaned["conta_administrada"] = None
-        if emissor_parceiro:
+        if tipo == "parceiro":
+            if not emissor_parceiro:
+                raise forms.ValidationError("Selecione o emissor parceiro para este tipo de emissão.")
             programa = cleaned.get("programa")
             if programa and not emissor_parceiro.programas.filter(id=programa.id).exists():
                 raise forms.ValidationError("Selecione um programa disponível para o emissor parceiro.")
@@ -334,6 +349,7 @@ class EmissaoPassagemForm(forms.ModelForm):
             if cleaned.get("valor_venda_final") in (None, ""):
                 raise forms.ValidationError("Informe o valor final de venda ao cliente.")
         else:
+            cleaned["emissor_parceiro"] = None
             cleaned["valor_milheiro_parceiro"] = None
             cleaned["valor_venda_final"] = None
             cleaned["lucro"] = None
@@ -342,7 +358,7 @@ class EmissaoPassagemForm(forms.ModelForm):
     class Meta:
         model = EmissaoPassagem
         fields = [
-            'tipo_titular',
+            'tipo_emissao',
             'cliente',
             'conta_administrada',
             'programa',
@@ -369,6 +385,7 @@ class EmissaoPassagemForm(forms.ModelForm):
         widgets = {
             'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'valor_referencia_pontos': forms.NumberInput(attrs={'step': '0.01', 'readonly': 'readonly'}),
             'valor_milheiro_parceiro': forms.NumberInput(attrs={'step': '0.01'}),
             'valor_venda_final': forms.NumberInput(attrs={'step': '0.01'}),
             'lucro': forms.NumberInput(attrs={'step': '0.01', 'readonly': 'readonly'}),
