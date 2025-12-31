@@ -178,6 +178,8 @@ body.sidebar-open .app-shell .sidebar {
   position: sticky;
   top: 0;
   z-index: 30;
+  margin: 0;
+  border-radius: 0;
 }
 
 .app-header__left {
@@ -227,6 +229,13 @@ body.sidebar-open .app-shell .sidebar {
   padding: 24px;
   background: var(--color-bg);
   width: 100%;
+}
+
+.app-shell .btn,
+.app-shell button {
+  width: auto;
+  display: inline-flex;
+  white-space: nowrap;
 }
 
 .app-shell .icon-button {
@@ -294,6 +303,22 @@ body.sidebar-open .app-shell .sidebar {
     flex-direction: column;
   }
 
+  .app-header {
+    padding: 10px 16px;
+    height: 60px;
+  }
+
+  .app-header__title {
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .user-name {
+    display: none;
+  }
+
   .app-main {
     padding: 24px 16px;
   }
@@ -323,6 +348,12 @@ body.sidebar-open .app-shell .sidebar {
 }
 
 @media (max-width: 640px) {
+  .fpp-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
   .app-main {
     padding: 20px;
   }
