@@ -20,11 +20,11 @@ def custom_login(request):
             login(request, user)
             user_perfil = getattr(getattr(user, "cliente_gestao", None), "perfil", "")
             if perfil == "superadmin" and user.is_superuser:
-                 return redirect('admin_dashboard')
+                return redirect("gestao_nuxt")
             elif perfil == "admin" and user_perfil == "admin":
-                 return redirect('admin_dashboard')
+                return redirect("gestao_nuxt")
             elif perfil == "operador" and user_perfil == "operador":
-                 return redirect('admin_dashboard')
+                return redirect("gestao_nuxt")
             elif perfil == "cliente" and not user.is_staff:
                 return redirect('painel_dashboard')
             else:
