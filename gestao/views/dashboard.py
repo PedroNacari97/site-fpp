@@ -24,7 +24,14 @@ def _default_metrics(total_titulares):
         "total_pontos": 0,
         "total_economizado": 0,
         "programas": [],
-        "emissoes": {"qtd": 0, "pontos": 0, "valor_referencia": 0, "valor_pago": 0, "valor_economizado": 0},
+        "emissoes": {
+            "qtd": 0,
+            "pontos": 0,
+            "valor_referencia": 0,
+            "valor_taxas": 0,
+            "custo_total": 0,
+            "valor_economizado": 0,
+        },
         "hoteis": {"qtd": 0, "valor_referencia": 0, "valor_pago": 0, "valor_economizado": 0},
         "emissoes_programa": [],
         "parceiros": {"lucro": 0, "vendas": 0, "milhas": 0, "valor_pago": 0, "valor_medio_milheiro": 0},
@@ -106,8 +113,9 @@ def build_dashboard_metrics(view_type="clientes", entity_id=None):
     total_emissoes = emissoes.count()
     pontos_utilizados = sum(e.pontos_utilizados or 0 for e in emissoes)
     valor_ref_emissoes = sum(float(e.valor_referencia or 0) for e in emissoes)
-    valor_pago_emissoes = sum(float(e.valor_pago or 0) for e in emissoes)
-    valor_economizado_emissoes = valor_ref_emissoes - valor_pago_emissoes
+    valor_taxas_emissoes = sum(float(e.valor_taxas or 0) for e in emissoes)
+    custo_total_emissoes = sum(float(e.custo_total or 0) for e in emissoes)
+    valor_economizado_emissoes = sum(float(e.economia_obtida or 0) for e in emissoes)
     total_pago_parceiro = Decimal("0")
     total_lucro = Decimal("0")
     total_vendas = Decimal("0")
@@ -163,7 +171,8 @@ def build_dashboard_metrics(view_type="clientes", entity_id=None):
             "qtd": total_emissoes,
             "pontos": pontos_utilizados,
             "valor_referencia": valor_ref_emissoes,
-            "valor_pago": valor_pago_emissoes,
+            "valor_taxas": valor_taxas_emissoes,
+            "custo_total": custo_total_emissoes,
             "valor_economizado": valor_economizado_emissoes,
         },
         "hoteis": {

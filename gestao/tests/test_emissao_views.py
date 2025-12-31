@@ -39,7 +39,7 @@ class NovaEmissaoViewTest(TestCase):
             "aeroporto_destino": str(self.aeroporto_destino.id),
             "data_ida": datetime(2024, 1, 1, 12, 0, tzinfo=timezone.utc).isoformat(),
             "valor_referencia": "1000",
-            "valor_pago": "500",
+            "valor_taxas": "500",
             "pontos_utilizados": "0",
             "qtd_adultos": "1",
             "qtd_criancas": "0",
@@ -47,6 +47,7 @@ class NovaEmissaoViewTest(TestCase):
             "total_passageiros": "1",
             "passageiro-0-nome": "Maria Teste",
             "passageiro-0-cpf": "123.456.789-00",
+            "passageiro-0-data-nascimento": "1990-01-01",
             "passageiro-0-categoria": "adulto",
         }
         if extra:

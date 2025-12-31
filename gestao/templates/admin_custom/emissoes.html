@@ -78,11 +78,13 @@
                         <th>Aeroporto Volta</th>
                         <th>Data Ida</th>
                         <th>Data Volta</th>
+                        <th>Data Emissão</th>
                         <th>Qtd</th>
                         <th>Companhia</th>
                         <th>Localizador</th>
+                        <th>Tipo</th>
                         <th>Valor Ref.</th>
-                        <th>Pago</th>
+                        <th>Taxas</th>
                         <th>Pontos</th>
                         <th>Economia</th>
                         <th>Detalhes</th>
@@ -98,11 +100,21 @@
                         <td>{{ e.aeroporto_destino }}</td>
                         <td>{{ e.data_ida|date:"d/m/Y H:i" }}</td>
                         <td>{{ e.data_volta|date:"d/m/Y H:i" }}</td>
+                        <td>{{ e.criado_em|date:"d/m/Y H:i" }}</td>
                         <td>{{ e.qtd_passageiros }}</td>
                         <td>{{ e.companhia_aerea }}</td>
                         <td>{{ e.localizador }}</td>
+                        <td>
+                          {% if e.emissor_parceiro %}
+                            Emissor Parceiro
+                          {% elif e.conta_administrada %}
+                            Conta Administrada
+                          {% else %}
+                            Cliente
+                          {% endif %}
+                        </td>
                         <td>R$ {{ e.valor_referencia|floatformat:2 }}</td>
-                        <td>R$ {{ e.valor_pago|floatformat:2 }}</td>
+                        <td>R$ {{ e.valor_taxas|floatformat:2 }}</td>
                         <td>{{ e.pontos_utilizados }}</td>
                         <td>R$ {{ e.economia_obtida|floatformat:2 }}</td>
                         <td>{{ e.detalhes }}</td>
@@ -116,7 +128,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="15" class="text-center text-red-400 py-4">Nenhuma emissão encontrada.</td>
+                        <td colspan="17" class="text-center text-red-400 py-4">Nenhuma emissão encontrada.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
