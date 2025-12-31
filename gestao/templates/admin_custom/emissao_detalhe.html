@@ -58,12 +58,16 @@
         <p class="value">R$ {{ emissao.valor_referencia|floatformat:2 }}</p>
       </div>
       <div>
-        <p class="label">Valor pago</p>
-        <p class="value">R$ {{ emissao.valor_pago|floatformat:2 }}</p>
+        <p class="label">Taxas*</p>
+        <p class="value">R$ {{ emissao.valor_taxas|floatformat:2 }}</p>
+      </div>
+      <div>
+        <p class="label">Custo total</p>
+        <p class="value">{% if emissao.custo_total is not None %}R$ {{ emissao.custo_total|floatformat:2 }}{% else %}—{% endif %}</p>
       </div>
       <div>
         <p class="label">Economia obtida</p>
-        <p class="value">{% if emissao.economia_obtida %}R$ {{ emissao.economia_obtida|floatformat:2 }}{% else %}—{% endif %}</p>
+        <p class="value">{% if emissao.economia_obtida is not None %}R$ {{ emissao.economia_obtida|floatformat:2 }}{% else %}—{% endif %}</p>
       </div>
       <div>
         <p class="label">Valor do milheiro parceiro</p>
@@ -75,9 +79,10 @@
       </div>
       <div>
         <p class="label">Lucro</p>
-        <p class="value">{% if emissao.lucro %}R$ {{ emissao.lucro|floatformat:2 }}{% else %}—{% endif %}</p>
+        <p class="value">{% if emissao.lucro is not None %}R$ {{ emissao.lucro|floatformat:2 }}{% else %}—{% endif %}</p>
       </div>
     </div>
+    <p class="helper-text mt-3">*Taxas de embarque/companhia aérea.</p>
   </section>
 
   <section class="surface-card">

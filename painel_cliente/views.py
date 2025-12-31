@@ -78,14 +78,25 @@ def build_dashboard_context(user):
             }
         )
 
+    valor_total_taxas = sum(float(e.valor_taxas or 0) for e in emissoes)
+    valor_total_economizado = sum(
+        float(
+            e.economia_obtida
+            if e.economia_obtida is not None
+            else (e.valor_referencia - e.valor_venda_final)
+            if e.valor_venda_final is not None
+            else (e.custo_total or 0)
+        )
+        for e in emissoes
+    )
+
     return {
         "contas_info": contas_info,
         "qtd_emissoes": emissoes.count(),
         "pontos_totais_utilizados": sum(e.pontos_utilizados or 0 for e in emissoes),
         "valor_total_referencia": sum(float(e.valor_referencia or 0) for e in emissoes),
-        "valor_total_pago": sum(float(e.valor_pago or 0) for e in emissoes),
-        "valor_total_economizado": sum(float(e.valor_referencia or 0) for e in emissoes)
-        - sum(float(e.valor_pago or 0) for e in emissoes),
+        "valor_total_taxas": valor_total_taxas,
+        "valor_total_economizado": valor_total_economizado,
         "qtd_hoteis": hoteis.count(),
         "valor_total_hoteis": sum(float(h.valor_pago or 0) for h in hoteis),
         "valor_total_hoteis_referencia": sum(
@@ -131,14 +142,14 @@ def painel_emissoes(request):
     """Display detailed flight emissions for the user."""
     conta = get_contas_by_user(request.user).first()
     emissoes = get_emissoes_passagem_by_user(request.user)
-    total_pago = sum(float(e.valor_pago or 0) for e in emissoes)
+    total_taxas = sum(float(e.valor_taxas or 0) for e in emissoes)
     return render(
         request,
         "painel_cliente/emissoes.html",
         {
             "emissoes": emissoes,
             "conta": conta,
-            "total_pago": total_pago,
+            "total_taxas": total_taxas,
         },
     )
 

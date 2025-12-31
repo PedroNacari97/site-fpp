@@ -133,7 +133,7 @@
         </div>
         <div class="form-grid form-grid--3">
             <div class="form-field--compact">
-                <label class="form-label" for="{{ form.qtd_adultos.id_for_label }}">Adultos <span class="required-asterisk">*</span></label>
+                <label class="form-label" for="{{ form.qtd_adultos.id_for_label }}">Adultos</label>
                 {{ form.qtd_adultos }}
             </div>
             <div class="form-field--compact">
@@ -232,8 +232,8 @@
                 {{ form.valor_referencia_pontos }}
             </div>
             <div class="form-field--compact">
-                <label class="form-label" for="{{ form.valor_pago.id_for_label }}">Taxa da companhia (R$) <span class="required-asterisk">*</span></label>
-                {{ form.valor_pago }}
+                <label class="form-label" for="{{ form.valor_taxas.id_for_label }}">Taxas (R$) <span class="required-asterisk">*</span></label>
+                {{ form.valor_taxas }}
             </div>
         </div>
         <div class="form-grid form-grid--3">
@@ -318,7 +318,7 @@ const lucroWrapper = document.getElementById('lucro-wrapper');
 const pontosField = document.getElementById('id_pontos_utilizados');
 const valorRefPontosField = document.getElementById('id_valor_referencia_pontos');
 const valorReferenciaField = document.getElementById('id_valor_referencia');
-const valorPagoField = document.getElementById('id_valor_pago');
+const valorTaxasField = document.getElementById('id_valor_taxas');
 const custoParceiroField = document.getElementById('id_valor_milheiro_parceiro');
 const vendaFinalField = document.getElementById('id_valor_venda_final');
 const lucroField = document.getElementById('id_lucro');
@@ -441,8 +441,8 @@ function recalcValoresFinanceiros() {
         valorRefPontosField.value = custoMilhas.toFixed(2);
     }
     const valorRef = parseFloat(valorReferenciaField ? (valorReferenciaField.value || 0) : 0);
-    const valorPago = parseFloat(valorPagoField ? (valorPagoField.value || 0) : 0);
-    const custoTotal = tipo === "parceiro" ? custoMilhas : (custoMilhas + valorPago);
+    const valorTaxas = parseFloat(valorTaxasField ? (valorTaxasField.value || 0) : 0);
+    const custoTotal = tipo === "parceiro" ? custoMilhas : (custoMilhas + valorTaxas);
     const vendaRaw = vendaFinalField ? vendaFinalField.value : "";
     const hasVenda = vendaRaw !== "" && vendaRaw !== null;
     const valorVenda = parseFloat(vendaRaw || 0);
@@ -512,8 +512,8 @@ if (pontosField) {
 if (valorReferenciaField) {
     valorReferenciaField.addEventListener('input', recalcValoresFinanceiros);
 }
-if (valorPagoField) {
-    valorPagoField.addEventListener('input', recalcValoresFinanceiros);
+if (valorTaxasField) {
+    valorTaxasField.addEventListener('input', recalcValoresFinanceiros);
 }
 if (custoParceiroField) {
     custoParceiroField.addEventListener('input', recalcValoresFinanceiros);
@@ -562,7 +562,7 @@ function renderPassengerForms() {
                 <label class="form-label">Validade do passaporte</label>
                 <input type="date" name="passageiro-${index}-passaporte-validade" min="${new Date().toISOString().split('T')[0]}" />
                 <label class="form-label">Data de nascimento</label>
-                <input type="date" name="passageiro-${index}-data-nascimento" />
+                <input type="date" name="passageiro-${index}-data-nascimento" required />
                 <label class="form-label">Observações</label>
                 <textarea name="passageiro-${index}-observacoes" rows="2"></textarea>
                 <input type="hidden" name="passageiro-${index}-categoria" value="${cat.valor}" />
@@ -770,7 +770,7 @@ function updateResumoVisual(){
     const criancas = document.getElementById('id_qtd_criancas');
     const bebes = document.getElementById('id_qtd_bebes');
     const valorReferencia = document.getElementById('id_valor_referencia');
-    const valorPago = document.getElementById('id_valor_pago');
+    const valorTaxas = document.getElementById('id_valor_taxas');
     const pontos = document.getElementById('id_pontos_utilizados');
 
     if(resumoTrechos){
@@ -791,9 +791,9 @@ function updateResumoVisual(){
     }
     if(resumoValores){
         const valorTxt = valorReferencia && valorReferencia.value ? `Referência R$ ${valorReferencia.value}` : "Valor de referência não informado";
-        const pagoTxt = valorPago && valorPago.value ? `Pago R$ ${valorPago.value}` : "Valor pago não informado";
+        const taxasTxt = valorTaxas && valorTaxas.value ? `Taxas R$ ${valorTaxas.value}` : "Taxas não informadas";
         const pontosTxt = pontos && pontos.value ? `${pontos.value} milhas` : "Milhas não informadas";
-        resumoValores.textContent = `${valorTxt} • ${pagoTxt} • ${pontosTxt}`;
+        resumoValores.textContent = `${valorTxt} • ${taxasTxt} • ${pontosTxt}`;
     }
 }
 </script>

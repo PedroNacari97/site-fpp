@@ -196,6 +196,8 @@ def _validate_passageiros(passageiros):
         except ValidationError as exc:
             errors.append(str(exc.message))
             passageiro["data_nascimento"] = None
+        if not passageiro.get("data_nascimento"):
+            errors.append(f"Passageiro {idx}: data de nascimento é obrigatória.")
         passageiro["cpf"] = normalized_cpf
         passageiro["nome"] = nome
         passageiro["passaporte"] = passaporte
@@ -211,6 +213,7 @@ def admin_emissoes(request):
         return permission_denied
     programa_id = request.GET.get("programa")
     cliente_id = request.GET.get("cliente")
+    emissor_parceiro_id = request.GET.get("emissor_parceiro_id")
     q = request.GET.get("q")
     data_ini = request.GET.get("data_ini")
     data_fim = request.GET.get("data_fim")
@@ -223,11 +226,14 @@ def admin_emissoes(request):
         "aeroporto_partida",
         "aeroporto_destino",
         "conta_administrada",
+        "emissor_parceiro",
     )
     if programa_id:
         emissoes = emissoes.filter(programa_id=programa_id)
     if cliente_id:
         emissoes = emissoes.filter(cliente_id=cliente_id)
+    if emissor_parceiro_id:
+        emissoes = emissoes.filter(emissor_parceiro_id=emissor_parceiro_id)
     if q:
         emissoes = emissoes.filter(
             Q(aeroporto_partida__sigla__icontains=q)
@@ -255,7 +261,7 @@ def admin_emissoes(request):
                 "Data Volta",
                 "Qtd Passageiros",
                 "Valor Referência",
-                "Valor Pago",
+                "Taxas",
                 "Pontos Usados",
                 "Economia",
                 "Detalhes",
@@ -272,7 +278,7 @@ def admin_emissoes(request):
                     e.data_volta,
                     e.qtd_passageiros,
                     e.valor_referencia,
-                    e.valor_pago,
+                    e.valor_taxas,
                     e.pontos_utilizados,
                     e.economia_obtida,
                     e.detalhes,
@@ -370,6 +376,7 @@ def nova_emissao(request):
                         custo_total = calcular_custo_total_emissao(
                             emissao, valor_milheiro, incluir_taxas=incluir_taxas
                         )
+                        emissao.custo_total = custo_total
                         emissao.economia_obtida = calcular_economia(emissao, custo_total)
                         custo_lucro = valor_referencia_pontos if emissao_parceiro else custo_total
                         emissao.lucro = calcular_lucro_emissao(emissao, custo_lucro)
@@ -620,6 +627,7 @@ def editar_emissao(request, emissao_id):
                     custo_total = calcular_custo_total_emissao(
                         emissao, valor_milheiro, incluir_taxas=incluir_taxas
                     )
+                    emissao.custo_total = custo_total
                     emissao.economia_obtida = calcular_economia(emissao, custo_total)
                     custo_lucro = valor_referencia_pontos if emissao_parceiro else custo_total
                     emissao.lucro = calcular_lucro_emissao(emissao, custo_lucro)

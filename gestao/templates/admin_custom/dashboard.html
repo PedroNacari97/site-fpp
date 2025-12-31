@@ -177,10 +177,14 @@
           {% else %}
             <li>Total de pontos usados: <strong>{{ emissoes.pontos }}</strong></li>
             <li>Valor ref.: <strong>R$ {{ emissoes.valor_referencia|floatformat:2 }}</strong></li>
-            <li>Valor pago: <strong>R$ {{ emissoes.valor_pago|floatformat:2 }}</strong></li>
+            <li>Taxas*: <strong>R$ {{ emissoes.valor_taxas|floatformat:2 }}</strong></li>
+            <li>Custo total: <strong>R$ {{ emissoes.custo_total|floatformat:2 }}</strong></li>
             <li>Economizado: <strong>R$ {{ emissoes.valor_economizado|floatformat:2 }}</strong></li>
           {% endif %}
         </ul>
+        {% if view_type != "parceiros" %}
+        <p class="helper-text mt-3">*Taxas de embarque/companhia aérea.</p>
+        {% endif %}
         <a class="card-link btn btn--ghost" href="{% url 'admin_emissoes' %}">Ver detalhes</a>
       </div>
       {% if view_type != "parceiros" %}

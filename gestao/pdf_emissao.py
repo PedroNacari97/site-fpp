@@ -188,23 +188,39 @@ def gerar_pdf_emissao(emissao):
 
     # INFORMAÇÕES FINANCEIRAS
     elements.append(Paragraph("Informações Financeiras", titulo_secao))
-    valor_pago = getattr(emissao, 'valor_pago', Decimal('0'))
+    valor_taxas = getattr(emissao, 'valor_taxas', Decimal('0'))
     try:
-        valor_pago = Decimal(valor_pago)
+        valor_taxas = Decimal(valor_taxas)
     except (InvalidOperation, TypeError):
-        valor_pago = Decimal('0')
+        valor_taxas = Decimal('0')
     valor_referencia = getattr(emissao, 'valor_referencia', None)
     try:
-        valor_referencia = Decimal(valor_referencia) if valor_referencia else valor_pago * Decimal('1.3')
+        valor_referencia = Decimal(valor_referencia) if valor_referencia else valor_taxas * Decimal('1.3')
     except (InvalidOperation, TypeError):
-        valor_referencia = valor_pago * Decimal('1.3')
-    valor_economizado = valor_referencia - valor_pago
+        valor_referencia = valor_taxas * Decimal('1.3')
+    valor_final = getattr(emissao, 'valor_venda_final', None)
+    try:
+        valor_final = Decimal(valor_final) if valor_final not in (None, "") else None
+    except (InvalidOperation, TypeError):
+        valor_final = None
+    custo_total = getattr(emissao, 'custo_total', None)
+    try:
+        custo_total = Decimal(custo_total) if custo_total not in (None, "") else Decimal('0')
+    except (InvalidOperation, TypeError):
+        custo_total = Decimal('0')
+    if valor_final is not None:
+        valor_economizado = valor_referencia - valor_final
+    else:
+        valor_economizado = custo_total
     percentual_economia = (valor_economizado / valor_referencia * 100) if valor_referencia > 0 else Decimal('0')
 
     financeiro_data = [
-        [Paragraph("VALOR DE REFERÊNCIA", estilo_label), Paragraph("VALOR TOTAL PAGO", estilo_label)],
+        [Paragraph("VALOR DE REFERÊNCIA", estilo_label), Paragraph("TAXAS", estilo_label)],
         [Paragraph(f"R$ {valor_referencia:.2f}", estilo_valor),
-         Paragraph(f"R$ {valor_pago:.2f}", estilo_valor_destaque)],
+         Paragraph(f"R$ {valor_taxas:.2f}", estilo_valor_destaque)],
+        [Paragraph("VALOR FINAL AO CLIENTE", estilo_label), Paragraph("CUSTO TOTAL", estilo_label)],
+        [Paragraph(f"R$ {valor_final:.2f}", estilo_valor) if valor_final is not None else Paragraph("—", estilo_valor),
+         Paragraph(f"R$ {custo_total:.2f}", estilo_valor)],
         [Paragraph("VALOR ECONOMIZADO", estilo_label), Paragraph("PERCENTUAL DE ECONOMIA", estilo_label)],
         [Paragraph(f"R$ {valor_economizado:.2f}", ParagraphStyle(
             'Economia', parent=estilo_valor, textColor=cor_alerta, fontSize=12, fontName='Helvetica-Bold')),
