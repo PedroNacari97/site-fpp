@@ -13,8 +13,9 @@ from gestao.services.clientes_programas import (
     build_contas_administradas_programas_map,
 )
 from gestao.services.emissao_financeiro import (
+    calcular_custo_milhas,
+    calcular_custo_total_emissao,
     calcular_economia,
-    calcular_valor_referencia_pontos,
     registrar_movimentacao_pontos,
 )
 from ..forms import (
@@ -249,12 +250,13 @@ def nova_cotacao_voo(request):
                             pontos_utilizados=cot.milhas,
                             detalhes=cot.observacoes,
                         )
-                        emissao.valor_referencia_pontos = calcular_valor_referencia_pontos(
+                        emissao.valor_referencia_pontos = calcular_custo_milhas(
                             emissao.pontos_utilizados, valor_medio_milheiro
                         )
-                        emissao.economia_obtida = calcular_economia(
-                            emissao, emissao.valor_referencia_pontos
+                        custo_total = calcular_custo_total_emissao(
+                            emissao, valor_medio_milheiro, incluir_taxas=True
                         )
+                        emissao.economia_obtida = calcular_economia(emissao, custo_total)
                         emissao.save()
                         for escala in cot.escalas.all():
                             Escala.objects.create(
@@ -373,12 +375,13 @@ def editar_cotacao_voo(request, cotacao_id):
                                 pontos_utilizados=cot.milhas,
                                 detalhes=cot.observacoes,
                             )
-                            emissao.valor_referencia_pontos = calcular_valor_referencia_pontos(
+                            emissao.valor_referencia_pontos = calcular_custo_milhas(
                                 emissao.pontos_utilizados, conta.valor_medio_por_mil
                             )
-                            emissao.economia_obtida = calcular_economia(
-                                emissao, emissao.valor_referencia_pontos
+                            custo_total = calcular_custo_total_emissao(
+                                emissao, conta.valor_medio_por_mil, incluir_taxas=True
                             )
+                            emissao.economia_obtida = calcular_economia(emissao, custo_total)
                             emissao.save()
                             for escala in cot.escalas.all():
                                 Escala.objects.create(

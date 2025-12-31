@@ -82,13 +82,17 @@ class EmissaoPassagem(models.Model):
 
     def save(self, *args, **kwargs):
         self.qtd_passageiros = self.qtd_adultos + self.qtd_criancas + self.qtd_bebes
-        if self.valor_milheiro_parceiro is not None and self.valor_venda_final is not None:
+        if self.valor_milheiro_parceiro is not None:
             pontos = Decimal(self.pontos_utilizados or 0)
-            valor_milheiro = Decimal(self.valor_milheiro_parceiro)
-            custo_total = (pontos / Decimal("1000")) * valor_milheiro
-            self.lucro = Decimal(self.valor_venda_final) - custo_total
-        elif self.valor_venda_final is None:
-            self.lucro = None
+            valor_milheiro = Decimal(self.valor_milheiro_parceiro or 0)
+            custo_milhas = (pontos / Decimal("1000")) * valor_milheiro
+            custo_total = custo_milhas
+            if not self.emissor_parceiro_id:
+                custo_total += Decimal(self.valor_pago or 0)
+            if self.valor_venda_final is not None:
+                self.lucro = Decimal(self.valor_venda_final) - custo_total
+            elif self.lucro is None:
+                self.lucro = Decimal("0")
         super().save(*args, **kwargs)
 
     def __str__(self):

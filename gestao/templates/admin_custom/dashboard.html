@@ -71,14 +71,43 @@
         <h2 class="section-title">Resumo rápido</h2>
       </div>
     </div>
+    {% if view_type == "parceiros" %}
+    <div class="stat-grid">
+      <div class="stat-card">
+        <p class="stat-label">✈️ Total de Emissões</p>
+        <p class="stat-value">{{ total_emissoes }}</p>
+        <p class="stat-meta">Emissões vinculadas ao emissor selecionado</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">🧾 Total de milhas emitidas</p>
+        <p class="stat-value">{{ parceiros.milhas }}</p>
+        <p class="stat-meta">Milhas usadas nas emissões do parceiro</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">💸 Valor pago ao parceiro</p>
+        <p class="stat-value">R$ {{ parceiros.valor_pago|floatformat:2 }}</p>
+        <p class="stat-meta">Somatório de milhas × valor do milheiro</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">💰 Lucro total</p>
+        <p class="stat-value">R$ {{ parceiros.lucro|floatformat:2 }}</p>
+        <p class="stat-meta">Lucro consolidado das emissões</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">📈 Valor médio do milheiro</p>
+        <p class="stat-value">R$ {{ parceiros.valor_medio_milheiro|floatformat:2 }}</p>
+        <p class="stat-meta">Média ponderada por milhas emitidas</p>
+      </div>
+    </div>
+    {% else %}
     <div class="stat-grid">
       <div class="stat-card">
         <p class="stat-label">
-          {% if view_type == "contas" %}🏢 Total de Contas{% elif view_type == "parceiros" %}🤝 Total de Emissores{% else %}👥 Total de Clientes{% endif %}
+          {% if view_type == "contas" %}🏢 Total de Contas{% else %}👥 Total de Clientes{% endif %}
         </p>
         <p class="stat-value">{{ total_titulares }}</p>
         <p class="stat-meta">
-          {% if view_type == "contas" %}Contas administradas ativas{% elif view_type == "parceiros" %}Emissores parceiros disponíveis{% else %}Base ativa de clientes acompanhados{% endif %}
+          {% if view_type == "contas" %}Contas administradas ativas{% else %}Base ativa de clientes acompanhados{% endif %}
         </p>
       </div>
       <div class="stat-card">
@@ -87,15 +116,12 @@
         <p class="stat-meta">Passagens emitidas em todos os programas</p>
       </div>
       <div class="stat-card">
-        <p class="stat-label">{% if view_type == "parceiros" %}💰 Lucro total{% else %}💰 Total Economizado{% endif %}</p>
-        <p class="stat-value">
-          {% if view_type == "parceiros" %}R$ {{ parceiros.lucro|floatformat:2 }}{% else %}R$ {{ total_economizado|floatformat:2 }}{% endif %}
-        </p>
-        <p class="stat-meta">
-          {% if view_type == "parceiros" %}Lucro consolidado das emissões{% else %}Economia acumulada em emissões e reservas{% endif %}
-        </p>
+        <p class="stat-label">💰 Total Economizado</p>
+        <p class="stat-value">R$ {{ total_economizado|floatformat:2 }}</p>
+        <p class="stat-meta">Economia acumulada em emissões e reservas</p>
       </div>
     </div>
+    {% endif %}
   </section>
 
   {% if view_type != "parceiros" %}
@@ -143,10 +169,17 @@
         <p class="stat-value">{{ emissoes.qtd }}</p>
         <p class="stat-meta">Quantidade total de emissões</p>
         <ul class="list-plain">
-          <li>Total de pontos usados: <strong>{{ emissoes.pontos }}</strong></li>
-          <li>Valor ref.: <strong>R$ {{ emissoes.valor_referencia|floatformat:2 }}</strong></li>
-          <li>Valor pago: <strong>R$ {{ emissoes.valor_pago|floatformat:2 }}</strong></li>
-          <li>{% if view_type == "parceiros" %}Vendas: <strong>R$ {{ parceiros.vendas|floatformat:2 }}</strong>{% else %}Economizado: <strong>R$ {{ emissoes.valor_economizado|floatformat:2 }}</strong>{% endif %}</li>
+          {% if view_type == "parceiros" %}
+            <li>Total de milhas emitidas: <strong>{{ parceiros.milhas }}</strong></li>
+            <li>Valor pago ao parceiro: <strong>R$ {{ parceiros.valor_pago|floatformat:2 }}</strong></li>
+            <li>Valor médio do milheiro: <strong>R$ {{ parceiros.valor_medio_milheiro|floatformat:2 }}</strong></li>
+            <li>Lucro: <strong>R$ {{ parceiros.lucro|floatformat:2 }}</strong></li>
+          {% else %}
+            <li>Total de pontos usados: <strong>{{ emissoes.pontos }}</strong></li>
+            <li>Valor ref.: <strong>R$ {{ emissoes.valor_referencia|floatformat:2 }}</strong></li>
+            <li>Valor pago: <strong>R$ {{ emissoes.valor_pago|floatformat:2 }}</strong></li>
+            <li>Economizado: <strong>R$ {{ emissoes.valor_economizado|floatformat:2 }}</strong></li>
+          {% endif %}
         </ul>
         <a class="card-link btn btn--ghost" href="{% url 'admin_emissoes' %}">Ver detalhes</a>
       </div>

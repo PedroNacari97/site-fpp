@@ -171,3 +171,48 @@ def build_contas_administradas_programas_map(
                 }
             )
     return data
+
+
+def build_empresa_programas_map(
+    empresa_id=None, instance=None
+) -> List[dict]:
+    """Retorna uma lista de programas disponíveis para a empresa."""
+
+    contas = ContaFidelidade.objects.select_related("programa")
+    if empresa_id:
+        contas = contas.filter(
+            Q(cliente__empresa_id=empresa_id) | Q(conta_administrada__empresa_id=empresa_id)
+        )
+    programas = {}
+    for conta in contas:
+        programas.setdefault(conta.programa_id, conta.programa)
+
+    data = [
+        {
+            "id": programa.id,
+            "nome": programa.nome,
+            "saldo": None,
+            "valor_medio": float(programa.preco_medio_milheiro or 0),
+            "cpfs_disponiveis": None,
+            "cpfs_total": None,
+            "cpfs_usados": 0,
+            "cpfs_usados_list": [],
+        }
+        for programa in programas.values()
+    ]
+
+    if instance and getattr(instance, "programa_id", None):
+        if not any(p["id"] == instance.programa_id for p in data):
+            data.append(
+                {
+                    "id": instance.programa_id,
+                    "nome": str(instance.programa),
+                    "saldo": None,
+                    "valor_medio": float(getattr(instance.programa, "preco_medio_milheiro", 0) or 0),
+                    "cpfs_disponiveis": None,
+                    "cpfs_total": None,
+                    "cpfs_usados": 0,
+                    "cpfs_usados_list": [],
+                }
+            )
+    return data

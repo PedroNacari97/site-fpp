@@ -41,13 +41,16 @@ from datetime import timedelta
 
 from .permissions import require_admin_or_operator
 from gestao.services.emissao_financeiro import (
+    calcular_custo_milhas,
+    calcular_custo_total_emissao,
     calcular_economia,
-    calcular_valor_referencia_pontos,
+    calcular_lucro_emissao,
     registrar_movimentacao_pontos,
 )
 from gestao.services.clientes_programas import (
     build_clientes_programas_map,
     build_contas_administradas_programas_map,
+    build_empresa_programas_map,
 )
 from gestao.services.cpf_limite import validar_limite_cpfs
 from gestao.utils import normalize_cpf, parse_br_date, validate_cpf_digits
@@ -306,24 +309,26 @@ def nova_emissao(request):
             emissao = form.save(commit=False)
             if emissao.cliente and not emissao.cliente.ativo:
                 return HttpResponse("Cliente inativo", status=403)
-            if emissao.conta_administrada_id:
+            tipo_emissao = form.cleaned_data.get("tipo_emissao") or "cliente"
+            emissao_parceiro = tipo_emissao == "parceiro"
+            conta = None
+            if tipo_emissao == "administrada":
                 conta = ContaFidelidade.objects.filter(
                     conta_administrada=emissao.conta_administrada,
                     programa=emissao.programa,
                 ).select_related("programa").first()
-            else:
+            elif tipo_emissao == "cliente":
                 conta = ContaFidelidade.objects.filter(
                     cliente=emissao.cliente, programa=emissao.programa
                 ).select_related("programa").first()
-            emissao_parceiro = bool(emissao.emissor_parceiro_id)
             valor_medio_milheiro = None
-            if not emissao_parceiro and conta:
+            if tipo_emissao == "cliente" and conta:
                 valor_medio_milheiro = conta.valor_medio_por_mil
                 if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
                     valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
-            elif emissao_parceiro:
+            elif tipo_emissao in ("administrada", "parceiro"):
                 valor_medio_milheiro = float(emissao.valor_milheiro_parceiro or 0)
-            if not conta:
+            if tipo_emissao in ("cliente", "administrada") and not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
                 messages.error(
                     request,
@@ -331,7 +336,7 @@ def nova_emissao(request):
                 )
             if form.errors:
                 form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
-            elif not emissao_parceiro and emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
+            elif emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
                 form.add_error(
                     "programa",
                     "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
@@ -354,17 +359,20 @@ def nova_emissao(request):
                     form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
                 else:
                     with transaction.atomic():
-                        valor_referencia_pontos = calcular_valor_referencia_pontos(
-                            emissao.pontos_utilizados or 0, valor_medio_milheiro
+                        if tipo_emissao == "cliente" and valor_medio_milheiro is not None:
+                            emissao.valor_milheiro_parceiro = Decimal(str(valor_medio_milheiro))
+                        valor_milheiro = emissao.valor_milheiro_parceiro or 0
+                        valor_referencia_pontos = calcular_custo_milhas(
+                            emissao.pontos_utilizados or 0, valor_milheiro
                         )
                         emissao.valor_referencia_pontos = valor_referencia_pontos
-                        emissao.economia_obtida = calcular_economia(emissao, valor_referencia_pontos)
-                        if not emissao_parceiro and valor_medio_milheiro is not None:
-                            emissao.valor_milheiro_parceiro = Decimal(str(valor_medio_milheiro))
-                        if emissao.valor_venda_final is not None:
-                            emissao.lucro = Decimal(emissao.valor_venda_final) - Decimal(
-                                valor_referencia_pontos or 0
-                            )
+                        incluir_taxas = tipo_emissao != "parceiro"
+                        custo_total = calcular_custo_total_emissao(
+                            emissao, valor_milheiro, incluir_taxas=incluir_taxas
+                        )
+                        emissao.economia_obtida = calcular_economia(emissao, custo_total)
+                        custo_lucro = valor_referencia_pontos if emissao_parceiro else custo_total
+                        emissao.lucro = calcular_lucro_emissao(emissao, custo_lucro)
                         emissao.save()
 
                         total_passageiros_esperado = (emissao.qtd_adultos or 0) + (emissao.qtd_criancas or 0) + (emissao.qtd_bebes or 0)
@@ -400,6 +408,11 @@ def nova_emissao(request):
                                             empresa_id=getattr(empresa, "id", None)
                                         )
                                     ),
+                                    "empresa_programas_json": json.dumps(
+                                        build_empresa_programas_map(
+                                            empresa_id=getattr(empresa, "id", None)
+                                        )
+                                    ),
                                 },
                             )
 
@@ -417,7 +430,7 @@ def nova_emissao(request):
                             )
                         for escala in escalas_payload:
                             Escala.objects.create(emissao=emissao, **escala)
-                        if conta:
+                        if conta and not emissao_parceiro:
                             registrar_movimentacao_pontos(
                                 conta,
                                 emissao,
@@ -457,6 +470,9 @@ def nova_emissao(request):
                     empresa_id=getattr(empresa, "id", None)
                 )
             ),
+            "empresa_programas_json": json.dumps(
+                build_empresa_programas_map(empresa_id=getattr(empresa, "id", None))
+            ),
         },
     )
 
@@ -477,24 +493,26 @@ def editar_emissao(request, emissao_id):
         if form.is_valid():
             with transaction.atomic():
                 emissao = form.save(commit=False)
-                if emissao.conta_administrada_id:
+                tipo_emissao = form.cleaned_data.get("tipo_emissao") or "cliente"
+                emissao_parceiro = tipo_emissao == "parceiro"
+                conta = None
+                if tipo_emissao == "administrada":
                     conta = ContaFidelidade.objects.filter(
                         conta_administrada=emissao.conta_administrada,
                         programa=emissao.programa,
                     ).select_related("programa").first()
-                else:
+                elif tipo_emissao == "cliente":
                     conta = ContaFidelidade.objects.filter(
                         cliente=emissao.cliente, programa=emissao.programa
                     ).select_related("programa").first()
-                emissao_parceiro = bool(emissao.emissor_parceiro_id)
                 valor_medio_milheiro = None
-                if not emissao_parceiro and conta:
+                if tipo_emissao == "cliente" and conta:
                     valor_medio_milheiro = conta.valor_medio_por_mil
                     if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
                         valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
-                elif emissao_parceiro:
+                elif tipo_emissao in ("administrada", "parceiro"):
                     valor_medio_milheiro = float(emissao.valor_milheiro_parceiro or 0)
-                if not conta:
+                if tipo_emissao in ("cliente", "administrada") and not conta:
                     form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
                     messages.error(
                         request,
@@ -502,7 +520,7 @@ def editar_emissao(request, emissao_id):
                     )
                 if form.errors:
                     form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
-                elif not emissao_parceiro and emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
+                elif emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
                     form.add_error(
                         "programa",
                         "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
@@ -583,20 +601,28 @@ def editar_emissao(request, emissao_id):
                                         empresa_id=getattr(empresa, "id", None), instance=emissao
                                     )
                                 ),
+                                "empresa_programas_json": json.dumps(
+                                    build_empresa_programas_map(
+                                        empresa_id=getattr(empresa, "id", None), instance=emissao
+                                    )
+                                ),
                             },
                         )
 
-                    valor_referencia_pontos = calcular_valor_referencia_pontos(
-                        emissao.pontos_utilizados or 0, valor_medio_milheiro
+                    if tipo_emissao == "cliente" and valor_medio_milheiro is not None:
+                        emissao.valor_milheiro_parceiro = Decimal(str(valor_medio_milheiro))
+                    valor_milheiro = emissao.valor_milheiro_parceiro or 0
+                    valor_referencia_pontos = calcular_custo_milhas(
+                        emissao.pontos_utilizados or 0, valor_milheiro
                     )
                     emissao.valor_referencia_pontos = valor_referencia_pontos
-                    emissao.economia_obtida = calcular_economia(emissao, valor_referencia_pontos)
-                    if not emissao_parceiro and valor_medio_milheiro is not None:
-                        emissao.valor_milheiro_parceiro = Decimal(str(valor_medio_milheiro))
-                    if emissao.valor_venda_final is not None:
-                        emissao.lucro = Decimal(emissao.valor_venda_final) - Decimal(
-                            valor_referencia_pontos or 0
-                        )
+                    incluir_taxas = tipo_emissao != "parceiro"
+                    custo_total = calcular_custo_total_emissao(
+                        emissao, valor_milheiro, incluir_taxas=incluir_taxas
+                    )
+                    emissao.economia_obtida = calcular_economia(emissao, custo_total)
+                    custo_lucro = valor_referencia_pontos if emissao_parceiro else custo_total
+                    emissao.lucro = calcular_lucro_emissao(emissao, custo_lucro)
                     emissao.save()
 
                     total_passageiros_esperado = (emissao.qtd_adultos or 0) + (emissao.qtd_criancas or 0) + (emissao.qtd_bebes or 0)
@@ -667,6 +693,11 @@ def editar_emissao(request, emissao_id):
                                         empresa_id=getattr(empresa, "id", None), instance=emissao
                                     )
                                 ),
+                                "empresa_programas_json": json.dumps(
+                                    build_empresa_programas_map(
+                                        empresa_id=getattr(empresa, "id", None), instance=emissao
+                                    )
+                                ),
                             },
                         )
 
@@ -686,7 +717,7 @@ def editar_emissao(request, emissao_id):
                     emissao.escalas.all().delete()
                     for escala in escalas_payload:
                         Escala.objects.create(emissao=emissao, **escala)
-                    if conta:
+                    if conta and not emissao_parceiro:
                         registrar_movimentacao_pontos(
                             conta, emissao, emissao.pontos_utilizados or 0, emissao.valor_referencia_pontos or Decimal("0")
                         )
@@ -758,6 +789,9 @@ def editar_emissao(request, emissao_id):
                 build_contas_administradas_programas_map(
                     empresa_id=getattr(empresa, "id", None), instance=emissao
                 )
+            ),
+            "empresa_programas_json": json.dumps(
+                build_empresa_programas_map(empresa_id=getattr(empresa, "id", None), instance=emissao)
             ),
         },
     )
