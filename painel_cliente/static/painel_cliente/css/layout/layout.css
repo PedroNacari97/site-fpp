@@ -132,6 +132,13 @@ body.sidebar-open .sidebar-overlay {
   padding: 24px;
 }
 
+.app-shell .btn,
+.app-shell button {
+  width: auto;
+  display: inline-flex;
+  white-space: nowrap;
+}
+
 .icon-button {
   width: 32px;
   height: 32px;
@@ -216,6 +223,22 @@ body.sidebar-open .sidebar-overlay {
 }
 
 @media (max-width: 768px) {
+  .app-header {
+    padding: 10px 16px;
+    height: 60px;
+  }
+
+  .app-header__title {
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .user-name {
+    display: none;
+  }
+
   .painel-cards.programas-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -229,6 +252,12 @@ body.sidebar-open .sidebar-overlay {
 @media (max-width: 640px) {
   .painel-cards.programas-grid {
     grid-template-columns: 1fr;
+  }
+
+  .fpp-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
 
   .app-main {
