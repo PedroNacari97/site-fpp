@@ -27,14 +27,15 @@ def criar_emissor_parceiro(request):
         return permission_denied
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     if request.method == "POST":
-        form = EmissorParceiroForm(request.POST)
+        form = EmissorParceiroForm(request.POST, empresa=empresa)
         if form.is_valid():
             emissor = form.save(commit=False)
             emissor.empresa = empresa
             emissor.save()
+            form.save_m2m()
             return redirect("admin_emissores_parceiros")
     else:
-        form = EmissorParceiroForm()
+        form = EmissorParceiroForm(empresa=empresa)
     return render(request, "admin_custom/form_emissor_parceiro.html", {"form": form})
 
 
@@ -47,12 +48,13 @@ def editar_emissor_parceiro(request, emissor_id):
     if empresa and emissor.empresa != empresa:
         return render(request, "sem_permissao.html")
     if request.method == "POST":
-        form = EmissorParceiroForm(request.POST, instance=emissor)
+        form = EmissorParceiroForm(request.POST, instance=emissor, empresa=empresa)
         if form.is_valid():
             form.save()
+            form.save_m2m()
             return redirect("admin_emissores_parceiros")
     else:
-        form = EmissorParceiroForm(instance=emissor)
+        form = EmissorParceiroForm(instance=emissor, empresa=empresa)
     return render(
         request, "admin_custom/form_emissor_parceiro.html", {"form": form}
     )

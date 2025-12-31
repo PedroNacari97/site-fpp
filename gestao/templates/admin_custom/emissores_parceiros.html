@@ -31,6 +31,7 @@
                     <td>{% if emissor.ativo %}Ativo{% else %}Inativo{% endif %}</td>
                     <td>
                         <div class="page-actions">
+                            <a href="{% url 'admin_emissoes' %}?emissor_parceiro_id={{ emissor.id }}" class="btn btn--ghost">Emissões</a>
                             <a href="{% url 'admin_editar_emissor_parceiro' emissor.id %}" class="btn btn--ghost">Editar</a>
                             <a href="{% url 'admin_deletar_emissor_parceiro' emissor.id %}" class="btn btn--ghost">Deletar</a>
                         </div>

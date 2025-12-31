@@ -30,7 +30,7 @@ def calcular_custo_total_emissao(
 
     custo_milhas = calcular_custo_milhas(emissao.pontos_utilizados or 0, valor_milheiro)
     if incluir_taxas:
-        custo_milhas += Decimal(emissao.valor_pago or 0)
+        custo_milhas += Decimal(emissao.valor_taxas or 0)
     return custo_milhas
 
 

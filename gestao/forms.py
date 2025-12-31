@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models import Q
 
 from gestao.utils import (
     generate_unique_username,
@@ -334,6 +335,11 @@ class EmissaoPassagemForm(forms.ModelForm):
         tipo = cleaned.get("tipo_emissao")
         cliente = cleaned.get("cliente")
         conta_adm = cleaned.get("conta_administrada")
+        total_passageiros = sum(
+            int(cleaned.get(field) or 0) for field in ("qtd_adultos", "qtd_criancas", "qtd_bebes")
+        )
+        if total_passageiros <= 0:
+            raise forms.ValidationError("Informe pelo menos um passageiro no total.")
         if not cliente:
             raise forms.ValidationError("Selecione o cliente que irá viajar.")
         emissor_parceiro = cleaned.get("emissor_parceiro")
@@ -372,7 +378,7 @@ class EmissaoPassagemForm(forms.ModelForm):
             'companhia_aerea',
             'localizador',
             'valor_referencia',
-            'valor_pago',
+            'valor_taxas',
             'pontos_utilizados',
             'valor_referencia_pontos',
             'economia_obtida',
@@ -419,10 +425,22 @@ class EmissaoHotelForm(forms.ModelForm):
 class EmissorParceiroForm(forms.ModelForm):
     class Meta:
         model = EmissorParceiro
-        fields = ["nome", "ativo", "observacoes"]
+        fields = ["nome", "programas", "ativo", "observacoes"]
         widgets = {
             "observacoes": forms.Textarea(attrs={"rows": 3}),
         }
+
+    def __init__(self, *args, **kwargs):
+        empresa = kwargs.pop("empresa", None)
+        super().__init__(*args, **kwargs)
+        if empresa:
+            programas_qs = ProgramaFidelidade.objects.filter(
+                Q(contafidelidade__cliente__empresa=empresa)
+                | Q(contafidelidade__conta_administrada__empresa=empresa)
+            ).distinct()
+        else:
+            programas_qs = ProgramaFidelidade.objects.all()
+        self.fields["programas"].queryset = programas_qs
 
 
 class CotacaoVooForm(forms.ModelForm):
