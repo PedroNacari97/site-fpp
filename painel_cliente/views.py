@@ -6,7 +6,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 import re
 
 from services.pdf_service import emissao_pdf_response
-from gestao.models import Cliente
+from gestao.models import Cliente, Passageiro
+from gestao.utils import normalize_cpf
 from gestao.value_utils import build_valor_milheiro_map, get_valor_referencia_from_map
 from repositories.painel_repository import (
     get_contas_by_user,
@@ -26,6 +27,23 @@ def _annotate_emissao_id(movimentacoes):
         match = EMISSAO_REGEX.search(mov.descricao or "")
         mov.emissao_id = int(match.group(1)) if match else None
     return movs
+
+
+def _annotate_cpf_consumo(movimentacoes):
+    emissao_ids = [mov.emissao_id for mov in movimentacoes if mov.emissao_id]
+    cpfs_por_emissao = {}
+    if emissao_ids:
+        passageiros = Passageiro.objects.filter(emissao_id__in=emissao_ids).values(
+            "emissao_id", "cpf"
+        )
+        for row in passageiros:
+            cpf = normalize_cpf(row.get("cpf") or "")
+            if not cpf:
+                continue
+            cpfs_por_emissao.setdefault(row["emissao_id"], set()).add(cpf)
+    for mov in movimentacoes:
+        mov.cpfs_consumidos = len(cpfs_por_emissao.get(mov.emissao_id, set())) if mov.emissao_id else 0
+    return movimentacoes
 
 @login_required
 def sair(request):
@@ -94,8 +112,8 @@ def dashboard(request):
 def movimentacoes_programa(request, conta_id):
     """List points transactions for a fidelity account."""
     conta = get_conta_by_id_for_user(conta_id, request.user)
-    movimentacoes = _annotate_emissao_id(
-        conta.movimentacoes_compartilhadas.order_by("-data")
+    movimentacoes = _annotate_cpf_consumo(
+        _annotate_emissao_id(conta.movimentacoes_compartilhadas.order_by("-data"))
     )
 
     return render(

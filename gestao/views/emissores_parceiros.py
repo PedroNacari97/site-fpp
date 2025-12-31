@@ -11,7 +11,7 @@ def admin_emissores_parceiros(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
-    emissores = EmissorParceiro.objects.all().prefetch_related("programas")
+    emissores = EmissorParceiro.objects.all()
     if empresa:
         emissores = emissores.filter(empresa=empresa)
     return render(
@@ -32,7 +32,6 @@ def criar_emissor_parceiro(request):
             emissor = form.save(commit=False)
             emissor.empresa = empresa
             emissor.save()
-            form.save_m2m()
             return redirect("admin_emissores_parceiros")
     else:
         form = EmissorParceiroForm()

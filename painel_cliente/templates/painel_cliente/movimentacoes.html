@@ -15,6 +15,7 @@
                     <th>Descrição</th>
                     <th>Pontos</th>
                     <th>Valor Pago</th>
+                    <th>CPFs consumidos</th>
                 </tr>
             </thead>
             <tbody>
@@ -32,10 +33,11 @@
                         {{ mov.pontos }}
                     </td>
                     <td>R$ {{ mov.valor_pago|floatformat:2 }}</td>
+                    <td>{% if mov.emissao_id %}{{ mov.cpfs_consumidos }}{% else %}—{% endif %}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" class="table-empty">Nenhuma movimentação encontrada.</td>
+                    <td colspan="5" class="table-empty">Nenhuma movimentação encontrada.</td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -70,12 +70,12 @@ body.sidebar-open .sidebar-overlay {
 }
 
 .nav-item:hover {
-  background: #f9fafb;
+  background: var(--color-surface-muted);
   color: var(--color-text);
 }
 
 .nav-item.is-active {
-  background: #ebf4ff;
+  background: var(--color-surface-active);
   color: var(--color-primary);
   border-right-color: var(--color-primary);
   font-weight: 600;
@@ -111,8 +111,19 @@ body.sidebar-open .sidebar-overlay {
 .app-header__title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-heading);
   text-transform: capitalize;
+}
+
+.app-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-name {
+  color: var(--color-muted);
+  font-weight: 600;
 }
 
 .app-main {
@@ -135,7 +146,7 @@ body.sidebar-open .sidebar-overlay {
 }
 
 .icon-button:hover {
-  background: #edf2f7;
+  background: var(--color-surface-muted);
 }
 
 .icon {

@@ -1,16 +1,14 @@
 """Serviços para mapear programas vinculados a clientes."""
 
 from typing import Dict, List
-from django.db.models import Count, Q
+from django.db.models import Q
 
-from gestao.models import ContaFidelidade, EmissaoPassagem, Passageiro, ProgramaFidelidade
+from gestao.models import ContaFidelidade, EmissaoPassagem, Passageiro
 from gestao.utils import normalize_cpf
 
-Key = int
 
-
-def _build_cpfs_map(empresa_id=None) -> Dict[Key, int]:
-    """Retorna um mapa programa_id -> CPFs distintos usados."""
+def _build_cpfs_sets_map(empresa_id=None, exclude_emissao_id=None) -> Dict[tuple, set]:
+    """Retorna um mapa (tipo, titular_id, programa_id) -> conjunto de CPFs normalizados."""
 
     filtros = Q(emissao__programa__isnull=False)
     if empresa_id:
@@ -18,42 +16,41 @@ def _build_cpfs_map(empresa_id=None) -> Dict[Key, int]:
             Q(emissao__cliente__empresa_id=empresa_id)
             | Q(emissao__conta_administrada__empresa_id=empresa_id)
         )
-    cpfs_qs = (
-        Passageiro.objects.filter(filtros)
-        .values("emissao__programa_id")
-        .annotate(qtd=Count("cpf", distinct=True))
+    cpfs_map: Dict[tuple, set] = {}
+
+    clientes_qs = Passageiro.objects.filter(
+        filtros, emissao__conta_administrada__isnull=True
     )
-    return {row["emissao__programa_id"]: row["qtd"] for row in cpfs_qs}
-
-
-def _build_cpfs_sets_map(empresa_id=None, exclude_emissao_id=None) -> Dict[Key, set]:
-    """Retorna um mapa programa_id -> conjunto de CPFs normalizados."""
-
-    filtros = Q(emissao__programa__isnull=False)
-    if empresa_id:
-        filtros &= (
-            Q(emissao__cliente__empresa_id=empresa_id)
-            | Q(emissao__conta_administrada__empresa_id=empresa_id)
-        )
-    cpfs_qs = Passageiro.objects.filter(filtros)
+    contas_adm_qs = Passageiro.objects.filter(
+        filtros, emissao__conta_administrada__isnull=False
+    )
     if exclude_emissao_id:
-        cpfs_qs = cpfs_qs.exclude(emissao_id=exclude_emissao_id)
-    cpfs_map: Dict[Key, set] = {}
-    for row in cpfs_qs.values("emissao__programa_id", "cpf"):
-        key = row["emissao__programa_id"]
+        clientes_qs = clientes_qs.exclude(emissao_id=exclude_emissao_id)
+        contas_adm_qs = contas_adm_qs.exclude(emissao_id=exclude_emissao_id)
+
+    for row in clientes_qs.values("emissao__cliente_id", "emissao__programa_id", "cpf"):
+        key = ("cliente", row["emissao__cliente_id"], row["emissao__programa_id"])
         normalized = normalize_cpf(row["cpf"])
-        if not normalized:
-            continue
-        cpfs_map.setdefault(key, set()).add(normalized)
+        if normalized:
+            cpfs_map.setdefault(key, set()).add(normalized)
+
+    for row in contas_adm_qs.values(
+        "emissao__conta_administrada_id", "emissao__programa_id", "cpf"
+    ):
+        key = (
+            "administrada",
+            row["emissao__conta_administrada_id"],
+            row["emissao__programa_id"],
+        )
+        normalized = normalize_cpf(row["cpf"])
+        if normalized:
+            cpfs_map.setdefault(key, set()).add(normalized)
+
     return cpfs_map
 
 
 def _get_limite_cpfs(conta: ContaFidelidade) -> int | None:
-    return (
-        conta.programa.quantidade_cpfs_disponiveis
-        if conta.programa.quantidade_cpfs_disponiveis is not None
-        else conta.quantidade_cpfs_disponiveis
-    )
+    return conta.quantidade_cpfs_disponiveis
 
 
 def build_clientes_programas_map(
@@ -73,7 +70,7 @@ def build_clientes_programas_map(
     cpfs_sets_map = _build_cpfs_sets_map(empresa_id, exclude_emissao_id)
     data = {}
     for conta in contas:
-        key = conta.programa_id
+        key = ("cliente", conta.cliente_id, conta.programa_id)
         cpfs_usados_list = sorted(cpfs_sets_map.get(key, set()))
         cpfs_usados = len(cpfs_usados_list)
         limite_cpfs = _get_limite_cpfs(conta)
@@ -102,10 +99,10 @@ def build_clientes_programas_map(
                     "nome": str(instance.programa),
                     "saldo": 0,
                     "valor_medio": 0,
-                    "cpfs_disponiveis": instance.programa.quantidade_cpfs_disponiveis,
-                    "cpfs_total": instance.programa.quantidade_cpfs_disponiveis,
-                    "cpfs_usados": len(cpfs_sets_map.get(instance.programa_id, set())),
-                    "cpfs_usados_list": sorted(cpfs_sets_map.get(instance.programa_id, set())),
+                    "cpfs_disponiveis": None,
+                    "cpfs_total": None,
+                    "cpfs_usados": len(cpfs_sets_map.get(("cliente", instance.cliente_id, instance.programa_id), set())),
+                    "cpfs_usados_list": sorted(cpfs_sets_map.get(("cliente", instance.cliente_id, instance.programa_id), set())),
                 }
             )
     return data
@@ -128,7 +125,7 @@ def build_contas_administradas_programas_map(
     cpfs_sets_map = _build_cpfs_sets_map(empresa_id, exclude_emissao_id)
     data: Dict[int, List[dict]] = {}
     for conta in contas:
-        key = conta.programa_id
+        key = ("administrada", conta.conta_administrada_id, conta.programa_id)
         cpfs_usados_list = sorted(cpfs_sets_map.get(key, set()))
         cpfs_usados = len(cpfs_usados_list)
         limite_cpfs = _get_limite_cpfs(conta)
@@ -157,36 +154,20 @@ def build_contas_administradas_programas_map(
                     "nome": str(instance.programa),
                     "saldo": 0,
                     "valor_medio": 0,
-                    "cpfs_disponiveis": instance.programa.quantidade_cpfs_disponiveis,
-                    "cpfs_total": instance.programa.quantidade_cpfs_disponiveis,
-                    "cpfs_usados": len(cpfs_sets_map.get(instance.programa_id, set())),
-                    "cpfs_usados_list": sorted(cpfs_sets_map.get(instance.programa_id, set())),
+                    "cpfs_disponiveis": None,
+                    "cpfs_total": None,
+                    "cpfs_usados": len(
+                        cpfs_sets_map.get(
+                            ("administrada", instance.conta_administrada_id, instance.programa_id),
+                            set(),
+                        )
+                    ),
+                    "cpfs_usados_list": sorted(
+                        cpfs_sets_map.get(
+                            ("administrada", instance.conta_administrada_id, instance.programa_id),
+                            set(),
+                        )
+                    ),
                 }
             )
-    return data
-
-
-def build_programas_fidelidade_map(
-    empresa_id=None, exclude_emissao_id=None
-) -> List[dict]:
-    """Retorna uma lista de programas com informações de CPFs consolidadas."""
-
-    programas = ProgramaFidelidade.objects.all().order_by("nome")
-    cpfs_sets_map = _build_cpfs_sets_map(empresa_id, exclude_emissao_id)
-    data: List[dict] = []
-    for programa in programas:
-        cpfs_usados_list = sorted(cpfs_sets_map.get(programa.id, set()))
-        limite_cpfs = programa.quantidade_cpfs_disponiveis
-        cpfs_disponiveis = None if limite_cpfs is None else max(limite_cpfs - len(cpfs_usados_list), 0)
-        data.append(
-            {
-                "id": programa.id,
-                "nome": programa.nome,
-                "valor_medio": float(programa.preco_medio_milheiro or 0),
-                "cpfs_disponiveis": cpfs_disponiveis,
-                "cpfs_total": limite_cpfs,
-                "cpfs_usados": len(cpfs_usados_list),
-                "cpfs_usados_list": cpfs_usados_list,
-            }
-        )
     return data
