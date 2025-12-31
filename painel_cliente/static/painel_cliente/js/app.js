@@ -1,5 +1,6 @@
 import { initLoginFocus } from "./modules/login.js";
 import { initTableEnhancements } from "./modules/tables.js";
+import { initThemeToggle } from "./modules/theme.js";
 
 const initSidebarToggle = () => {
   const sidebar = document.querySelector("[data-sidebar]");
@@ -44,4 +45,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initLoginFocus();
   initTableEnhancements();
   initSidebarToggle();
+  initThemeToggle();
 });

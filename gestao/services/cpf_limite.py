@@ -4,16 +4,21 @@ from typing import Iterable, Set, Tuple
 
 from django.core.exceptions import ValidationError
 
-from gestao.models import Passageiro, ProgramaFidelidade
+from gestao.models import ContaFidelidade, Passageiro
 from gestao.utils import normalize_cpf
 
 
 def _build_existing_cpfs(
     *,
-    programa_id: int,
+    conta: ContaFidelidade,
     exclude_emissao_id: int | None = None,
 ) -> Set[str]:
-    filtros = {"emissao__programa_id": programa_id}
+    filtros = {"emissao__programa_id": conta.programa_id}
+    if conta.cliente_id:
+        filtros["emissao__cliente_id"] = conta.cliente_id
+        filtros["emissao__conta_administrada__isnull"] = True
+    if conta.conta_administrada_id:
+        filtros["emissao__conta_administrada_id"] = conta.conta_administrada_id
 
     qs = Passageiro.objects.filter(**filtros)
     if exclude_emissao_id:
@@ -36,26 +41,24 @@ def _normalize_cpfs(cpfs: Iterable[str]) -> Set[str]:
     return normalized_cpfs
 
 
-def _get_limite_programa(programa: ProgramaFidelidade) -> int | None:
-    return programa.quantidade_cpfs_disponiveis
+def _get_limite_conta(conta: ContaFidelidade) -> int | None:
+    return conta.quantidade_cpfs_disponiveis
 
 
 def validar_limite_cpfs(
-    conta_ou_programa, cpfs: Iterable[str], emissao_id: int | None = None
+    conta: ContaFidelidade | None, cpfs: Iterable[str], emissao_id: int | None = None
 ) -> Tuple[int, int | None]:
     """Valida o consumo de CPFs e retorna (cpfs_novos, cpfs_disponiveis)."""
 
-    programa = (
-        conta_ou_programa.programa
-        if hasattr(conta_ou_programa, "programa")
-        else conta_ou_programa
-    )
-    limite = _get_limite_programa(programa)
+    if conta is None:
+        return 0, None
+
+    limite = _get_limite_conta(conta)
     if limite is None:
         return 0, None
 
     cpfs_existentes = _build_existing_cpfs(
-        programa_id=programa.id,
+        conta=conta,
         exclude_emissao_id=emissao_id,
     )
     cpfs_na_emissao = _normalize_cpfs(cpfs)

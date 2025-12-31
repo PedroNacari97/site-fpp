@@ -298,19 +298,13 @@ class EmissaoPassagemForm(forms.ModelForm):
                 selected_tipo = "cliente"
         self.initial.setdefault("tipo_emissao", selected_tipo)
         self.fields["cliente"].required = True
-        self.fields["conta_administrada"].required = selected_tipo == "administrada"
+        self.fields["conta_administrada"].required = selected_tipo in ("administrada", "parceiro")
 
         titular_id = None
         emissor_parceiro_id = self.data.get("emissor_parceiro") or getattr(
             self.instance, "emissor_parceiro_id", None
         )
-        if selected_tipo == "parceiro":
-            programas_qs = (
-                ProgramaFidelidade.objects.filter(emissores_parceiros__id=emissor_parceiro_id)
-                if emissor_parceiro_id
-                else ProgramaFidelidade.objects.none()
-            )
-        elif selected_tipo == "administrada":
+        if selected_tipo in ("administrada", "parceiro"):
             titular_id = self.data.get("conta_administrada") or getattr(self.instance, "conta_administrada_id", None)
             programas_qs = ProgramaFidelidade.objects.filter(
                 contafidelidade__conta_administrada_id=titular_id
@@ -336,23 +330,20 @@ class EmissaoPassagemForm(forms.ModelForm):
         if tipo == "administrada":
             if not conta_adm:
                 raise forms.ValidationError("Selecione uma conta administrada para usar pontos ou escolha 'Conta de Cliente'.")
-        else:
+        elif tipo != "parceiro":
             cleaned["conta_administrada"] = None
         if tipo == "parceiro":
             if not emissor_parceiro:
                 raise forms.ValidationError("Selecione o emissor parceiro para este tipo de emissão.")
+            if not conta_adm:
+                raise forms.ValidationError("Selecione a conta administrada que será usada na emissão do emissor parceiro.")
             programa = cleaned.get("programa")
-            if programa and not emissor_parceiro.programas.filter(id=programa.id).exists():
-                raise forms.ValidationError("Selecione um programa disponível para o emissor parceiro.")
             if cleaned.get("valor_milheiro_parceiro") in (None, ""):
                 raise forms.ValidationError("Informe o valor do milheiro negociado com o emissor parceiro.")
             if cleaned.get("valor_venda_final") in (None, ""):
                 raise forms.ValidationError("Informe o valor final de venda ao cliente.")
         else:
             cleaned["emissor_parceiro"] = None
-            cleaned["valor_milheiro_parceiro"] = None
-            cleaned["valor_venda_final"] = None
-            cleaned["lucro"] = None
         return cleaned
 
     class Meta:
@@ -420,7 +411,7 @@ class EmissaoHotelForm(forms.ModelForm):
 class EmissorParceiroForm(forms.ModelForm):
     class Meta:
         model = EmissorParceiro
-        fields = ["nome", "programas", "ativo", "observacoes"]
+        fields = ["nome", "ativo", "observacoes"]
         widgets = {
             "observacoes": forms.Textarea(attrs={"rows": 3}),
         }

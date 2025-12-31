@@ -158,7 +158,7 @@ def programas_do_cliente(request, cliente_id):
         valor_pago = conta.valor_total_pago
         valor_medio_milheiro = conta.valor_medio_por_mil
         cpfs_usados = conta.cpfs_utilizados
-        cpfs_total = conta.programa.quantidade_cpfs_disponiveis
+        cpfs_total = conta.quantidade_cpfs_disponiveis
         cpfs_disponiveis = conta.cpfs_disponiveis
 
         lista_contas.append(

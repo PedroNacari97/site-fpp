@@ -16,7 +16,7 @@ td {
 }
 
 th {
-  background: #2d3748;
+  background: var(--color-primary-dark);
   color: var(--color-surface);
   font-weight: 600;
 }

@@ -33,7 +33,6 @@ from ..models import (
     Passageiro,
     Escala,
     CompanhiaAerea,
-    EmissorParceiro,
 )
 from services.pdf_service import emissao_pdf_response
 import csv
@@ -49,7 +48,6 @@ from gestao.services.emissao_financeiro import (
 from gestao.services.clientes_programas import (
     build_clientes_programas_map,
     build_contas_administradas_programas_map,
-    build_programas_fidelidade_map,
 )
 from gestao.services.cpf_limite import validar_limite_cpfs
 from gestao.utils import normalize_cpf, parse_br_date, validate_cpf_digits
@@ -113,13 +111,6 @@ def _serialize_passageiros_list(passageiros):
             if row.get(field):
                 row[field] = row[field].isoformat()
     return passageiros
-
-
-def _build_emissor_parceiros_map(empresa=None):
-    emissores = EmissorParceiro.objects.filter(ativo=True).prefetch_related("programas")
-    if empresa:
-        emissores = emissores.filter(empresa=empresa)
-    return {str(e.id): list(e.programas.values_list("id", flat=True)) for e in emissores}
 
 
 def _parse_passageiros(post_data):
@@ -332,7 +323,7 @@ def nova_emissao(request):
                     valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
             elif emissao_parceiro:
                 valor_medio_milheiro = float(emissao.valor_milheiro_parceiro or 0)
-            if not conta and not emissao_parceiro:
+            if not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
                 messages.error(
                     request,
@@ -356,7 +347,7 @@ def nova_emissao(request):
                     form.add_error(None, err)
                 cpfs = [p.get("cpf") for p in passageiros if p.get("cpf")]
                 try:
-                    validar_limite_cpfs(emissao.programa, cpfs)
+                    validar_limite_cpfs(conta, cpfs)
                 except ValidationError as exc:
                     form.add_error(None, exc.message)
                 if form.errors:
@@ -368,6 +359,12 @@ def nova_emissao(request):
                         )
                         emissao.valor_referencia_pontos = valor_referencia_pontos
                         emissao.economia_obtida = calcular_economia(emissao, valor_referencia_pontos)
+                        if not emissao_parceiro and valor_medio_milheiro is not None:
+                            emissao.valor_milheiro_parceiro = Decimal(str(valor_medio_milheiro))
+                        if emissao.valor_venda_final is not None:
+                            emissao.lucro = Decimal(emissao.valor_venda_final) - Decimal(
+                                valor_referencia_pontos or 0
+                            )
                         emissao.save()
 
                         total_passageiros_esperado = (emissao.qtd_adultos or 0) + (emissao.qtd_criancas or 0) + (emissao.qtd_bebes or 0)
@@ -402,12 +399,6 @@ def nova_emissao(request):
                                         build_contas_administradas_programas_map(
                                             empresa_id=getattr(empresa, "id", None)
                                         )
-                                    ),
-                                    "emissor_parceiros_json": json.dumps(
-                                        _build_emissor_parceiros_map(empresa)
-                                    ),
-                                    "programas_parceiros_json": json.dumps(
-                                        build_programas_fidelidade_map(empresa_id=getattr(empresa, "id", None))
                                     ),
                                 },
                             )
@@ -466,10 +457,6 @@ def nova_emissao(request):
                     empresa_id=getattr(empresa, "id", None)
                 )
             ),
-            "emissor_parceiros_json": json.dumps(_build_emissor_parceiros_map(empresa)),
-            "programas_parceiros_json": json.dumps(
-                build_programas_fidelidade_map(empresa_id=getattr(empresa, "id", None))
-            ),
         },
     )
 
@@ -507,7 +494,7 @@ def editar_emissao(request, emissao_id):
                         valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
                 elif emissao_parceiro:
                     valor_medio_milheiro = float(emissao.valor_milheiro_parceiro or 0)
-                if not conta and not emissao_parceiro:
+                if not conta:
                     form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
                     messages.error(
                         request,
@@ -531,7 +518,7 @@ def editar_emissao(request, emissao_id):
                         form.add_error(None, err)
                     cpfs = [p.get("cpf") for p in passageiros if p.get("cpf")]
                     try:
-                        validar_limite_cpfs(emissao.programa, cpfs, emissao_id=emissao.id)
+                        validar_limite_cpfs(conta, cpfs, emissao_id=emissao.id)
                     except ValidationError as exc:
                         form.add_error(None, exc.message)
                     if form.errors:
@@ -596,14 +583,6 @@ def editar_emissao(request, emissao_id):
                                         empresa_id=getattr(empresa, "id", None), instance=emissao
                                     )
                                 ),
-                                "emissor_parceiros_json": json.dumps(
-                                    _build_emissor_parceiros_map(empresa)
-                                ),
-                                "programas_parceiros_json": json.dumps(
-                                    build_programas_fidelidade_map(
-                                        empresa_id=getattr(empresa, "id", None), exclude_emissao_id=emissao.id
-                                    )
-                                ),
                             },
                         )
 
@@ -612,6 +591,12 @@ def editar_emissao(request, emissao_id):
                     )
                     emissao.valor_referencia_pontos = valor_referencia_pontos
                     emissao.economia_obtida = calcular_economia(emissao, valor_referencia_pontos)
+                    if not emissao_parceiro and valor_medio_milheiro is not None:
+                        emissao.valor_milheiro_parceiro = Decimal(str(valor_medio_milheiro))
+                    if emissao.valor_venda_final is not None:
+                        emissao.lucro = Decimal(emissao.valor_venda_final) - Decimal(
+                            valor_referencia_pontos or 0
+                        )
                     emissao.save()
 
                     total_passageiros_esperado = (emissao.qtd_adultos or 0) + (emissao.qtd_criancas or 0) + (emissao.qtd_bebes or 0)
@@ -680,14 +665,6 @@ def editar_emissao(request, emissao_id):
                                 "contas_adm_programas_json": json.dumps(
                                     build_contas_administradas_programas_map(
                                         empresa_id=getattr(empresa, "id", None), instance=emissao
-                                    )
-                                ),
-                                "emissor_parceiros_json": json.dumps(
-                                    _build_emissor_parceiros_map(empresa)
-                                ),
-                                "programas_parceiros_json": json.dumps(
-                                    build_programas_fidelidade_map(
-                                        empresa_id=getattr(empresa, "id", None), exclude_emissao_id=emissao.id
                                     )
                                 ),
                             },
@@ -780,12 +757,6 @@ def editar_emissao(request, emissao_id):
             "contas_adm_programas_json": json.dumps(
                 build_contas_administradas_programas_map(
                     empresa_id=getattr(empresa, "id", None), instance=emissao
-                )
-            ),
-            "emissor_parceiros_json": json.dumps(_build_emissor_parceiros_map(empresa)),
-            "programas_parceiros_json": json.dumps(
-                build_programas_fidelidade_map(
-                    empresa_id=getattr(empresa, "id", None), exclude_emissao_id=emissao.id
                 )
             ),
         },

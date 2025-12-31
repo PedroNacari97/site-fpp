@@ -200,7 +200,10 @@
             </div>
             <div class="app-header__actions">
                 <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
-                <a href="{% url 'logout' %}" class="btn btn--outline btn--sm">Logout</a>
+                <button class="icon-button" type="button" data-theme-toggle aria-label="Alternar modo escuro">🌙</button>
+                <form action="{% url 'logout' %}" method="post">{% csrf_token %}
+                    <button class="btn btn--outline btn--sm" type="submit">Logout</button>
+                </form>
             </div>
         </header>
 

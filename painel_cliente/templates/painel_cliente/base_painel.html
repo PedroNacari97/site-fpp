@@ -78,9 +78,13 @@
                 </div>
                 <div class="app-header__actions">
                     {% if request.user.is_authenticated %}
+                        <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+                        <button class="icon-button" type="button" data-theme-toggle aria-label="Alternar modo escuro">🌙</button>
                         <form action="{% url 'logout' %}" method="post">{% csrf_token %}
                             <button class="btn btn--outline btn--sm" type="submit">Logout</button>
                         </form>
+                    {% else %}
+                        <button class="icon-button" type="button" data-theme-toggle aria-label="Alternar modo escuro">🌙</button>
                     {% endif %}
                 </div>
             </header>
