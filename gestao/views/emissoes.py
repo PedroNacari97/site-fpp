@@ -33,6 +33,7 @@ from ..models import (
     Passageiro,
     Escala,
     CompanhiaAerea,
+    EmissorParceiro,
 )
 from services.pdf_service import emissao_pdf_response
 import csv
@@ -50,6 +51,7 @@ from gestao.services.clientes_programas import (
     build_contas_administradas_programas_map,
 )
 from gestao.services.cpf_limite import validar_limite_cpfs
+from gestao.utils import normalize_cpf, parse_br_date, validate_cpf_digits
 
 
 def _build_escalas_from_request(request):
@@ -104,17 +106,107 @@ def _format_escalas(escalas_queryset):
     return escalas_por_tipo
 
 
-def _extract_passageiro_documentos(post_data):
-    documentos = []
+def _serialize_passageiros_list(passageiros):
+    for row in passageiros:
+        for field in ("passaporte_validade", "data_nascimento"):
+            if row.get(field):
+                row[field] = row[field].isoformat()
+    return passageiros
+
+
+def _build_emissor_parceiros_map(empresa=None):
+    emissores = EmissorParceiro.objects.filter(ativo=True).prefetch_related("programas")
+    if empresa:
+        emissores = emissores.filter(empresa=empresa)
+    return {str(e.id): list(e.programas.values_list("id", flat=True)) for e in emissores}
+
+
+def _parse_passageiros(post_data):
+    passageiros = []
     try:
         total = int(post_data.get("total_passageiros", 0))
     except (TypeError, ValueError):
         total = 0
     for i in range(total):
-        doc = post_data.get(f"passageiro-{i}-documento")
-        if doc:
-            documentos.append(doc)
-    return documentos
+        nome = post_data.get(f"passageiro-{i}-nome")
+        cpf = post_data.get(f"passageiro-{i}-cpf")
+        rg = post_data.get(f"passageiro-{i}-rg")
+        passaporte = post_data.get(f"passageiro-{i}-passaporte")
+        passaporte_validade = post_data.get(f"passageiro-{i}-passaporte-validade")
+        data_nascimento = post_data.get(f"passageiro-{i}-data-nascimento")
+        observacoes = post_data.get(f"passageiro-{i}-observacoes")
+        categoria = post_data.get(f"passageiro-{i}-categoria")
+
+        passageiros.append(
+            {
+                "nome": nome,
+                "cpf": cpf,
+                "rg": rg,
+                "passaporte": passaporte,
+                "passaporte_validade": passaporte_validade,
+                "data_nascimento": data_nascimento,
+                "observacoes": observacoes,
+                "categoria": categoria,
+            }
+        )
+    return passageiros
+
+
+def _validate_passageiros(passageiros):
+    from datetime import date
+
+    errors = []
+    for idx, passageiro in enumerate(passageiros, start=1):
+        nome = (passageiro.get("nome") or "").strip()
+        cpf = passageiro.get("cpf")
+        categoria = passageiro.get("categoria")
+        passaporte = (passageiro.get("passaporte") or "").strip()
+        passaporte_validade_raw = passageiro.get("passaporte_validade")
+
+        if not nome:
+            errors.append(f"Passageiro {idx}: informe o nome.")
+        normalized_cpf = None
+        try:
+            normalized_cpf = validate_cpf_digits(
+                cpf or "", field_label=f"CPF do passageiro {idx}"
+            )
+        except ValidationError as exc:
+            errors.append(str(exc.message))
+        if not categoria:
+            errors.append(f"Passageiro {idx}: informe a categoria.")
+
+        passaporte_validade = None
+        if passaporte_validade_raw:
+            try:
+                passaporte_validade = parse_br_date(
+                    passaporte_validade_raw, field_label=f"Validade do passaporte do passageiro {idx}"
+                )
+            except ValidationError as exc:
+                errors.append(str(exc.message))
+        if passaporte:
+            if not passaporte_validade:
+                errors.append(
+                    f"Passageiro {idx}: validade do passaporte é obrigatória quando o passaporte é informado."
+                )
+            elif passaporte_validade < date.today():
+                errors.append(
+                    f"Passageiro {idx}: validade do passaporte não pode estar no passado."
+                )
+        passageiro["passaporte_validade"] = passaporte_validade
+        try:
+            passageiro["data_nascimento"] = parse_br_date(
+                passageiro.get("data_nascimento"),
+                field_label=f"Data de nascimento do passageiro {idx}",
+            )
+        except ValidationError as exc:
+            errors.append(str(exc.message))
+            passageiro["data_nascimento"] = None
+        passageiro["cpf"] = normalized_cpf
+        passageiro["nome"] = nome
+        passageiro["passaporte"] = passaporte
+        passageiro["rg"] = (passageiro.get("rg") or "").strip()
+        passageiro["observacoes"] = (passageiro.get("observacoes") or "").strip()
+    return errors
 
 
 # --- EMISSÕES ---
@@ -254,9 +346,13 @@ def nova_emissao(request):
                     "Não foi possível salvar a emissão: valor médio do milheiro ausente para o titular.",
                 )
             else:
-                documentos = _extract_passageiro_documentos(request.POST)
+                passageiros = _parse_passageiros(request.POST)
+                passageiros_errors = _validate_passageiros(passageiros)
+                for err in passageiros_errors:
+                    form.add_error(None, err)
+                cpfs = [p.get("cpf") for p in passageiros if p.get("cpf")]
                 try:
-                    validar_limite_cpfs(conta, documentos)
+                    validar_limite_cpfs(conta, cpfs)
                 except ValidationError as exc:
                     form.add_error(None, exc.message)
                 if form.errors:
@@ -303,18 +399,24 @@ def nova_emissao(request):
                                             empresa_id=getattr(empresa, "id", None)
                                         )
                                     ),
+                                    "emissor_parceiros_json": json.dumps(
+                                        _build_emissor_parceiros_map(empresa)
+                                    ),
                                 },
                             )
 
-                        total = int(request.POST.get("total_passageiros", 0))
-                        for i in range(total):
-                            nome = request.POST.get(f"passageiro-{i}-nome")
-                            doc = request.POST.get(f"passageiro-{i}-documento")
-                            cat = request.POST.get(f"passageiro-{i}-categoria")
-                            if nome and doc and cat:
-                                Passageiro.objects.create(
-                                    emissao=emissao, nome=nome, documento=doc, categoria=cat
-                                )
+                        for passageiro in passageiros:
+                            Passageiro.objects.create(
+                                emissao=emissao,
+                                nome=passageiro.get("nome"),
+                                cpf=passageiro.get("cpf"),
+                                rg=passageiro.get("rg"),
+                                passaporte=passageiro.get("passaporte"),
+                                passaporte_validade=passageiro.get("passaporte_validade"),
+                                data_nascimento=passageiro.get("data_nascimento"),
+                                observacoes=passageiro.get("observacoes"),
+                                categoria=passageiro.get("categoria"),
+                            )
                         for escala in escalas_payload:
                             Escala.objects.create(emissao=emissao, **escala)
                         registrar_movimentacao_pontos(
@@ -356,6 +458,7 @@ def nova_emissao(request):
                     empresa_id=getattr(empresa, "id", None)
                 )
             ),
+            "emissor_parceiros_json": json.dumps(_build_emissor_parceiros_map(empresa)),
         },
     )
 
@@ -408,9 +511,13 @@ def editar_emissao(request, emissao_id):
                         "Não foi possível salvar a emissão: valor médio do milheiro ausente para o titular.",
                     )
                 else:
-                    documentos = _extract_passageiro_documentos(request.POST)
+                    passageiros = _parse_passageiros(request.POST)
+                    passageiros_errors = _validate_passageiros(passageiros)
+                    for err in passageiros_errors:
+                        form.add_error(None, err)
+                    cpfs = [p.get("cpf") for p in passageiros if p.get("cpf")]
                     try:
-                        validar_limite_cpfs(conta, documentos, emissao_id=emissao.id)
+                        validar_limite_cpfs(conta, cpfs, emissao_id=emissao.id)
                     except ValidationError as exc:
                         form.add_error(None, exc.message)
                     if form.errors:
@@ -420,21 +527,42 @@ def editar_emissao(request, emissao_id):
                             request,
                             "Não foi possível salvar a emissão. Corrija os campos destacados e tente novamente.",
                         )
-                        passageiros = list(
+                        passageiros = _serialize_passageiros_list(list(
                             emissao.passageiros.filter(categoria="adulto").values(
-                                "nome", "documento", "categoria"
+                                "nome",
+                                "cpf",
+                                "rg",
+                                "passaporte",
+                                "passaporte_validade",
+                                "data_nascimento",
+                                "observacoes",
+                                "categoria",
                             )
-                        )
-                        passageiros += list(
+                        ))
+                        passageiros += _serialize_passageiros_list(list(
                             emissao.passageiros.filter(categoria="crianca").values(
-                                "nome", "documento", "categoria"
+                                "nome",
+                                "cpf",
+                                "rg",
+                                "passaporte",
+                                "passaporte_validade",
+                                "data_nascimento",
+                                "observacoes",
+                                "categoria",
                             )
-                        )
-                        passageiros += list(
+                        ))
+                        passageiros += _serialize_passageiros_list(list(
                             emissao.passageiros.filter(categoria="bebe").values(
-                                "nome", "documento", "categoria"
+                                "nome",
+                                "cpf",
+                                "rg",
+                                "passaporte",
+                                "passaporte_validade",
+                                "data_nascimento",
+                                "observacoes",
+                                "categoria",
                             )
-                        )
+                        ))
                         aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
                         return render(
                             request,
@@ -453,6 +581,9 @@ def editar_emissao(request, emissao_id):
                                     build_contas_administradas_programas_map(
                                         empresa_id=getattr(empresa, "id", None), instance=emissao
                                     )
+                                ),
+                                "emissor_parceiros_json": json.dumps(
+                                    _build_emissor_parceiros_map(empresa)
                                 ),
                             },
                         )
@@ -477,21 +608,42 @@ def editar_emissao(request, emissao_id):
                             request,
                             "Não foi possível salvar a emissão. Inconsistência no número de passageiros.",
                         )
-                        passageiros = list(
+                        passageiros = _serialize_passageiros_list(list(
                             emissao.passageiros.filter(categoria="adulto").values(
-                                "nome", "documento", "categoria"
+                                "nome",
+                                "cpf",
+                                "rg",
+                                "passaporte",
+                                "passaporte_validade",
+                                "data_nascimento",
+                                "observacoes",
+                                "categoria",
                             )
-                        )
-                        passageiros += list(
+                        ))
+                        passageiros += _serialize_passageiros_list(list(
                             emissao.passageiros.filter(categoria="crianca").values(
-                                "nome", "documento", "categoria"
+                                "nome",
+                                "cpf",
+                                "rg",
+                                "passaporte",
+                                "passaporte_validade",
+                                "data_nascimento",
+                                "observacoes",
+                                "categoria",
                             )
-                        )
-                        passageiros += list(
+                        ))
+                        passageiros += _serialize_passageiros_list(list(
                             emissao.passageiros.filter(categoria="bebe").values(
-                                "nome", "documento", "categoria"
+                                "nome",
+                                "cpf",
+                                "rg",
+                                "passaporte",
+                                "passaporte_validade",
+                                "data_nascimento",
+                                "observacoes",
+                                "categoria",
                             )
-                        )
+                        ))
                         aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
                         return render(
                             request,
@@ -511,19 +663,25 @@ def editar_emissao(request, emissao_id):
                                         empresa_id=getattr(empresa, "id", None), instance=emissao
                                     )
                                 ),
+                                "emissor_parceiros_json": json.dumps(
+                                    _build_emissor_parceiros_map(empresa)
+                                ),
                             },
                         )
 
                     emissao.passageiros.all().delete()
-                    total = int(request.POST.get("total_passageiros", 0))
-                    for i in range(total):
-                        nome = request.POST.get(f"passageiro-{i}-nome")
-                        doc = request.POST.get(f"passageiro-{i}-documento")
-                        cat = request.POST.get(f"passageiro-{i}-categoria")
-                        if nome and doc and cat:
-                            Passageiro.objects.create(
-                                emissao=emissao, nome=nome, documento=doc, categoria=cat
-                            )
+                    for passageiro in passageiros:
+                        Passageiro.objects.create(
+                            emissao=emissao,
+                            nome=passageiro.get("nome"),
+                            cpf=passageiro.get("cpf"),
+                            rg=passageiro.get("rg"),
+                            passaporte=passageiro.get("passaporte"),
+                            passaporte_validade=passageiro.get("passaporte_validade"),
+                            data_nascimento=passageiro.get("data_nascimento"),
+                            observacoes=passageiro.get("observacoes"),
+                            categoria=passageiro.get("categoria"),
+                        )
                     emissao.escalas.all().delete()
                     for escala in escalas_payload:
                         Escala.objects.create(emissao=emissao, **escala)
@@ -544,21 +702,42 @@ def editar_emissao(request, emissao_id):
     else:
         form = EmissaoPassagemForm(instance=emissao, empresa=empresa)
     emissoes = EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida")
-    passageiros = list(
+    passageiros = _serialize_passageiros_list(list(
         emissao.passageiros.filter(categoria="adulto").values(
-            "nome", "documento", "categoria"
+            "nome",
+            "cpf",
+            "rg",
+            "passaporte",
+            "passaporte_validade",
+            "data_nascimento",
+            "observacoes",
+            "categoria",
         )
-    )
-    passageiros += list(
+    ))
+    passageiros += _serialize_passageiros_list(list(
         emissao.passageiros.filter(categoria="crianca").values(
-            "nome", "documento", "categoria"
+            "nome",
+            "cpf",
+            "rg",
+            "passaporte",
+            "passaporte_validade",
+            "data_nascimento",
+            "observacoes",
+            "categoria",
         )
-    )
-    passageiros += list(
+    ))
+    passageiros += _serialize_passageiros_list(list(
         emissao.passageiros.filter(categoria="bebe").values(
-            "nome", "documento", "categoria"
+            "nome",
+            "cpf",
+            "rg",
+            "passaporte",
+            "passaporte_validade",
+            "data_nascimento",
+            "observacoes",
+            "categoria",
         )
-    )
+    ))
     aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
     return render(
         request,
@@ -578,6 +757,7 @@ def editar_emissao(request, emissao_id):
                     empresa_id=getattr(empresa, "id", None), instance=emissao
                 )
             ),
+            "emissor_parceiros_json": json.dumps(_build_emissor_parceiros_map(empresa)),
         },
     )
 
@@ -589,6 +769,26 @@ def emissao_pdf(request, emissao_id):
         return permission_denied
     emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
     return emissao_pdf_response(emissao)
+
+
+@login_required
+def emissao_detalhe(request, emissao_id):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
+    passageiros = list(
+        emissao.passageiros.all().order_by("categoria", "nome")
+    )
+    cpfs_consumidos = len({normalize_cpf(p.cpf) for p in passageiros if p.cpf})
+    return render(
+        request,
+        "admin_custom/emissao_detalhe.html",
+        {
+            "emissao": emissao,
+            "passageiros": passageiros,
+            "cpfs_consumidos": cpfs_consumidos,
+        },
+    )
 
 
 @login_required

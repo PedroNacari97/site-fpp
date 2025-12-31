@@ -15,19 +15,45 @@
   <section class="surface-card filter-panel" data-filters-root>
     <div class="section-heading">
       <div>
-        <p class="eyebrow">Filtro rápido</p>
-        <p class="section-title">Selecione o cliente para personalizar a visão</p>
+        <p class="eyebrow">Filtro principal</p>
+        <p class="section-title">Escolha o tipo de visão para ajustar os indicadores</p>
       </div>
       <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
     </div>
     <div class="filter-body is-open" data-filter-panel>
       <div class="form-grid">
         <div class="form-field">
+          <label class="form-label" for="viewSelect">Tipo de visão</label>
+          <select id="viewSelect">
+            <option value="clientes" {% if view_type == "clientes" %}selected{% endif %}>Clientes</option>
+            <option value="contas" {% if view_type == "contas" %}selected{% endif %}>Contas administradas</option>
+            <option value="parceiros" {% if view_type == "parceiros" %}selected{% endif %}>Emissores parceiros</option>
+          </select>
+        </div>
+        <div class="form-field" data-filter-type="clientes">
           <label class="form-label" for="clienteSelect">Cliente</label>
           <select id="clienteSelect">
             <option value="">Selecionar Cliente</option>
             {% for c in clientes %}
               <option value="{{ c.id }}" {% if selected_cliente and c.id == selected_cliente.id %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-field" data-filter-type="contas">
+          <label class="form-label" for="contaSelect">Conta administrada</label>
+          <select id="contaSelect">
+            <option value="">Selecionar Conta</option>
+            {% for conta in contas_administradas %}
+              <option value="{{ conta.id }}" {% if selected_conta and conta.id == selected_conta.id %}selected{% endif %}>{{ conta.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-field" data-filter-type="parceiros">
+          <label class="form-label" for="emissorSelect">Emissor parceiro</label>
+          <select id="emissorSelect">
+            <option value="">Selecionar Emissor</option>
+            {% for emissor in emissores_parceiros %}
+              <option value="{{ emissor.id }}" {% if selected_emissor and emissor.id == selected_emissor.id %}selected{% endif %}>{{ emissor.nome }}</option>
             {% endfor %}
           </select>
         </div>
@@ -47,9 +73,13 @@
     </div>
     <div class="stat-grid">
       <div class="stat-card">
-        <p class="stat-label">👥 Total de Clientes</p>
-        <p class="stat-value">{{ total_clientes }}</p>
-        <p class="stat-meta">Base ativa de clientes acompanhados</p>
+        <p class="stat-label">
+          {% if view_type == "contas" %}🏢 Total de Contas{% elif view_type == "parceiros" %}🤝 Total de Emissores{% else %}👥 Total de Clientes{% endif %}
+        </p>
+        <p class="stat-value">{{ total_titulares }}</p>
+        <p class="stat-meta">
+          {% if view_type == "contas" %}Contas administradas ativas{% elif view_type == "parceiros" %}Emissores parceiros disponíveis{% else %}Base ativa de clientes acompanhados{% endif %}
+        </p>
       </div>
       <div class="stat-card">
         <p class="stat-label">✈️ Total de Emissões</p>
@@ -57,13 +87,18 @@
         <p class="stat-meta">Passagens emitidas em todos os programas</p>
       </div>
       <div class="stat-card">
-        <p class="stat-label">💰 Total Economizado</p>
-        <p class="stat-value">R$ {{ total_economizado|floatformat:2 }}</p>
-        <p class="stat-meta">Economia acumulada em emissões e reservas</p>
+        <p class="stat-label">{% if view_type == "parceiros" %}💰 Lucro total{% else %}💰 Total Economizado{% endif %}</p>
+        <p class="stat-value">
+          {% if view_type == "parceiros" %}R$ {{ parceiros.lucro|floatformat:2 }}{% else %}R$ {{ total_economizado|floatformat:2 }}{% endif %}
+        </p>
+        <p class="stat-meta">
+          {% if view_type == "parceiros" %}Lucro consolidado das emissões{% else %}Economia acumulada em emissões e reservas{% endif %}
+        </p>
       </div>
     </div>
   </section>
 
+  {% if view_type != "parceiros" %}
   <section class="surface-card stacked">
     <div class="section-heading">
       <div>
@@ -93,12 +128,13 @@
       {% endfor %}
     </div>
   </section>
+  {% endif %}
 
   <section class="surface-card stacked">
     <div class="section-heading">
       <div>
         <p class="eyebrow">Resumo financeiro</p>
-        <h2 class="section-title">Emissões e Hotéis</h2>
+        <h2 class="section-title">{% if view_type == "parceiros" %}Emissões e vendas{% else %}Emissões e Hotéis{% endif %}</h2>
       </div>
     </div>
     <div class="stat-grid">
@@ -110,11 +146,11 @@
           <li>Total de pontos usados: <strong>{{ emissoes.pontos }}</strong></li>
           <li>Valor ref.: <strong>R$ {{ emissoes.valor_referencia|floatformat:2 }}</strong></li>
           <li>Valor pago: <strong>R$ {{ emissoes.valor_pago|floatformat:2 }}</strong></li>
-          <li>Economizado: <strong>R$ {{ emissoes.valor_economizado|floatformat:2 }}</strong></li>
+          <li>{% if view_type == "parceiros" %}Vendas: <strong>R$ {{ parceiros.vendas|floatformat:2 }}</strong>{% else %}Economizado: <strong>R$ {{ emissoes.valor_economizado|floatformat:2 }}</strong>{% endif %}</li>
         </ul>
         <a class="card-link btn btn--ghost" href="{% url 'admin_emissoes' %}">Ver detalhes</a>
       </div>
-
+      {% if view_type != "parceiros" %}
       <div class="stat-card">
         <p class="stat-label">Hotéis</p>
         <p class="stat-value">{{ hoteis.qtd }}</p>
@@ -126,6 +162,7 @@
         </ul>
         <a class="card-link btn btn--ghost" href="{% url 'admin_hoteis' %}">Ver detalhes</a>
       </div>
+      {% endif %}
     </div>
   </section>
 
@@ -143,11 +180,56 @@
 
 {% block extra_body %}
 <script>
-document.getElementById('clienteSelect').addEventListener('change', function() {
-  const value = this.value;
-  const url = '{% url "admin_dashboard" %}';
-  window.location = value ? url + '?cliente_id=' + value : url;
-});
+const viewSelect = document.getElementById('viewSelect');
+const clienteSelect = document.getElementById('clienteSelect');
+const contaSelect = document.getElementById('contaSelect');
+const emissorSelect = document.getElementById('emissorSelect');
+
+function buildDashboardUrl() {
+  const base = '{% url "admin_dashboard" %}';
+  const view = viewSelect ? viewSelect.value : 'clientes';
+  const params = new URLSearchParams({ view });
+  if (view === 'clientes' && clienteSelect && clienteSelect.value) {
+    params.set('cliente_id', clienteSelect.value);
+  }
+  if (view === 'contas' && contaSelect && contaSelect.value) {
+    params.set('conta_id', contaSelect.value);
+  }
+  if (view === 'parceiros' && emissorSelect && emissorSelect.value) {
+    params.set('emissor_id', emissorSelect.value);
+  }
+  return `${base}?${params.toString()}`;
+}
+
+function toggleFilters() {
+  const view = viewSelect ? viewSelect.value : 'clientes';
+  document.querySelectorAll('[data-filter-type]').forEach((el) => {
+    el.style.display = el.dataset.filterType === view ? 'block' : 'none';
+  });
+}
+
+if (viewSelect) {
+  viewSelect.addEventListener('change', () => {
+    toggleFilters();
+    window.location = buildDashboardUrl();
+  });
+}
+if (clienteSelect) {
+  clienteSelect.addEventListener('change', () => {
+    window.location = buildDashboardUrl();
+  });
+}
+if (contaSelect) {
+  contaSelect.addEventListener('change', () => {
+    window.location = buildDashboardUrl();
+  });
+}
+if (emissorSelect) {
+  emissorSelect.addEventListener('change', () => {
+    window.location = buildDashboardUrl();
+  });
+}
+toggleFilters();
 
 const ctx = document.getElementById('emissoesChart');
 if (ctx) {

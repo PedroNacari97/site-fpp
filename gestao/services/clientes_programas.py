@@ -21,7 +21,7 @@ def _build_cpfs_map(empresa_id=None) -> Dict[Key, int]:
     cpfs_qs = (
         Passageiro.objects.filter(filtros)
         .values("emissao__programa_id", "emissao__cliente_id", "emissao__conta_administrada_id")
-        .annotate(qtd=Count("documento", distinct=True))
+        .annotate(qtd=Count("cpf", distinct=True))
     )
     return {
         (
@@ -47,14 +47,14 @@ def _build_cpfs_sets_map(empresa_id=None, exclude_emissao_id=None) -> Dict[Key, 
         cpfs_qs = cpfs_qs.exclude(emissao_id=exclude_emissao_id)
     cpfs_map: Dict[Key, set] = {}
     for row in cpfs_qs.values(
-        "emissao__programa_id", "emissao__cliente_id", "emissao__conta_administrada_id", "documento"
+        "emissao__programa_id", "emissao__cliente_id", "emissao__conta_administrada_id", "cpf"
     ):
         key = (
             row["emissao__programa_id"],
             row["emissao__cliente_id"],
             row["emissao__conta_administrada_id"],
         )
-        normalized = normalize_cpf(row["documento"])
+        normalized = normalize_cpf(row["cpf"])
         if not normalized:
             continue
         cpfs_map.setdefault(key, set()).add(normalized)

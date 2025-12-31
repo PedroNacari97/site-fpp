@@ -24,6 +24,7 @@
                     <th>Pontos</th>
                     <th>Valor Pago</th>
                     <th>Descrição</th>
+                    <th>CPFs consumidos</th>
                 </tr>
             </thead>
             <tbody>
@@ -34,14 +35,15 @@
                     <td>R$ {{ mov.valor_pago|floatformat:2 }}</td>
                     <td>
                         {% if mov.emissao_id %}
-                            <a href="{% url 'admin_editar_emissao' mov.emissao_id %}" class="underline">{{ mov.descricao }}</a>
+                            <a href="{% url 'admin_emissao_detalhe' mov.emissao_id %}" class="underline">{{ mov.descricao }}</a>
                         {% else %}
                             {{ mov.descricao }}
                         {% endif %}
                     </td>
+                    <td>{% if mov.emissao_id %}{{ mov.cpfs_consumidos }}{% else %}—{% endif %}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="text-center text-red-400 py-4">Nenhuma movimentação lançada.</td></tr>
+                <tr><td colspan="5" class="text-center text-red-400 py-4">Nenhuma movimentação lançada.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

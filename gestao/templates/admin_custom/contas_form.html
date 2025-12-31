@@ -66,7 +66,7 @@
     <div class="form-group single">
         <label class="form-label" for="{{ form.quantidade_cpfs_disponiveis.id_for_label }}">{{ form.quantidade_cpfs_disponiveis.label }}</label>
         {{ form.quantidade_cpfs_disponiveis }}
-        <p class="text-sm text-gray-400 mt-1">Deixe vazio para ilimitado. Usaremos documentos dos passageiros para controlar o uso.</p>
+        <p class="text-sm text-gray-400 mt-1">Deixe vazio para ilimitado. Usaremos os CPFs dos passageiros para controlar o uso.</p>
         {% if form.quantidade_cpfs_disponiveis.errors %}<div class="text-red-400 text-sm mt-1">{{ form.quantidade_cpfs_disponiveis.errors }}</div>{% endif %}
     </div>
 

@@ -1,0 +1,56 @@
+{% extends "admin_custom/base_admin.html" %}
+{% block title %}Emissores Parceiros{% endblock %}
+{% block header_title %}Emissores Parceiros{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Cadastro de parceiros que emitem e vendem milhas.</p>{% endblock %}
+{% block menu_emissores_parceiros %}is-active{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_novo_emissor_parceiro' %}" class="btn">+ Novo Emissor Parceiro</a>
+{% endblock %}
+
+{% block content %}
+<section class="surface-card">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">Parceiros</p>
+            <h2 class="section-title">Lista de emissores</h2>
+        </div>
+    </div>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Programas disponíveis</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emissor in emissores %}
+                <tr>
+                    <td>{{ emissor.nome }}</td>
+                    <td>
+                        {% for programa in emissor.programas.all %}
+                            {{ programa.nome }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            —
+                        {% endfor %}
+                    </td>
+                    <td>{% if emissor.ativo %}Ativo{% else %}Inativo{% endif %}</td>
+                    <td>
+                        <div class="page-actions">
+                            <a href="{% url 'admin_editar_emissor_parceiro' emissor.id %}" class="btn btn--ghost">Editar</a>
+                            <a href="{% url 'admin_deletar_emissor_parceiro' emissor.id %}" class="btn btn--ghost">Deletar</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="p-3 text-center text-zinc-400">Nenhum emissor parceiro cadastrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

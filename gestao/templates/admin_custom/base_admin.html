@@ -9,18 +9,25 @@
 
     <link rel="stylesheet" href="{% static 'gestao/admin_custom.css' %}">
     <link rel="stylesheet" href="{% static 'gestao/css/main.css' %}">
-    <link rel="stylesheet" href="{% static 'gestao/css/layout.css' %}">
     <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
+    <link rel="stylesheet" href="{% static 'painel_cliente/css/layout/layout.css' %}">
 
     {% block extra_head %}{% endblock %}
 </head>
 
 <body>
-<div class="app-shell fpp-layout">
+<div class="app-shell">
     <div class="sidebar-overlay" data-sidebar-overlay></div>
 
-    <aside class="sidebar fpp-sidebar" data-sidebar>
-
+    <aside class="sidebar" data-sidebar>
+        <div class="sidebar-header">
+            <h1 class="sidebar-title">NCfly</h1>
+            <button class="icon-button sidebar-close" type="button" aria-label="Fechar menu" data-sidebar-close>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6l-12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                </svg>
+            </button>
+        </div>
         <nav class="sidebar-nav">
             {% if request.user.is_superuser %}
                 <a class="nav-item {% block menu_empresas %}{% endblock %}" href="{% url 'admin_empresas' %}">
@@ -98,6 +105,15 @@
                     <span>Calculadora</span>
                 </a>
 
+                <a class="nav-item {% block menu_emissores_parceiros %}{% endblock %}" href="{% url 'admin_emissores_parceiros' %}">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 4h16v6H4z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M4 14h10v6H4z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        <path d="M18 14v6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                    <span>Emissores Parceiros</span>
+                </a>
+
                 <details class="nav-group" {% block dados_complementares_open %}{% endblock %}>
                     <summary class="nav-item nav-item--summary">
                         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -131,10 +147,6 @@
                     </div>
                 </details>
             {% endif %}
-
-            <div class="sidebar-divider"></div>
-
-            <p class="sidebar-section">Administrativo</p>
 
             {% if not request.user.is_superuser %}
             <a class="nav-item {% block menu_auditoria %}{% endblock %}" href="{% url 'admin_auditoria' %}">
@@ -184,7 +196,7 @@
                         <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
                     </svg>
                 </button>
-                <span class="app-identity">Gestão Admin</span>
+                <h2 class="app-header__title">{% block page_title %}Gestão Admin{% endblock %}</h2>
             </div>
             <div class="app-header__actions">
                 <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>

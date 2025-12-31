@@ -10,9 +10,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 
-from gestao.utils import parse_br_date
+from gestao.utils import parse_br_date, normalize_cpf
 
-from ..models import ContaFidelidade, Movimentacao
+from ..models import ContaFidelidade, Movimentacao, Passageiro
 from .permissions import require_admin_or_operator
 
 
@@ -25,6 +25,23 @@ def _annotate_emissao_id(movimentacoes):
         match = EMISSAO_REGEX.search(mov.descricao or "")
         mov.emissao_id = int(match.group(1)) if match else None
     return movs
+
+
+def _annotate_cpf_consumo(movimentacoes):
+    emissao_ids = [mov.emissao_id for mov in movimentacoes if mov.emissao_id]
+    cpfs_por_emissao = {}
+    if emissao_ids:
+        passageiros = Passageiro.objects.filter(emissao_id__in=emissao_ids).values(
+            "emissao_id", "cpf"
+        )
+        for row in passageiros:
+            cpf = normalize_cpf(row.get("cpf") or "")
+            if not cpf:
+                continue
+            cpfs_por_emissao.setdefault(row["emissao_id"], set()).add(cpf)
+    for mov in movimentacoes:
+        mov.cpfs_consumidos = len(cpfs_por_emissao.get(mov.emissao_id, set())) if mov.emissao_id else 0
+    return movimentacoes
 
 
 class NovaMovimentacaoForm(forms.ModelForm):
@@ -96,8 +113,8 @@ def admin_movimentacoes(request, conta_id):
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     if empresa and conta.empresa and conta.empresa != empresa:
         return render(request, "sem_permissao.html")
-    movimentacoes = _annotate_emissao_id(
-        conta.movimentacoes_compartilhadas.order_by("-data")
+    movimentacoes = _annotate_cpf_consumo(
+        _annotate_emissao_id(conta.movimentacoes_compartilhadas.order_by("-data"))
     )
     conta_base = conta.conta_saldo()
     titular_tipo = ""

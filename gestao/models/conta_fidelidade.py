@@ -131,8 +131,8 @@ class ContaFidelidade(models.Model):
         if self.conta_administrada_id:
             filtros["emissao__conta_administrada_id"] = self.conta_administrada_id
         cpfs = set()
-        for documento in Passageiro.objects.filter(**filtros).values_list("documento", flat=True):
-            normalized = normalize_cpf(documento)
+        for cpf in Passageiro.objects.filter(**filtros).values_list("cpf", flat=True):
+            normalized = normalize_cpf(cpf)
             if normalized:
                 cpfs.add(normalized)
         return len(cpfs)

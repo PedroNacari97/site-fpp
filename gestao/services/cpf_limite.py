@@ -26,23 +26,23 @@ def _build_existing_cpfs(
         qs = qs.exclude(emissao_id=exclude_emissao_id)
 
     cpfs = set()
-    for documento in qs.values_list("documento", flat=True):
-        normalized = normalize_cpf(documento)
+    for cpf in qs.values_list("cpf", flat=True):
+        normalized = normalize_cpf(cpf)
         if normalized:
             cpfs.add(normalized)
     return cpfs
 
 
-def _normalize_documentos(documentos: Iterable[str]) -> Set[str]:
-    cpfs = set()
-    for doc in documentos:
-        normalized = normalize_cpf(doc)
+def _normalize_cpfs(cpfs: Iterable[str]) -> Set[str]:
+    normalized_cpfs = set()
+    for cpf in cpfs:
+        normalized = normalize_cpf(cpf)
         if normalized:
-            cpfs.add(normalized)
-    return cpfs
+            normalized_cpfs.add(normalized)
+    return normalized_cpfs
 
 
-def validar_limite_cpfs(conta, documentos: Iterable[str], emissao_id: int | None = None) -> Tuple[int, int | None]:
+def validar_limite_cpfs(conta, cpfs: Iterable[str], emissao_id: int | None = None) -> Tuple[int, int | None]:
     """Valida o consumo de CPFs e retorna (cpfs_novos, cpfs_disponiveis)."""
 
     limite = conta.quantidade_cpfs_disponiveis
@@ -55,7 +55,7 @@ def validar_limite_cpfs(conta, documentos: Iterable[str], emissao_id: int | None
         conta_administrada_id=conta.conta_administrada_id,
         exclude_emissao_id=emissao_id,
     )
-    cpfs_na_emissao = _normalize_documentos(documentos)
+    cpfs_na_emissao = _normalize_cpfs(cpfs)
     cpfs_novos = cpfs_na_emissao - cpfs_existentes
     cpfs_disponiveis = max(limite - len(cpfs_existentes), 0)
 

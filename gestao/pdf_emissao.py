@@ -340,7 +340,7 @@ def gerar_pdf_emissao(emissao):
     # Tabela de passageiros
     passageiros_data = [
         [Paragraph("Nome", ParagraphStyle('HeaderTabela', parent=estilo_label, textColor=colors.white, fontSize=10, fontName='Helvetica-Bold')),
-         Paragraph("Documento", ParagraphStyle('HeaderTabela', parent=estilo_label, textColor=colors.white, fontSize=10, fontName='Helvetica-Bold'))]
+         Paragraph("CPF", ParagraphStyle('HeaderTabela', parent=estilo_label, textColor=colors.white, fontSize=10, fontName='Helvetica-Bold'))]
     ]
     categorias = [
         ("adulto", "Adultos"),
@@ -358,8 +358,8 @@ def gerar_pdf_emissao(emissao):
                     'Categoria', parent=estilo_valor, fontName='Helvetica-Bold', fontSize=10, textColor=cor_primaria)), ""])
                 for p in passageiros_qs:
                     nome = getattr(p, 'nome', '-') or '-'
-                    documento = getattr(p, 'documento', '-') or '-'
-                    passageiros_data.append([Paragraph(nome, estilo_valor), Paragraph(documento, estilo_valor)])
+                    cpf = getattr(p, 'cpf', '-') or '-'
+                    passageiros_data.append([Paragraph(nome, estilo_valor), Paragraph(cpf, estilo_valor)])
 
     passageiros_table = Table(passageiros_data, colWidths=[100*mm, 60*mm])
     table_style = [

@@ -15,9 +15,7 @@ body {
     font-family: 'Open Sans', sans-serif;
     min-height: 100vh;
     scroll-behavior: smooth;
-
-    /* Layout definitivo */
-    display: flex;
+    display: block;
 }
 
 /* Links */

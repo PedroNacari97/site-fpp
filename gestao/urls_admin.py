@@ -42,6 +42,7 @@ from gestao.views import (
     admin_transferir_pontos,
     cotacao_voo_pdf,
     emissao_pdf,
+    emissao_detalhe,
     admin_companhias,
     criar_companhia,
     editar_companhia,
@@ -50,6 +51,10 @@ from gestao.views import (
     calculadora_cotacao,
     empresas_list,
     criar_empresa,
+    admin_emissores_parceiros,
+    criar_emissor_parceiro,
+    editar_emissor_parceiro,
+    deletar_emissor_parceiro,
 )
 
 urlpatterns = [
@@ -85,6 +90,10 @@ urlpatterns = [
     path('companhias/nova/', criar_companhia, name='admin_nova_companhia'),
     path('companhias/<int:companhia_id>/editar/', editar_companhia, name='admin_editar_companhia'),
     path('companhias/<int:companhia_id>/deletar/', deletar_companhia, name='admin_deletar_companhia'),
+    path('emissores-parceiros/', admin_emissores_parceiros, name='admin_emissores_parceiros'),
+    path('emissores-parceiros/novo/', criar_emissor_parceiro, name='admin_novo_emissor_parceiro'),
+    path('emissores-parceiros/<int:emissor_id>/editar/', editar_emissor_parceiro, name='admin_editar_emissor_parceiro'),
+    path('emissores-parceiros/<int:emissor_id>/deletar/', deletar_emissor_parceiro, name='admin_deletar_emissor_parceiro'),
     path('cotacoes/', admin_cotacoes, name='admin_cotacoes'),
     path('cotacoes/<int:cotacao_id>/deletar/', deletar_cotacao, name='admin_deletar_cotacao'),
     path('cotacoes-voo/', admin_cotacoes_voo, name='admin_cotacoes_voo'),
@@ -98,6 +107,7 @@ urlpatterns = [
     path('emissoes/<int:emissao_id>/editar/', editar_emissao, name='admin_editar_emissao'),
     path('emissoes/<int:emissao_id>/deletar/', deletar_emissao, name='admin_deletar_emissao'),
     path('emissoes/<int:emissao_id>/pdf/', emissao_pdf, name='admin_emissao_pdf'),
+    path('emissoes/<int:emissao_id>/detalhe/', emissao_detalhe, name='admin_emissao_detalhe'),
     path('hoteis/', admin_hoteis, name='admin_hoteis'),
     path('hoteis/nova/', nova_emissao_hotel, name='admin_nova_emissao_hotel'),
     path('hoteis/<int:emissao_id>/editar/', editar_emissao_hotel, name='admin_editar_emissao_hotel'),
