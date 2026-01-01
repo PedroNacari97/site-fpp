@@ -88,7 +88,7 @@
                 {{ form.companhia_aerea }}
             </div>
         </div>
-        <div class="form-grid form-grid--3">
+        <div class="form-grid form-grid--dates">
             <div>
                 <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span class="required-asterisk">*</span></label>
                 {{ form.data_ida }}
@@ -104,7 +104,7 @@
             <p class="helper-text">Ative para informar o retorno.</p>
         </div>
         <div id="horario-volta" class="collapse-section">
-            <div class="form-grid form-grid--3">
+            <div class="form-grid form-grid--dates">
                 <div>
                     <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data e horário da volta</label>
                     {{ form.data_volta }}
@@ -142,7 +142,7 @@
                 <p class="section-card__description">Ative somente quando houver conexões na ida ou na volta.</p>
             </div>
         </div>
-        <div class="scale-grid">
+        <div class="scale-panels">
             <div class="scale-card">
                 <div class="section-title">Escalas do voo de ida</div>
                 <div class="toggle-row">
