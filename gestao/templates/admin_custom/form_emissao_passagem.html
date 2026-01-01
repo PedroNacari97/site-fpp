@@ -109,12 +109,6 @@
             </label>
             <p class="helper-text">Ative para adicionar escalas no voo de ida.</p>
         </div>
-        <div id="escala-ida-wrapper" class="collapse-section">
-            <input type="hidden" name="qtd_escalas_ida" id="id_qtd_escalas_ida" value="0" />
-            <input type="hidden" name="total_escalas_ida" id="id_total_escalas_ida" value="0" />
-            <div id="escalas-ida-container" class="scale-list"></div>
-            <button type="button" class="btn btn--outline btn--sm" data-add-escala="ida">+ Adicionar escala</button>
-        </div>
         <hr class="section-divider" />
         <div class="toggle-row">
             <label class="toggle-pill" for="possui-volta">
@@ -123,6 +117,20 @@
             </label>
             <p class="helper-text">Ative para informar o trecho de retorno.</p>
         </div>
+    </div>
+
+    <div id="escala-ida-wrapper" class="section-card collapse-section">
+        <div class="section-card__header">
+            <div>
+                <p class="eyebrow">Escalas</p>
+                <h2 class="section-card__title">Escalas do voo de ida</h2>
+                <p class="section-card__description">Adicione escalas somente quando o trecho exigir.</p>
+            </div>
+        </div>
+        <input type="hidden" name="qtd_escalas_ida" id="id_qtd_escalas_ida" value="0" />
+        <input type="hidden" name="total_escalas_ida" id="id_total_escalas_ida" value="0" />
+        <div id="escalas-ida-container" class="scale-list"></div>
+        <button type="button" class="btn btn--outline btn--sm" data-add-escala="ida">+ Adicionar escala</button>
     </div>
 
     <div id="voo-volta-card" class="section-card collapse-section">
@@ -147,12 +155,20 @@
             </label>
             <p class="helper-text">Ative para adicionar escalas no voo de volta.</p>
         </div>
-        <div id="escala-volta-wrapper" class="collapse-section">
-            <input type="hidden" name="qtd_escalas_volta" id="id_qtd_escalas_volta" value="0" />
-            <input type="hidden" name="total_escalas_volta" id="id_total_escalas_volta" value="0" />
-            <div id="escalas-volta-container" class="scale-list"></div>
-            <button type="button" class="btn btn--outline btn--sm" data-add-escala="volta">+ Adicionar escala</button>
+    </div>
+
+    <div id="escala-volta-wrapper" class="section-card collapse-section">
+        <div class="section-card__header">
+            <div>
+                <p class="eyebrow">Escalas</p>
+                <h2 class="section-card__title">Escalas do voo de volta</h2>
+                <p class="section-card__description">Use quando o retorno exigir trechos intermediários.</p>
+            </div>
         </div>
+        <input type="hidden" name="qtd_escalas_volta" id="id_qtd_escalas_volta" value="0" />
+        <input type="hidden" name="total_escalas_volta" id="id_total_escalas_volta" value="0" />
+        <div id="escalas-volta-container" class="scale-list"></div>
+        <button type="button" class="btn btn--outline btn--sm" data-add-escala="volta">+ Adicionar escala</button>
     </div>
 
     <div class="section-card">
@@ -302,6 +318,8 @@ const resumoValores = document.getElementById('resumo-valores');
 const possuiVoltaToggle = document.getElementById('possui-volta');
 const voltaCard = document.getElementById('voo-volta-card');
 const dataVoltaField = document.getElementById('id_data_volta');
+const escalaVoltaWrapper = document.getElementById('escala-volta-wrapper');
+const escalaVoltaToggle = document.getElementById('volta-tem-escala');
 
 if (lucroField) {
     lucroField.readOnly = true;
@@ -319,6 +337,14 @@ function setVoltaVisibility() {
     voltaCard.classList.toggle('is-visible', shouldShow);
     if (possuiVoltaToggle) {
         possuiVoltaToggle.checked = shouldShow;
+    }
+    if (!shouldShow) {
+        if (escalaVoltaToggle) {
+            escalaVoltaToggle.checked = false;
+        }
+        if (escalaVoltaWrapper) {
+            escalaVoltaWrapper.classList.remove('is-visible');
+        }
     }
 }
 
