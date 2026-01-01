@@ -25,6 +25,7 @@ body {
   margin: 0;
   min-height: 100%;
   display: block;
+  overflow-x: hidden;
 }
 
 .app-shell [data-sidebar-overlay] {
@@ -49,10 +50,11 @@ body {
 .fpp-layout,
 .app-shell {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
+  height: auto;
   width: 100%;
   background: var(--color-bg);
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .fpp-sidebar,
@@ -65,7 +67,8 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  height: 100vh;
+  min-height: 100vh;
+  height: 100%;
   background: var(--color-surface);
   color: var(--color-text);
   box-shadow: 6px 0 18px rgba(0, 0, 0, 0.08);
@@ -158,7 +161,9 @@ body.sidebar-open .app-shell .sidebar {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  min-height: 100vh;
+  height: auto;
+  overflow-x: hidden;
 }
 
 .app-shell__content {
@@ -224,7 +229,7 @@ body.sidebar-open .app-shell .sidebar {
 
 .app-main {
   flex: 1;
-  overflow: auto;
+  overflow-y: auto;
   margin-left: 0;
   padding: 24px;
   background: var(--color-bg);
