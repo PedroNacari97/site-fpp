@@ -1,6 +1,8 @@
 html,
 body {
+  width: 100%;
   height: 100%;
+  overflow-x: hidden;
 }
 
 :root {
@@ -25,7 +27,6 @@ body {
   margin: 0;
   min-height: 100%;
   display: block;
-  overflow-x: hidden;
 }
 
 .app-shell [data-sidebar-overlay] {
@@ -47,6 +48,7 @@ body {
   padding: 0;
   min-height: 100vh;
   height: auto;
+  overflow-x: hidden;
 }
 
 .fpp-layout,
@@ -57,6 +59,7 @@ body {
   width: 100%;
   background: var(--color-bg);
   overflow-x: hidden;
+  overflow-y: visible;
 }
 
 .fpp-sidebar,
@@ -166,6 +169,7 @@ body.sidebar-open .app-shell .sidebar {
   min-height: 100vh;
   height: auto;
   overflow-x: hidden;
+  width: 100%;
 }
 
 .app-shell__content {
@@ -232,6 +236,7 @@ body.sidebar-open .app-shell .sidebar {
 .app-main {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   margin-left: 0;
   padding: 24px;
   background: var(--color-bg);
@@ -307,6 +312,16 @@ body.sidebar-open .app-shell .sidebar {
 }
 
 @media (max-width: 768px) {
+  .app-shell,
+  .app-shell__content,
+  .page-shell,
+  .fpp-container,
+  .page-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
   .fpp-layout {
     flex-direction: column;
   }
