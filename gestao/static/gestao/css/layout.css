@@ -200,7 +200,7 @@ body.sidebar-open .app-shell .sidebar {
 }
 
 .app-header__title {
-  font-size: 1.5rem;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-heading);
   text-transform: capitalize;
@@ -306,8 +306,8 @@ body.sidebar-open .app-shell .sidebar {
 
 .page-title {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: #2d3748;
 }
 
@@ -458,21 +458,21 @@ body.dark-mode {
 }
 
 h1 {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 h2 {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 h3 {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 p,
 span {
-  font-size: 14px;
+  font-size: 12px;
 }
