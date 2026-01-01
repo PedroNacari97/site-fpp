@@ -4,17 +4,36 @@ definePageMeta({
   subtitle: 'Gestão de contas corporativas e individuais.',
 });
 
-const clientes = [
-  { nome: 'Grupo Trix', segmento: 'Corporativo', status: 'Ativo', carteira: '820.000 pts' },
-  { nome: 'Marina Duarte', segmento: 'Individual', status: 'Ativo', carteira: '54.300 pts' },
-  { nome: 'Agência Horizonte', segmento: 'Corporativo', status: 'Em revisão', carteira: '210.900 pts' },
-  { nome: 'Lucas Peres', segmento: 'Individual', status: 'Inativo', carteira: '12.000 pts' },
-];
+type ClienteItem = {
+  id: number;
+  nome: string;
+  segmento: string;
+  status: string;
+  carteira: number;
+};
+
+type ClientesResponse = {
+  resultados: ClienteItem[];
+};
+
+const { data, pending, error } = await useFetch<ClientesResponse>('/clientes', {
+  baseURL: '/adm/api',
+  credentials: 'include',
+});
+
+const formatNumber = (value: number) =>
+  new Intl.NumberFormat('pt-BR').format(value ?? 0);
+
+const formatCarteira = (value: number) => `${formatNumber(value)} pts`;
 </script>
 
 <template>
   <section class="content-stack">
-    <section class="surface-card">
+    <section v-if="error" class="surface-card">
+      <p>Não foi possível carregar os clientes.</p>
+    </section>
+
+    <section v-else class="surface-card">
       <div class="table-header">
         <div>
           <h3 class="section-title">Base de clientes</h3>
@@ -22,6 +41,7 @@ const clientes = [
         </div>
         <button class="btn btn--outline" type="button">Adicionar cliente</button>
       </div>
+      <div v-if="pending" class="muted">Carregando...</div>
       <table class="table">
         <thead>
           <tr>
@@ -32,11 +52,14 @@ const clientes = [
           </tr>
         </thead>
         <tbody>
-          <tr v-for="cliente in clientes" :key="cliente.nome">
+          <tr v-for="cliente in data?.resultados ?? []" :key="cliente.id">
             <td>{{ cliente.nome }}</td>
             <td>{{ cliente.segmento }}</td>
             <td><span class="status">{{ cliente.status }}</span></td>
-            <td>{{ cliente.carteira }}</td>
+            <td>{{ formatCarteira(cliente.carteira) }}</td>
+          </tr>
+          <tr v-if="(data?.resultados ?? []).length === 0 && !pending">
+            <td colspan="4" class="muted">Nenhum cliente encontrado.</td>
           </tr>
         </tbody>
       </table>

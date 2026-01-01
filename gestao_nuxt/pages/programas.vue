@@ -4,16 +4,30 @@ definePageMeta({
   subtitle: 'Catálogo de programas de fidelidade integrados.',
 });
 
-const programas = [
-  { nome: 'Smiles', parceiros: 'Gol, Qatar, Air France', status: 'Ativo' },
-  { nome: 'LATAM Pass', parceiros: 'LATAM, Delta, Iberia', status: 'Ativo' },
-  { nome: 'TudoAzul', parceiros: 'Azul, United, Copa', status: 'Em atualização' },
-];
+type ProgramaItem = {
+  id: number;
+  nome: string;
+  parceiros: string;
+  status: string;
+};
+
+type ProgramasResponse = {
+  resultados: ProgramaItem[];
+};
+
+const { data, pending, error } = await useFetch<ProgramasResponse>('/programas', {
+  baseURL: '/adm/api',
+  credentials: 'include',
+});
 </script>
 
 <template>
   <section class="content-stack">
-    <section class="surface-card">
+    <section v-if="error" class="surface-card">
+      <p>Não foi possível carregar os programas.</p>
+    </section>
+
+    <section v-else class="surface-card">
       <div class="table-header">
         <div>
           <h3 class="section-title">Programas cadastrados</h3>
@@ -21,6 +35,7 @@ const programas = [
         </div>
         <button class="btn btn--outline" type="button">Adicionar programa</button>
       </div>
+      <div v-if="pending" class="muted">Carregando...</div>
       <table class="table">
         <thead>
           <tr>
@@ -30,10 +45,13 @@ const programas = [
           </tr>
         </thead>
         <tbody>
-          <tr v-for="programa in programas" :key="programa.nome">
+          <tr v-for="programa in data?.resultados ?? []" :key="programa.id">
             <td>{{ programa.nome }}</td>
             <td>{{ programa.parceiros }}</td>
             <td><span class="status">{{ programa.status }}</span></td>
+          </tr>
+          <tr v-if="(data?.resultados ?? []).length === 0 && !pending">
+            <td colspan="3" class="muted">Nenhum programa encontrado.</td>
           </tr>
         </tbody>
       </table>
