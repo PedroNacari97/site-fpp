@@ -217,6 +217,46 @@ textarea:focus {
   gap: 1rem;
 }
 
+.scale-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.scale-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 0.75rem;
+  align-items: end;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+  background: #ffffff;
+}
+
+.scale-actions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.scale-remove {
+  border: 1px solid var(--border);
+  background: #ffffff;
+  border-radius: 10px;
+  height: 44px;
+  width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.scale-remove:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 .scale-card {
   border: 1px dashed var(--border);
   border-radius: 12px;
@@ -324,9 +364,23 @@ textarea:focus {
   }
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1024px) {
   .form-grid--3,
   .form-group {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .scale-row {
+    grid-template-columns: 1fr;
+  }
+
+  .scale-actions {
+    justify-content: stretch;
+  }
+
+  .scale-remove {
+    width: 100%;
   }
 }
