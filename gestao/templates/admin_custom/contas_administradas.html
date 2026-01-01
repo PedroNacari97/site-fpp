@@ -18,14 +18,14 @@
             <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
         </div>
         <div class="filter-body is-open" data-filter-panel>
-            <form method="get" class="form-grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 md:items-end">
-                <div class="form-field md:col-span-2 lg:col-span-3">
+            <form method="get" class="filter-grid">
+                <div class="form-field">
                     <label class="form-label" for="busca">Conta ou programa</label>
                     <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar conta ou programa..." />
                 </div>
-                <div class="form-actions flex gap-2 md:justify-end">
-                    <button type="submit" class="btn flex-1 md:flex-none">Buscar</button>
-                    <a href="{% url 'admin_contas_administradas' %}" class="btn btn--ghost flex-1 md:flex-none">Limpar</a>
+                <div class="form-actions">
+                    <button type="submit" class="btn">Buscar</button>
+                    <a href="{% url 'admin_contas_administradas' %}" class="btn btn--ghost">Limpar</a>
                 </div>
             </form>
         </div>

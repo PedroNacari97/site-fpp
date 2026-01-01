@@ -14,20 +14,21 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
-  padding: 1.75rem;
+  padding: 16px;
   display: grid;
   gap: 1.25rem;
 }
 
 .form-title {
-  font-size: 1.35rem;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--heading);
   margin-bottom: 0.35rem;
 }
 
 .form-subtitle {
   color: var(--muted);
+  font-size: 12px;
   margin: 0 0 0.5rem;
 }
 
@@ -41,7 +42,7 @@
   background: #fdfdff;
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 1.25rem 1.35rem;
+  padding: 16px;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
   display: flex;
   flex-direction: column;
@@ -57,19 +58,20 @@
 }
 
 .section-card__title {
-  font-size: 1.05rem;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--heading);
 }
 
 .section-card__description {
   color: var(--muted);
+  font-size: 12px;
   margin-top: 0.25rem;
 }
 
 .section-title {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--heading);
   margin-top: 0.5rem;
 }
@@ -78,16 +80,16 @@
 .form-group,
 .section-grid {
   display: grid;
-  gap: 1rem;
-  grid-template-columns: 1fr;
+  gap: 12px;
+  grid-template-columns: 180px 180px 200px;
 }
 
 .form-grid--2 {
-  grid-template-columns: 1fr;
+  grid-template-columns: 180px 200px;
 }
 
 .form-grid--3 {
-  grid-template-columns: 1fr;
+  grid-template-columns: 180px 180px 200px;
 }
 
 .form-group.single,
@@ -95,10 +97,17 @@
   grid-template-columns: 1fr;
 }
 
+.form-grid--dates {
+  display: grid;
+  grid-template-columns: 220px 160px;
+  gap: 12px;
+}
+
 .form-label {
   display: block;
   font-weight: 700;
   color: var(--heading);
+  font-size: 11px;
   margin-bottom: 0.35rem;
 }
 
@@ -112,8 +121,9 @@ select,
 textarea {
   width: 100%;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0.75rem 0.9rem;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
   background: #f8fafc;
   color: var(--heading);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -126,11 +136,11 @@ input[type="date"],
 input[type="datetime-local"],
 input[type="time"],
 select {
-  min-height: 44px;
+  height: 36px;
 }
 
 textarea {
-  min-height: 120px;
+  min-height: 96px;
   resize: vertical;
 }
 
@@ -147,7 +157,7 @@ textarea:focus {
   justify-content: flex-end;
   gap: 0.75rem;
   flex-wrap: wrap;
-  padding: 1rem 0 0;
+  padding: 12px 0 0;
   border-top: 1px solid var(--border);
   position: sticky;
   bottom: 0;
@@ -158,10 +168,12 @@ textarea:focus {
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--primary-strong));
   color: #ffffff;
-  font-weight: 700;
+  font-weight: 600;
   border: none;
-  border-radius: 12px;
-  padding: 0.8rem 1.35rem;
+  border-radius: 6px;
+  height: 36px;
+  padding: 0 14px;
+  font-size: 12px;
   cursor: pointer;
   transition: filter 0.2s ease;
 }
@@ -211,10 +223,10 @@ textarea:focus {
   font-size: 0.9rem;
 }
 
-.scale-grid {
+.scale-panels {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
 }
 
 .scale-list {
@@ -223,13 +235,14 @@ textarea:focus {
   gap: 0.75rem;
 }
 
-.scale-row {
+.scale-row,
+.scale-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-  gap: 0.75rem;
-  align-items: end;
-  padding: 0.75rem;
-  border-radius: 12px;
+  grid-template-columns: 160px 180px 120px 36px;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 10px;
   border: 1px dashed var(--border);
   background: #ffffff;
 }
@@ -243,9 +256,9 @@ textarea:focus {
 .scale-remove {
   border: 1px solid var(--border);
   background: #ffffff;
-  border-radius: 10px;
-  height: 44px;
-  width: 44px;
+  border-radius: 6px;
+  height: 36px;
+  width: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -292,7 +305,7 @@ textarea:focus {
 
 .helper-text {
   color: var(--muted);
-  font-size: 0.95rem;
+  font-size: 12px;
 }
 
 .section-divider {
@@ -352,27 +365,18 @@ textarea:focus {
   }
 }
 
-@media (min-width: 768px) {
-  .form-grid--2,
-  .section-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .form-grid--3,
-  .form-group {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1024px) {
-  .form-grid--3,
-  .form-group {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 768px) {
-  .scale-row {
+  .form-grid,
+  .form-grid--2,
+  .form-grid--3,
+  .form-group,
+  .section-grid,
+  .form-grid--dates {
+    grid-template-columns: 1fr;
+  }
+
+  .scale-row,
+  .scale-grid {
     grid-template-columns: 1fr;
   }
 

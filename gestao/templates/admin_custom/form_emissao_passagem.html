@@ -96,7 +96,7 @@
                 {{ form.companhia_aerea }}
             </div>
         </div>
-        <div class="form-grid form-grid--3">
+        <div class="form-grid form-grid--dates">
             <div>
                 <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span class="required-asterisk">*</span></label>
                 {{ form.data_ida }}
@@ -133,7 +133,7 @@
                 <p class="section-card__description">Informe o retorno apenas quando houver volta.</p>
             </div>
         </div>
-        <div class="form-grid form-grid--3">
+        <div class="form-grid form-grid--dates">
             <div>
                 <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data e horário da volta</label>
                 {{ form.data_volta }}
@@ -691,7 +691,7 @@ function initEscalaSection(tipo, data){
         container.innerHTML='';
         for(let i=0;i<qtd;i++){
             const div = document.createElement('div');
-            div.className = 'scale-row escala-fields';
+            div.className = 'scale-row scale-grid escala-fields';
             div.dataset.index = i;
             let options = '<option value=""></option>';
             aeroportos.forEach(a=>{
