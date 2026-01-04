@@ -32,7 +32,7 @@ from ..models import (
     AcessoClienteLog,
 )
 from gestao.utils import generate_unique_username, sync_cliente_activation
-from painel_cliente.views import build_dashboard_context
+from gestao.services.dashboard import build_operational_dashboard_context
 from .permissions import require_admin_or_operator
 
 import csv
@@ -199,7 +199,20 @@ def visualizar_cliente(request, cliente_id):
         return permission_denied
     cliente = get_object_or_404(Cliente, id=cliente_id)
     AcessoClienteLog.objects.create(admin=request.user, cliente=cliente)
-    context = build_dashboard_context(cliente.usuario)
-    context["cliente_obj"] = cliente
-    context["menu_ativo"] = "clientes"
-    return render(request, "admin_custom/cliente_dashboard.html", context)
+    context = build_operational_dashboard_context(
+        user=request.user,
+        cliente=cliente,
+        selected_continente=request.GET.get("continente"),
+        selected_pais=request.GET.get("pais"),
+        selected_cidade=request.GET.get("cidade"),
+    )
+    context.update(
+        {
+            "cliente_obj": cliente,
+            "dashboard_base": "admin_custom/base_admin.html",
+            "dashboard_title": f"Painel do Cliente: {cliente}",
+            "dashboard_subtitle": "Visualização operacional do cliente com alertas e emissões.",
+            "menu_ativo": "clientes",
+        }
+    )
+    return render(request, "painel_cliente/dashboard.html", context)

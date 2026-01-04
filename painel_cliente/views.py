@@ -7,8 +7,8 @@ import re
 
 from services.pdf_service import emissao_pdf_response
 from gestao.models import Cliente, Passageiro
+from gestao.services.dashboard import build_operational_dashboard_context
 from gestao.utils import normalize_cpf
-from gestao.value_utils import build_valor_milheiro_map, get_valor_referencia_from_map
 from repositories.painel_repository import (
     get_contas_by_user,
     get_emissoes_passagem_by_user,
@@ -52,49 +52,23 @@ def sair(request):
     return redirect("/login/")
 
 
-def build_dashboard_context(user):
+def build_dashboard_context(user, *, selected_continente=None, selected_pais=None, selected_cidade=None):
     """Build context data for the dashboard page."""
-    contas = get_contas_by_user(user)
-    emissoes = get_emissoes_passagem_by_user(user)
-    hoteis = get_emissoes_hotel_by_user(user)
-
-    contas_info = []
-    valor_referencia_map = build_valor_milheiro_map()
-    for conta in contas:
-        saldo = conta.saldo_pontos or 0
-        valor_medio = float(conta.valor_medio_por_mil or 0)
-        valor_referencia = float(
-            get_valor_referencia_from_map(conta.programa, valor_referencia_map)
-        )
-        valor_total = (saldo / 1000) * valor_referencia
-        contas_info.append(
-            {
-                "id": conta.id,
-                "programa": conta.programa.nome,
-                "saldo_pontos": saldo,
-                "valor_total": valor_total,
-                "valor_medio": valor_medio,
-                "valor_referencia": valor_referencia,
-            }
-        )
-
+    cliente = Cliente.objects.filter(usuario=user).first()
+    base_context = build_operational_dashboard_context(
+        user=user,
+        cliente=cliente,
+        selected_continente=selected_continente,
+        selected_pais=selected_pais,
+        selected_cidade=selected_cidade,
+    )
     return {
-        "contas_info": contas_info,
-        "qtd_emissoes": emissoes.count(),
-        "pontos_totais_utilizados": sum(e.pontos_utilizados or 0 for e in emissoes),
-        "valor_total_referencia": sum(float(e.valor_referencia or 0) for e in emissoes),
-        "valor_total_pago": sum(float(e.valor_pago or 0) for e in emissoes),
-        "valor_total_economizado": sum(float(e.valor_referencia or 0) for e in emissoes)
-        - sum(float(e.valor_pago or 0) for e in emissoes),
-        "qtd_hoteis": hoteis.count(),
-        "valor_total_hoteis": sum(float(h.valor_pago or 0) for h in hoteis),
-        "valor_total_hoteis_referencia": sum(
-            float(h.valor_referencia or 0) for h in hoteis
-        ),
-        "valor_total_hoteis_economia": sum(
-            float(h.economia_obtida or (h.valor_referencia - h.valor_pago))
-            for h in hoteis
-        ),
+        **base_context,
+        "dashboard_base": "painel_cliente/base_painel.html",
+        "dashboard_title": "Dashboard Operacional",
+        "dashboard_subtitle": "Acompanhe emissões, alertas e pendências com foco no dia a dia.",
+        "cliente_obj": cliente,
+        "menu_ativo": "dashboard",
     }
 
 
@@ -104,7 +78,12 @@ def dashboard(request):
     cliente = get_object_or_404(Cliente, usuario=request.user)
     if not cliente.ativo:
         return render(request, "painel_cliente/inativo.html")
-    context = build_dashboard_context(request.user)
+    context = build_dashboard_context(
+        request.user,
+        selected_continente=request.GET.get("continente"),
+        selected_pais=request.GET.get("pais"),
+        selected_cidade=request.GET.get("cidade"),
+    )
     return render(request, "painel_cliente/dashboard.html", context)
 
 

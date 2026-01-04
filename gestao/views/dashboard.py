@@ -12,7 +12,9 @@ from ..models import (
     EmissaoHotel,
     EmissaoPassagem,
     EmissorParceiro,
+    Empresa,
 )
+from ..services.dashboard import build_operational_dashboard_context
 from ..value_utils import build_valor_milheiro_map, get_valor_referencia_from_map
 from .permissions import require_admin_or_operator
 
@@ -196,30 +198,35 @@ def build_dashboard_metrics(view_type="clientes", entity_id=None):
 def admin_dashboard(request):
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
-    view_type = request.GET.get("view", "clientes")
-    cliente_id = request.GET.get("cliente_id")
-    conta_id = request.GET.get("conta_id")
-    emissor_id = request.GET.get("emissor_id")
-    entity_id = cliente_id if view_type == "clientes" else conta_id if view_type == "contas" else emissor_id
-    data = build_dashboard_metrics(view_type, entity_id)
-    clientes = Cliente.objects.filter(perfil="cliente", ativo=True).order_by("usuario__first_name")
-    contas_adm = ContaAdministrada.objects.filter(ativo=True).order_by("nome")
-    emissores = EmissorParceiro.objects.filter(ativo=True).order_by("nome")
-    selected_cliente = clientes.filter(id=cliente_id).first() if cliente_id else None
-    selected_conta = contas_adm.filter(id=conta_id).first() if conta_id else None
-    selected_emissor = emissores.filter(id=emissor_id).first() if emissor_id else None
-    context = {
-        **data,
-        "clientes": clientes,
-        "contas_administradas": contas_adm,
-        "emissores_parceiros": emissores,
-        "selected_cliente": selected_cliente,
-        "selected_conta": selected_conta,
-        "selected_emissor": selected_emissor,
-        "view_type": view_type,
-        "menu_ativo": "dashboard",
-    }
-    return render(request, "admin_custom/dashboard.html", context)
+    empresa = None
+    empresa_id = request.GET.get("empresa_id")
+    empresas = None
+    if request.user.is_superuser:
+        empresas = Empresa.objects.all().order_by("nome")
+        if empresa_id:
+            empresa = empresas.filter(id=empresa_id).first()
+    else:
+        empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+
+    context = build_operational_dashboard_context(
+        user=request.user,
+        empresa=empresa,
+        selected_continente=request.GET.get("continente"),
+        selected_pais=request.GET.get("pais"),
+        selected_cidade=request.GET.get("cidade"),
+    )
+    context.update(
+        {
+            "dashboard_base": "admin_custom/base_admin.html",
+            "dashboard_title": "Dashboard Operacional",
+            "dashboard_subtitle": "Visão operacional com alertas, emissões e ações prioritárias.",
+            "menu_ativo": "dashboard",
+            "empresas": empresas,
+            "empresa_selecionada": empresa,
+            "empresa_id": empresa_id,
+        }
+    )
+    return render(request, "painel_cliente/dashboard.html", context)
 
 
 @login_required
