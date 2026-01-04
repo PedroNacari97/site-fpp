@@ -10,7 +10,7 @@
   --muted: #7a92a8;
   --heading: #2c5aa0;
   --primary: #5a8cc4;
-  --radius: 10px;
+  --radius: 6px;
   --shadow: 0 2px 8px rgba(51, 102, 153, 0.08);
 }
 
@@ -81,7 +81,7 @@ body.dark-mode .sidebar {
 /* ========== CONTEÚDO PRINCIPAL ========== */
 main, .main-content {
   margin-left: 210px;
-  padding: 15px;
+  padding: 16px;
   min-height: 100vh;
   overflow-y: auto;
 }
@@ -89,9 +89,9 @@ main, .main-content {
 /* ========== HEADER ========== */
 header, .header {
   background: var(--surface);
-  padding: 12px 15px;
+  padding: 10px 12px;
   box-shadow: var(--shadow);
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   border-radius: var(--radius);
   display: flex;
   justify-content: space-between;
@@ -117,8 +117,8 @@ header .user-info, .header .user-info {
 .card, .panel {
   background: var(--surface);
   border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: 12px;
+  margin-bottom: 16px;
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
   transition: all 0.3s ease;
@@ -151,14 +151,14 @@ p, span {
 }
 
 .section {
-  margin-bottom: 30px;
+  margin-bottom: 16px;
 }
 
 /* ========== FORMULÁRIOS ========== */
 form {
   background: var(--surface);
   border-radius: var(--radius);
-  padding: 18px;
+  padding: 12px;
   margin-bottom: 15px;
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
@@ -166,8 +166,8 @@ form {
 
 fieldset {
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: 6px;
+  padding: 8px;
   margin-bottom: 15px;
 }
 
@@ -214,7 +214,7 @@ input[type="tel"],
 select,
 textarea {
   width: 100%;
-  padding: 10px 12px;
+  padding: 6px 10px;
   border: 2px solid var(--border);
   border-radius: 6px;
   font-size: 13px;
@@ -225,6 +225,18 @@ textarea {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+  max-width: 500px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+input[type="tel"],
+select {
+  height: 32px;
 }
 
 input::placeholder, textarea::placeholder {
@@ -254,8 +266,8 @@ select {
 /* ========== FORM ROW ========== */
 .form-row {
   display: flex;
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
 }
 
@@ -268,7 +280,7 @@ select {
 .form-columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 10px;
 }
 
 .form-columns .form-group {
@@ -278,7 +290,7 @@ select {
 .form-columns-3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 14px;
+  gap: 10px;
 }
 
 .form-columns-3 .form-group {
@@ -288,9 +300,9 @@ select {
 /* ========== FORM ACTIONS ========== */
 .form-actions, .form-buttons {
   display: flex;
-  gap: 10px;
-  margin-top: 16px;
-  padding-top: 16px;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px solid var(--border);
   justify-content: flex-end;
 }
@@ -374,19 +386,19 @@ thead {
 }
 
 thead th {
-  padding: 10px 12px;
+  padding: 8px 12px;
   text-align: left;
   font-weight: 600;
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 
 tbody td {
-  padding: 10px 12px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
   color: var(--heading);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 tbody tr:hover {
@@ -488,11 +500,12 @@ body.dark-mode .btn-delete {
 .filter-group input,
 .filter-group select {
   width: 100%;
-  padding: 8px 10px;
+  padding: 6px 10px;
   border: 2px solid var(--border);
   border-radius: 6px;
   font-size: 12px;
   background: var(--surface);
+  max-width: 500px;
 }
 
 .filter-group input:focus,
@@ -504,14 +517,14 @@ body.dark-mode .btn-delete {
 
 .filter-buttons, .filter-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 8px;
   flex-wrap: wrap;
 }
 
 .filter-buttons button, .filter-actions button {
-  padding: 10px 20px;
-  height: 44px;
+  padding: 8px 16px;
+  height: 36px;
   flex: 1;
   min-width: 120px;
   font-size: 12px;
@@ -568,10 +581,10 @@ body.dark-mode .btn-delete {
 }
 
 .kpi-value, .indicator-value, .metric-value {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--heading);
-  margin: 6px 0;
+  margin: 4px 0;
 }
 
 .kpi-label, .indicator-label, .metric-label {
@@ -586,8 +599,8 @@ body.dark-mode .btn-delete {
 .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .col-3 { flex: 0 0 calc(25% - 9px); }
@@ -597,8 +610,8 @@ body.dark-mode .btn-delete {
 
 .painel-cards {
   display: grid;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 16px;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
@@ -710,7 +723,7 @@ body.dark-mode .btn-delete {
   }
 
   .kpi-value, .indicator-value, .metric-value {
-    font-size: 20px;
+    font-size: 16px;
   }
 }
 
@@ -771,7 +784,7 @@ body.dark-mode .btn-delete {
   }
 
   .kpi-value, .indicator-value, .metric-value {
-    font-size: 18px;
+    font-size: 15px;
   }
 
   h2 { font-size: 16px; }
