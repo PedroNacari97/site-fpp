@@ -7,7 +7,6 @@ from django.http import HttpResponse
 from django.contrib import messages
 from decimal import Decimal
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
-from painel_cliente.views import build_dashboard_context
 from django.db import models, transaction
 
 from ..forms import (
