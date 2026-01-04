@@ -217,6 +217,7 @@ def admin_dashboard(request):
         "selected_conta": selected_conta,
         "selected_emissor": selected_emissor,
         "view_type": view_type,
+        "menu_ativo": "dashboard",
     }
     return render(request, "admin_custom/dashboard.html", context)
 

@@ -17,7 +17,7 @@ def admin_emissores_parceiros(request):
     return render(
         request,
         "admin_custom/emissores_parceiros.html",
-        {"emissores": emissores},
+        {"emissores": emissores, "menu_ativo": "emissores"},
     )
 
 
@@ -36,7 +36,11 @@ def criar_emissor_parceiro(request):
             return redirect("admin_emissores_parceiros")
     else:
         form = EmissorParceiroForm(empresa=empresa)
-    return render(request, "admin_custom/form_emissor_parceiro.html", {"form": form})
+    return render(
+        request,
+        "admin_custom/form_emissor_parceiro.html",
+        {"form": form, "menu_ativo": "emissores"},
+    )
 
 
 @login_required
@@ -56,7 +60,9 @@ def editar_emissor_parceiro(request, emissor_id):
     else:
         form = EmissorParceiroForm(instance=emissor, empresa=empresa)
     return render(
-        request, "admin_custom/form_emissor_parceiro.html", {"form": form}
+        request,
+        "admin_custom/form_emissor_parceiro.html",
+        {"form": form, "menu_ativo": "emissores"},
     )
 
 

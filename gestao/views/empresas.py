@@ -31,7 +31,7 @@ def empresas_list(request):
     return render(
         request,
         "admin_custom/empresas.html",
-        {"empresas_info": empresas_info},
+        {"empresas_info": empresas_info, "menu_ativo": "empresas"},
     )
 
 
@@ -50,5 +50,5 @@ def criar_empresa(request):
     return render(
         request,
         "admin_custom/empresa_form.html",
-        {"form": form},
+        {"form": form, "menu_ativo": "empresas"},
     )

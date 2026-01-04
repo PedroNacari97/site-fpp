@@ -296,6 +296,7 @@ def admin_emissoes(request):
             "programas": programas,
             "clientes": clientes,
             "params": request.GET,
+            "menu_ativo": "emissoes",
         },
     )
 
@@ -407,20 +408,21 @@ def nova_emissao(request):
                                     "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
                                     "aeroportos_json": json.dumps(aeroportos),
                                     "cliente_id": cliente_id,
-                                    "cliente_programas_json": json.dumps(
-                                        build_clientes_programas_map(empresa_id=getattr(empresa, "id", None))
-                                    ),
-                                    "contas_adm_programas_json": json.dumps(
-                                        build_contas_administradas_programas_map(
-                                            empresa_id=getattr(empresa, "id", None)
-                                        )
-                                    ),
-                                    "empresa_programas_json": json.dumps(
-                                        build_empresa_programas_map(
-                                            empresa_id=getattr(empresa, "id", None)
-                                        )
-                                    ),
-                                },
+                                "cliente_programas_json": json.dumps(
+                                    build_clientes_programas_map(empresa_id=getattr(empresa, "id", None))
+                                ),
+                                "contas_adm_programas_json": json.dumps(
+                                    build_contas_administradas_programas_map(
+                                        empresa_id=getattr(empresa, "id", None)
+                                    )
+                                ),
+                                "empresa_programas_json": json.dumps(
+                                    build_empresa_programas_map(
+                                        empresa_id=getattr(empresa, "id", None)
+                                    )
+                                ),
+                                "menu_ativo": "emissoes",
+                            },
                             )
 
                         for passageiro in passageiros:
@@ -480,6 +482,7 @@ def nova_emissao(request):
             "empresa_programas_json": json.dumps(
                 build_empresa_programas_map(empresa_id=getattr(empresa, "id", None))
             ),
+            "menu_ativo": "emissoes",
         },
     )
 
@@ -613,6 +616,7 @@ def editar_emissao(request, emissao_id):
                                         empresa_id=getattr(empresa, "id", None), instance=emissao
                                     )
                                 ),
+                                "menu_ativo": "emissoes",
                             },
                         )
 
@@ -706,6 +710,7 @@ def editar_emissao(request, emissao_id):
                                         empresa_id=getattr(empresa, "id", None), instance=emissao
                                     )
                                 ),
+                                "menu_ativo": "emissoes",
                             },
                         )
 
@@ -801,6 +806,7 @@ def editar_emissao(request, emissao_id):
             "empresa_programas_json": json.dumps(
                 build_empresa_programas_map(empresa_id=getattr(empresa, "id", None), instance=emissao)
             ),
+            "menu_ativo": "emissoes",
         },
     )
 
@@ -830,6 +836,7 @@ def emissao_detalhe(request, emissao_id):
             "emissao": emissao,
             "passageiros": passageiros,
             "cpfs_consumidos": cpfs_consumidos,
+            "menu_ativo": "emissoes",
         },
     )
 
@@ -859,7 +866,9 @@ def admin_hoteis(request):
             | Q(nome_hotel__icontains=busca)
         )
     return render(
-        request, "admin_custom/hoteis.html", {"emissoes": emissoes, "busca": busca}
+        request,
+        "admin_custom/hoteis.html",
+        {"emissoes": emissoes, "busca": busca, "menu_ativo": "hoteis"},
     )
 
 
@@ -879,7 +888,11 @@ def nova_emissao_hotel(request):
             return redirect("admin_hoteis")
     else:
         form = EmissaoHotelForm()
-    return render(request, "admin_custom/form_hotel.html", {"form": form})
+    return render(
+        request,
+        "admin_custom/form_hotel.html",
+        {"form": form, "menu_ativo": "hoteis"},
+    )
 
 
 @login_required
@@ -897,7 +910,11 @@ def editar_emissao_hotel(request, emissao_id):
             return redirect("admin_hoteis")
     else:
         form = EmissaoHotelForm(instance=emissao)
-    return render(request, "admin_custom/form_hotel.html", {"form": form})
+    return render(
+        request,
+        "admin_custom/form_hotel.html",
+        {"form": form, "menu_ativo": "hoteis"},
+    )
 
 
 @login_required

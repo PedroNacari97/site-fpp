@@ -140,6 +140,7 @@ def admin_movimentacoes(request, conta_id):
             "titular_tipo": titular_tipo,
             "titular_nome": titular_nome,
             "titular_programas_url": titular_programas_url,
+            "menu_ativo": "contas",
         },
     )
 
@@ -179,6 +180,7 @@ def admin_nova_movimentacao(request, conta_id):
         {
             "form": form,
             "conta": conta,
+            "menu_ativo": "contas",
         },
     )
 
@@ -256,5 +258,6 @@ def admin_transferir_pontos(request, conta_id):
         {
             "form": form,
             "conta": conta,
+            "menu_ativo": "contas",
         },
     )

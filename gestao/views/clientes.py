@@ -91,7 +91,11 @@ def criar_cliente(request):
     else:
         form = NovoClienteForm()
 
-    return render(request, "admin_custom/form_cliente.html", {"form": form})
+    return render(
+        request,
+        "admin_custom/form_cliente.html",
+        {"form": form, "menu_ativo": "clientes"},
+    )
 
 
 @login_required
@@ -109,7 +113,11 @@ def editar_cliente(request, cliente_id):
             return redirect("admin_clientes")
     else:
         form = ClienteForm(instance=cliente)
-    return render(request, "admin_custom/form_cliente.html", {"form": form})
+    return render(
+        request,
+        "admin_custom/form_cliente.html",
+        {"form": form, "menu_ativo": "clientes"},
+    )
 
 
 @login_required
@@ -144,6 +152,7 @@ def admin_clientes(request):
             "page_obj": page_obj,
             "busca": busca,
             "total_clientes": clientes.count(),
+            "menu_ativo": "clientes",
         },
     )
 
@@ -179,6 +188,7 @@ def programas_do_cliente(request, cliente_id):
         {
             "cliente": cliente,
             "lista_contas": lista_contas,
+            "menu_ativo": "clientes",
         },
     )
 
@@ -191,4 +201,5 @@ def visualizar_cliente(request, cliente_id):
     AcessoClienteLog.objects.create(admin=request.user, cliente=cliente)
     context = build_dashboard_context(cliente.usuario)
     context["cliente_obj"] = cliente
+    context["menu_ativo"] = "clientes"
     return render(request, "admin_custom/cliente_dashboard.html", context)

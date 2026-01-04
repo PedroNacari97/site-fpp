@@ -128,6 +128,7 @@ def admin_cotacoes(request):
             "cotacoes": cotacoes,
             "programas": programas,
             "busca": busca,
+            "menu_ativo": "cotacoes",
         },
     )
 
@@ -165,7 +166,7 @@ def admin_cotacoes_voo(request):
     return render(
         request,
         "admin_custom/cotacoes_voo.html",
-        {"cotacoes": cotacoes, "busca": busca},
+        {"cotacoes": cotacoes, "busca": busca, "menu_ativo": "cotacoes"},
     )
 
 
@@ -305,6 +306,7 @@ def nova_cotacao_voo(request):
                     empresa_id=getattr(empresa, "id", None)
                 )
             ),
+            "menu_ativo": "cotacoes",
         },
     )
 
@@ -427,6 +429,7 @@ def editar_cotacao_voo(request, cotacao_id):
                     empresa_id=getattr(empresa, "id", None), instance=cotacao
                 )
             ),
+            "menu_ativo": "cotacoes",
         },
     )
 
@@ -448,7 +451,11 @@ def admin_valor_milheiro(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     cotacoes = ValorMilheiro.objects.all().order_by("programa_nome")
-    return render(request, "admin_custom/valor_milheiro.html", {"cotacoes": cotacoes})
+    return render(
+        request,
+        "admin_custom/valor_milheiro.html",
+        {"cotacoes": cotacoes, "menu_ativo": "cotacoes"},
+    )
 
 
 @login_required
@@ -494,5 +501,5 @@ def calculadora_cotacao(request):
     return render(
         request,
         "admin_custom/calculadora_cotacao.html",
-        {"form": form, "resultado": resultado},
+        {"form": form, "resultado": resultado, "menu_ativo": "calculadora"},
     )

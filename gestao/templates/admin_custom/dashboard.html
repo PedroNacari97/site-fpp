@@ -4,7 +4,6 @@
 {% block title %}Dashboard{% endblock %}
 {% block header_title %}Dashboard Administrativo{% endblock %}
 {% block header_subtitle %}<p class="page-subtitle">Visão consolidada dos clientes, emissões e reservas com hierarquia clara de informações.</p>{% endblock %}
-{% block menu_dashboard %}is-active{% endblock %}
 {% block header_actions %}
 <a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="btn btn--outline">+ Novo Cliente</a>
 <a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="btn">+ Nova Emissão</a>

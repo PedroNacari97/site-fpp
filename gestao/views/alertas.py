@@ -39,7 +39,7 @@ def admin_alertas_passagens(request):
     return render(
         request,
         "admin_custom/alertas_list.html",
-        {"alertas": alertas, "busca": busca},
+        {"alertas": alertas, "busca": busca, "menu_ativo": "alertas"},
     )
 
 
@@ -58,7 +58,7 @@ def criar_alerta_passagem(request):
     return render(
         request,
         "admin_custom/alertas_form.html",
-        {"form": form, "titulo_pagina": "Novo alerta"},
+        {"form": form, "titulo_pagina": "Novo alerta", "menu_ativo": "alertas"},
     )
 
 
@@ -78,7 +78,7 @@ def editar_alerta_passagem(request, alerta_id):
     return render(
         request,
         "admin_custom/alertas_form.html",
-        {"form": form, "titulo_pagina": "Editar alerta"},
+        {"form": form, "titulo_pagina": "Editar alerta", "menu_ativo": "alertas"},
     )
 
 
@@ -94,7 +94,7 @@ def deletar_alerta_passagem(request, alerta_id):
     return render(
         request,
         "admin_custom/alertas_confirm_delete.html",
-        {"alerta": alerta},
+        {"alerta": alerta, "menu_ativo": "alertas"},
     )
 
 
@@ -153,6 +153,7 @@ def alertas_passagens(request):
             "selected_continente": selected_continente,
             "selected_pais": selected_pais,
             "selected_cidade": selected_cidade,
+            "menu_ativo": "alertas",
         },
     )
 
@@ -170,5 +171,6 @@ def alerta_passagem_detalhe(request, alerta_id):
             "datas_ida": alerta.datas_ida or [],
             "datas_volta": alerta.datas_volta or [],
             "link_externo": _extract_link(alerta.conteudo),
+            "menu_ativo": "alertas",
         },
     )

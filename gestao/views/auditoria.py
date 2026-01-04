@@ -8,4 +8,8 @@ def admin_auditoria(request):
     if perfil != "admin" and not request.user.is_superuser:
         return render(request, "sem_permissao.html")
     logs = AuditLog.objects.select_related('user').all()
-    return render(request, 'admin_custom/auditoria.html', {'logs': logs})
+    return render(
+        request,
+        "admin_custom/auditoria.html",
+        {"logs": logs, "menu_ativo": "auditoria"},
+    )
