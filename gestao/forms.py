@@ -552,6 +552,16 @@ class CalculadoraCotacaoForm(forms.Form):
 
 
 class AlertaViagemForm(forms.ModelForm):
+    conteudo = forms.CharField(
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 6,
+                "placeholder": "Texto completo do alerta (pode incluir emojis, links e listas).",
+                "style": "resize:vertical;",
+            }
+        ),
+    )
     datas_ida = forms.JSONField(required=False, widget=forms.HiddenInput)
     datas_volta = forms.JSONField(required=False, widget=forms.HiddenInput)
 
@@ -574,15 +584,7 @@ class AlertaViagemForm(forms.ModelForm):
             "datas_volta",
             "ativo",
         ]
-        widgets = {
-            "conteudo": forms.Textarea(
-                attrs={
-                    "rows": 6,
-                    "placeholder": "Texto completo do alerta (pode incluir emojis, links e listas).",
-                    "style": "resize:vertical;",
-                }
-            ),
-        }
+        widgets = {}
         labels = {
             "cidade_destino": "Cidade destino",
             "programa_fidelidade": "Programa de fidelidade",

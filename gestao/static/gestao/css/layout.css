@@ -38,6 +38,8 @@ body {
   max-width: none;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .page-shell,
@@ -49,6 +51,7 @@ body {
   min-height: 100vh;
   height: auto;
   overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .fpp-layout,
@@ -73,7 +76,7 @@ body {
   top: 0;
   left: 0;
   min-height: 100vh;
-  height: 100%;
+  height: auto;
   background: var(--color-surface);
   color: var(--color-text);
   box-shadow: 6px 0 18px rgba(0, 0, 0, 0.08);
@@ -170,12 +173,15 @@ body.sidebar-open .app-shell .sidebar {
   height: auto;
   overflow-x: hidden;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .app-shell__content {
   margin-left: 0;
   width: 100%;
   transition: transform 0.3s ease;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .app-header {
@@ -235,12 +241,13 @@ body.sidebar-open .app-shell .sidebar {
 
 .app-main {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: visible;
   overflow-x: hidden;
   margin-left: 0;
   padding: 16px;
   background: var(--color-bg);
   width: 100%;
+  box-sizing: border-box;
 }
 
 .app-shell .btn,
@@ -351,6 +358,7 @@ body.sidebar-open .app-shell .sidebar {
   .app-shell .sidebar {
     position: static;
     transform: translateX(0);
+    overflow-y: auto;
   }
 
   .app-shell .menu-button,
