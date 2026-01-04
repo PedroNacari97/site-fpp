@@ -55,6 +55,12 @@ from gestao.views import (
     criar_emissor_parceiro,
     editar_emissor_parceiro,
     deletar_emissor_parceiro,
+    admin_alertas_passagens,
+    criar_alerta_passagem,
+    editar_alerta_passagem,
+    deletar_alerta_passagem,
+    alertas_passagens,
+    alerta_passagem_detalhe,
 )
 
 urlpatterns = [
@@ -96,6 +102,12 @@ urlpatterns = [
     path('emissores-parceiros/<int:emissor_id>/deletar/', deletar_emissor_parceiro, name='admin_deletar_emissor_parceiro'),
     path('cotacoes/', admin_cotacoes, name='admin_cotacoes'),
     path('cotacoes/<int:cotacao_id>/deletar/', deletar_cotacao, name='admin_deletar_cotacao'),
+    path('alertas-passagens/', alertas_passagens, name='alertas_passagens'),
+    path('alertas-passagens/<int:alerta_id>/', alerta_passagem_detalhe, name='alerta_passagem_detalhe'),
+    path('alertas-passagens/gerenciar/', admin_alertas_passagens, name='admin_alertas_passagens'),
+    path('alertas-passagens/gerenciar/novo/', criar_alerta_passagem, name='admin_alerta_passagem_novo'),
+    path('alertas-passagens/gerenciar/<int:alerta_id>/editar/', editar_alerta_passagem, name='admin_alerta_passagem_editar'),
+    path('alertas-passagens/gerenciar/<int:alerta_id>/deletar/', deletar_alerta_passagem, name='admin_alerta_passagem_deletar'),
     path('cotacoes-voo/', admin_cotacoes_voo, name='admin_cotacoes_voo'),
     path('cotacoes-voo/calculadora/', calculadora_cotacao, name='admin_calculadora_cotacao'),
     path('cotacoes-voo/nova/', nova_cotacao_voo, name='admin_nova_cotacao_voo'),

@@ -1,0 +1,87 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Detalhe do alerta{% endblock %}
+{% block header_title %}Alertas de Passagens{% endblock %}
+{% block menu_alertas %}is-active{% endblock %}
+{% block content %}
+<div class="stacked">
+  <section class="surface-card alert-detail">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Detalhe do alerta</p>
+        <h2 class="section-title">{{ alerta.titulo }}</h2>
+        <p class="section-subtitle">{{ alerta.cidade_destino }} - {{ alerta.pais }}</p>
+      </div>
+      <a href="{% url 'alertas_passagens' %}" class="btn btn--ghost">Voltar</a>
+    </div>
+
+    <div class="alert-detail__meta">
+      <div>
+        <p class="muted">Origem → Destino</p>
+        <p><strong>{{ alerta.origem }} → {{ alerta.destino }}</strong></p>
+      </div>
+      <div>
+        <p class="muted">Classe</p>
+        <span class="pill pill-neutral">{{ alerta.get_classe_display }}</span>
+      </div>
+      <div>
+        <p class="muted">Programa de fidelidade</p>
+        <p><strong>{{ alerta.programa_fidelidade }}</strong></p>
+      </div>
+      <div>
+        <p class="muted">Companhia aérea</p>
+        <p><strong>{{ alerta.companhia_aerea }}</strong></p>
+      </div>
+    </div>
+
+    <div class="alert-detail__prices">
+      {% if alerta.valor_milhas %}
+        <span class="price-tag">{{ alerta.valor_milhas }} milhas</span>
+      {% endif %}
+      {% if alerta.valor_reais %}
+        <span class="price-tag">R$ {{ alerta.valor_reais }}</span>
+      {% endif %}
+    </div>
+
+    <div class="alert-detail__dates">
+      <div>
+        <p class="muted">Datas de ida</p>
+        <div class="date-chip-list">
+          {% for data in datas_ida %}
+            <span class="date-chip">{{ data }}</span>
+          {% empty %}
+            <span class="muted">Sem datas cadastradas.</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div>
+        <p class="muted">Datas de volta</p>
+        <div class="date-chip-list">
+          {% for data in datas_volta %}
+            <span class="date-chip">{{ data }}</span>
+          {% empty %}
+            <span class="muted">Sem datas cadastradas.</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="alert-detail__content">
+      <h3 class="section-title">Conteúdo completo</h3>
+      <div class="alert-detail__rich">
+        {{ alerta.conteudo|urlize|linebreaksbr }}
+      </div>
+    </div>
+
+    <div class="page-actions">
+      <button type="button" class="btn btn-secondary" data-copy-text="{{ alerta.conteudo|escapejs }}">📋 Copiar texto completo</button>
+      {% if link_externo %}
+        <a href="{{ link_externo }}" class="btn btn-primary" target="_blank" rel="noopener">🔗 Abrir link externo</a>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'gestao/js/alertas_detail.js' %}"></script>
+{% endblock %}

@@ -38,6 +38,12 @@
                     </svg>
                     <span>Empresas</span>
                 </a>
+                <a class="nav-item {% block menu_alertas %}{% endblock %}" href="{% url 'admin_alertas_passagens' %}">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 3v3M12 18v3M4.93 4.93l2.12 2.12M16.83 16.83l2.12 2.12M3 12h3M18 12h3M4.93 19.07l2.12-2.12M16.83 7.17l2.12-2.12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                    <span>Alertas de Passagens</span>
+                </a>
             {% else %}
                 <a class="nav-item {% block menu_dashboard %}{% endblock %}" href="{% url 'admin_dashboard' %}">
                     <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -87,6 +93,13 @@
                         <path d="M7 7h10M7 11h10M7 15h6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
                     </svg>
                     <span>Emissões</span>
+                </a>
+
+                <a class="nav-item {% block menu_alertas %}{% endblock %}" href="{% url 'alertas_passagens' %}">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 3v3M12 18v3M4.93 4.93l2.12 2.12M16.83 16.83l2.12 2.12M3 12h3M18 12h3M4.93 19.07l2.12-2.12M16.83 7.17l2.12-2.12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                    <span>Alertas de Passagens</span>
                 </a>
 
                 <a class="nav-item {% block menu_hoteis %}{% endblock %}" href="{% url 'admin_hoteis' %}">
