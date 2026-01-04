@@ -2,6 +2,14 @@ from django.db import models
 
 
 class AlertaViagem(models.Model):
+    CONTINENTE_CHOICES = [
+        ("Europa", "Europa"),
+        ("América do Sul", "América do Sul"),
+        ("América do Norte", "América do Norte"),
+        ("Ásia", "Ásia"),
+        ("África", "África"),
+        ("Oceania", "Oceania"),
+    ]
     CLASSE_ECONOMICA = "economica"
     CLASSE_EXECUTIVA = "executiva"
     CLASSE_CHOICES = [
@@ -10,8 +18,8 @@ class AlertaViagem(models.Model):
     ]
 
     titulo = models.CharField(max_length=255)
-    conteudo = models.TextField()
-    continente = models.CharField(max_length=60)
+    conteudo = models.TextField(blank=True)
+    continente = models.CharField(max_length=60, choices=CONTINENTE_CHOICES)
     pais = models.CharField(max_length=120)
     cidade_destino = models.CharField(max_length=120)
     origem = models.CharField(max_length=10)
