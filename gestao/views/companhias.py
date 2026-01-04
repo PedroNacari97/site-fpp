@@ -19,7 +19,7 @@ def admin_companhias(request):
     return render(
         request,
         "admin_custom/companhias.html",
-        {"companhias": companhias, "busca": busca},
+        {"companhias": companhias, "busca": busca, "menu_ativo": "companhias"},
     )
 
 
@@ -35,7 +35,9 @@ def criar_companhia(request):
     else:
         form = CompanhiaAereaForm()
     return render(
-        request, "admin_custom/form_companhia_aerea.html", {"form": form}
+        request,
+        "admin_custom/form_companhia_aerea.html",
+        {"form": form, "menu_ativo": "companhias"},
     )
 
 
@@ -52,7 +54,9 @@ def editar_companhia(request, companhia_id):
     else:
         form = CompanhiaAereaForm(instance=companhia)
     return render(
-        request, "admin_custom/form_companhia_aerea.html", {"form": form}
+        request,
+        "admin_custom/form_companhia_aerea.html",
+        {"form": form, "menu_ativo": "companhias"},
     )
 
 

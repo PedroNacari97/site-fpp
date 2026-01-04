@@ -21,7 +21,11 @@ def criar_conta(request):
             return redirect("admin_contas")
     else:
         form = ContaFidelidadeForm(empresa=empresa)
-    return render(request, "admin_custom/contas_form.html", {"form": form})
+    return render(
+        request,
+        "admin_custom/contas_form.html",
+        {"form": form, "menu_ativo": "contas"},
+    )
 
 
 @login_required
@@ -39,7 +43,11 @@ def criar_conta_administrada(request):
             return redirect("admin_contas_administradas")
     else:
         form = ContaAdministradaForm()
-    return render(request, "admin_custom/contas_adm_form.html", {"form": form})
+    return render(
+        request,
+        "admin_custom/contas_adm_form.html",
+        {"form": form, "menu_ativo": "contas_adm"},
+    )
 
 
 @login_required
@@ -55,7 +63,11 @@ def editar_conta(request, conta_id):
             return redirect("admin_contas")
     else:
         form = ContaFidelidadeForm(instance=conta, empresa=empresa)
-    return render(request, "admin_custom/contas_form.html", {"form": form})
+    return render(
+        request,
+        "admin_custom/contas_form.html",
+        {"form": form, "menu_ativo": "contas"},
+    )
 
 
 @login_required
@@ -75,7 +87,11 @@ def editar_conta_administrada(request, conta_id):
             return redirect("admin_contas_administradas")
     else:
         form = ContaAdministradaForm(instance=conta)
-    return render(request, "admin_custom/contas_adm_form.html", {"form": form})
+    return render(
+        request,
+        "admin_custom/contas_adm_form.html",
+        {"form": form, "menu_ativo": "contas_adm"},
+    )
 
 
 @login_required
@@ -131,6 +147,7 @@ def admin_contas(request):
             "page_obj": page_obj,
             "busca": busca,
             "total_contas": contas.count(),
+            "menu_ativo": "contas",
         },
     )
 
@@ -168,6 +185,7 @@ def admin_contas_administradas(request):
             "page_obj": page_obj,
             "busca": busca,
             "total_contas": contas.count(),
+            "menu_ativo": "contas_adm",
         },
     )
 
@@ -203,5 +221,6 @@ def programas_da_conta_administrada(request, conta_id):
         {
             "conta": conta,
             "lista_contas": lista_contas,
+            "menu_ativo": "contas_adm",
         },
     )

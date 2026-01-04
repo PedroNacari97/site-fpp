@@ -1,0 +1,148 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Alertas de Passagens{% endblock %}
+{% block header_title %}Alertas de Passagens{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Cadastro manual de alertas com datas inteligentes.</p>{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
+{% endblock %}
+{% block content %}
+<div class="form-wrapper">
+  <form method="post" class="form-shell" data-alerta-form>
+    {% csrf_token %}
+    <div class="form-title">{{ titulo_pagina }}</div>
+
+    <div class="form-group single">
+      <label class="form-label" for="{{ form.titulo.id_for_label }}">{{ form.titulo.label }}</label>
+      {{ form.titulo }}
+    </div>
+    <div class="form-group single">
+      <label class="form-label" for="{{ form.conteudo.id_for_label }}">{{ form.conteudo.label }}</label>
+      {{ form.conteudo }}
+    </div>
+
+    <div class="section-card">
+      <div class="section-card__header">
+        <div>
+          <div class="section-card__title">Destino e rota</div>
+          <p class="section-card__description">Dados para a vitrine de alertas.</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <div>
+          <label class="form-label" for="{{ form.continente.id_for_label }}">{{ form.continente.label }}</label>
+          {{ form.continente }}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.pais.id_for_label }}">{{ form.pais.label }}</label>
+          {{ form.pais }}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.cidade_destino.id_for_label }}">{{ form.cidade_destino.label }}</label>
+          {{ form.cidade_destino }}
+        </div>
+      </div>
+      <div class="form-group">
+        <div>
+          <label class="form-label" for="{{ form.origem.id_for_label }}">{{ form.origem.label }}</label>
+          {{ form.origem }}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.destino.id_for_label }}">{{ form.destino.label }}</label>
+          {{ form.destino }}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.classe.id_for_label }}">{{ form.classe.label }}</label>
+          {{ form.classe }}
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card__header">
+        <div>
+          <div class="section-card__title">Programa e valores</div>
+          <p class="section-card__description">Informações comerciais e de fidelidade.</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <div>
+          <label class="form-label" for="{{ form.programa_fidelidade.id_for_label }}">{{ form.programa_fidelidade.label }}</label>
+          {{ form.programa_fidelidade }}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">{{ form.companhia_aerea.label }}</label>
+          {{ form.companhia_aerea }}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.valor_milhas.id_for_label }}">{{ form.valor_milhas.label }}</label>
+          {{ form.valor_milhas }}
+        </div>
+      </div>
+      <div class="form-group">
+        <div>
+          <label class="form-label" for="{{ form.valor_reais.id_for_label }}">{{ form.valor_reais.label }}</label>
+          {{ form.valor_reais }}
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.ativo.id_for_label }}">{{ form.ativo.label }}</label>
+          {{ form.ativo }}
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-card__header">
+        <div>
+          <div class="section-card__title">Datas de viagem</div>
+          <p class="section-card__description">Selecione múltiplas datas ou intervalos e confirme.</p>
+        </div>
+      </div>
+      <div class="alerta-dates">
+        <div class="alerta-date-column" data-date-group="ida">
+          <h3 class="section-title">Datas de ida</h3>
+          <div class="form-grid--dates">
+            <div>
+              <label class="form-label">Selecionar datas</label>
+              <input type="text" class="input" data-calendar placeholder="Selecione datas" readonly>
+            </div>
+            <div>
+              <label class="form-label">Selecionar intervalo</label>
+              <input type="text" class="input" data-range placeholder="Selecione um intervalo" readonly>
+            </div>
+          </div>
+          <button type="button" class="btn btn--ghost" data-confirm>Confirmar datas</button>
+          <div class="date-chip-list" data-chips></div>
+          {{ form.datas_ida }}
+        </div>
+        <div class="alerta-date-column" data-date-group="volta">
+          <h3 class="section-title">Datas de volta</h3>
+          <div class="form-grid--dates">
+            <div>
+              <label class="form-label">Selecionar datas</label>
+              <input type="text" class="input" data-calendar placeholder="Selecione datas" readonly>
+            </div>
+            <div>
+              <label class="form-label">Selecionar intervalo</label>
+              <input type="text" class="input" data-range placeholder="Selecione um intervalo" readonly>
+            </div>
+          </div>
+          <button type="button" class="btn btn--ghost" data-confirm>Confirmar datas</button>
+          <div class="date-chip-list" data-chips></div>
+          {{ form.datas_volta }}
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn">Salvar alerta</button>
+      <a href="{% url 'admin_alertas_passagens' %}" class="btn btn--ghost">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="{% static 'gestao/js/alertas_form.js' %}"></script>
+{% endblock %}

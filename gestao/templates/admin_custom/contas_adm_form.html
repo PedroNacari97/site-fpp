@@ -1,7 +1,6 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block title %}{% if form.instance.pk %}Editar Conta Administrada{% else %}Nova Conta Administrada{% endif %}{% endblock %}
 {% block header_title %}{% if form.instance.pk %}Editar Conta Administrada{% else %}Nova Conta Administrada{% endif %}{% endblock %}
-{% block menu_contas_adm %}is-active{% endblock %}
 {% block content %}
 <div class="form-wrapper">
     <form method="post" class="form-shell">

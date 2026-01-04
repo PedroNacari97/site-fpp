@@ -47,7 +47,7 @@ def admin_programas(request):
     return render(
         request,
         "admin_custom/programas.html",
-        {"programas": programas, "busca": busca},
+        {"programas": programas, "busca": busca, "menu_ativo": "programas"},
     )
 
 
@@ -62,7 +62,11 @@ def criar_programa(request):
             return redirect("admin_programas")
     else:
         form = ProgramaFidelidadeForm()
-    return render(request, "admin_custom/form_programa.html", {"form": form})
+    return render(
+        request,
+        "admin_custom/form_programa.html",
+        {"form": form, "menu_ativo": "programas"},
+    )
 
 
 @login_required
@@ -77,7 +81,11 @@ def editar_programa(request, programa_id):
             return redirect("admin_programas")
     else:
         form = ProgramaFidelidadeForm(instance=programa)
-    return render(request, "admin_custom/form_programa.html", {"form": form})
+    return render(
+        request,
+        "admin_custom/form_programa.html",
+        {"form": form, "menu_ativo": "programas"},
+    )
 
 
 @login_required

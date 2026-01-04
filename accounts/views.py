@@ -46,7 +46,11 @@ def user_list(request):
         usuarios = Cliente.objects.filter(empresa=empresa, perfil__in=["admin", "operador"]).select_related("usuario", "empresa")
     else:
         return render(request, "sem_permissao.html")
-    return render(request, "accounts/user_list.html", {"usuarios": usuarios})
+    return render(
+        request,
+        "accounts/user_list.html",
+        {"usuarios": usuarios, "menu_ativo": "usuarios"},
+    )
 
 
 @login_required
@@ -73,7 +77,11 @@ def operator_list(request):
         )
         return redirect("operator_list")
 
-    return render(request, "accounts/operator_list.html", {"usuarios": operadores})
+    return render(
+        request,
+        "accounts/operator_list.html",
+        {"usuarios": operadores, "menu_ativo": "operadores"},
+    )
 
 
 @login_required
@@ -105,7 +113,12 @@ def user_create(request):
         form.fields['empresa'].queryset = empresa_queryset
         if empresa_initial:
             form.fields['empresa'].initial = empresa_initial
-    return render(request, "accounts/user_form.html", {"form": form})
+    menu_ativo = "usuarios" if request.user.is_superuser else "operadores"
+    return render(
+        request,
+        "accounts/user_form.html",
+        {"form": form, "menu_ativo": menu_ativo},
+    )
 
 
 def cliente_create(request):

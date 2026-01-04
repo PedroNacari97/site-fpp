@@ -1,0 +1,80 @@
+{% extends "admin_custom/base_admin.html" %}
+{% block title %}Alertas de Passagens{% endblock %}
+{% block header_title %}Alertas de Passagens{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Gerencie alertas curados para a vitrine interna.</p>{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_alerta_passagem_novo' %}" class="btn">+ Novo alerta</a>
+{% endblock %}
+{% block content %}
+<div class="stacked">
+  <section class="surface-card filter-panel" data-filters-root>
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Filtros</p>
+        <h2 class="section-title">Buscar alertas</h2>
+      </div>
+      <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+    </div>
+    <div class="filter-body is-open" data-filter-panel>
+      <form method="get" class="filter-grid">
+        <div class="form-field">
+          <label class="form-label" for="busca">Título, continente, país ou cidade</label>
+          <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar..." />
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn">Buscar</button>
+          <a href="{% url 'admin_alertas_passagens' %}" class="btn btn--ghost">Limpar</a>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="surface-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Alertas</p>
+        <h2 class="section-title">Lista</h2>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Destino</th>
+            <th>Origem → Destino</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for alerta in alertas %}
+          <tr>
+            <td>{{ alerta.titulo }}</td>
+            <td>{{ alerta.cidade_destino }} - {{ alerta.pais }}</td>
+            <td>{{ alerta.origem }} → {{ alerta.destino }}</td>
+            <td>
+              {% if alerta.ativo %}
+                <span class="pill pill-success">Ativo</span>
+              {% else %}
+                <span class="pill pill-danger">Inativo</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="page-actions">
+                <a href="{% url 'admin_alerta_passagem_editar' alerta.id %}" class="btn btn--ghost">Editar</a>
+                <a href="{% url 'admin_alerta_passagem_deletar' alerta.id %}" class="btn btn--ghost">Excluir</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="p-3 text-center text-zinc-400">Nenhum alerta cadastrado.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

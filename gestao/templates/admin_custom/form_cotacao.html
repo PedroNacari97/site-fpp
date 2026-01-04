@@ -2,7 +2,6 @@
 {% load static %}
 {% block title %}{% if form.instance.pk %}Editar Cotação{% else %}Nova Cotação de Voo{% endif %}{% endblock %}
 {% block header_title %}{% if form.instance.pk %}Editar Cotação{% else %}Nova Cotação de Voo{% endif %}{% endblock %}
-{% block menu_cotacoes_voo %}is-active{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
 <script src="{% static 'gestao/js/form_save_handler.js' %}"></script>

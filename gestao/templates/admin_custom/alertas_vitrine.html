@@ -1,0 +1,103 @@
+{% extends "admin_custom/base_admin.html" %}
+{% block title %}Alertas de Passagens{% endblock %}
+{% block header_title %}Alertas de Passagens{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Vitrine interna de oportunidades por destino.</p>{% endblock %}
+{% block content %}
+<div class="stacked">
+  <section class="surface-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Navegação por destino</p>
+        <h2 class="section-title">Escolha o destino desejado</h2>
+        <p class="section-subtitle">Selecione continente, país e cidade com alertas ativos.</p>
+      </div>
+      <a href="{% url 'alertas_passagens' %}" class="btn btn--ghost">Limpar filtros</a>
+    </div>
+
+    <div class="alert-filter-grid">
+      <div>
+        <p class="eyebrow">1. Continente</p>
+        <div class="chip-grid">
+          {% for continente in continentes %}
+            <a class="chip {% if continente == selected_continente %}is-active{% endif %}" href="?continente={{ continente|urlencode }}">{{ continente }}</a>
+          {% empty %}
+            <span class="muted">Nenhum alerta ativo.</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow">2. País</p>
+        <div class="chip-grid">
+          {% if selected_continente %}
+            {% for pais in paises %}
+              <a class="chip {% if pais == selected_pais %}is-active{% endif %}" href="?continente={{ selected_continente|urlencode }}&pais={{ pais|urlencode }}">{{ pais }}</a>
+            {% empty %}
+              <span class="muted">Sem países disponíveis.</span>
+            {% endfor %}
+          {% else %}
+            <span class="muted">Selecione um continente.</span>
+          {% endif %}
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow">3. Cidade</p>
+        <div class="chip-grid">
+          {% if selected_pais %}
+            {% for cidade in cidades %}
+              <a class="chip {% if cidade == selected_cidade %}is-active{% endif %}" href="?continente={{ selected_continente|urlencode }}&pais={{ selected_pais|urlencode }}&cidade={{ cidade|urlencode }}">{{ cidade }}</a>
+            {% empty %}
+              <span class="muted">Sem cidades disponíveis.</span>
+            {% endfor %}
+          {% else %}
+            <span class="muted">Selecione um país.</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="surface-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Alertas</p>
+        <h2 class="section-title">Oportunidades disponíveis</h2>
+      </div>
+    </div>
+    {% if selected_cidade %}
+      <div class="alert-card-grid">
+        {% for alerta in alertas %}
+          <article class="alert-card">
+            <div class="alert-card__header">
+              <div>
+                <h3>{{ alerta.cidade_destino }} - {{ alerta.pais }}</h3>
+                <p class="muted">{{ alerta.origem }} → {{ alerta.destino }}</p>
+              </div>
+              <span class="pill pill-neutral">{{ alerta.get_classe_display }}</span>
+            </div>
+            <div class="alert-card__body">
+              <p><strong>Programa:</strong> {{ alerta.programa_fidelidade }}</p>
+              <p><strong>Companhia:</strong> {{ alerta.companhia_aerea }}</p>
+              <div class="alert-card__prices">
+                {% if alerta.valor_milhas %}
+                  <span class="price-tag">{{ alerta.valor_milhas }} milhas</span>
+                {% endif %}
+                {% if alerta.valor_reais %}
+                  <span class="price-tag">R$ {{ alerta.valor_reais }}</span>
+                {% endif %}
+              </div>
+              <span class="pill pill-danger">Baixa disponibilidade</span>
+            </div>
+            <div class="alert-card__footer">
+              <a href="{% url 'alerta_passagem_detalhe' alerta.id %}" class="btn btn-primary">Ver detalhes</a>
+            </div>
+          </article>
+        {% empty %}
+          <p class="muted">Nenhum alerta encontrado para este destino.</p>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">Selecione a cidade para visualizar os alertas disponíveis.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

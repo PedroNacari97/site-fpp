@@ -19,7 +19,7 @@ def admin_aeroportos(request):
     return render(
         request,
         "admin_custom/aeroportos.html",
-        {"aeroportos": aeroportos, "busca": busca},
+        {"aeroportos": aeroportos, "busca": busca, "menu_ativo": "aeroportos"},
     )
 
 
@@ -34,7 +34,11 @@ def criar_aeroporto(request):
             return redirect("admin_aeroportos")
     else:
         form = AeroportoForm()
-    return render(request, "admin_custom/form_aeroporto.html", {"form": form})
+    return render(
+        request,
+        "admin_custom/form_aeroporto.html",
+        {"form": form, "menu_ativo": "aeroportos"},
+    )
 
 
 @login_required
@@ -61,4 +65,8 @@ def editar_aeroporto(request, aeroporto_id):
             return redirect("admin_aeroportos")
     else:
         form = AeroportoForm(instance=aeroporto)
-    return render(request, "admin_custom/form_aeroporto.html", {"form": form})
+    return render(
+        request,
+        "admin_custom/form_aeroporto.html",
+        {"form": form, "menu_ativo": "aeroportos"},
+    )
