@@ -1,6 +1,6 @@
 .card {
   background: var(--color-surface);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
   display: flex;
@@ -9,24 +9,24 @@
 }
 
 .card-header {
-  padding: 24px 24px 12px;
+  padding: 12px 12px 8px;
 }
 
 .card-title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: var(--color-heading);
 }
 
 .card-content {
-  padding: 0 24px 16px;
+  padding: 0 12px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .card-actions {
-  padding: 0 24px 24px;
+  padding: 0 12px 12px;
 }
 
 .card a {

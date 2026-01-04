@@ -21,7 +21,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
   font-size: 16px;
   line-height: 1.6;
 }
@@ -38,9 +38,9 @@ body {
 /* ========== CARD DE LOGIN ========== */
 .login-container {
   background: #ffffff;
-  border-radius: 16px;
+  border-radius: 6px;
   box-shadow: 0 8px 32px rgba(51, 102, 153, 0.08);
-  padding: 50px 40px;
+  padding: 24px;
   width: 100%;
   max-width: 420px;
   animation: slideIn 0.6s ease-out;
@@ -114,7 +114,7 @@ label {
   font-size: 13px;
   font-weight: 600;
   color: #4a6fa5;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -124,11 +124,11 @@ input[type="text"],
 input[type="password"],
 select {
   width: 100%;
-  padding: 14px 16px;
-  margin-bottom: 20px;
+  padding: 6px 10px;
+  margin-bottom: 12px;
   border: 2px solid #d4e4f0;
-  border-radius: 10px;
-  font-size: 15px;
+  border-radius: 6px;
+  font-size: 14px;
   color: #2c3e50;
   background: #f8fbfd;
   transition: all 0.3s ease;
@@ -136,6 +136,8 @@ select {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+  max-width: 500px;
+  height: 32px;
 }
 
 /* Placeholder */
@@ -166,20 +168,20 @@ select {
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 20px;
-  padding-right: 40px;
+  padding-right: 32px;
 }
 
 /* ========== BOTÃO ========== */
 button[type="submit"],
 button {
   width: 100%;
-  padding: 14px;
-  margin-top: 8px;
+  padding: 10px;
+  margin-top: 6px;
   border: none;
-  border-radius: 10px;
+  border-radius: 6px;
   background: linear-gradient(135deg, #5a8cc4 0%, #4a7ab8 100%);
   color: #ffffff;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -243,10 +245,10 @@ body.dark-mode button[type="submit"] {
 .erro {
   background: #fce8e8;
   color: #c85a5a;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
   border-left: 4px solid #c85a5a;
   animation: shake 0.5s ease-in-out;
 }
@@ -266,9 +268,9 @@ body.dark-mode button[type="submit"] {
   }
 
   .login-container {
-    padding: 40px 30px;
+    padding: 20px 18px;
     max-width: 100%;
-    border-radius: 14px;
+    border-radius: 6px;
   }
 
   .login-container h2 {
@@ -283,23 +285,23 @@ body.dark-mode button[type="submit"] {
 
   label {
     font-size: 12px;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   input[type="text"],
   input[type="password"],
   select {
-    padding: 12px 14px;
-    margin-bottom: 18px;
-    font-size: 16px;
-    border-radius: 8px;
+    padding: 6px 10px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    border-radius: 6px;
   }
 
   button[type="submit"],
   button {
-    padding: 12px;
-    font-size: 15px;
-    margin-top: 6px;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 4px;
   }
 }
 
@@ -308,18 +310,18 @@ body.dark-mode button[type="submit"] {
    ============================================ */
 @media (max-width: 480px) {
   body {
-    padding: 12px;
+    padding: 10px;
     min-height: 100vh;
   }
 
   .login-page {
     min-height: auto;
-    padding: 20px 0;
+    padding: 12px 0;
   }
 
   .login-container {
-    padding: 32px 20px;
-    border-radius: 12px;
+    padding: 18px 16px;
+    border-radius: 6px;
     box-shadow: 0 4px 16px rgba(51, 102, 153, 0.06);
     max-width: 100%;
   }
@@ -336,26 +338,26 @@ body.dark-mode button[type="submit"] {
 
   .login-container p {
     font-size: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
   }
 
   label {
     font-size: 11px;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
   }
 
   input[type="text"],
   input[type="password"],
   select {
-    padding: 11px 12px;
-    margin-bottom: 14px;
-    font-size: 16px;
+    padding: 6px 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
     border-radius: 6px;
   }
 
   button[type="submit"],
   button {
-    padding: 11px;
+    padding: 9px;
     font-size: 14px;
     margin-top: 4px;
     border-radius: 6px;
@@ -367,8 +369,8 @@ body.dark-mode button[type="submit"] {
   }
 
   .erro {
-    padding: 10px 12px;
-    margin-bottom: 16px;
+    padding: 8px 10px;
+    margin-bottom: 12px;
     font-size: 13px;
     border-radius: 6px;
   }
@@ -379,7 +381,7 @@ body.dark-mode button[type="submit"] {
    ============================================ */
 @media (max-width: 360px) {
   .login-container {
-    padding: 24px 16px;
+    padding: 16px 12px;
   }
 
   .login-container h2 {
@@ -399,14 +401,14 @@ body.dark-mode button[type="submit"] {
   input[type="text"],
   input[type="password"],
   select {
-    padding: 10px 10px;
-    margin-bottom: 12px;
-    font-size: 16px;
+    padding: 6px 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
   }
 
   button[type="submit"],
   button {
-    padding: 10px;
+    padding: 9px;
     font-size: 13px;
   }
 }
@@ -416,13 +418,13 @@ body.dark-mode button[type="submit"] {
    ============================================ */
 @media (min-width: 1024px) {
   body {
-    padding: 40px;
+    padding: 24px;
   }
 
   .login-container {
-    padding: 60px 50px;
+    padding: 28px 24px;
     max-width: 480px;
-    border-radius: 20px;
+    border-radius: 6px;
     box-shadow: 0 12px 40px rgba(51, 102, 153, 0.1);
   }
 
@@ -432,41 +434,41 @@ body.dark-mode button[type="submit"] {
   }
 
   .login-container h2 {
-    font-size: 32px;
-    margin-bottom: 16px;
+    font-size: 24px;
+    margin-bottom: 10px;
   }
 
   .login-container p {
-    font-size: 15px;
-    margin-bottom: 40px;
+    font-size: 14px;
+    margin-bottom: 16px;
   }
 
   label {
-    font-size: 14px;
-    margin-bottom: 10px;
+    font-size: 12px;
+    margin-bottom: 4px;
   }
 
   input[type="text"],
   input[type="password"],
   select {
-    padding: 16px 18px;
-    margin-bottom: 24px;
-    font-size: 16px;
-    border-radius: 12px;
+    padding: 6px 10px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    border-radius: 6px;
   }
 
   button[type="submit"],
   button {
-    padding: 16px;
-    font-size: 17px;
-    margin-top: 12px;
-    border-radius: 12px;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 6px;
+    border-radius: 6px;
   }
 
   button[type="submit"]:hover,
   button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(90, 140, 196, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(90, 140, 196, 0.35);
   }
 }
 
@@ -476,7 +478,7 @@ body.dark-mode button[type="submit"] {
 @media (min-width: 1440px) {
   .login-container {
     max-width: 520px;
-    padding: 70px 60px;
+    padding: 32px 28px;
   }
 
   .login-logo {
@@ -494,14 +496,14 @@ body.dark-mode button[type="submit"] {
   input[type="text"],
   input[type="password"],
   select {
-    padding: 18px 20px;
-    font-size: 17px;
+    padding: 6px 10px;
+    font-size: 14px;
   }
 
   button[type="submit"],
   button {
-    padding: 18px;
-    font-size: 18px;
+    padding: 10px;
+    font-size: 14px;
   }
 }
 
@@ -526,7 +528,7 @@ body.dark-mode button[type="submit"] {
   }
 
   .login-container {
-    padding: 30px 25px;
+    padding: 16px 14px;
     max-width: 100%;
   }
 
@@ -548,9 +550,9 @@ body.dark-mode button[type="submit"] {
   input[type="text"],
   input[type="password"],
   select {
-    padding: 8px 10px;
+    padding: 6px 10px;
     margin-bottom: 10px;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   button[type="submit"],

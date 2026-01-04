@@ -13,7 +13,9 @@
   --color-surface-active: #ebf4ff;
   --color-input-bg: #edf2f7;
   --color-input-border: #cbd5e0;
-  --radius-lg: 0.75rem;
+  --radius: 6px;
+  --radius-md: 6px;
+  --radius-lg: 6px;
 }
 
 body.dark-mode {
