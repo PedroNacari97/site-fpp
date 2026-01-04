@@ -16,6 +16,8 @@ from .companhia_aerea import CompanhiaAerea
 from .emissor_parceiro import EmissorParceiro
 from .passageiro_frequente import PassageiroFrequente
 from .audit_log import AuditLog
+from .alerta_viagem import AlertaViagem
+from .notificacao_sistema import NotificacaoSistema
 
 __all__ = [
     'Cliente',
@@ -36,4 +38,6 @@ __all__ = [
     'EmissorParceiro',
     'PassageiroFrequente',
     'AuditLog',
+    'AlertaViagem',
+    'NotificacaoSistema',
 ]

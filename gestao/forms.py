@@ -22,6 +22,7 @@ from .models import (
     CompanhiaAerea,
     Empresa,
     EmissorParceiro,
+    AlertaViagem,
 )
 
 
@@ -548,6 +549,74 @@ class CalculadoraCotacaoForm(forms.Form):
     parcelas = forms.IntegerField(required=False, initial=1)
     juros = forms.DecimalField(max_digits=5, decimal_places=2, required=False, initial=1)
     desconto = forms.DecimalField(max_digits=5, decimal_places=2, required=False, initial=1)
+
+
+class AlertaViagemForm(forms.ModelForm):
+    datas_ida = forms.JSONField(required=False, widget=forms.HiddenInput)
+    datas_volta = forms.JSONField(required=False, widget=forms.HiddenInput)
+
+    class Meta:
+        model = AlertaViagem
+        fields = [
+            "titulo",
+            "conteudo",
+            "continente",
+            "pais",
+            "cidade_destino",
+            "origem",
+            "destino",
+            "classe",
+            "programa_fidelidade",
+            "companhia_aerea",
+            "valor_milhas",
+            "valor_reais",
+            "datas_ida",
+            "datas_volta",
+            "ativo",
+        ]
+        widgets = {
+            "conteudo": forms.Textarea(
+                attrs={
+                    "rows": 6,
+                    "placeholder": "Texto completo do alerta (pode incluir emojis, links e listas).",
+                    "style": "resize:vertical;",
+                }
+            ),
+        }
+        labels = {
+            "cidade_destino": "Cidade destino",
+            "programa_fidelidade": "Programa de fidelidade",
+            "companhia_aerea": "Companhia aérea",
+            "valor_milhas": "Valor em milhas",
+            "valor_reais": "Valor em reais",
+            "datas_ida": "Datas de ida",
+            "datas_volta": "Datas de volta",
+        }
+
+    def _clean_datas(self, field_name):
+        raw_value = self.cleaned_data.get(field_name) or []
+        if raw_value is None:
+            return []
+        if not isinstance(raw_value, list):
+            raise forms.ValidationError("Selecione ao menos uma data válida.")
+        datas = []
+        for item in raw_value:
+            if not isinstance(item, str):
+                raise forms.ValidationError("Selecione datas válidas.")
+            try:
+                from datetime import date
+
+                date.fromisoformat(item)
+            except ValueError as exc:
+                raise forms.ValidationError("Selecione datas válidas.") from exc
+            datas.append(item)
+        return datas
+
+    def clean_datas_ida(self):
+        return self._clean_datas("datas_ida")
+
+    def clean_datas_volta(self):
+        return self._clean_datas("datas_volta")
 
 class CompanhiaAereaForm(forms.ModelForm):
     class Meta:
