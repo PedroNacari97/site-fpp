@@ -3,42 +3,79 @@
 
 {% block title %}Programas{% endblock %}
 {% block header_title %}Programas de Pontos{% endblock %}
-{% block menu_programas %}bg-zinc-700 text-white{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Catálogo padronizado de programas com valores de referência claros.</p>{% endblock %}
+{% block menu_programas %}is-active{% endblock %}
 {% block dados_complementares_open %}open{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_novo_programa' %}" class="btn">+ Novo Programa</a>
+{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-    <form method="get" class="flex gap-3">
-        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
-        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
-    </form>
-    <a href="{% url 'admin_novo_programa' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Novo Programa</a>
-</div>
-<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
-    <table class="min-w-full text-sm">
-        <thead class="bg-zinc-700 text-zinc-200">
-            <tr>
-                <th class="p-2 text-left font-medium">Nome</th>
-                <th class="p-2 text-left font-medium">Valor Referência</th>
-                <th class="p-2 text-left font-medium">Descrição</th>
-                <th class="p-2 text-left font-medium">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for p in programas %}
-            <tr class="border-b border-zinc-700">
-                <td class="p-2">{{ p.nome }}</td>
-                <td class="p-2">R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
-                <td class="p-2">{{ p.descricao }}</td>
-                <td class="p-2">
-                    <a href="{% url 'admin_editar_programa' p.id %}" class="text-blue-400">Editar</a> |
-                    <a href="{% url 'admin_deletar_programa' p.id %}" class="text-blue-400">Deletar</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="4" class="text-center text-red-400 py-4">Nenhum programa cadastrado.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="stacked">
+    <section class="surface-card filter-panel" data-filters-root>
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Filtros</p>
+                <h2 class="section-title">Buscar programas</h2>
+            </div>
+            <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+        </div>
+        <div class="filter-body is-open" data-filter-panel>
+            <form method="get" class="form-grid">
+                <div class="form-field">
+                    <label class="form-label" for="busca">Nome ou base</label>
+                    <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar..." />
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn">Buscar</button>
+                    <a href="{% url 'admin_programas' %}" class="btn btn--ghost">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="surface-card">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Programas</p>
+                <h2 class="section-title">Programas de pontos</h2>
+                <p class="section-subtitle">Consistência visual para valores, CPFs e descrições.</p>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th>Programa base</th>
+                        <th>Valor Referência</th>
+                        <th>Qtd. CPFs</th>
+                        <th>Descrição</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in programas %}
+                    <tr>
+                        <td>{{ p.nome }}</td>
+                        <td>{{ p.get_tipo_display }}</td>
+                        <td>{{ p.programa_base|default:"—" }}</td>
+                        <td>R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
+                        <td>{{ p.quantidade_cpfs_disponiveis|default:"—" }}</td>
+                        <td>{{ p.descricao }}</td>
+                        <td>
+                            <div class="page-actions">
+                                <a href="{% url 'admin_editar_programa' p.id %}" class="btn btn--ghost">Editar</a>
+                                <a href="{% url 'admin_deletar_programa' p.id %}" class="btn btn--ghost">Deletar</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-red-400 py-4">Nenhum programa cadastrado.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
 {% endblock %}
-

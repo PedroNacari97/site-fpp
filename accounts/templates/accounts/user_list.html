@@ -1,13 +1,57 @@
 {% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
 {% block title %}Usuários{% endblock %}
 {% block header_title %}Gerenciar Usuários{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Administradores com visual único e tabela responsiva.</p>{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
+{% endblock %}
+
 {% block content %}
-<a href="{% url 'user_create' %}" class="btn-primary inline-block mb-4">Novo Usuário</a>
-<ul class="space-y-2">
-  {% for u in usuarios %}
-    <li>{{ u.usuario.first_name }} - {{ u.get_perfil_display }}</li>
-  {% empty %}
-    <li>Nenhum usuário cadastrado.</li>
-  {% endfor %}
-</ul>
+<section class="surface-card stacked">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Usuários</p>
+      <h2 class="section-title">Administradores</h2>
+    </div>
+    <a href="{% url 'user_create' %}" class="btn btn-primary">+ Novo Usuário</a>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nome completo</th>
+          <th>CPF</th>
+          <th>Empresa</th>
+          <th>Perfil</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in usuarios %}
+        <tr>
+          <td>
+            {{ u.nome_completo|default:u.usuario.get_full_name|default:u.usuario.first_name }}
+          </td>
+          <td>
+            {{ u.cpf|default:"—" }}
+          </td>
+          <td>
+            {{ u.empresa.nome|default:"—" }}
+          </td>
+          <td>
+            {{ u.get_perfil_display|default:u.perfil }}
+           </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center text-red-400 py-4">Nenhum usuário cadastrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 {% endblock %}

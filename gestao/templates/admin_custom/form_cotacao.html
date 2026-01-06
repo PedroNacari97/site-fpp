@@ -2,133 +2,532 @@
 {% load static %}
 {% block title %}{% if form.instance.pk %}Editar Cotação{% else %}Nova Cotação de Voo{% endif %}{% endblock %}
 {% block header_title %}{% if form.instance.pk %}Editar Cotação{% else %}Nova Cotação de Voo{% endif %}{% endblock %}
-{% block menu_cotacoes_voo %}bg-zinc-700 text-white{% endblock %}
+{% block menu_cotacoes_voo %}is-active{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
+<script src="{% static 'gestao/js/form_save_handler.js' %}"></script>
 {% endblock %}
 {% block content %}
 <div class="form-wrapper">
-<form method="post">
+<form method="post" class="form-shell" novalidate>
     {% csrf_token %}
-    <div class="form-title">{% if form.instance.pk %}Editar Cotação de Viagem{% else %}Formulário de Cotação de Viagem{% endif %}</div>
+    
+    <!-- Mensagens de Erro -->
+    {% if form.errors %}
+    <div class="p-4 mb-4 rounded border border-red-200 bg-red-50 text-red-700 alert-rounded">
+        <p class="font-semibold mb-2">❌ Não foi possível salvar. Corrija os pontos abaixo:</p>
+        <ul class="list-disc pl-5 space-y-1">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 
-    <div class="section-title">Informações Básicas</div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente</label>
-            {{ form.cliente }}
-        </div>
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.programa.id_for_label }}">Programa</label>
-            {{ form.programa }}
-        </div>
-    </div>
-
-    <div class="section-title">Detalhes do Voo</div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.origem.id_for_label }}">Aeroporto partida</label>
-            {{ form.origem }}
-        </div>
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.destino.id_for_label }}">Aeroporto destino</label>
-            {{ form.destino }}
-        </div>
-    </div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data ida</label>
-            {{ form.data_ida }}
-        </div>
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data volta</label>
-            {{ form.data_volta }}
-        </div>
-    </div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.qtd_passageiros.id_for_label }}">Quantidade de passageiros</label>
-            {{ form.qtd_passageiros }}
-        </div>
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.classe.id_for_label }}">Classe</label>
-            {{ form.classe }}
-        </div>
+    <!-- Cabeçalho do Formulário -->
+    <div>
+        <div class="form-title">{% if form.instance.pk %}Editar Cotação de Viagem{% else %}Formulário de Cotação de Viagem{% endif %}</div>
+        <p class="form-subtitle">Organize a cotação em passos claros: titular, programa, voos, escalas, passageiros e valores.</p>
     </div>
 
-    <div class="section-title">Escalas</div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.qtd_escalas.id_for_label }}">Quantidade de escalas</label>
-            {{ form.qtd_escalas }}
+    <!-- Seção 1: Identificação -->
+    <div class="section-card">
+        <div class="section-card__header">
+            <div>
+                <p class="eyebrow">Identificação</p>
+                <h2 class="section-card__title">Titular e origem dos pontos</h2>
+                <p class="section-card__description">Defina quem irá viajar e, se necessário, qual conta administrada fornecerá pontos.</p>
+            </div>
+        </div>
+        <div class="section-grid">
+            <div>
+                <label class="form-label" for="{{ form.tipo_titular.id_for_label }}">Tipo de titular <span class="required-asterisk">*</span></label>
+                {{ form.tipo_titular }}
+                <p class="helper-text">Escolha entre cliente direto ou conta administrada.</p>
+            </div>
+            <div id="cliente-wrapper">
+                <label class="form-label" for="{{ form.cliente.id_for_label }}">Cliente (quem irá viajar) <span class="required-asterisk">*</span></label>
+                {{ form.cliente }}
+                <p class="helper-text">Mostrado somente quando o titular for um cliente.</p>
+            </div>
+            <div id="conta-adm-wrapper">
+                <label class="form-label" for="{{ form.conta_administrada.id_for_label }}">Conta administrada (origem dos pontos)</label>
+                {{ form.conta_administrada }}
+                <p class="helper-text">Opcional. Use quando o saldo vier de um titular administrado.</p>
+            </div>
         </div>
     </div>
 
-    <div class="section-title">Companhia Aérea</div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea</label>
-            {{ form.companhia_aerea }}
+    <!-- Seção 2: Programa de Pontos -->
+    <div class="section-card">
+        <div class="section-card__header">
+            <div>
+                <p class="eyebrow">Programa de pontos</p>
+                <h2 class="section-card__title">Escolha o programa</h2>
+                <p class="section-card__description">Selecionado automaticamente conforme o titular e suas contas.</p>
+            </div>
+        </div>
+        <div class="section-grid">
+            <div>
+                <label class="form-label" for="{{ form.programa.id_for_label }}">Programa selecionado <span class="required-asterisk">*</span></label>
+                {{ form.programa }}
+                <p id="programa-info" class="helper-text mt-1"></p>
+            </div>
         </div>
     </div>
 
-    <div class="section-title">Outras Informações</div>
-    <div class="form-group single">
-        <label class="form-label" for="{{ form.observacoes.id_for_label }}">Observações</label>
-        {{ form.observacoes }}
-    </div>
+    <!-- Seção 3: Detalhes da Viagem -->
+    <div class="section-card">
+        <div class="section-card__header">
+            <div>
+                <p class="eyebrow">Detalhes da viagem</p>
+                <h2 class="section-card__title">Voos de ida e volta</h2>
+                <p class="section-card__description">Preencha os trechos na ordem natural para evitar erros.</p>
+            </div>
+        </div>
+        
+        <!-- Voo de Ida -->
+        <div>
+            <div class="section-title">Voo de ida</div>
+            <div class="form-group">
+                <div>
+                    <label class="form-label" for="{{ form.origem.id_for_label }}">Aeroporto de partida <span class="required-asterisk">*</span></label>
+                    {{ form.origem }}
+                </div>
+                <div>
+                    <label class="form-label" for="{{ form.destino.id_for_label }}">Aeroporto de destino <span class="required-asterisk">*</span></label>
+                    {{ form.destino }}
+                </div>
+            </div>
+            <div class="form-group">
+                <div>
+                    <label class="form-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span class="required-asterisk">*</span></label>
+                    {{ form.data_ida }}
+                </div>
+            </div>
+        </div>
 
-    <div class="section-title">Valores Financeiros</div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.valor_passagem.id_for_label }}">Valor passagem (R$)</label>
-            {{ form.valor_passagem }}
-        </div>
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.taxas.id_for_label }}">Taxas (R$)</label>
-            {{ form.taxas }}
-        </div>
-    </div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.milhas.id_for_label }}">Milhas</label>
-            {{ form.milhas }}
-        </div>
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.valor_milheiro.id_for_label }}">Valor milheiro (R$)</label>
-            {{ form.valor_milheiro }}
-        </div>
-    </div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.parcelas.id_for_label }}">Número de parcelas sem juros</label>
-            {{ form.parcelas }}
-        </div>
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.juros.id_for_label }}">Juros (%)</label>
-            {{ form.juros }}
-        </div>
-    </div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.desconto.id_for_label }}">Desconto (%)</label>
-            {{ form.desconto }}
-        </div>
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.validade.id_for_label }}">Validade</label>
-            {{ form.validade }}
-        </div>
-    </div>
-    <div class="form-group">
-        <div style="flex: 1;">
-            <label class="form-label" for="{{ form.status.id_for_label }}">Status</label>
-            {{ form.status }}
+        <hr class="section-divider" />
+
+        <!-- Voo de Volta -->
+        <div>
+            <div class="section-title">Voo de volta (quando existir)</div>
+            <div class="form-group">
+                <div>
+                    <label class="form-label" for="{{ form.data_volta.id_for_label }}">Data e horário da volta</label>
+                    {{ form.data_volta }}
+                    <p class="helper-text">Deixe vazio caso a viagem seja somente de ida.</p>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Seção 4: Passageiros -->
+    <div class="section-card">
+        <div class="section-card__header">
+            <div>
+                <p class="eyebrow">Passageiros</p>
+                <h2 class="section-card__title">Quantidade e classe</h2>
+                <p class="section-card__description">Informe o total de viajantes e a classe de serviço.</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <div>
+                <label class="form-label" for="{{ form.qtd_passageiros.id_for_label }}">Quantidade de passageiros <span class="required-asterisk">*</span></label>
+                {{ form.qtd_passageiros }}
+            </div>
+            <div>
+                <label class="form-label" for="{{ form.classe.id_for_label }}">Classe <span class="required-asterisk">*</span></label>
+                {{ form.classe }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção 5: Escalas -->
+    <div class="section-card">
+        <div class="section-card__header">
+            <div>
+                <p class="eyebrow">Escalas</p>
+                <h2 class="section-card__title">Escalas do voo</h2>
+                <p class="section-card__description">Ative somente quando houver conexões. Cada trecho tem sua própria lista.</p>
+            </div>
+        </div>
+        <div class="scale-grid">
+            <!-- Escalas de Ida -->
+            <div class="scale-card">
+                <div class="section-title">Escalas do voo de ida</div>
+                <div class="toggle-row">
+                    <input type="checkbox" id="ida-tem-escala" name="ida_tem_escala" class="w-4 h-4">
+                    <div>
+                        <strong>Adicionar escalas na ida</strong>
+                        <p class="helper-text">Habilite para registrar conexões e tempos de espera.</p>
+                    </div>
+                </div>
+                <div id="escala-ida-wrapper" class="is-hidden">
+                    <div class="form-group">
+                        <div>
+                            <label class="form-label" for="id_qtd_escalas_ida">Quantidade de escalas na ida</label>
+                            <input type="number" name="qtd_escalas_ida" id="id_qtd_escalas_ida" min="1" value="0" />
+                        </div>
+                    </div>
+                    <input type="hidden" name="total_escalas_ida" id="id_total_escalas_ida" value="0" />
+                    <div id="escalas-ida-container"></div>
+                </div>
+            </div>
+
+            <!-- Escalas de Volta -->
+            <div class="scale-card">
+                <div class="section-title">Escalas do voo de volta</div>
+                <div class="toggle-row">
+                    <input type="checkbox" id="volta-tem-escala" name="volta_tem_escala" class="w-4 h-4">
+                    <div>
+                        <strong>Adicionar escalas na volta</strong>
+                        <p class="helper-text">Configure as conexões do retorno sem afetar a ida.</p>
+                    </div>
+                </div>
+                <div id="escala-volta-wrapper" class="is-hidden">
+                    <div class="form-group">
+                        <div>
+                            <label class="form-label" for="id_qtd_escalas_volta">Quantidade de escalas na volta</label>
+                            <input type="number" name="qtd_escalas_volta" id="id_qtd_escalas_volta" min="1" value="0" />
+                        </div>
+                    </div>
+                    <input type="hidden" name="total_escalas_volta" id="id_total_escalas_volta" value="0" />
+                    <div id="escalas-volta-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção 6: Companhia e Observações -->
+    <div class="section-card">
+        <div class="section-card__header">
+            <div>
+                <p class="eyebrow">Companhia e observações</p>
+                <h2 class="section-card__title">Detalhes complementares</h2>
+                <p class="section-card__description">Registre a companhia aérea e qualquer observação importante.</p>
+            </div>
+        </div>
+        <div class="section-grid">
+            <div>
+                <label class="form-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aérea <span class="required-asterisk">*</span></label>
+                {{ form.companhia_aerea }}
+            </div>
+            <div class="form-group single">
+                <label class="form-label" for="{{ form.observacoes.id_for_label }}">Observações</label>
+                {{ form.observacoes }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção 7: Uso de Pontos e Valores -->
+    <div class="section-card">
+        <div class="section-card__header">
+            <div>
+                <p class="eyebrow">Uso de pontos e valores</p>
+                <h2 class="section-card__title">Resumo financeiro</h2>
+                <p class="section-card__description">Separe valores de passagem, taxas e condições de pagamento.</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <div>
+                <label class="form-label" for="{{ form.valor_passagem.id_for_label }}">Valor da passagem (R$) <span class="required-asterisk">*</span></label>
+                {{ form.valor_passagem }}
+            </div>
+            <div>
+                <label class="form-label" for="{{ form.taxas.id_for_label }}">Taxas (R$) <span class="required-asterisk">*</span></label>
+                {{ form.taxas }}
+            </div>
+        </div>
+        <div class="form-group">
+            <div>
+                <label class="form-label" for="{{ form.milhas.id_for_label }}">Pontos/milhas</label>
+                {{ form.milhas }}
+            </div>
+            <div>
+                <label class="form-label" for="{{ form.valor_milheiro.id_for_label }}">Valor do milheiro (R$)</label>
+                {{ form.valor_milheiro }}
+            </div>
+        </div>
+        <div class="form-group">
+            <div>
+                <label class="form-label" for="{{ form.parcelas.id_for_label }}">Parcelas sem juros</label>
+                {{ form.parcelas }}
+            </div>
+            <div>
+                <label class="form-label" for="{{ form.juros.id_for_label }}">Juros (%)</label>
+                {{ form.juros }}
+            </div>
+        </div>
+        <div class="form-group">
+            <div>
+                <label class="form-label" for="{{ form.desconto.id_for_label }}">Desconto (%)</label>
+                {{ form.desconto }}
+            </div>
+            <div>
+                <label class="form-label" for="{{ form.validade.id_for_label }}">Validade da cotação</label>
+                {{ form.validade }}
+            </div>
+        </div>
+        <div class="form-group">
+            <div>
+                <label class="form-label" for="{{ form.status.id_for_label }}">Status <span class="required-asterisk">*</span></label>
+                {{ form.status }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção 8: Resumo Visual -->
+    <div class="section-card">
+        <div class="section-card__header">
+            <div>
+                <p class="eyebrow">Resumo visual</p>
+                <h2 class="section-card__title">Conferência rápida</h2>
+                <p class="section-card__description">Atualizado conforme você preenche os campos.</p>
+            </div>
+        </div>
+        <div class="summary-grid">
+            <div class="summary-pill">
+                <span>Trechos</span>
+                <div id="resumo-trechos">Preencha origem e destino.</div>
+            </div>
+            <div class="summary-pill">
+                <span>Datas</span>
+                <div id="resumo-datas">Inclua as datas de ida e volta.</div>
+            </div>
+            <div class="summary-pill">
+                <span>Passageiros</span>
+                <div id="resumo-passageiros">Informe quantidade e classe.</div>
+            </div>
+            <div class="summary-pill">
+                <span>Valores</span>
+                <div id="resumo-valores">Valores e pontos ainda não preenchidos.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botões de Ação -->
     <div class="form-actions">
-        <button class="btn-primary" type="submit">Salvar</button>
+        <a href="{% url 'admin_cotacoes_voo' %}" class="btn btn--outline">Cancelar</a>
+        <button class="btn" type="submit">💾 Salvar cotação</button>
     </div>
 </form>
 </div>
+
+<script>
+const escalasIdaData = {{ escalas_ida_json|safe }};
+const escalasVoltaData = {{ escalas_volta_json|safe }};
+const aeroportos = {{ aeroportos_json|safe }};
+const clienteProgramas = {{ cliente_programas_json|safe }};
+const contasAdmProgramas = {{ contas_adm_programas_json|safe }};
+
+const clienteSelect = document.getElementById('id_cliente');
+const programaSelect = document.getElementById('id_programa');
+const programaInfo = document.getElementById('programa-info');
+const tipoTitularSelect = document.getElementById('id_tipo_titular');
+const contaAdmSelect = document.getElementById('id_conta_administrada');
+const clienteWrapper = document.getElementById('cliente-wrapper');
+const contaAdmWrapper = document.getElementById('conta-adm-wrapper');
+const resumoTrechos = document.getElementById('resumo-trechos');
+const resumoDatas = document.getElementById('resumo-datas');
+const resumoPassageiros = document.getElementById('resumo-passageiros');
+const resumoValores = document.getElementById('resumo-valores');
+
+function getProgramasDisponiveis() {
+    const tipo = tipoTitularSelect ? tipoTitularSelect.value : "cliente";
+    if (tipo === "administrada") {
+        const contaId = contaAdmSelect ? contaAdmSelect.value : null;
+        return (contasAdmProgramas && contaId) ? (contasAdmProgramas[contaId] || []) : [];
+    }
+    const clienteId = clienteSelect ? clienteSelect.value : null;
+    return (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
+}
+
+function updateProgramaInfo() {
+    if (!programaInfo) return;
+    const programas = getProgramasDisponiveis();
+    const selected = programas.find(p => String(p.id) === (programaSelect ? programaSelect.value : ""));
+    if (selected) {
+        const cpfsTxt = selected.cpfs_total === null || selected.cpfs_total === undefined
+            ? "CPFs disponíveis: ilimitado"
+            : `CPFs disponíveis: ${selected.cpfs_disponiveis} de ${selected.cpfs_total}`;
+        programaInfo.textContent = `Saldo: ${selected.saldo} pontos • Custo médio: R$ ${Number(selected.valor_medio || 0).toFixed(2)} • ${cpfsTxt}`;
+    } else if (programas.length) {
+        programaInfo.textContent = "Nenhum programa disponível para o titular selecionado.";
+    } else {
+        programaInfo.textContent = "";
+    }
+}
+
+function updateProgramaOptions() {
+    if (!programaSelect) return;
+    const programas = getProgramasDisponiveis();
+    const currentValue = programaSelect.value;
+    programaSelect.innerHTML = '<option value=""></option>';
+    programas.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.nome;
+        programaSelect.appendChild(opt);
+    });
+    if (programas.find(p => String(p.id) === currentValue)) {
+        programaSelect.value = currentValue;
+    }
+    updateProgramaInfo();
+}
+
+function toggleTitularFields() {
+    const tipo = tipoTitularSelect ? tipoTitularSelect.value : "cliente";
+    if (clienteWrapper && contaAdmWrapper) {
+        clienteWrapper.style.display = "block";
+        contaAdmWrapper.style.display = tipo === "administrada" ? "block" : "none";
+    }
+    updateProgramaOptions();
+}
+
+if (clienteSelect) {
+    clienteSelect.addEventListener('change', updateProgramaOptions);
+}
+if (contaAdmSelect) {
+    contaAdmSelect.addEventListener('change', updateProgramaOptions);
+}
+if (tipoTitularSelect) {
+    tipoTitularSelect.addEventListener('change', toggleTitularFields);
+}
+if (programaSelect) {
+    programaSelect.addEventListener('change', updateProgramaInfo);
+}
+
+function initEscalaSection(tipo, data){
+    const checkbox = document.getElementById(`${tipo}-tem-escala`);
+    const qtdInput = document.getElementById(`id_qtd_escalas_${tipo}`);
+    const container = document.getElementById(`escalas-${tipo}-container`);
+    const totalField = document.getElementById(`id_total_escalas_${tipo}`);
+    const wrapper = document.getElementById(`escala-${tipo}-wrapper`);
+
+    if(!checkbox || !qtdInput || !container || !totalField || !wrapper){
+        return;
+    }
+
+    if(data.length){
+        checkbox.checked = true;
+        qtdInput.value = data.length;
+    }
+
+    function renderEscalas(){
+        const enabled = checkbox.checked;
+        wrapper.style.display = enabled ? 'block' : 'none';
+        if(!enabled){
+            qtdInput.value = 0;
+            container.innerHTML = '';
+            totalField.value = 0;
+            return;
+        }
+        const prev = [];
+        container.querySelectorAll('.escala-fields').forEach(div=>{
+            const idx = div.dataset.index;
+            const select = div.querySelector(`select[name="escala-${tipo}-${idx}-aeroporto"]`);
+            const duracaoInput = div.querySelector(`input[name="escala-${tipo}-${idx}-duracao"]`);
+            const cidadeInput = div.querySelector(`input[name="escala-${tipo}-${idx}-cidade"]`);
+            prev[idx] = {
+                aeroporto: select ? select.value : "",
+                duracao: duracaoInput ? duracaoInput.value : "",
+                cidade: cidadeInput ? cidadeInput.value : "",
+            };
+        });
+        container.innerHTML='';
+        const qtd = parseInt(qtdInput.value || 0);
+        for(let i=0;i<qtd;i++){
+            const div = document.createElement('div');
+            div.className = 'form-group single escala-fields';
+            div.dataset.index = i;
+            let options = '<option value=""></option>';
+            aeroportos.forEach(a=>{
+                options += `<option value="${a.id}">${a.sigla} - ${a.nome}</option>`;
+            });
+            div.innerHTML = `
+                <label class="form-label">Escala ${i+1} - Aeroporto</label>
+                <select name="escala-${tipo}-${i}-aeroporto" required>${options}</select>
+                <label class="form-label">Duração</label>
+                <input type="time" name="escala-${tipo}-${i}-duracao" required />
+                <label class="form-label">Cidade/País (opcional)</label>
+                <input type="text" name="escala-${tipo}-${i}-cidade" />
+            `;
+            container.appendChild(div);
+        }
+        totalField.value = qtd;
+        const dataToApply = prev.length ? prev : data;
+        for(let i=0;i<qtd;i++){
+            const d = dataToApply[i];
+            if(d){
+                const sel = document.getElementsByName(`escala-${tipo}-${i}-aeroporto`)[0];
+                const dur = document.getElementsByName(`escala-${tipo}-${i}-duracao`)[0];
+                const cid = document.getElementsByName(`escala-${tipo}-${i}-cidade`)[0];
+                if(sel) sel.value = d.aeroporto_id || d.aeroporto || '';
+                if(dur) dur.value = d.duracao || '';
+                if(cid) cid.value = d.cidade || '';
+            }
+        }
+    }
+
+    checkbox.addEventListener('change', renderEscalas);
+    qtdInput.addEventListener('input', renderEscalas);
+    renderEscalas();
+}
+
+initEscalaSection('ida', escalasIdaData);
+initEscalaSection('volta', escalasVoltaData);
+toggleTitularFields();
+updateProgramaOptions();
+
+function updateResumoVisual(){
+    const origem = document.getElementById('id_origem');
+    const destino = document.getElementById('id_destino');
+    const dataIda = document.getElementById('id_data_ida');
+    const dataVolta = document.getElementById('id_data_volta');
+    const passageiros = document.getElementById('id_qtd_passageiros');
+    const classe = document.getElementById('id_classe');
+    const valorPassagem = document.getElementById('id_valor_passagem');
+    const taxas = document.getElementById('id_taxas');
+    const milhas = document.getElementById('id_milhas');
+
+    if(resumoTrechos){
+        if(origem && origem.value && destino && destino.value){
+            resumoTrechos.textContent = `${origem.options[origem.selectedIndex]?.text || origem.value} → ${destino.options[destino.selectedIndex]?.text || destino.value}`;
+        } else {
+            resumoTrechos.textContent = "Preencha origem e destino.";
+        }
+    }
+    if(resumoDatas){
+        const idaTxt = dataIda && dataIda.value ? `Ida: ${dataIda.value}` : "Ida pendente";
+        const voltaTxt = dataVolta && dataVolta.value ? `Volta: ${dataVolta.value}` : "Volta não informada";
+        resumoDatas.textContent = `${idaTxt} • ${voltaTxt}`;
+    }
+    if(resumoPassageiros){
+        const qtd = passageiros && passageiros.value ? passageiros.value : "0";
+        const classeTxt = classe && classe.options[classe.selectedIndex]?.text ? classe.options[classe.selectedIndex].text : "classe não informada";
+        resumoPassageiros.textContent = `${qtd} passageiro(s) • ${classeTxt}`;
+    }
+    if(resumoValores){
+        const valorTxt = valorPassagem && valorPassagem.value ? `Passagem R$ ${valorPassagem.value}` : "Valor da passagem não informado";
+        const taxaTxt = taxas && taxas.value ? `Taxas R$ ${taxas.value}` : "Taxas não informadas";
+        const milhasTxt = milhas && milhas.value ? `${milhas.value} pontos/milhas` : "Pontos não informados";
+        resumoValores.textContent = `${valorTxt} • ${taxaTxt} • ${milhasTxt}`;
+    }
+}
+
+['id_origem','id_destino','id_data_ida','id_data_volta','id_qtd_passageiros','id_classe','id_valor_passagem','id_taxas','id_milhas'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){
+        el.addEventListener('input', updateResumoVisual);
+        el.addEventListener('change', updateResumoVisual);
+    }
+});
+updateResumoVisual();
+</script>
 {% endblock %}

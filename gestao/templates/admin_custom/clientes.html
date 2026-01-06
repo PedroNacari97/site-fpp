@@ -1,60 +1,100 @@
 {% extends "admin_custom/base_admin.html" %}
+{% load static %}
 {% block title %}Clientes{% endblock %}
-{% block header_title %}Clientes Cadastrados{% endblock %}
-{% block menu_clientes %}bg-zinc-700 text-white{% endblock %}
+{% block header_title %}Clientes{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Cadastre, pesquise e acompanhe clientes com status e ações consistentes.</p>{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_novo_cliente' %}" class="btn">+ Novo Cliente</a>
+{% endblock %}
+
 {% block content %}
-<div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-    <form method="get" class="flex gap-3">
-        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar por nome ou usuário..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
-        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
-    </form>
-    <a href="{% url 'admin_novo_cliente' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Novo Cliente</a>
+<div class="stacked">
+    <section class="surface-card filter-panel" data-filters-root>
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Filtros</p>
+                <h2 class="section-title">Buscar clientes</h2>
+            </div>
+            <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+        </div>
+        <div class="filter-body is-open" data-filter-panel>
+            <form method="get" class="form-grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 md:items-end">
+                <div class="form-field md:col-span-2 lg:col-span-3">
+                    <label class="form-label" for="busca">Nome ou usuário</label>
+                    <input
+                        type="text"
+                        id="busca"
+                        name="busca"
+                        value="{{ busca }}"
+                        placeholder="Buscar..."
+                    />
+                </div>
+                <div class="form-actions flex gap-2 md:justify-end">
+                    <button type="submit" class="btn flex-1 md:flex-none">Buscar</button>
+                    <a href="{% url 'admin_clientes' %}" class="btn btn--ghost flex-1 md:flex-none">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="surface-card">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Clientes</p>
+                <h2 class="section-title">Lista de clientes</h2>
+                <p class="section-subtitle">Status e ações alinhados em todas as telas.</p>
+            </div>
+            <div class="muted">Total: {{ total_clientes }}</div>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th class="hidden md:table-cell">Usuário</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cliente in page_obj %}
+                    <tr>
+                        <td>{{ cliente.usuario.first_name|default:cliente.usuario.username }}</td>
+                        <td class="hidden md:table-cell">{{ cliente.usuario.username }}</td>
+                        <td>
+                            {% if cliente.ativo %}
+                                <span class="pill pill-success">Ativo</span>
+                            {% else %}
+                                <span class="pill pill-danger">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <details class="dropdown">
+                                <summary class="btn btn-icon" aria-label="Ações do cliente">⋮</summary>
+                                <div class="dropdown-panel">
+                                    <a class="" href="{% url 'admin_visualizar_cliente' cliente.id %}">👁️ Ver</a>
+                                    <a class="" href="{% url 'admin_editar_cliente' cliente.id %}">✏️ Editar</a>
+                                </div>
+                            </details>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">Nenhum cliente encontrado.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="table-foot">
+            <div>Mostrando página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</div>
+            <div class="page-actions">
+                {% if page_obj.has_previous %}
+                    <a class="btn btn--ghost" href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}">Anterior</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                    <a class="btn btn--ghost" href="?page={{ page_obj.next_page_number }}&busca={{ busca }}">Próxima</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
 </div>
-<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
-    <table class="min-w-full text-sm">
-        <thead class="bg-zinc-700 text-zinc-200">
-            <tr>
-                <th class="p-2 text-left font-medium">Usuário</th>
-                <th class="p-2 text-left font-medium">Nome Completo</th>
-                <th class="p-2 text-left font-medium">E-mail</th>
-                <th class="p-2 text-left font-medium">CPF</th>
-                <th class="p-2 text-left font-medium">Telefone</th>
-                <th class="p-2 text-left font-medium">Perfil</th>
-                <th class="p-2 text-left font-medium">Status</th>
-                <th class="p-2 text-left font-medium">Ação</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for cliente in page_obj %}
-            <tr class="border-b border-zinc-700">
-                <td class="p-2 text-amber-300">{{ cliente.usuario.username }}</td>
-                <td class="p-2">{{ cliente.usuario.get_full_name }}</td>
-                <td class="p-2">{{ cliente.usuario.email }}</td>
-                <td class="p-2">{{ cliente.cpf }}</td>
-                <td class="p-2">{{ cliente.telefone }}</td>
-                <td class="p-2">{{ cliente.get_perfil_display }}</td>
-                <td class="p-2">{{ cliente.ativo|yesno:"Ativo,Inativo" }}</td>
-                <td class="p-2">
-                    <a href="{% url 'admin_editar_cliente' cliente.id %}" class="text-blue-400">Editar</a> |
-                    <a href="?toggle={{ cliente.id }}" class="text-blue-400">Ativar/Inativar</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="8" class="text-center text-red-400 py-4">Nenhum cliente encontrado.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% if page_obj.has_other_pages %}
-<div class="mt-4 flex gap-2 justify-center">
-    {% if page_obj.has_previous %}
-    <a href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}" class="bg-zinc-700 text-white px-3 py-1 rounded">&lt;</a>
-    {% endif %}
-    <span class="text-zinc-300 px-3 py-1">Página {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
-    {% if page_obj.has_next %}
-    <a href="?page={{ page_obj.next_page_number }}&busca={{ busca }}" class="bg-zinc-700 text-white px-3 py-1 rounded">&gt;</a>
-    {% endif %}
-</div>
-{% endif %}
-<div class="text-zinc-400 mt-4 text-sm">Total: {{ total_clientes }} clientes cadastrados.</div>
 {% endblock %}

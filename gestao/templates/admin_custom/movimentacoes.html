@@ -1,42 +1,50 @@
 {% extends "admin_custom/base_admin.html" %}
 
-{% block title %}Movimentações de {{ conta.programa.nome }}{% endblock %}
-{% block header_title %}Movimentações de {{ conta.programa.nome }}{% endblock %}
+{% block title %}Movimentações do Programa: {{ conta.programa.nome }} — {{ titular_tipo }}: {{ titular_nome }}{% endblock %}
+{% block header_title %}Movimentações do Programa: {{ conta.programa.nome }} — {{ titular_tipo }}: {{ titular_nome }}{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Histórico organizado de pontos e valores com ações no mesmo lugar.</p>{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_transferir_pontos' conta.id %}" class="btn btn--outline">Transferir pontos</a>
+<a href="{% url 'admin_nova_movimentacao' conta.id %}" class="btn">+ Nova Movimentação</a>
+{% endblock %}
 
 {% block content %}
-<div style="background:#232345;padding:20px;border-radius:12px;">
-  <h3>Movimentações do Programa: {{ conta.programa.nome }} - Cliente: {{ conta.cliente.usuario.username }}</h3>
-  
-  <!-- Botão para nova movimentação -->
-  <a href="{% url 'admin_nova_movimentacao' conta.id %}" class="btn btn-primary" style="margin-bottom:16px;">
-      + Nova Movimentação
-  </a>
-  
-  <table style="width:100%;color:#fff;border-collapse:collapse;margin-bottom:20px;">
-    <thead>
-      <tr>
-        <th>Data</th>
-        <th>Pontos</th>
-        <th>Valor Pago</th>
-        <th>Descrição</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for mov in movimentacoes %}
-      <tr>
-        <td>{{ mov.data|date:"d/m/Y" }}</td>
-        <td>{{ mov.pontos }}</td>
-        <td>R$ {{ mov.valor_pago|floatformat:2 }}</td>
-        <td>{{ mov.descricao }}</td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="4" style="color:#fa7070;text-align:center;">Nenhuma movimentação lançada.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  
-  <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="btn btn-secondary">
-    Voltar para Programas
-  </a>
-</div>
+<section class="surface-card stacked">
+    {% if conta.programa.is_vinculado %}
+    <div class="alert alert-warning bg-amber-100 text-amber-800 border border-amber-200">
+        Este programa é vinculado a <strong>{{ conta_base.programa.nome }}</strong>. O saldo e as movimentações são compartilhados e só podem ser alterados pelo programa base.
+        <a class="underline text-amber-900 font-semibold" href="{% url 'admin_movimentacoes' conta_base.id %}">Ir para o programa base</a>
+    </div>
+    {% endif %}
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Pontos</th>
+                    <th>Valor Pago</th>
+                    <th>Descrição</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mov in movimentacoes %}
+                <tr>
+                    <td>{{ mov.data|date:"d/m/Y" }}</td>
+                    <td>{{ mov.pontos }}</td>
+                    <td>R$ {{ mov.valor_pago|floatformat:2 }}</td>
+                    <td>{{ mov.descricao }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center text-red-400 py-4">Nenhuma movimentação lançada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if titular_programas_url %}
+    <div class="form-actions justify-between">
+        <div></div>
+        <a href="{{ titular_programas_url }}" class="btn btn--ghost">Voltar para Programas</a>
+    </div>
+    {% endif %}
+</section>
 {% endblock %}

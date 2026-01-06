@@ -1,106 +1,171 @@
 {% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
 {% block title %}Dashboard{% endblock %}
 {% block header_title %}Dashboard Administrativo{% endblock %}
-{% block menu_dashboard %}bg-zinc-700 text-white{% endblock %}
-{% block extra_head %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% block header_subtitle %}<p class="page-subtitle">Visão consolidada dos clientes, emissões e reservas com hierarquia clara de informações.</p>{% endblock %}
+{% block menu_dashboard %}is-active{% endblock %}
+{% block header_actions %}
+<a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="btn btn--outline">+ Novo Cliente</a>
+<a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="btn">+ Nova Emissão</a>
 {% endblock %}
+
 {% block content %}
-<div class="flex items-center justify-between mb-6">
-    <select id="clienteSelect" class="bg-zinc-700 text-white px-3 py-2 rounded">
-        <option value="">Selecionar Cliente</option>
-        {% for c in clientes %}
-            <option value="{{ c.id }}" {% if selected_cliente and c.id == selected_cliente.id %}selected{% endif %}>{{ c }}</option>
-        {% endfor %}
-    </select>
-    <div class="flex gap-2">
-        <a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">+ Novo Cliente</a>
-        <a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">+ Nova Emissão</a>
+<div class="stacked">
+  <section class="surface-card filter-panel" data-filters-root>
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Filtro rápido</p>
+        <p class="section-title">Selecione o cliente para personalizar a visão</p>
+      </div>
+      <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
     </div>
-</div>
+    <div class="filter-body is-open" data-filter-panel>
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label" for="clienteSelect">Cliente</label>
+          <select id="clienteSelect">
+            <option value="">Selecionar Cliente</option>
+            {% for c in clientes %}
+              <option value="{{ c.id }}" {% if selected_cliente and c.id == selected_cliente.id %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="filter-actions">
+        <span class="muted text-sm">Filtre para enxergar cartões e relatórios com o contexto correto.</span>
+      </div>
+    </div>
+  </section>
 
-<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
-    <div class="bg-zinc-900 p-4 rounded shadow">
-        <div class="text-sm text-zinc-400">👥 Total de Clientes</div>
-        <div class="text-2xl font-bold">{{ total_clientes }}</div>
+  <section class="surface-card stacked">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Indicadores</p>
+        <h2 class="section-title">Resumo rápido</h2>
+      </div>
     </div>
-    <div class="bg-zinc-900 p-4 rounded shadow">
-        <div class="text-sm text-zinc-400">✈️ Total de Emissões</div>
-        <div class="text-2xl font-bold">{{ total_emissoes }}</div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <p class="stat-label">👥 Total de Clientes</p>
+        <p class="stat-value">{{ total_clientes }}</p>
+        <p class="stat-meta">Base ativa de clientes acompanhados</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">✈️ Total de Emissões</p>
+        <p class="stat-value">{{ total_emissoes }}</p>
+        <p class="stat-meta">Passagens emitidas em todos os programas</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">💰 Total Economizado</p>
+        <p class="stat-value">R$ {{ total_economizado|floatformat:2 }}</p>
+        <p class="stat-meta">Economia acumulada em emissões e reservas</p>
+      </div>
     </div>
-    <div class="bg-zinc-900 p-4 rounded shadow">
-        <div class="text-sm text-zinc-400">💰 Total Economizado</div>
-        <div class="text-2xl font-bold">R$ {{ total_economizado|floatformat:2 }}</div>
-    </div>
-</div>
+  </section>
 
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
-{% for prog in programas %}
-    <div class="bg-zinc-900 p-4 rounded shadow">
-        <h5 class="text-blue-400 font-bold mb-2">{{ prog.nome }}</h5>
-        <p class="text-sm text-zinc-400">Pontos acumulados</p>
-        <p class="font-bold">{{ prog.pontos }}</p>
-        <p class="text-sm text-zinc-400 mt-2">Valor total</p>
-        <p class="font-bold">R$ {{ prog.valor_total|floatformat:2 }}</p>
-        <p class="text-sm text-zinc-400 mt-2">Valor médio por 1.000</p>
-        <p class="font-bold">R$ {{ prog.valor_medio|floatformat:2 }}</p>
-        <p class="text-sm text-zinc-400 mt-2">Valor de referência atual</p>
-        <p class="font-bold">R$ {{ prog.valor_referencia|floatformat:2 }}</p>
-        {% if prog.conta_id %}
-        <a href="{% url 'admin_movimentacoes' prog.conta_id %}" class="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Ver movimentações</a>
-        {% endif %}
+  <section class="surface-card stacked">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Programas</p>
+        <h2 class="section-title">Pontos, valores e referências</h2>
+      </div>
     </div>
-{% empty %}
-    <p>Nenhum programa encontrado.</p>
-{% endfor %}
-</div>
+    <div class="stat-grid">
+      {% for prog in programas %}
+        <div class="stat-card">
+          <p class="stat-label">{{ prog.nome }}</p>
+          <p class="stat-value">{{ prog.pontos }}</p>
+          <p class="stat-meta">Pontos acumulados</p>
+          <div class="section-divider"></div>
+          <p class="label">Valor total</p>
+          <p class="stat-meta">R$ {{ prog.valor_total|floatformat:2 }}</p>
+          <p class="label">Valor médio por 1.000</p>
+          <p class="stat-meta">R$ {{ prog.valor_medio|floatformat:2 }}</p>
+          <p class="label">Valor de referência atual</p>
+          <p class="stat-meta">R$ {{ prog.valor_referencia|floatformat:2 }}</p>
+          {% if prog.conta_id %}
+          <a class="card-link btn btn--ghost" href="{% url 'admin_movimentacoes' prog.conta_id %}">Ver movimentações</a>
+          {% endif %}
+        </div>
+      {% empty %}
+        <p class="muted">Nenhum programa encontrado.</p>
+      {% endfor %}
+    </div>
+  </section>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-    <div class="bg-zinc-900 p-4 rounded shadow">
-        <h5 class="text-blue-400 font-bold mb-2">Emissões</h5>
-        <ul class="text-sm space-y-1">
-            <li>Quantidade: <span class="font-bold">{{ emissoes.qtd }}</span></li>
-            <li>Total de pontos usados: <span class="font-bold">{{ emissoes.pontos }}</span></li>
-            <li>Valor total de referência: <span class="font-bold">R$ {{ emissoes.valor_referencia|floatformat:2 }}</span></li>
-            <li>Valor total pago: <span class="font-bold">R$ {{ emissoes.valor_pago|floatformat:2 }}</span></li>
-            <li>Valor total economizado: <span class="font-bold">R$ {{ emissoes.valor_economizado|floatformat:2 }}</span></li>
+  <section class="surface-card stacked">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Resumo financeiro</p>
+        <h2 class="section-title">Emissões e Hotéis</h2>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <p class="stat-label">Emissões</p>
+        <p class="stat-value">{{ emissoes.qtd }}</p>
+        <p class="stat-meta">Quantidade total de emissões</p>
+        <ul class="list-plain">
+          <li>Total de pontos usados: <strong>{{ emissoes.pontos }}</strong></li>
+          <li>Valor ref.: <strong>R$ {{ emissoes.valor_referencia|floatformat:2 }}</strong></li>
+          <li>Valor pago: <strong>R$ {{ emissoes.valor_pago|floatformat:2 }}</strong></li>
+          <li>Economizado: <strong>R$ {{ emissoes.valor_economizado|floatformat:2 }}</strong></li>
         </ul>
-        <a href="{% url 'admin_emissoes' %}" class="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Ver detalhes</a>
-    </div>
-    <div class="bg-zinc-900 p-4 rounded shadow">
-        <h5 class="text-blue-400 font-bold mb-2">Hotéis</h5>
-        <ul class="text-sm space-y-1">
-            <li>Quantidade de reservas: <span class="font-bold">{{ hoteis.qtd }}</span></li>
-            <li>Valor de referência acumulado: <span class="font-bold">R$ {{ hoteis.valor_referencia|floatformat:2 }}</span></li>
-            <li>Valor total pago: <span class="font-bold">R$ {{ hoteis.valor_pago|floatformat:2 }}</span></li>
-            <li>Valor total economizado: <span class="font-bold">R$ {{ hoteis.valor_economizado|floatformat:2 }}</span></li>
-        </ul>
-        <a href="{% url 'admin_hoteis' %}" class="mt-4 inline-block bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Ver detalhes</a>
-    </div>
-</div>
+        <a class="card-link btn btn--ghost" href="{% url 'admin_emissoes' %}">Ver detalhes</a>
+      </div>
 
-<div class="bg-zinc-900 p-4 rounded shadow">
-    <h5 class="text-blue-400 font-bold mb-2">Emissões por programa</h5>
+      <div class="stat-card">
+        <p class="stat-label">Hotéis</p>
+        <p class="stat-value">{{ hoteis.qtd }}</p>
+        <p class="stat-meta">Reservas confirmadas</p>
+        <ul class="list-plain">
+          <li>Valor ref. acumulado: <strong>R$ {{ hoteis.valor_referencia|floatformat:2 }}</strong></li>
+          <li>Valor pago: <strong>R$ {{ hoteis.valor_pago|floatformat:2 }}</strong></li>
+          <li>Economizado: <strong>R$ {{ hoteis.valor_economizado|floatformat:2 }}</strong></li>
+        </ul>
+        <a class="card-link btn btn--ghost" href="{% url 'admin_hoteis' %}">Ver detalhes</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="surface-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Distribuição</p>
+        <h2 class="section-title">Emissões por programa</h2>
+      </div>
+    </div>
     <canvas id="emissoesChart"></canvas>
+  </section>
 </div>
 {% endblock %}
+
 {% block extra_body %}
 <script>
 document.getElementById('clienteSelect').addEventListener('change', function() {
-    const value = this.value;
-    const url = '{% url "admin_dashboard" %}';
-    window.location = value ? url + '?cliente_id=' + value : url;
+  const value = this.value;
+  const url = '{% url "admin_dashboard" %}';
+  window.location = value ? url + '?cliente_id=' + value : url;
 });
+
 const ctx = document.getElementById('emissoesChart');
-const chartData = {
-    labels: [{% for item in emissoes_programa %}'{{ item.programa }}',{% endfor %}],
-    datasets: [{
-        label: 'Emissões',
-        data: [{% for item in emissoes_programa %}{{ item.quantidade }},{% endfor %}],
-        backgroundColor: '#3b82f6'
-    }]
-};
-new Chart(ctx, {type: 'bar', data: chartData, options: {scales: {y: {beginAtZero: true}}}});
+if (ctx) {
+  const labels = [{% for item in emissoes_programa %}'{{ item.programa }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+  const dataVals = [{% for item in emissoes_programa %}{{ item.quantidade }}{% if not forloop.last %},{% endif %}{% endfor %}];
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: { 
+      labels, 
+      datasets: [{ 
+        label: 'Emissões', 
+        data: dataVals, 
+        backgroundColor: '#3182ce' 
+      }] 
+    },
+    options: { scales: { y: { beginAtZero: true } } }
+  });
+}
 </script>
 {% endblock %}
-

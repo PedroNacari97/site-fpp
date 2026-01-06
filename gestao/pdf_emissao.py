@@ -270,34 +270,46 @@ def gerar_pdf_emissao(emissao):
 # Escalas (após tabela de voo)
     escalas = getattr(emissao, "escalas", None)
     if escalas and hasattr(escalas, "exists") and escalas.exists():
+        escalas_por_tipo = {"ida": [], "volta": []}
         for escala in escalas.all():
-            escala_aeroporto = getattr(escala, 'aeroporto', None)
-            aeroporto_escala_str = (
-            f"{getattr(escala_aeroporto, 'sigla', '-')}" +
-            (f" - {getattr(escala_aeroporto, 'nome', '-')}" if escala_aeroporto else "")
-        ) if escala_aeroporto else "-"
+            escalas_por_tipo.get(getattr(escala, "tipo", "ida") or "ida", escalas_por_tipo["ida"]).append(escala)
 
-        duracao_escala = getattr(escala, 'duracao', None)
-        duracao_escala_str = str(duracao_escala) if duracao_escala else "-"
+        titulo_tipo = {"ida": "Escalas da ida", "volta": "Escalas da volta"}
+        for tipo, lista in escalas_por_tipo.items():
+            if not lista:
+                continue
+            elements.append(Paragraph(titulo_tipo.get(tipo, "Escalas"), titulo_secao))
+            for escala in lista:
+                escala_aeroporto = getattr(escala, 'aeroporto', None)
+                aeroporto_escala_str = (
+                f"{getattr(escala_aeroporto, 'sigla', '-')}" +
+                (f" - {getattr(escala_aeroporto, 'nome', '-')}" if escala_aeroporto else "")
+            ) if escala_aeroporto else "-"
 
-        escala_data = [
-            [Paragraph("AEROPORTO DE ESCALA", estilo_label), Paragraph("DURAÇÃO DA ESCALA", estilo_label)],
-            [Paragraph(aeroporto_escala_str, estilo_valor), Paragraph(duracao_escala_str, estilo_valor)],
-        ]
+                duracao_escala = getattr(escala, 'duracao', None)
+                duracao_total = int(duracao_escala.total_seconds()) if duracao_escala else 0
+                horas = duracao_total // 3600
+                minutos = (duracao_total % 3600) // 60
+                duracao_escala_str = f"{horas:02d}:{minutos:02d}" if duracao_escala else "-"
 
-        escala_table = Table(escala_data, colWidths=[80*mm, 80*mm])
-        escala_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, -1), cor_fundo_claro),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('TOPPADDING', (0, 0), (-1, -1), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-            ('LEFTPADDING', (0, 0), (-1, -1), 12),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 12),
-            ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
-            ('LINEBELOW', (0, 0), (-1, 0), 0.5, cor_texto_secundario),
-        ]))
-        elements.append(escala_table)
-        elements.append(Spacer(1, 5))
+                escala_data = [
+                    [Paragraph("AEROPORTO DE ESCALA", estilo_label), Paragraph("DURAÇÃO DA ESCALA", estilo_label)],
+                    [Paragraph(aeroporto_escala_str, estilo_valor), Paragraph(duracao_escala_str, estilo_valor)],
+                ]
+
+                escala_table = Table(escala_data, colWidths=[80*mm, 80*mm])
+                escala_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, -1), cor_fundo_claro),
+                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                    ('TOPPADDING', (0, 0), (-1, -1), 10),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 12),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+                    ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
+                    ('LINEBELOW', (0, 0), (-1, 0), 0.5, cor_texto_secundario),
+                ]))
+                elements.append(escala_table)
+                elements.append(Spacer(1, 5))
 
 
     # PASSAGEIROS
@@ -374,20 +386,20 @@ def gerar_pdf_emissao(emissao):
         detalhes_texto = str(detalhes).strip().replace('\n', '<br/>')
     # Usando Table para padronizar borda, fundo e espaçamento
         detalhes_table = Table(
-    [[Paragraph(detalhes_texto, estilo_valor)]],
-        colWidths=[160 * mm]
-    )
-    detalhes_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), cor_fundo_claro),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('TOPPADDING', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-        ('LEFTPADDING', (0, 0), (-1, -1), 12),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 12),
-        ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
-        ('LINEBELOW', (0, 0), (-1, -1), 0.5, cor_texto_secundario),
-    ]))
-    elements.append(detalhes_table)
+                [[Paragraph(detalhes_texto, estilo_valor)]],
+            colWidths=[160 * mm]
+        )
+        detalhes_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), cor_fundo_claro),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('TOPPADDING', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+            ('LEFTPADDING', (0, 0), (-1, -1), 12),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+            ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
+            ('LINEBELOW', (0, 0), (-1, -1), 0.5, cor_texto_secundario),
+        ]))
+        elements.append(detalhes_table)
 
 
 

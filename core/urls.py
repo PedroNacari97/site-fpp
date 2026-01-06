@@ -16,17 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from gestao import views
+from core.views import healthcheck
 
 urlpatterns = [
-    path('admin/', admin.site.urls),          # Django admin padrão
-    path('adm/', include('gestao.urls_admin')),  # Painel admin customizado
-    path('api/dashboard', views.api_dashboard, name='api_dashboard'),
-    path('', include('painel_cliente.urls')),    # Painel do cliente comum
-    path('adm/programas/', views.admin_programas, name='admin_programas'),
-    path('adm/valor-milheiro/', views.admin_valor_milheiro, name='admin_valor_milheiro'),
-    path('accounts/', include('accounts.urls')),
+    path("health/", healthcheck, name="healthcheck"),
+    path("", include("painel_cliente.urls")),
+    path("django/admin/", admin.site.urls),
+    path("adm/", include("gestao.urls_admin")),
+    path("accounts/", include("accounts.urls")),
 ]
-
-
-

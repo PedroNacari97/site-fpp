@@ -1,0 +1,183 @@
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  display: block;
+}
+
+.fpp-container {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.page-shell,
+.page-container {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.fpp-layout,
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.fpp-sidebar,
+.app-shell .sidebar {
+  width: 256px;
+  flex-shrink: 0;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  transform: translateX(0);
+}
+
+.fpp-sidebar .sidebar-title,
+.fpp-sidebar .sidebar-section,
+.fpp-sidebar .nav-item,
+.fpp-sidebar .nav-item.is-active {
+  color: #e2e8f0;
+}
+
+.fpp-sidebar .nav-item:hover,
+.fpp-sidebar .nav-item.is-active {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.fpp-sidebar .nav-item.is-active {
+  border-right-color: #ffffff;
+}
+
+.app-shell__content,
+.fpp-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell__content {
+  margin-left: 256px;
+  width: calc(100% - 256px);
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: #ffffff;
+}
+
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+  margin-left: 0;
+  padding: 24px;
+  background: #f8fafc;
+}
+
+@media (max-width: 768px) {
+  .fpp-layout {
+    flex-direction: column;
+  }
+
+  .fpp-sidebar,
+  .app-shell .sidebar {
+    width: 256px;
+    transform: translateX(-100%);
+  }
+
+  body.sidebar-open .app-shell .sidebar {
+    transform: translateX(0);
+  }
+
+  .app-shell__content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .app-main {
+    padding: 24px 16px;
+  }
+}
+
+.fpp-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 1024px) {
+  .fpp-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.fpp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.fpp-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .fpp-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .fpp-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.fpp-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.fpp-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+p,
+span {
+  font-size: 14px;
+}

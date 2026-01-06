@@ -1,0 +1,27 @@
+.login-container {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-login);
+  padding: 32px 28px;
+  width: 360px;
+  max-width: 95vw;
+  text-align: center;
+}
+
+.login-container h2 {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+  color: var(--color-heading);
+  font-weight: 600;
+}
+
+.login-logo {
+  width: 200px;
+  margin: 0 auto 20px;
+}
+
+.login-container .btn,
+.login-container input[type="submit"] {
+  width: 100%;
+  margin-top: 16px;
+}

@@ -1,6 +1,17 @@
 from django import forms
+from django.contrib.auth import get_user_model
+from django.db import transaction
+
+from gestao.utils import (
+    generate_unique_username,
+    normalize_cpf,
+    parse_br_date,
+    validate_cpf_digits,
+)
+
 from .models import (
     ContaFidelidade,
+    ContaAdministrada,
     ProgramaFidelidade,
     Cliente,
     Aeroporto,
@@ -8,18 +19,128 @@ from .models import (
     EmissaoHotel,
     CotacaoVoo,
     CompanhiaAerea,
+    Empresa,
 )
+
+
+User = get_user_model()
 
 class ContaFidelidadeForm(forms.ModelForm):
     class Meta:
         model = ContaFidelidade
-        fields = ['cliente', 'programa', 'clube_periodicidade', 'pontos_clube_mes', 'valor_assinatura_clube', 'data_inicio_clube', 'validade']
+        fields = [
+            "cliente",
+            "conta_administrada",
+            "programa",
+            "login_programa",
+            "senha_programa",
+            "titular_programa_info",
+            "observacoes_programa",
+            "clube_periodicidade",
+            "pontos_clube_mes",
+            "valor_assinatura_clube",
+            "data_inicio_clube",
+            "validade",
+            "quantidade_cpfs_disponiveis",
+        ]
+        widgets = {
+            "data_inicio_clube": forms.TextInput(
+                attrs={
+                    "placeholder": "DD/MM/AAAA",
+                    "data-mask": "date",
+                    "inputmode": "numeric",
+                    "maxlength": "10",
+                }
+            ),
+            "validade": forms.TextInput(
+                attrs={
+                    "placeholder": "DD/MM/AAAA",
+                    "data-mask": "date",
+                    "inputmode": "numeric",
+                    "maxlength": "10",
+                }
+            ),
+            "login_programa": forms.TextInput(
+                attrs={
+                    "placeholder": "Login do titular",
+                    "class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2",
+                }
+            ),
+            "senha_programa": forms.PasswordInput(
+                render_value=True,
+                attrs={
+                    "placeholder": "Senha do titular",
+                    "class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2",
+                },
+            ),
+            "titular_programa_info": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "placeholder": "Dados adicionais do titular (nome, CPF, observações de resgate)",
+                    "class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2",
+                    "style": "resize:vertical;",
+                }
+            ),
+            "observacoes_programa": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "placeholder": "Observações gerais sobre o uso desta conta (limitações, preferências de resgate, etc.)",
+                    "class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2",
+                    "style": "resize:vertical;",
+                }
+            ),
+            "quantidade_cpfs_disponiveis": forms.NumberInput(
+                attrs={
+                    "class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2",
+                    "min": 0,
+                    "placeholder": "Deixe vazio para ilimitado",
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        empresa = kwargs.pop("empresa", None)
+        super().__init__(*args, **kwargs)
+        cliente_qs = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+        conta_adm_qs = ContaAdministrada.objects.filter(ativo=True)
+        if empresa:
+            cliente_qs = cliente_qs.filter(empresa=empresa)
+            conta_adm_qs = conta_adm_qs.filter(empresa=empresa)
+        if self.instance and self.instance.pk:
+            cliente_qs = cliente_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
+            conta_adm_qs = conta_adm_qs | ContaAdministrada.objects.filter(pk=self.instance.conta_administrada_id)
+        self.fields["cliente"].queryset = cliente_qs
+        self.fields["conta_administrada"].queryset = conta_adm_qs
+        self.fields["login_programa"].label = "Login (titular do programa)"
+        self.fields["senha_programa"].label = "Senha (titular do programa)"
+        self.fields["titular_programa_info"].label = "Dados do titular"
+
+    def clean(self):
+        cleaned = super().clean()
+        cliente = cleaned.get("cliente")
+        conta_adm = cleaned.get("conta_administrada")
+        if bool(cliente) == bool(conta_adm):
+            raise forms.ValidationError("Selecione um cliente ou uma conta administrada, mas não ambos.")
+        return cleaned
+
+    def clean_data_inicio_clube(self):
+        return parse_br_date(self.cleaned_data.get("data_inicio_clube"), field_label="Data de início do clube")
+
+    def clean_validade(self):
+        return parse_br_date(self.cleaned_data.get("validade"), field_label="Validade")
 
 
 class ProgramaFidelidadeForm(forms.ModelForm):
     class Meta:
         model = ProgramaFidelidade
-        fields = ['nome', 'descricao', 'preco_medio_milheiro']
+        fields = [
+            "nome",
+            "descricao",
+            "preco_medio_milheiro",
+            "quantidade_cpfs_disponiveis",
+            "tipo",
+            "programa_base",
+        ]
         widgets = {
             'descricao': forms.Textarea(attrs={
                 'rows': 4,
@@ -27,25 +148,98 @@ class ProgramaFidelidadeForm(forms.ModelForm):
                 'style': 'resize:vertical; max-height:100px;'
             }),
         }
+        labels = {
+            "preco_medio_milheiro": "Preço médio do milheiro (R$)",
+            "quantidade_cpfs_disponiveis": "Quantidade de CPFs disponíveis por programa",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        base_qs = ProgramaFidelidade.objects.filter(tipo=ProgramaFidelidade.TIPO_PRINCIPAL)
+        if self.instance and self.instance.pk:
+            base_qs = base_qs.exclude(pk=self.instance.pk)
+        self.fields["programa_base"].queryset = base_qs
+        self.fields["programa_base"].required = False
+
+
+class ContaAdministradaForm(forms.ModelForm):
+    class Meta:
+        model = ContaAdministrada
+        fields = ["nome", "observacoes", "ativo"]
+        widgets = {
+            "observacoes": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2",
+                }
+            ),
+            "nome": forms.TextInput(
+                attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2"}
+            ),
+        }
 
 
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = ['usuario', 'telefone', 'data_nascimento', 'cpf', 'perfil', 'observacoes', 'ativo']
+        widgets = {
+            "data_nascimento": forms.TextInput(
+                attrs={
+                    "placeholder": "DD/MM/AAAA",
+                    "data-mask": "date",
+                    "inputmode": "numeric",
+                    "maxlength": "10",
+                }
+            ),
+        }
+
+    def clean_cpf(self):
+        cpf = validate_cpf_digits(self.cleaned_data.get("cpf"))
+        if Cliente.objects.exclude(pk=self.instance.pk).filter(cpf=cpf).exists():
+            raise forms.ValidationError("Já existe um cliente com este CPF.")
+        return cpf
+
+    def clean_data_nascimento(self):
+        return parse_br_date(self.cleaned_data.get("data_nascimento"), field_label="Data de nascimento")
 
 
 class NovoClienteForm(forms.ModelForm):
-    username = forms.CharField(max_length=150)
     password = forms.CharField(widget=forms.PasswordInput)
-    first_name = forms.CharField(max_length=150, required=False)
-    last_name = forms.CharField(max_length=150, required=False)
+    first_name = forms.CharField(required=False)
+    last_name = forms.CharField(required=False)
     email = forms.EmailField(required=False)
-    perfil = forms.CharField(initial='cliente', widget=forms.HiddenInput())
+    perfil = forms.CharField(widget=forms.HiddenInput(), initial="cliente")
 
     class Meta:
         model = Cliente
-        fields = ['telefone', 'data_nascimento', 'cpf', 'observacoes', 'ativo', 'perfil']
+        fields = [
+            "telefone",
+            "data_nascimento",
+            "cpf",
+            "observacoes",
+            "ativo",
+            "perfil",
+        ]
+        widgets = {
+            "data_nascimento": forms.TextInput(
+                attrs={
+                    "placeholder": "DD/MM/AAAA",
+                    "data-mask": "date",
+                    "inputmode": "numeric",
+                    "maxlength": "10",
+                }
+            ),
+        }
+
+    def clean_cpf(self):
+        cpf = validate_cpf_digits(self.cleaned_data.get("cpf"))
+        if Cliente.objects.filter(cpf=cpf).exists():
+            raise forms.ValidationError("Já existe um cliente com este CPF.")
+        return cpf
+
+    def clean_data_nascimento(self):
+        return parse_br_date(self.cleaned_data.get("data_nascimento"), field_label="Data de nascimento")
 
 
 class AeroportoForm(forms.ModelForm):
@@ -55,22 +249,76 @@ class AeroportoForm(forms.ModelForm):
 
 
 class EmissaoPassagemForm(forms.ModelForm):
-    qtd_escalas = forms.IntegerField(min_value=0, required=False, initial=0)
+    tipo_titular = forms.ChoiceField(
+        choices=(("cliente", "Conta de Cliente"), ("administrada", "Conta Administrada")),
+        initial="cliente",
+    )
+    conta_administrada = forms.ModelChoiceField(
+        queryset=ContaAdministrada.objects.none(), required=False
+    )
+
     def __init__(self, *args, **kwargs):
+        empresa = kwargs.pop("empresa", None)
         super().__init__(*args, **kwargs)
         for f in [
             'qtd_adultos',
             'qtd_criancas',
             'qtd_bebes',
-            'qtd_escalas',
         ]:
             self.fields[f].required = False
         self.fields['companhia_aerea'].queryset = CompanhiaAerea.objects.all()
+        clientes_qs = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+        contas_adm_qs = ContaAdministrada.objects.filter(ativo=True)
+        if empresa:
+            clientes_qs = clientes_qs.filter(empresa=empresa)
+            contas_adm_qs = contas_adm_qs.filter(empresa=empresa)
+        if self.instance and self.instance.pk:
+            clientes_qs = clientes_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
+            contas_adm_qs = contas_adm_qs | ContaAdministrada.objects.filter(pk=self.instance.conta_administrada_id)
+        self.fields["cliente"].queryset = clientes_qs
+        self.fields["conta_administrada"].queryset = contas_adm_qs
+
+        selected_tipo = self.data.get("tipo_titular") or ("administrada" if getattr(self.instance, "conta_administrada_id", None) else "cliente")
+        self.initial.setdefault("tipo_titular", selected_tipo)
+        self.fields["cliente"].required = True
+        self.fields["conta_administrada"].required = selected_tipo == "administrada"
+
+        titular_id = None
+        if selected_tipo == "administrada":
+            titular_id = self.data.get("conta_administrada") or getattr(self.instance, "conta_administrada_id", None)
+            programas_qs = ProgramaFidelidade.objects.filter(
+                contafidelidade__conta_administrada_id=titular_id
+            ) if titular_id else ProgramaFidelidade.objects.none()
+        else:
+            titular_id = self.data.get("cliente") or getattr(self.instance, "cliente_id", None)
+            programas_qs = ProgramaFidelidade.objects.filter(
+                contafidelidade__cliente_id=titular_id
+            ) if titular_id else ProgramaFidelidade.objects.none()
+
+        if self.instance and self.instance.programa_id and not programas_qs.filter(id=self.instance.programa_id).exists():
+            programas_qs = programas_qs | ProgramaFidelidade.objects.filter(id=self.instance.programa_id)
+        self.fields["programa"].queryset = programas_qs.distinct()
+
+    def clean(self):
+        cleaned = super().clean()
+        tipo = cleaned.get("tipo_titular")
+        cliente = cleaned.get("cliente")
+        conta_adm = cleaned.get("conta_administrada")
+        if not cliente:
+            raise forms.ValidationError("Selecione o cliente que irá viajar.")
+        if tipo == "administrada":
+            if not conta_adm:
+                raise forms.ValidationError("Selecione uma conta administrada para usar pontos ou escolha 'Conta de Cliente'.")
+        else:
+            cleaned["conta_administrada"] = None
+        return cleaned
 
     class Meta:
         model = EmissaoPassagem
         fields = [
+            'tipo_titular',
             'cliente',
+            'conta_administrada',
             'programa',
             'aeroporto_partida',
             'aeroporto_destino',
@@ -111,21 +359,82 @@ class EmissaoHotelForm(forms.ModelForm):
             'check_out': forms.DateInput(attrs={'type': 'date'}),
                   }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        clientes_qs = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+        if self.instance and self.instance.pk:
+            clientes_qs = clientes_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
+        self.fields["cliente"].queryset = clientes_qs
+
 
 class CotacaoVooForm(forms.ModelForm):
-    qtd_escalas = forms.IntegerField(min_value=0, required=False, initial=0)
     companhia_aerea = forms.ChoiceField(choices=[], required=False)
+    tipo_titular = forms.ChoiceField(
+        choices=(("cliente", "Conta de Cliente"), ("administrada", "Conta Administrada")),
+        initial="cliente",
+    )
+    conta_administrada = forms.ModelChoiceField(
+        queryset=ContaAdministrada.objects.none(), required=False
+    )
 
     def __init__(self, *args, **kwargs):
+        empresa = kwargs.pop("empresa", None)
         super().__init__(*args, **kwargs)
         self.fields['companhia_aerea'].choices = [
             (c.nome, c.nome) for c in CompanhiaAerea.objects.all()
         ]
+        clientes_qs = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+        contas_adm_qs = ContaAdministrada.objects.filter(ativo=True)
+        if empresa:
+            clientes_qs = clientes_qs.filter(empresa=empresa)
+            contas_adm_qs = contas_adm_qs.filter(empresa=empresa)
+        if self.instance and self.instance.pk:
+            clientes_qs = clientes_qs | Cliente.objects.filter(pk=self.instance.cliente_id)
+            contas_adm_qs = contas_adm_qs | ContaAdministrada.objects.filter(pk=self.instance.conta_administrada_id)
+        self.fields["cliente"].queryset = clientes_qs
+        self.fields["conta_administrada"].queryset = contas_adm_qs
+
+        selected_tipo = self.data.get("tipo_titular") or ("administrada" if getattr(self.instance, "conta_administrada_id", None) else "cliente")
+        self.initial.setdefault("tipo_titular", selected_tipo)
+        self.fields["cliente"].required = True
+        self.fields["conta_administrada"].required = selected_tipo == "administrada"
+
+        titular_id = None
+        if selected_tipo == "administrada":
+            titular_id = self.data.get("conta_administrada") or getattr(self.instance, "conta_administrada_id", None)
+            programas_qs = ProgramaFidelidade.objects.filter(
+                contafidelidade__conta_administrada_id=titular_id
+            ) if titular_id else ProgramaFidelidade.objects.none()
+        else:
+            titular_id = self.data.get("cliente") or getattr(self.instance, "cliente_id", None)
+            programas_qs = ProgramaFidelidade.objects.filter(
+                contafidelidade__cliente_id=titular_id
+            ) if titular_id else ProgramaFidelidade.objects.none()
+
+        if self.instance and self.instance.programa_id and not programas_qs.filter(id=self.instance.programa_id).exists():
+            programas_qs = programas_qs | ProgramaFidelidade.objects.filter(id=self.instance.programa_id)
+        self.fields["programa"].queryset = programas_qs.distinct()
+
+    def clean(self):
+        cleaned = super().clean()
+        tipo = cleaned.get("tipo_titular")
+        cliente = cleaned.get("cliente")
+        conta_adm = cleaned.get("conta_administrada")
+        if not cliente:
+            raise forms.ValidationError("Selecione o cliente que irá viajar.")
+        if tipo == "administrada":
+            if not conta_adm:
+                raise forms.ValidationError("Selecione uma conta administrada para usar pontos ou escolha 'Conta de Cliente'.")
+        else:
+            cleaned["conta_administrada"] = None
+        return cleaned
 
     class Meta:
         model = CotacaoVoo
         fields = [
+            'tipo_titular',
             'cliente',
+            'conta_administrada',
             'companhia_aerea',
             'origem',
             'destino',
@@ -172,3 +481,54 @@ class CompanhiaAereaForm(forms.ModelForm):
             "nome": forms.TextInput(attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2"}),
             "site_url": forms.URLInput(attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2"}),
         }
+
+
+class EmpresaForm(forms.ModelForm):
+    admin_nome = forms.CharField(max_length=150, label="Nome do admin")
+    admin_cpf = forms.CharField(max_length=14, label="CPF do admin")
+    admin_email = forms.EmailField(required=False, label="Email do admin")
+    admin_password = forms.CharField(
+        widget=forms.PasswordInput, label="Senha inicial do admin"
+    )
+
+    class Meta:
+        model = Empresa
+        fields = ["nome", "limite_colaboradores", "ativo"]
+        widgets = {
+            "nome": forms.TextInput(
+                attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2"}
+            ),
+            "limite_colaboradores": forms.NumberInput(
+                attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2", "min": 0}
+            ),
+        }
+
+    def clean_admin_cpf(self):
+        cpf = validate_cpf_digits(self.cleaned_data.get("admin_cpf"), field_label="CPF do admin")
+        if Cliente.objects.filter(cpf=cpf).exists():
+            raise forms.ValidationError("Já existe um cliente com este CPF.")
+        return cpf
+
+    def save(self, *, criado_por):
+        data = self.cleaned_data
+        with transaction.atomic():
+            empresa = super().save(commit=False)
+            empresa.save()
+            user = User.objects.create_user(
+                username=generate_unique_username(),
+                password=data["admin_password"],
+                first_name=data["admin_nome"],
+                email=data.get("admin_email", ""),
+            )
+            user.is_staff = True
+            user.save()
+            admin_cliente = Cliente.objects.create(
+                usuario=user,
+                cpf=data["admin_cpf"],
+                perfil="admin",
+                empresa=empresa,
+                criado_por=criado_por,
+            )
+            empresa.admin = admin_cliente
+            empresa.save()
+        return empresa

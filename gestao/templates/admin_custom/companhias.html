@@ -1,41 +1,72 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block title %}Companhias Aéreas{% endblock %}
 {% block header_title %}Companhias Aéreas{% endblock %}
-{% block menu_companhias %}bg-zinc-700 text-white{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Catálogo organizado de companhias com filtros e ações consistentes.</p>{% endblock %}
+{% block menu_companhias %}is-active{% endblock %}
 {% block dados_complementares_open %}open{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_nova_companhia' %}" class="btn">+ Nova Companhia</a>
+{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-  <form method="get" class="flex gap-3">
-    <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
-    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
-  </form>
-  <a href="{% url 'admin_nova_companhia' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Nova Companhia</a>
-</div>
-<div class="bg-zinc-800 rounded-xl overflow-x-auto">
-  <table class="min-w-full text-sm">
-    <thead class="bg-zinc-700 text-gray-200">
-      <tr>
-        <th class="p-3 text-left font-medium">Nome</th>
-        <th class="p-3 text-left font-medium">Site</th>
-        <th class="p-3 text-left font-medium">Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for companhia in companhias %}
-      <tr class="border-b border-zinc-700 hover:bg-zinc-800">
-        <td class="p-3">{{ companhia.nome }}</td>
-        <td class="p-3"><a href="{{ companhia.site_url }}" class="text-blue-400" target="_blank">{{ companhia.site_url }}</a></td>
-        <td class="p-3">
-          <a href="{% url 'admin_editar_companhia' companhia.id %}" class="text-blue-400 hover:underline">Editar</a> |
-          <a href="{% url 'admin_deletar_companhia' companhia.id %}" class="text-blue-400 hover:underline">Deletar</a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="3" class="p-3 text-center text-zinc-400">Nenhuma companhia cadastrada.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<div class="stacked">
+  <section class="surface-card filter-panel" data-filters-root>
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Filtros</p>
+        <h2 class="section-title">Buscar companhias</h2>
+      </div>
+      <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+    </div>
+    <div class="filter-body is-open" data-filter-panel>
+      <form method="get" class="form-grid">
+        <div class="form-field">
+          <label class="form-label" for="busca">Nome ou site</label>
+          <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar..." />
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn">Buscar</button>
+          <a href="{% url 'admin_companhias' %}" class="btn btn--ghost">Limpar</a>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="surface-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Companhias</p>
+        <h2 class="section-title">Lista</h2>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Site</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for companhia in companhias %}
+          <tr>
+            <td>{{ companhia.nome }}</td>
+            <td><a href="{{ companhia.site_url }}" target="_blank">{{ companhia.site_url }}</a></td>
+            <td>
+              <div class="page-actions">
+                <a href="{% url 'admin_editar_companhia' companhia.id %}" class="btn btn--ghost">Editar</a>
+                <a href="{% url 'admin_deletar_companhia' companhia.id %}" class="btn btn--ghost">Deletar</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="p-3 text-center text-zinc-400">Nenhuma companhia cadastrada.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
 </div>
 {% endblock %}

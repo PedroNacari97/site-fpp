@@ -1,22 +1,70 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Cadastro de Cliente</title>
-</head>
-<body>
-    <h2>Cadastro de Cliente</h2>
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Cadastro de Cliente{% endblock %}
+{% block header_title %}Cadastro de Cliente{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Formulário padronizado para novos clientes.</p>{% endblock %}
+{% block content %}
+<div class="form-wrapper">
     {% if messages %}
-      <ul>
+      <div class="alert alert-success">
         {% for message in messages %}
-          <li style="color:green">{{ message }}</li>
+          {{ message }}<br>
         {% endfor %}
-      </ul>
+      </div>
     {% endif %}
     <form method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Enviar</button>
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <fieldset>
+            <legend>Dados Pessoais</legend>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="required" for="{{ form.nome.id_for_label }}">Nome Completo</label>
+                    {{ form.nome }}
+                    {% if form.nome.errors %}<div class="text-red-600 text-sm mt-1">{{ form.nome.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="required" for="{{ form.cpf.id_for_label }}">CPF</label>
+                    {{ form.cpf }}
+                    {% if form.cpf.errors %}<div class="text-red-600 text-sm mt-1">{{ form.cpf.errors }}</div>{% endif %}
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="required" for="{{ form.email.id_for_label }}">Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}<div class="text-red-600 text-sm mt-1">{{ form.email.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.data_nascimento.id_for_label }}">Data de Nascimento</label>
+                    {{ form.data_nascimento }}
+                    {% if form.data_nascimento.errors %}<div class="text-red-600 text-sm mt-1">{{ form.data_nascimento.errors }}</div>{% endif %}
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Contato</legend>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="required" for="{{ form.telefone.id_for_label }}">Telefone</label>
+                    {{ form.telefone }}
+                    {% if form.telefone.errors %}<div class="text-red-600 text-sm mt-1">{{ form.telefone.errors }}</div>{% endif %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="{{ form.observacoes.id_for_label }}">Observações</label>
+                {{ form.observacoes }}
+                {% if form.observacoes.errors %}<div class="text-red-600 text-sm mt-1">{{ form.observacoes.errors }}</div>{% endif %}
+            </div>
+        </fieldset>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+            <button type="reset" class="btn btn-secondary">Cancelar</button>
+        </div>
     </form>
-</body>
-</html>
+</div>
+{% endblock %}

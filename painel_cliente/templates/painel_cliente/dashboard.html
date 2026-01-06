@@ -1,133 +1,77 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Painel do Cliente</title>
-    <link rel="stylesheet" href="{% static 'gestao/styles.css' %}">
-    <style>
-        body {
-            background: #181c25;
-            color: #fff;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        .container {
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 0 16px;
-        }
-        .painel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        h1, h2 {
-            color: #f8d16c;
-            margin-bottom: 0.7rem;
-        }
-        .painel-cards {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            margin-bottom: 2rem;
-        }
-        .card {
-            background: #23263a;
-            border-radius: 14px;
-            padding: 24px;
-            min-width: 220px;
-            flex: 1 1 240px;
-            box-shadow: 0 1px 8px #0002;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .valor {
-            font-size: 1.6rem;
-            font-weight: bold;
-            color: #f8d16c;
-        }
-        .label {
-            font-size: 1.06rem;
-            color: #c6c7db;
-        }
-        .card a {
-            background: #313455;
-            color: #f8d16c;
-            padding: 6px 12px;
-            border-radius: 8px;
-            text-decoration: none;
-            text-align: center;
-            margin-top: 8px;
-        }
-        .card a:hover {
-            background: #3d4063;
-        }
-        .section-title {
-            margin-top: 2.2rem;
-            color: #f8d16c;
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <div class="painel-header">
+{% extends 'painel_cliente/base_painel.html' %}
+
+{% block title %}Painel do Cliente{% endblock %}
+{% block page_title %}Painel do Cliente{% endblock %}
+
+{% block content %}
+    <div class="section-header">
         <h1>Bem-vindo, {{ request.user.first_name|default:request.user.username }}!</h1>
-        <form action="{% url 'logout' %}" method="post">{% csrf_token %}
-            <button type="submit">Logout</button>
-        </form>
     </div>
 
     <h2 class="section-title">Programas de Fidelidade</h2>
-    <div class="painel-cards">
+     <div class="painel-cards programas-grid">
         {% for c in contas_info %}
         <div class="card">
-            <strong style="color:#f8d16c;">{{ c.programa }}</strong>
-            <span class="label">Pontos acumulados</span>
-            <span class="valor">{{ c.saldo_pontos }}</span>
-            <span class="label">Valor total dos pontos</span>
-            <span class="valor">R$ {{ c.valor_total|floatformat:2 }}</span>
-            <span class="label">Valor médio por 1.000 pontos</span>
-            <span class="valor">R$ {{ c.valor_medio|floatformat:2 }}</span>
-            <span class="label">Valor de referência</span>
-            <span class="valor">R$ {{ c.valor_referencia|floatformat:2 }}</span>
-            <a href="{% url 'movimentacoes_programa' c.id %}">Ver movimentações</a>
+            <div class="card-header">
+                <h3 class="card-title">{{ c.programa }}</h3>
+            </div>
+            <div class="card-content">
+                <span class="label">Pontos acumulados</span>
+                <span class="valor">{{ c.saldo_pontos }}</span>
+                <span class="label">Valor total dos pontos</span>
+                <span class="valor">R$ {{ c.valor_total|floatformat:2 }}</span>
+                <span class="label">Valor médio por 1.000 pontos</span>
+                <span class="valor">R$ {{ c.valor_medio|floatformat:2 }}</span>
+                <span class="label">Valor de referência</span>
+                <span class="valor">R$ {{ c.valor_referencia|floatformat:2 }}</span>
+            </div>
+            <div class="card-actions">
+                <a class="btn btn--outline btn--sm" href="{% url 'movimentacoes_programa' c.id %}">Ver movimentações</a>
+            </div>
         </div>
         {% empty %}
-        <p style="color:#f8d16c;">Nenhum programa cadastrado.</p>
+        <p class="muted-text">Nenhum programa cadastrado.</p>
         {% endfor %}
     </div>
 
     <h2 class="section-title">Emissões e Hotéis</h2>
     <div class="painel-cards">
         <div class="card">
-            <strong style="color:#f8d16c; font-size: 1.2rem;">Emissões</strong>
-            <span class="label">Quantidade total de emissões</span>
-            <span class="valor">{{ qtd_emissoes }}</span>
-            <span class="label">Valor total gasto em pontos</span>
-            <span class="valor">{{ pontos_totais_utilizados }}</span>
-            <span class="label">Valor de referência acumulado</span>
-            <span class="valor">R$ {{ valor_total_referencia|floatformat:2 }}</span>
-            <span class="label">Valor total pago</span>
-            <span class="valor">R$ {{ valor_total_pago|floatformat:2 }}</span>
-            <span class="label">Valor total economizado</span>
-            <span class="valor">R$ {{ valor_total_economizado|floatformat:2 }}</span>
-            <a href="{% url 'painel_emissoes' %}">Ver detalhes</a>
+            <div class="card-header">
+                <h3 class="card-title">Emissões</h3>
+            </div>
+            <div class="card-content">
+                <span class="label">Quantidade total de emissões</span>
+                <span class="valor">{{ qtd_emissoes }}</span>
+                <span class="label">Valor de referência acumulado</span>
+                <span class="valor">R$ {{ valor_total_referencia|floatformat:2 }}</span>
+                <span class="label">Valor total pago</span>
+                <span class="valor">R$ {{ valor_total_pago|floatformat:2 }}</span>
+                <span class="label">Valor total economizado</span>
+                <span class="valor">R$ {{ valor_total_economizado|floatformat:2 }}</span>
+            </div>
+            <div class="card-actions">
+                <a class="btn btn--outline btn--sm" href="{% url 'painel_emissoes' %}">Ver detalhes</a>
+            </div>
         </div>
 
         <div class="card">
-            <strong style="color:#f8d16c; font-size: 1.2rem;">Hotéis</strong>
-            <span class="label">Quantidade de reservas de hotéis</span>
-            <span class="valor">{{ qtd_hoteis }}</span>
-            <span class="label">Valor de referência acumulado</span>
-            <span class="valor">R$ {{ valor_total_hoteis_referencia|floatformat:2 }}</span>
-            <span class="label">Valor total pago</span>
-            <span class="valor">R$ {{ valor_total_hoteis|floatformat:2 }}</span>
-            <span class="label">Valor total economizado</span>
-            <span class="valor">R$ {{ valor_total_hoteis_economia|floatformat:2 }}</span>
-            <a href="{% url 'painel_hoteis' %}">Ver detalhes</a>
+            <div class="card-header">
+                <h3 class="card-title">Hotéis</h3>
+            </div>
+            <div class="card-content">
+                <span class="label">Quantidade de reservas de hotéis</span>
+                <span class="valor">{{ qtd_hoteis }}</span>
+                <span class="label">Valor de referência acumulado</span>
+                <span class="valor">R$ {{ valor_total_hoteis_referencia|floatformat:2 }}</span>
+                <span class="label">Valor total pago</span>
+                <span class="valor">R$ {{ valor_total_hoteis|floatformat:2 }}</span>
+                <span class="label">Valor total economizado</span>
+                <span class="valor">R$ {{ valor_total_hoteis_economia|floatformat:2 }}</span>
+            </div>
+            <div class="card-actions">
+                <a class="btn btn--outline btn--sm" href="{% url 'painel_hoteis' %}">Ver detalhes</a>
+            </div>
         </div>
     </div>
-</div>
-</body>
-</html>
+{% endblock %}

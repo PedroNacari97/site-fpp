@@ -1,53 +1,85 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block title %}Cotações de Voo{% endblock %}
 {% block header_title %}Cotações de Voo{% endblock %}
-{% block menu_cotacoes_voo %}bg-zinc-700 text-white{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Cotações com filtros limpos, botões alinhados e responsividade garantida.</p>{% endblock %}
+{% block menu_cotacoes_voo %}is-active{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_nova_cotacao_voo' %}" class="btn">+ Nova Cotação</a>
+{% endblock %}
 {% block content %}
-<div class="flex justify-between items-center mb-6 flex-wrap gap-4">
-    <form method="get" class="flex gap-3">
-        <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar..." class="bg-zinc-900 border border-zinc-600 rounded px-3 py-2" />
-        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Buscar</button>
-    </form>
-    <a href="{% url 'admin_nova_cotacao_voo' %}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded font-bold">Nova Cotação</a>
-</div>
-<div class="bg-zinc-800 rounded-xl p-4 overflow-x-auto">
-    <table class="min-w-full text-sm">
-        <thead class="bg-zinc-700 text-zinc-200">
-            <tr>
-                <th class="p-2 text-left font-medium">Cliente</th>
-                <th class="p-2 text-left font-medium">Origem</th>
-                <th class="p-2 text-left font-medium">Destino</th>
-                <th class="p-2 text-left font-medium">Data Ida</th>
-                <th class="p-2 text-left font-medium">Valor Parcelado</th>
-                <th class="p-2 text-left font-medium">Valor à Vista</th>
-                <th class="p-2 text-left font-medium">Valor Referência</th>
-                <th class="p-2 text-left font-medium">Economia de até</th>
-                <th class="p-2 text-left font-medium">Status</th>
-                <th class="p-2 text-left font-medium">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for c in cotacoes %}
-            <tr class="border-b border-zinc-700">
-                <td class="p-2">{{ c.cliente.usuario.get_full_name|default:c.cliente.usuario.username }}</td>
-                <td class="p-2">{{ c.origem }}</td>
-                <td class="p-2">{{ c.destino }}</td>
-                <td class="p-2">{{ c.data_ida|date:"d/m/Y H:i" }}</td>
-                <td class="p-2">R$ {{ c.valor_parcelado|floatformat:2 }}</td>
-                <td class="p-2">R$ {{ c.valor_vista|floatformat:2 }}</td>
-                <td class="p-2">R$ {{ c.valor_passagem|floatformat:2 }}</td>
-                <td class="p-2">R$ {{ c.economia|floatformat:2 }}</td>
-                <td class="p-2">{{ c.get_status_display }}</td>
-                <td class="p-2">
-                    <a href="{% url 'admin_cotacao_voo_pdf' c.id %}" class="text-blue-400">PDF</a> |
-                    <a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="text-blue-400">Editar</a> |
-                    <a href="{% url 'admin_deletar_cotacao_voo' c.id %}" class="text-blue-400">Deletar</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="10" class="text-center text-red-400 py-4">Nenhuma cotação encontrada.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="stacked">
+    <section class="surface-card filter-panel" data-filters-root>
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Filtros</p>
+                <h2 class="section-title">Buscar cotações</h2>
+            </div>
+            <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
+        </div>
+        <div class="filter-body is-open" data-filter-panel>
+            <form method="get" class="form-grid">
+                <div class="form-field">
+                    <label class="form-label" for="busca">Origem, destino ou cliente</label>
+                    <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar..." />
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn">Buscar</button>
+                    <a href="{% url 'admin_cotacoes_voo' %}" class="btn btn--ghost">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="surface-card">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Cotações</p>
+                <h2 class="section-title">Cotações de voo</h2>
+                <p class="section-subtitle">Tabela responsiva com status e ações posicionados.</p>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Origem</th>
+                        <th>Destino</th>
+                        <th>Data Ida</th>
+                        <th>Valor Parcelado</th>
+                        <th>Valor à Vista</th>
+                        <th>Valor Referência</th>
+                        <th>Economia de até</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in cotacoes %}
+                    <tr>
+                        <td>{{ c.cliente.usuario.get_full_name|default:c.cliente.usuario.username }}</td>
+                        <td>{{ c.origem }}</td>
+                        <td>{{ c.destino }}</td>
+                        <td>{{ c.data_ida|date:"d/m/Y H:i" }}</td>
+                        <td>R$ {{ c.valor_parcelado|floatformat:2 }}</td>
+                        <td>R$ {{ c.valor_vista|floatformat:2 }}</td>
+                        <td>R$ {{ c.valor_passagem|floatformat:2 }}</td>
+                        <td>R$ {{ c.economia|floatformat:2 }}</td>
+                        <td>{{ c.get_status_display }}</td>
+                        <td>
+                            <div class="page-actions">
+                                <a href="{% url 'admin_cotacao_voo_pdf' c.id %}" class="btn btn--ghost">PDF</a>
+                                <a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="btn btn--ghost">Editar</a>
+                                <a href="{% url 'admin_deletar_cotacao_voo' c.id %}" class="btn btn--ghost">Deletar</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="10" class="text-center text-red-400 py-4">Nenhuma cotação encontrada.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
 {% endblock %}
