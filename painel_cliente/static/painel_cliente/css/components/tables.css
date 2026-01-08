@@ -2,11 +2,11 @@ table {
   width: 100%;
   border-collapse: collapse;
   background: var(--color-surface);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   margin-bottom: 16px;
   border: 1px solid var(--color-border);
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-table);
 }
 
 th,
@@ -16,7 +16,7 @@ td {
 }
 
 th {
-  background: var(--color-primary-dark);
+  background: hsl(var(--primary));
   color: var(--color-surface);
   font-weight: 600;
   font-size: 12px;

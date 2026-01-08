@@ -1,8 +1,6 @@
 .app-shell {
-  display: flex;
-  height: 100vh;
+  min-height: 100vh;
   background: var(--color-bg);
-  overflow: hidden;
 }
 
 .sidebar {
@@ -11,12 +9,16 @@
   left: 0;
   width: 256px;
   height: 100vh;
-  background: var(--color-surface);
-  box-shadow: 6px 0 18px rgba(0, 0, 0, 0.08);
+  background: hsl(var(--sidebar-background));
+  color: hsl(var(--sidebar-foreground));
+  border-right: 1px solid hsl(var(--sidebar-border));
+  box-shadow: 6px 0 18px rgba(15, 23, 42, 0.2);
   transform: translateX(-100%);
   transition: transform 0.3s ease-in-out;
   z-index: 50;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 body.sidebar-open .sidebar {
@@ -43,57 +45,127 @@ body.sidebar-open .sidebar-overlay {
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid hsl(var(--sidebar-muted));
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.sidebar-logo {
+  height: 32px;
+  width: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 .sidebar-title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: var(--color-text);
+  color: hsl(var(--sidebar-foreground));
 }
 
 .sidebar-nav {
   margin-top: 16px;
   display: flex;
   flex-direction: column;
+  gap: 4px;
+  padding: 0 12px;
+  flex: 1;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
   text-decoration: none;
-  color: var(--color-muted);
-  transition: color 0.2s, background 0.2s;
-  border-right: 2px solid transparent;
+  color: hsl(var(--sidebar-foreground) / 0.7);
+  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
 .nav-item:hover {
-  background: var(--color-surface-muted);
-  color: var(--color-text);
+  background: hsl(var(--sidebar-muted));
+  color: hsl(var(--sidebar-foreground));
 }
 
 .nav-item.is-active {
-  background: var(--color-surface-active);
-  color: var(--color-primary);
-  border-right-color: var(--color-primary);
+  background: hsl(var(--sidebar-accent));
+  color: #fff;
+  box-shadow: 0 10px 25px -5px hsl(var(--primary) / 0.25);
   font-weight: 600;
 }
 
-.app-shell__content {
+.sidebar-profile {
+  border-top: 1px solid hsl(var(--sidebar-muted));
+  padding: 12px;
+}
+
+.sidebar-profile__card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 12px;
+  color: hsl(var(--sidebar-foreground));
+  transition: background 0.2s ease;
+}
+
+.sidebar-profile__card:hover {
+  background: hsl(var(--sidebar-muted));
+}
+
+.sidebar-profile__avatar {
+  height: 36px;
+  width: 36px;
+  border-radius: 12px;
+  background: hsl(var(--sidebar-foreground) / 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #fff;
+}
+
+.sidebar-profile__info {
+  min-width: 0;
   flex: 1;
+}
+
+.sidebar-profile__name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.sidebar-profile__email {
+  font-size: 0.75rem;
+  color: hsl(var(--sidebar-foreground) / 0.6);
+}
+
+.app-shell__content {
+  margin-left: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  transition: transform 0.3s ease;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
 }
 
 .app-header {
-  background: var(--color-surface);
+  background: hsl(var(--background) / 0.8);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  padding: 12px 16px;
+  height: 64px;
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -105,20 +177,55 @@ body.sidebar-open .sidebar-overlay {
 .app-header__left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .app-header__title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--color-heading);
   text-transform: capitalize;
+}
+
+.app-header__subtitle {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.page-subtitle {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin: 2px 0 0;
 }
 
 .app-header__actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+}
+
+.header-search {
+  position: relative;
+}
+
+.header-search input {
+  width: 240px;
+  padding-left: 34px;
+  background: hsl(var(--muted) / 0.5);
+  border: 1px solid transparent;
+  height: 36px;
+  margin-bottom: 0;
+  max-width: none;
+}
+
+.header-search svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--color-muted);
 }
 
 .user-name {
@@ -129,7 +236,7 @@ body.sidebar-open .sidebar-overlay {
 .app-main {
   flex: 1;
   overflow: auto;
-  padding: 16px;
+  padding: 24px;
 }
 
 .app-shell .btn,
@@ -140,16 +247,17 @@ body.sidebar-open .sidebar-overlay {
 }
 
 .icon-button {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
   background: transparent;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
+  color: inherit;
 }
 
 .icon-button:hover {
@@ -175,7 +283,7 @@ body.sidebar-open .sidebar-overlay {
 
 .painel-cards {
   display: grid;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 16px;
 }
 
@@ -184,7 +292,7 @@ body.sidebar-open .sidebar-overlay {
 }
 
 .page-actions {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .status-message {
@@ -201,7 +309,6 @@ body.sidebar-open .sidebar-overlay {
 
 @media (min-width: 1024px) {
   .sidebar {
-    position: static;
     transform: translateX(0);
   }
 
@@ -209,6 +316,10 @@ body.sidebar-open .sidebar-overlay {
   .sidebar-close,
   .sidebar-overlay {
     display: none;
+  }
+
+  .app-shell__content {
+    margin-left: 256px;
   }
 }
 
@@ -224,7 +335,7 @@ body.sidebar-open .sidebar-overlay {
 
 @media (max-width: 768px) {
   .app-header {
-    padding: 10px 16px;
+    padding: 0 16px;
     height: 60px;
   }
 
@@ -233,6 +344,10 @@ body.sidebar-open .sidebar-overlay {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .header-search {
+    display: none;
   }
 
   .user-name {

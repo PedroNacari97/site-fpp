@@ -1,16 +1,19 @@
 label {
   display: block;
   margin: 8px 0 4px;
-  color: #2d3748;
+  color: var(--color-muted);
   text-align: left;
   font-size: 0.875rem;
 }
 
 input[type="text"],
 input[type="password"],
+input[type="email"],
+input[type="date"],
+input[type="number"],
 select {
   width: 100%;
-  height: 32px;
+  height: 36px;
   padding: 6px 10px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -24,10 +27,13 @@ select {
 
 input[type="text"]:focus-visible,
 input[type="password"]:focus-visible,
+input[type="email"]:focus-visible,
+input[type="date"]:focus-visible,
+input[type="number"]:focus-visible,
 select:focus-visible {
   outline: none;
-  border-color: #3182ce;
-  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.25);
+  border-color: hsl(var(--ring));
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.25);
 }
 
 .erro {
