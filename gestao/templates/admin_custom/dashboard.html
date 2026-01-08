@@ -71,8 +71,8 @@
       </div>
     </div>
     {% if view_type == "parceiros" %}
-    <div class="stat-grid">
-      <div class="stat-card">
+    <div class="stat-grid stats-grid">
+      <div class="stat-card primary">
         <p class="stat-label">✈️ Total de Emissões</p>
         <p class="stat-value">{{ total_emissoes }}</p>
         <p class="stat-meta">Emissões vinculadas ao emissor selecionado</p>
@@ -99,8 +99,8 @@
       </div>
     </div>
     {% else %}
-    <div class="stat-grid">
-      <div class="stat-card">
+    <div class="stat-grid stats-grid">
+      <div class="stat-card primary">
         <p class="stat-label">
           {% if view_type == "contas" %}🏢 Total de Contas{% else %}👥 Total de Clientes{% endif %}
         </p>
@@ -131,7 +131,7 @@
         <h2 class="section-title">Pontos, valores e referências</h2>
       </div>
     </div>
-    <div class="stat-grid">
+    <div class="stat-grid stats-grid">
       {% for prog in programas %}
         <div class="stat-card">
           <p class="stat-label">{{ prog.nome }}</p>
@@ -162,8 +162,8 @@
         <h2 class="section-title">{% if view_type == "parceiros" %}Emissões e vendas{% else %}Emissões e Hotéis{% endif %}</h2>
       </div>
     </div>
-    <div class="stat-grid">
-      <div class="stat-card">
+    <div class="stat-grid stats-grid">
+      <div class="stat-card primary">
         <p class="stat-label">Emissões</p>
         <p class="stat-value">{{ emissoes.qtd }}</p>
         <p class="stat-meta">Quantidade total de emissões</p>

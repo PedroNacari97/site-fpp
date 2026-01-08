@@ -10,6 +10,7 @@
   --success: hsl(var(--success));
   --warning: hsl(var(--warning));
   --danger: hsl(var(--destructive));
+  --info: hsl(var(--primary));
   --radius: var(--radius);
   --shadow: var(--shadow-card);
   --page-max-width: 100%;
@@ -209,7 +210,7 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 12px;
+  padding: 16px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -243,7 +244,7 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 12px;
+  padding: 16px;
   margin-bottom: 1rem;
 }
 
@@ -257,7 +258,7 @@ a:hover {
 
 .section-title {
   margin: 0;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--heading);
 }
@@ -272,10 +273,10 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  height: 36px;
+  height: 38px;
   padding: 0 14px;
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: 10px;
+  font-size: 13px;
   font-weight: 700;
   border: 1px solid transparent;
   background: transparent;
@@ -313,7 +314,7 @@ a:hover {
 }
 
 .btn-link {
-  height: 36px;
+  height: 38px;
   padding: 0 14px;
   border-radius: 6px;
   font-size: 12px;
@@ -333,10 +334,11 @@ a:hover {
   color: var(--muted);
 }
 
-.stat-grid {
+.stat-grid,
+.stats-grid {
   display: grid;
-  gap: 0.75rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .stat-card {
@@ -344,27 +346,55 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 12px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  min-height: 120px;
+  gap: 0.35rem;
+  min-height: 110px;
 }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
   font-weight: 600;
 }
 
 .stat-value {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--heading);
 }
 
 .stat-meta {
   color: var(--muted);
+}
+
+.stat-card.primary {
+  background: linear-gradient(140deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.stat-card.primary .stat-label,
+.stat-card.primary .stat-value,
+.stat-card.primary .stat-meta {
+  color: #ffffff;
+}
+
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.trend.positive {
+  color: hsl(var(--success));
+}
+
+.trend.negative {
+  color: hsl(var(--danger));
 }
 
 .card-link {
@@ -418,6 +448,18 @@ a:hover {
   flex-direction: column;
   gap: 0.5rem;
   box-shadow: var(--shadow);
+}
+
+.alert-card.info {
+  border-left: 4px solid hsl(var(--primary));
+}
+
+.alert-card.warning {
+  border-left: 4px solid hsl(var(--warning));
+}
+
+.alert-card.success {
+  border-left: 4px solid hsl(var(--success));
 }
 
 .alert-card__header {
@@ -536,37 +578,42 @@ a:hover {
   -webkit-overflow-scrolling: touch;
 }
 
-.data-table {
+.data-table,
+.emissions-table {
   width: 100%;
   border-collapse: collapse;
   min-width: 720px;
 }
 
-.data-table--wide {
+.data-table--wide,
+.emissions-table--wide {
   min-width: 980px;
 }
 
 .data-table th,
-.data-table td {
+.data-table td,
+.emissions-table th,
+.emissions-table td {
   padding: 8px 12px;
   text-align: left;
   border-bottom: 1px solid var(--border);
 }
 
-.data-table th {
-  background: hsl(var(--primary));
-  color: #ffffff;
+.data-table th,
+.emissions-table th {
+  background: hsl(var(--muted));
+  color: var(--heading);
   font-weight: 700;
-  position: sticky;
-  top: 0;
   font-size: 12px;
 }
 
-.data-table td {
+.data-table td,
+.emissions-table td {
   font-size: 13px;
 }
 
-.data-table tbody tr:hover {
+.data-table tbody tr:hover,
+.emissions-table tbody tr:hover {
   background: hsl(var(--muted) / 0.5);
 }
 
@@ -604,6 +651,40 @@ a:hover {
 .pill-neutral {
   background: hsl(var(--muted));
   color: var(--heading);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: hsl(var(--muted));
+  color: var(--heading);
+}
+
+.badge.success {
+  background: hsl(var(--success) / 0.15);
+  color: hsl(var(--success));
+}
+
+.badge.warning {
+  background: hsl(var(--warning) / 0.15);
+  color: hsl(var(--warning));
+}
+
+.badge.info {
+  background: hsl(var(--primary) / 0.15);
+  color: hsl(var(--primary));
+}
+
+.right {
+  text-align: right;
+}
+
+.center {
+  text-align: center;
 }
 
 .filter-panel {

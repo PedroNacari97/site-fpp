@@ -194,7 +194,7 @@ body.sidebar-open .app-shell .sidebar {
 }
 
 .app-header {
-  background: hsl(var(--background) / 0.8);
+  background: hsl(var(--background) / 0.9);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -261,6 +261,28 @@ body.sidebar-open .app-shell .sidebar {
 .user-name {
   color: var(--color-muted);
   font-weight: 600;
+}
+
+.notification-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-heading);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notification-btn .badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
 }
 
 .sidebar-nav {
@@ -396,6 +418,10 @@ body.sidebar-open .app-shell .sidebar {
     display: none;
   }
 
+  .notification-btn {
+    display: none;
+  }
+
   .app-main {
     padding: 16px 12px;
   }
@@ -403,7 +429,7 @@ body.sidebar-open .app-shell .sidebar {
 
 @media (min-width: 1024px) {
   .app-shell .sidebar {
-    position: static;
+    position: fixed;
     transform: translateX(0);
     overflow-y: auto;
   }
