@@ -90,21 +90,17 @@ class EmissaoPassagem(models.Model):
         pontos = Decimal(self.pontos_utilizados or 0)
         valor_milheiro = Decimal(self.valor_milheiro_parceiro or 0)
         custo_milhas = (pontos / Decimal("1000")) * valor_milheiro
-        incluir_taxas = not self.emissor_parceiro_id
+        incluir_taxas = not self.emissor_parceiro_id and not self.conta_administrada_id
         custo_total = custo_milhas + (Decimal(self.valor_taxas or 0) if incluir_taxas else Decimal("0"))
         self.custo_total = custo_total
         if self.valor_venda_final is not None:
-            base_lucro = custo_milhas if self.emissor_parceiro_id else custo_total
-            self.lucro = Decimal(self.valor_venda_final or 0) - base_lucro
+            self.lucro = Decimal(self.valor_venda_final or 0) - custo_total
         elif self.lucro is None:
             self.lucro = Decimal("0")
-        if self.valor_referencia is not None:
-            if self.valor_venda_final not in (None, ""):
-                self.economia_obtida = Decimal(self.valor_referencia or 0) - Decimal(
-                    self.valor_venda_final or 0
-                )
-            else:
-                self.economia_obtida = custo_total
+        if self.valor_venda_final not in (None, ""):
+            self.economia_obtida = Decimal(self.valor_venda_final or 0) - custo_total
+        else:
+            self.economia_obtida = custo_total
         super().save(*args, **kwargs)
 
     def __str__(self):

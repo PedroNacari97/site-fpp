@@ -312,14 +312,7 @@ class EmissaoPassagemForm(forms.ModelForm):
                 contafidelidade__conta_administrada_id=titular_id
             ) if titular_id else ProgramaFidelidade.objects.none()
         elif selected_tipo == "parceiro":
-            if empresa:
-                programas_qs = ProgramaFidelidade.objects.filter(
-                    contafidelidade__cliente__empresa=empresa
-                ) | ProgramaFidelidade.objects.filter(
-                    contafidelidade__conta_administrada__empresa=empresa
-                )
-            else:
-                programas_qs = ProgramaFidelidade.objects.all()
+            programas_qs = ProgramaFidelidade.objects.all()
         else:
             titular_id = self.data.get("cliente") or getattr(self.instance, "cliente_id", None)
             programas_qs = ProgramaFidelidade.objects.filter(
@@ -347,8 +340,6 @@ class EmissaoPassagemForm(forms.ModelForm):
         if tipo == "administrada":
             if not conta_adm:
                 raise forms.ValidationError("Selecione uma conta administrada para usar pontos ou escolha 'Conta de Cliente'.")
-            if cleaned.get("pontos_utilizados") and cleaned.get("valor_milheiro_parceiro") in (None, ""):
-                raise forms.ValidationError("Informe o valor do milheiro usado na conta administrada.")
         elif tipo != "parceiro":
             cleaned["conta_administrada"] = None
         if tipo == "parceiro":
@@ -434,6 +425,7 @@ class EmissorParceiroForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         empresa = kwargs.pop("empresa", None)
         super().__init__(*args, **kwargs)
+        self.fields["programas"].required = False
         if empresa:
             programas_qs = ProgramaFidelidade.objects.filter(
                 Q(contafidelidade__cliente__empresa=empresa)
