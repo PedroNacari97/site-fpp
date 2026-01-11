@@ -328,11 +328,11 @@ def nova_emissao(request):
                     cliente=emissao.cliente, programa=emissao.programa
                 ).select_related("programa").first()
             valor_medio_milheiro = None
-            if tipo_emissao == "cliente" and conta:
+            if tipo_emissao in ("cliente", "administrada") and conta:
                 valor_medio_milheiro = conta.valor_medio_por_mil
                 if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
                     valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
-            elif tipo_emissao in ("administrada", "parceiro"):
+            elif tipo_emissao == "parceiro":
                 valor_medio_milheiro = float(emissao.valor_milheiro_parceiro or 0)
             if tipo_emissao in ("cliente", "administrada") and not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
@@ -365,7 +365,7 @@ def nova_emissao(request):
                     form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
                 else:
                     with transaction.atomic():
-                        if tipo_emissao == "cliente" and valor_medio_milheiro is not None:
+                        if tipo_emissao in ("cliente", "administrada") and valor_medio_milheiro is not None:
                             emissao.valor_milheiro_parceiro = Decimal(str(valor_medio_milheiro))
                         valor_milheiro = emissao.valor_milheiro_parceiro or 0
                         valor_referencia_pontos = calcular_custo_milhas(
@@ -378,8 +378,7 @@ def nova_emissao(request):
                         )
                         emissao.custo_total = custo_total
                         emissao.economia_obtida = calcular_economia(emissao, custo_total)
-                        custo_lucro = valor_referencia_pontos if emissao_parceiro else custo_total
-                        emissao.lucro = calcular_lucro_emissao(emissao, custo_lucro)
+                        emissao.lucro = calcular_lucro_emissao(emissao, custo_total)
                         emissao.save()
 
                         total_passageiros_esperado = (emissao.qtd_adultos or 0) + (emissao.qtd_criancas or 0) + (emissao.qtd_bebes or 0)
@@ -515,11 +514,11 @@ def editar_emissao(request, emissao_id):
                         cliente=emissao.cliente, programa=emissao.programa
                     ).select_related("programa").first()
                 valor_medio_milheiro = None
-                if tipo_emissao == "cliente" and conta:
+                if tipo_emissao in ("cliente", "administrada") and conta:
                     valor_medio_milheiro = conta.valor_medio_por_mil
                     if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
                         valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
-                elif tipo_emissao in ("administrada", "parceiro"):
+                elif tipo_emissao == "parceiro":
                     valor_medio_milheiro = float(emissao.valor_milheiro_parceiro or 0)
                 if tipo_emissao in ("cliente", "administrada") and not conta:
                     form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
@@ -619,7 +618,7 @@ def editar_emissao(request, emissao_id):
                             },
                         )
 
-                    if tipo_emissao == "cliente" and valor_medio_milheiro is not None:
+                    if tipo_emissao in ("cliente", "administrada") and valor_medio_milheiro is not None:
                         emissao.valor_milheiro_parceiro = Decimal(str(valor_medio_milheiro))
                     valor_milheiro = emissao.valor_milheiro_parceiro or 0
                     valor_referencia_pontos = calcular_custo_milhas(
@@ -632,8 +631,7 @@ def editar_emissao(request, emissao_id):
                     )
                     emissao.custo_total = custo_total
                     emissao.economia_obtida = calcular_economia(emissao, custo_total)
-                    custo_lucro = valor_referencia_pontos if emissao_parceiro else custo_total
-                    emissao.lucro = calcular_lucro_emissao(emissao, custo_lucro)
+                    emissao.lucro = calcular_lucro_emissao(emissao, custo_total)
                     emissao.save()
 
                     total_passageiros_esperado = (emissao.qtd_adultos or 0) + (emissao.qtd_criancas or 0) + (emissao.qtd_bebes or 0)

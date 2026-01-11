@@ -3,7 +3,7 @@
 from typing import Dict, List
 from django.db.models import Q
 
-from gestao.models import ContaFidelidade, EmissaoPassagem, Passageiro
+from gestao.models import ContaFidelidade, EmissaoPassagem, Passageiro, ProgramaFidelidade
 from gestao.utils import normalize_cpf
 
 
@@ -177,15 +177,8 @@ def build_empresa_programas_map(
     empresa_id=None, instance=None
 ) -> List[dict]:
     """Retorna uma lista de programas disponíveis para a empresa."""
-
-    contas = ContaFidelidade.objects.select_related("programa")
-    if empresa_id:
-        contas = contas.filter(
-            Q(cliente__empresa_id=empresa_id) | Q(conta_administrada__empresa_id=empresa_id)
-        )
-    programas = {}
-    for conta in contas:
-        programas.setdefault(conta.programa_id, conta.programa)
+    programas_qs = ProgramaFidelidade.objects.all()
+    programas = {programa.id: programa for programa in programas_qs}
 
     data = [
         {

@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 import re
 
 from services.pdf_service import emissao_pdf_response
-from gestao.models import Cliente, Passageiro
+from gestao.models import Cliente, EmissaoPassagem, EmissorParceiro, Passageiro
 from gestao.services.dashboard import build_operational_dashboard_context
 from gestao.utils import normalize_cpf
 from repositories.painel_repository import (
@@ -69,12 +69,15 @@ def build_dashboard_context(user, *, selected_continente=None, selected_pais=Non
         "dashboard_subtitle": "Acompanhe emissões, alertas e pendências com foco no dia a dia.",
         "cliente_obj": cliente,
         "menu_ativo": "dashboard",
+        "is_parceiro": False,
     }
 
 
 @login_required
 def dashboard(request):
     """Render the main dashboard for an authenticated client."""
+    if EmissorParceiro.objects.filter(usuario=request.user, ativo=True).exists():
+        return redirect("painel_parceiro_dashboard")
     cliente = get_object_or_404(Cliente, usuario=request.user)
     if not cliente.ativo:
         return render(request, "painel_cliente/inativo.html")
@@ -87,9 +90,66 @@ def dashboard(request):
     return render(request, "painel_cliente/dashboard.html", context)
 
 
+def _get_emissor_parceiro_for_user(user):
+    return EmissorParceiro.objects.filter(usuario=user, ativo=True).first()
+
+
+@login_required
+def parceiro_dashboard(request):
+    """Render the partner dashboard with emissions scoped to the partner."""
+    emissor = _get_emissor_parceiro_for_user(request.user)
+    if not emissor:
+        return render(request, "sem_permissao.html")
+    emissoes = (
+        EmissaoPassagem.objects.filter(emissor_parceiro=emissor)
+        .select_related("aeroporto_partida", "aeroporto_destino", "programa")
+        .order_by("-criado_em")
+    )
+    total_emissoes = emissoes.count()
+    total_milhas = sum(int(e.pontos_utilizados or 0) for e in emissoes)
+    total_pago = sum(float(e.custo_total or 0) for e in emissoes)
+    valor_medio_milheiro = (total_pago / total_milhas) if total_milhas else 0
+    context = {
+        "emissor": emissor,
+        "emissoes_recentes": emissoes[:6],
+        "total_emissoes": total_emissoes,
+        "total_milhas": total_milhas,
+        "total_pago": total_pago,
+        "valor_medio_milheiro": valor_medio_milheiro,
+        "is_parceiro": True,
+        "menu_ativo": "dashboard",
+    }
+    return render(request, "painel_cliente/parceiro_dashboard.html", context)
+
+
+@login_required
+def parceiro_movimentacoes(request):
+    """List emissions for the partner with full financial details."""
+    emissor = _get_emissor_parceiro_for_user(request.user)
+    if not emissor:
+        return render(request, "sem_permissao.html")
+    emissoes = (
+        EmissaoPassagem.objects.filter(emissor_parceiro=emissor)
+        .select_related("aeroporto_partida", "aeroporto_destino", "programa")
+        .order_by("-criado_em")
+    )
+    return render(
+        request,
+        "painel_cliente/parceiro_movimentacoes.html",
+        {
+            "emissor": emissor,
+            "emissoes": emissoes,
+            "is_parceiro": True,
+            "menu_ativo": "movimentacoes",
+        },
+    )
+
+
 @login_required
 def movimentacoes_programa(request, conta_id):
     """List points transactions for a fidelity account."""
+    if EmissorParceiro.objects.filter(usuario=request.user, ativo=True).exists():
+        return render(request, "sem_permissao.html")
     conta = get_conta_by_id_for_user(conta_id, request.user)
     movimentacoes = _annotate_cpf_consumo(
         _annotate_emissao_id(conta.movimentacoes_compartilhadas.order_by("-data"))
@@ -101,6 +161,7 @@ def movimentacoes_programa(request, conta_id):
         {
             "movimentacoes": movimentacoes,
             "conta": conta,
+            "is_parceiro": False,
         },
     )
 
@@ -108,6 +169,8 @@ def movimentacoes_programa(request, conta_id):
 @login_required
 def painel_emissoes(request):
     """Display detailed flight emissions for the user."""
+    if EmissorParceiro.objects.filter(usuario=request.user, ativo=True).exists():
+        return render(request, "sem_permissao.html")
     conta = get_contas_by_user(request.user).first()
     emissoes = get_emissoes_passagem_by_user(request.user)
     total_pago = sum(float(e.valor_pago or 0) for e in emissoes)
@@ -118,6 +181,7 @@ def painel_emissoes(request):
             "emissoes": emissoes,
             "conta": conta,
             "total_pago": total_pago,
+            "is_parceiro": False,
         },
     )
 
@@ -129,6 +193,8 @@ def emissao_pdf(request, emissao_id):
     A lógica de geração do PDF foi extraída para ``services.pdf_service``
     para manter a view responsável apenas pelo fluxo HTTP.
     """
+    if EmissorParceiro.objects.filter(usuario=request.user, ativo=True).exists():
+        return render(request, "sem_permissao.html")
     emissao = get_emissao_passagem_for_user(emissao_id, request.user)
     return emissao_pdf_response(emissao)
 
@@ -136,6 +202,8 @@ def emissao_pdf(request, emissao_id):
 @login_required
 def painel_hoteis(request):
     """Display hotel reservations for the user."""
+    if EmissorParceiro.objects.filter(usuario=request.user, ativo=True).exists():
+        return render(request, "sem_permissao.html")
     emissoes = get_emissoes_hotel_by_user(request.user)
     total_pago = sum(float(e.valor_pago or 0) for e in emissoes)
     total_referencia = sum(float(e.valor_referencia or 0) for e in emissoes)
@@ -151,5 +219,6 @@ def painel_hoteis(request):
             "total_pago": total_pago,
             "total_referencia": total_referencia,
             "total_economia": total_economia,
+            "is_parceiro": False,
         },
     )
