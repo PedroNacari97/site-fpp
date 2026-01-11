@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from gestao.models import Cliente, Empresa
+from gestao.models import Cliente, Empresa, EmissorParceiro
 from .forms import UsuarioForm, ClientePublicoForm
 from gestao.utils import normalize_cpf, sync_cliente_activation
 
@@ -27,6 +27,8 @@ def custom_login(request):
                  return redirect('admin_dashboard')
             elif perfil == "cliente" and not user.is_staff:
                 return redirect('painel_dashboard')
+            elif perfil == "parceiro" and EmissorParceiro.objects.filter(usuario=user, ativo=True).exists():
+                return redirect("painel_parceiro_dashboard")
             else:
                 messages.error(request, "Tipo de usuário inválido para esse acesso.")
         else:

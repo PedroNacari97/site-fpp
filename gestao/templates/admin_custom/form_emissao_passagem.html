@@ -226,7 +226,7 @@
             <div class="form-field--compact" id="valor-milheiro-parceiro-wrapper">
                 <label class="form-label" for="{{ form.valor_milheiro_parceiro.id_for_label }}">Valor do milheiro (R$)</label>
                 {{ form.valor_milheiro_parceiro }}
-                <p class="helper-text">Automático para conta do cliente e manual para conta administrada ou emissor parceiro.</p>
+                <p class="helper-text">Automático para conta do cliente e conta administrada. Manual para emissor parceiro.</p>
             </div>
             <div class="form-field--compact" id="valor-venda-final-wrapper">
                 <label class="form-label" for="{{ form.valor_venda_final.id_for_label }}">Valor final ao cliente (R$)</label>
@@ -327,7 +327,7 @@ if (valorRefPontosField) {
     valorRefPontosField.readOnly = true;
 }
 if (custoParceiroField) {
-    custoParceiroField.readOnly = getTipoEmissao() === "cliente";
+    custoParceiroField.readOnly = getTipoEmissao() !== "parceiro";
 }
 
 function setVoltaVisibility() {
@@ -382,7 +382,7 @@ function updateProgramaInfo() {
         const cpfsTxt = selected.cpfs_total === null || selected.cpfs_total === undefined
             ? "CPFs disponíveis: ilimitado"
             : `CPFs disponíveis: ${selected.cpfs_disponiveis} de ${selected.cpfs_total}`;
-        if (selected.saldo !== undefined) {
+        if (selected.saldo !== undefined && selected.saldo !== null) {
             programaInfo.textContent = `Saldo: ${selected.saldo} pontos • Custo médio: R$ ${Number(selected.valor_medio || 0).toFixed(2)} • ${cpfsTxt}`;
         } else {
             programaInfo.textContent = `Referência do milheiro: R$ ${Number(selected.valor_medio || 0).toFixed(2)} • ${cpfsTxt}`;
@@ -426,10 +426,10 @@ function recalcValoresFinanceiros() {
     const selected = programas.find(p => String(p.id) === (programaSelect ? programaSelect.value : ""));
     const pontos = parseFloat(pontosField ? (pontosField.value || 0) : 0);
     const tipo = getTipoEmissao();
-    const valorMilheiro = tipo === "cliente"
+    const valorMilheiro = (tipo === "cliente" || tipo === "administrada")
         ? (selected ? (selected.valor_medio || 0) : 0)
         : parseFloat(custoParceiroField ? (custoParceiroField.value || 0) : 0);
-    if (custoParceiroField && tipo === "cliente") {
+    if (custoParceiroField && (tipo === "cliente" || tipo === "administrada")) {
         custoParceiroField.value = valorMilheiro ? Number(valorMilheiro).toFixed(2) : "";
     }
     const custoMilhas = (pontos / 1000) * (valorMilheiro || 0);
@@ -444,13 +444,12 @@ function recalcValoresFinanceiros() {
     const valorVenda = parseFloat(vendaRaw || 0);
     if (economiaField) {
         economiaField.value = hasVenda
-            ? (valorRef - valorVenda).toFixed(2)
+            ? (valorVenda - custoTotal).toFixed(2)
             : custoTotal.toFixed(2);
     }
     if (lucroField) {
         if (hasVenda) {
-            const baseLucro = tipo === "parceiro" ? custoMilhas : custoTotal;
-            lucroField.value = (valorVenda - baseLucro).toFixed(2);
+            lucroField.value = (valorVenda - custoTotal).toFixed(2);
         } else if (custoTotal || valorRef) {
             lucroField.value = "0.00";
         } else {
@@ -482,7 +481,7 @@ function toggleTitularFields() {
         emissorParceiroSelect.value = "";
     }
     if (custoParceiroField) {
-        custoParceiroField.readOnly = tipo === "cliente";
+        custoParceiroField.readOnly = tipo !== "parceiro";
     }
     updateProgramaOptions();
 }
@@ -615,6 +614,15 @@ function normalizeCpf(value) {
 
 function updateCpfLimite() {
     if (!cpfConsumoInfo) return;
+    if (getTipoEmissao() === "parceiro") {
+        cpfConsumoInfo.textContent = "";
+        if (cpfLimiteError) cpfLimiteError.textContent = "";
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.setAttribute("aria-disabled", "false");
+        }
+        return;
+    }
     const programas = getProgramasDisponiveis();
     const selected = programas.find(p => String(p.id) === (programaSelect ? programaSelect.value : ""));
     if (!selected) {

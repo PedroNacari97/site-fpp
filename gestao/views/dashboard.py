@@ -37,6 +37,7 @@ def _default_metrics(total_titulares):
         "hoteis": {"qtd": 0, "valor_referencia": 0, "valor_pago": 0, "valor_economizado": 0},
         "emissoes_programa": [],
         "parceiros": {"lucro": 0, "vendas": 0, "milhas": 0, "valor_pago": 0, "valor_medio_milheiro": 0},
+        "parceiros_cards": [],
     }
 
 
@@ -50,6 +51,7 @@ def build_dashboard_metrics(view_type="clientes", entity_id=None):
     )
     emissoes = EmissaoPassagem.objects.all()
     hoteis = EmissaoHotel.objects.all()
+    parceiros_cards = []
 
     if view_type == "clientes":
         contas = contas.filter(cliente__perfil="cliente", cliente__ativo=True, conta_administrada__isnull=True)
@@ -81,8 +83,29 @@ def build_dashboard_metrics(view_type="clientes", entity_id=None):
             if not emissor:
                 return _default_metrics(parceiros_qs.count())
             emissoes = emissoes.filter(emissor_parceiro_id=entity_id)
-        else:
-            emissoes = emissoes.none()
+        emissoes_por_parceiro = {}
+        for emissao in emissoes.select_related("emissor_parceiro"):
+            emissor = emissao.emissor_parceiro
+            if not emissor:
+                continue
+            entry = emissoes_por_parceiro.setdefault(
+                emissor.id,
+                {
+                    "id": emissor.id,
+                    "nome": emissor.nome,
+                    "total_emissoes": 0,
+                    "total_milhas": Decimal("0"),
+                    "valor_pago": Decimal("0"),
+                    "valor_medio_milheiro": Decimal("0"),
+                },
+            )
+            entry["total_emissoes"] += 1
+            entry["total_milhas"] += Decimal(emissao.pontos_utilizados or 0)
+            entry["valor_pago"] += Decimal(emissao.custo_total or 0)
+        for entry in emissoes_por_parceiro.values():
+            if entry["total_milhas"]:
+                entry["valor_medio_milheiro"] = entry["valor_pago"] / entry["total_milhas"]
+        parceiros_cards = list(emissoes_por_parceiro.values())
 
     programas_data = []
     total_pontos = 0
@@ -123,20 +146,16 @@ def build_dashboard_metrics(view_type="clientes", entity_id=None):
     total_vendas = Decimal("0")
     valor_medio_milheiro = Decimal("0")
     if view_type == "parceiros":
-        soma_ponderada_milheiro = Decimal("0")
         total_milhas = Decimal("0")
         for emissao in emissoes:
             pontos = Decimal(emissao.pontos_utilizados or 0)
-            valor_milheiro = Decimal(emissao.valor_milheiro_parceiro or 0)
-            custo_milhas = (pontos / Decimal("1000")) * valor_milheiro
-            total_pago_parceiro += custo_milhas
+            total_pago_parceiro += Decimal(emissao.custo_total or 0)
             total_milhas += pontos
-            soma_ponderada_milheiro += valor_milheiro * pontos
             if emissao.valor_venda_final is not None:
                 total_vendas += Decimal(emissao.valor_venda_final or 0)
-                total_lucro += Decimal(emissao.valor_venda_final or 0) - custo_milhas
+            total_lucro += Decimal(emissao.lucro or 0)
         if total_milhas:
-            valor_medio_milheiro = soma_ponderada_milheiro / total_milhas
+            valor_medio_milheiro = total_pago_parceiro / total_milhas
 
     qtd_hoteis = hoteis.count()
     valor_ref_hoteis = sum(float(h.valor_referencia or 0) for h in hoteis)
@@ -191,6 +210,7 @@ def build_dashboard_metrics(view_type="clientes", entity_id=None):
             "valor_pago": total_pago_parceiro,
             "valor_medio_milheiro": valor_medio_milheiro,
         },
+        "parceiros_cards": parceiros_cards,
     }
 
 

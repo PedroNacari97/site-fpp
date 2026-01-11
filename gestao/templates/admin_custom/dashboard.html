@@ -71,6 +71,7 @@
       </div>
     </div>
     {% if view_type == "parceiros" %}
+    {% if total_emissoes %}
     <div class="stat-grid stats-grid">
       <div class="stat-card primary">
         <p class="stat-label">✈️ Total de Emissões</p>
@@ -85,7 +86,7 @@
       <div class="stat-card">
         <p class="stat-label">💸 Valor pago ao parceiro</p>
         <p class="stat-value">R$ {{ parceiros.valor_pago|floatformat:2 }}</p>
-        <p class="stat-meta">Somatório de milhas × valor do milheiro</p>
+        <p class="stat-meta">Somatório pago ao parceiro</p>
       </div>
       <div class="stat-card">
         <p class="stat-label">💰 Lucro total</p>
@@ -98,6 +99,9 @@
         <p class="stat-meta">Média ponderada por milhas emitidas</p>
       </div>
     </div>
+    {% else %}
+      <p class="muted">Nenhuma emissão encontrada para o filtro selecionado.</p>
+    {% endif %}
     {% else %}
     <div class="stat-grid stats-grid">
       <div class="stat-card primary">
@@ -152,6 +156,35 @@
         <p class="muted">Nenhum programa encontrado.</p>
       {% endfor %}
     </div>
+  </section>
+  {% endif %}
+
+  {% if view_type == "parceiros" %}
+  <section class="surface-card stacked">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Emissores parceiros</p>
+        <h2 class="section-title">Cards por parceiro</h2>
+      </div>
+    </div>
+    {% if parceiros_cards %}
+      <div class="stat-grid stats-grid">
+        {% for card in parceiros_cards %}
+          <div class="stat-card">
+            <p class="stat-label">{{ card.nome }}</p>
+            <p class="stat-value">{{ card.total_emissoes }}</p>
+            <p class="stat-meta">Emissões registradas</p>
+            <ul class="list-plain">
+              <li>Total de milhas: <strong>{{ card.total_milhas }}</strong></li>
+              <li>Valor pago: <strong>R$ {{ card.valor_pago|floatformat:2 }}</strong></li>
+              <li>Valor médio do milheiro: <strong>R$ {{ card.valor_medio_milheiro|floatformat:2 }}</strong></li>
+            </ul>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">Nenhuma emissão encontrada para parceiros.</p>
+    {% endif %}
   </section>
   {% endif %}
 

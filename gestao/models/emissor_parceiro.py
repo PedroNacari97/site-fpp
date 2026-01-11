@@ -1,11 +1,21 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
 
 from .empresa import Empresa
 from .programa_fidelidade import ProgramaFidelidade
 
+User = get_user_model()
+
 
 class EmissorParceiro(models.Model):
+    usuario = models.OneToOneField(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="emissor_parceiro",
+    )
     empresa = models.ForeignKey(
         Empresa, on_delete=models.CASCADE, related_name="emissores_parceiros"
     )
