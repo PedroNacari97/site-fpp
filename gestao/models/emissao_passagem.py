@@ -90,7 +90,7 @@ class EmissaoPassagem(models.Model):
         pontos = Decimal(self.pontos_utilizados or 0)
         valor_milheiro = Decimal(self.valor_milheiro_parceiro or 0)
         custo_milhas = (pontos / Decimal("1000")) * valor_milheiro
-        incluir_taxas = not self.emissor_parceiro_id
+        incluir_taxas = not self.emissor_parceiro_id and not self.conta_administrada_id
         custo_total = custo_milhas + (Decimal(self.valor_taxas or 0) if incluir_taxas else Decimal("0"))
         self.custo_total = custo_total
         if self.valor_venda_final is not None:

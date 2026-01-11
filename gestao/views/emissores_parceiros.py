@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from .permissions import require_admin_or_operator
 from ..forms import EmissorParceiroForm
-from ..models import EmissorParceiro
+from ..models import EmissaoPassagem, EmissorParceiro
 
 
 @login_required
@@ -63,6 +63,30 @@ def editar_emissor_parceiro(request, emissor_id):
         request,
         "admin_custom/form_emissor_parceiro.html",
         {"form": form, "menu_ativo": "emissores"},
+    )
+
+
+@login_required
+def emissor_parceiro_movimentacoes(request, emissor_id):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    emissor = get_object_or_404(EmissorParceiro, id=emissor_id)
+    if empresa and emissor.empresa != empresa:
+        return render(request, "sem_permissao.html")
+    emissoes = (
+        EmissaoPassagem.objects.filter(emissor_parceiro=emissor)
+        .select_related("aeroporto_partida", "aeroporto_destino")
+        .order_by("-criado_em")
+    )
+    return render(
+        request,
+        "admin_custom/emissor_parceiro_movimentacoes.html",
+        {
+            "emissor": emissor,
+            "emissoes": emissoes,
+            "menu_ativo": "emissores",
+        },
     )
 
 

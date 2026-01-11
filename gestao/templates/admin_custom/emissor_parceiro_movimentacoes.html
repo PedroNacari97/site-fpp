@@ -1,0 +1,56 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Movimentações do Emissor Parceiro{% endblock %}
+{% block header_title %}Movimentações{% endblock %}
+
+{% block content %}
+<section class="surface-card stacked">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">Emissor parceiro</p>
+      <h2 class="section-title">{{ emissor.nome }}</h2>
+    </div>
+  </div>
+  <div class="dashboard-table-wrapper">
+    <table class="emissions-table emissions-table--wide">
+      <thead>
+        <tr>
+          <th>Data da emissão</th>
+          <th>ID</th>
+          <th>Origem</th>
+          <th>Destino</th>
+          <th>Total de milhas</th>
+          <th>Valor pago ao parceiro</th>
+          <th>Valor final ao cliente</th>
+          <th>Economia obtida</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for emissao in emissoes %}
+          <tr>
+            <td>{{ emissao.criado_em|date:"d/m/Y" }}</td>
+            <td>{{ emissao.id }}</td>
+            <td>{{ emissao.aeroporto_partida }}</td>
+            <td>{{ emissao.aeroporto_destino }}</td>
+            <td>{{ emissao.pontos_utilizados|default:0 }}</td>
+            <td>R$ {{ emissao.custo_total|floatformat:2 }}</td>
+            <td>
+              {% if emissao.valor_venda_final is not None %}
+                R$ {{ emissao.valor_venda_final|floatformat:2 }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+            <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="text-center text-zinc-400 py-4">Nenhuma emissão encontrada.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

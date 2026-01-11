@@ -372,7 +372,7 @@ def nova_emissao(request):
                             emissao.pontos_utilizados or 0, valor_milheiro
                         )
                         emissao.valor_referencia_pontos = valor_referencia_pontos
-                        incluir_taxas = tipo_emissao != "parceiro"
+                        incluir_taxas = tipo_emissao == "cliente"
                         custo_total = calcular_custo_total_emissao(
                             emissao, valor_milheiro, incluir_taxas=incluir_taxas
                         )
@@ -625,7 +625,7 @@ def editar_emissao(request, emissao_id):
                         emissao.pontos_utilizados or 0, valor_milheiro
                     )
                     emissao.valor_referencia_pontos = valor_referencia_pontos
-                    incluir_taxas = tipo_emissao != "parceiro"
+                    incluir_taxas = tipo_emissao == "cliente"
                     custo_total = calcular_custo_total_emissao(
                         emissao, valor_milheiro, incluir_taxas=incluir_taxas
                     )

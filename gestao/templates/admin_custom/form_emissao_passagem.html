@@ -438,7 +438,7 @@ function recalcValoresFinanceiros() {
     }
     const valorRef = parseFloat(valorReferenciaField ? (valorReferenciaField.value || 0) : 0);
     const valorTaxas = parseFloat(valorTaxasField ? (valorTaxasField.value || 0) : 0);
-    const custoTotal = tipo === "parceiro" ? custoMilhas : (custoMilhas + valorTaxas);
+    const custoTotal = tipo === "cliente" ? (custoMilhas + valorTaxas) : custoMilhas;
     const vendaRaw = vendaFinalField ? vendaFinalField.value : "";
     const hasVenda = vendaRaw !== "" && vendaRaw !== null;
     const valorVenda = parseFloat(vendaRaw || 0);

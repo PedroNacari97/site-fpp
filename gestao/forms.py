@@ -425,16 +425,7 @@ class EmissorParceiroForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         empresa = kwargs.pop("empresa", None)
         super().__init__(*args, **kwargs)
-        usuarios_qs = User.objects.filter(is_active=True)
-        if self.instance and self.instance.pk and self.instance.usuario_id:
-            usuarios_qs = usuarios_qs.exclude(
-                emissor_parceiro__isnull=False
-            ) | User.objects.filter(id=self.instance.usuario_id)
-        else:
-            usuarios_qs = usuarios_qs.exclude(emissor_parceiro__isnull=False)
-        usuarios_qs = usuarios_qs.distinct()
-        self.fields["usuario"].required = False
-        self.fields["usuario"].queryset = usuarios_qs
+        self.fields["programas"].required = False
         if empresa:
             programas_qs = ProgramaFidelidade.objects.filter(
                 Q(contafidelidade__cliente__empresa=empresa)
