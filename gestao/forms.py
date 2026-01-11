@@ -417,7 +417,7 @@ class EmissaoHotelForm(forms.ModelForm):
 class EmissorParceiroForm(forms.ModelForm):
     class Meta:
         model = EmissorParceiro
-        fields = ["nome", "programas", "ativo", "observacoes"]
+        fields = ["nome", "usuario", "programas", "ativo", "observacoes"]
         widgets = {
             "observacoes": forms.Textarea(attrs={"rows": 3}),
         }
