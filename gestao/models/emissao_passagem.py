@@ -36,6 +36,9 @@ class EmissaoPassagem(models.Model):
     valor_venda_final = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
+    valor_total_final = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
     custo_total = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
@@ -93,14 +96,22 @@ class EmissaoPassagem(models.Model):
         incluir_taxas = not self.emissor_parceiro_id and not self.conta_administrada_id
         custo_total = custo_milhas + (Decimal(self.valor_taxas or 0) if incluir_taxas else Decimal("0"))
         self.custo_total = custo_total
-        if self.valor_venda_final is not None:
-            self.lucro = Decimal(self.valor_venda_final or 0) - custo_total
+        valor_final_cliente = self.valor_venda_final
+        valor_total = self.valor_total_final
+        if valor_total not in (None, ""):
+            base_lucro = Decimal(valor_total or 0)
+        elif valor_final_cliente not in (None, ""):
+            base_lucro = Decimal(valor_final_cliente or 0)
+        else:
+            base_lucro = None
+        if base_lucro is not None:
+            self.lucro = base_lucro - custo_total
         elif self.lucro is None:
             self.lucro = Decimal("0")
-        if self.valor_venda_final not in (None, ""):
-            self.economia_obtida = Decimal(self.valor_venda_final or 0) - custo_total
+        if valor_final_cliente not in (None, ""):
+            self.economia_obtida = Decimal(valor_final_cliente or 0) - Decimal(self.valor_referencia or 0)
         else:
-            self.economia_obtida = custo_total
+            self.economia_obtida = None
         super().save(*args, **kwargs)
 
     def __str__(self):

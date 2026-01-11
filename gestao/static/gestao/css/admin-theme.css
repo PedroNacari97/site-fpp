@@ -287,8 +287,8 @@ a:hover {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--accent));
-  color: #ffffff;
-  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.2);
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 14px 28px hsl(var(--primary) / 0.2);
 }
 
 .btn-primary:hover {
@@ -308,9 +308,9 @@ a:hover {
 }
 
 .btn-danger {
-  background: #fee2e2;
-  color: #b91c1c;
-  border-color: #fecaca;
+  background: hsl(var(--destructive) / 0.12);
+  color: hsl(var(--destructive));
+  border-color: hsl(var(--destructive) / 0.35);
 }
 
 .btn-link {
@@ -371,14 +371,14 @@ a:hover {
 
 .stat-card.primary {
   background: linear-gradient(140deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
-  color: #ffffff;
+  color: hsl(var(--primary-foreground));
   border-color: transparent;
 }
 
 .stat-card.primary .stat-label,
 .stat-card.primary .stat-value,
 .stat-card.primary .stat-meta {
-  color: #ffffff;
+  color: hsl(var(--primary-foreground));
 }
 
 .trend {
@@ -429,7 +429,7 @@ a:hover {
 
 .chip.is-active {
   background: var(--primary);
-  color: #fff;
+  color: hsl(var(--primary-foreground));
   border-color: var(--primary);
 }
 
@@ -700,7 +700,7 @@ a:hover {
 
 .filter-grid {
   display: grid;
-  grid-template-columns: 160px 160px 200px 180px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 8px;
   align-items: end;
 }
@@ -753,7 +753,7 @@ textarea {
   background: var(--color-input-bg);
   color: var(--heading);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  max-width: 500px;
+  max-width: 100%;
 }
 
 input[type="text"],

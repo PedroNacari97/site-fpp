@@ -37,17 +37,21 @@ def calcular_custo_total_emissao(
 def calcular_lucro_emissao(emissao: EmissaoPassagem, custo_base: Decimal | float) -> Decimal:
     """Calcula o lucro da emissão considerando o custo base informado."""
 
-    if emissao.valor_venda_final in (None, ""):
+    valor_total = getattr(emissao, "valor_total_final", None)
+    valor_final_cliente = emissao.valor_venda_final
+    if valor_total not in (None, ""):
+        return Decimal(valor_total or 0) - Decimal(custo_base or 0)
+    if valor_final_cliente in (None, ""):
         return Decimal("0")
-    return Decimal(emissao.valor_venda_final or 0) - Decimal(custo_base or 0)
+    return Decimal(valor_final_cliente or 0) - Decimal(custo_base or 0)
 
 
 def calcular_economia(emissao: EmissaoPassagem, custo_total: Decimal | float) -> Decimal:
     """Calcula a economia obtida seguindo as regras de valor final e custo total."""
 
     if emissao.valor_venda_final not in (None, ""):
-        return Decimal(emissao.valor_venda_final or 0) - Decimal(custo_total or 0)
-    return Decimal(custo_total or 0)
+        return Decimal(emissao.valor_venda_final or 0) - Decimal(emissao.valor_referencia or 0)
+    return Decimal("0")
 
 
 def registrar_movimentacao_pontos(

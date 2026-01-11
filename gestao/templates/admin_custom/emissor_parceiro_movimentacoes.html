@@ -23,6 +23,7 @@
           <th>Total de milhas</th>
           <th>Valor pago ao parceiro</th>
           <th>Valor final ao cliente</th>
+          <th>Valor total final</th>
           <th>Economia obtida</th>
         </tr>
       </thead>
@@ -42,11 +43,18 @@
                 —
               {% endif %}
             </td>
+            <td>
+              {% if emissao.valor_total_final is not None %}
+                R$ {{ emissao.valor_total_final|floatformat:2 }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
             <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
           </tr>
         {% empty %}
           <tr>
-            <td colspan="8" class="text-center text-zinc-400 py-4">Nenhuma emissão encontrada.</td>
+            <td colspan="9" class="text-center text-zinc-400 py-4">Nenhuma emissão encontrada.</td>
           </tr>
         {% endfor %}
       </tbody>

@@ -77,6 +77,10 @@
         <p class="value">{% if emissao.valor_venda_final %}R$ {{ emissao.valor_venda_final|floatformat:2 }}{% else %}—{% endif %}</p>
       </div>
       <div>
+        <p class="label">Valor total final</p>
+        <p class="value">{% if emissao.valor_total_final %}R$ {{ emissao.valor_total_final|floatformat:2 }}{% else %}—{% endif %}</p>
+      </div>
+      <div>
         <p class="label">Lucro</p>
         <p class="value">{% if emissao.lucro is not None %}R$ {{ emissao.lucro|floatformat:2 }}{% else %}—{% endif %}</p>
       </div>
