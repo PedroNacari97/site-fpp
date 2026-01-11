@@ -40,7 +40,7 @@
                 <p class="section-card__description">Selecione o cliente e a origem dos pontos da emissão.</p>
             </div>
         </div>
-        <div class="form-grid form-grid--3">
+        <div class="form-grid form-grid--client">
             <div>
                 <label class="form-label" for="{{ form.tipo_emissao.id_for_label }}">Tipo de emissão <span class="required-asterisk">*</span></label>
                 {{ form.tipo_emissao }}
@@ -51,12 +51,12 @@
                 {{ form.cliente }}
             </div>
             <div id="conta-adm-wrapper">
-                <label class="form-label" for="{{ form.conta_administrada.id_for_label }}">Conta administrada <span class="required-asterisk">*</span></label>
+                <label class="form-label" for="{{ form.conta_administrada.id_for_label }}">Conta administrada <span class="required-asterisk" id="conta-adm-required">*</span></label>
                 {{ form.conta_administrada }}
                 <p class="helper-text">Aparece quando a emissão usa conta administrada.</p>
             </div>
         </div>
-        <div class="form-grid form-grid--3">
+        <div class="form-grid form-grid--client">
             <div id="emissor-parceiro-wrapper">
                 <label class="form-label" for="{{ form.emissor_parceiro.id_for_label }}">Emissor parceiro</label>
                 {{ form.emissor_parceiro }}
@@ -222,7 +222,7 @@
                 {{ form.valor_taxas }}
             </div>
         </div>
-        <div class="form-grid form-grid--3">
+        <div class="form-grid form-grid--financial">
             <div class="form-field--compact" id="valor-milheiro-parceiro-wrapper">
                 <label class="form-label" for="{{ form.valor_milheiro_parceiro.id_for_label }}">Valor do milheiro (R$)</label>
                 {{ form.valor_milheiro_parceiro }}
@@ -231,6 +231,10 @@
             <div class="form-field--compact" id="valor-venda-final-wrapper">
                 <label class="form-label" for="{{ form.valor_venda_final.id_for_label }}">Valor final ao cliente (R$)</label>
                 {{ form.valor_venda_final }}
+            </div>
+            <div class="form-field--compact" id="valor-total-final-wrapper">
+                <label class="form-label" for="{{ form.valor_total_final.id_for_label }}">Valor total final (R$)</label>
+                {{ form.valor_total_final }}
             </div>
             <div class="form-field--compact" id="lucro-wrapper">
                 <label class="form-label" for="{{ form.lucro.id_for_label }}">Lucro (R$)</label>
@@ -297,9 +301,11 @@ const contaAdmSelect = document.getElementById('id_conta_administrada');
 const emissorParceiroSelect = document.getElementById('id_emissor_parceiro');
 const clienteWrapper = document.getElementById('cliente-wrapper');
 const contaAdmWrapper = document.getElementById('conta-adm-wrapper');
+const contaAdmRequired = document.getElementById('conta-adm-required');
 const emissorParceiroWrapper = document.getElementById('emissor-parceiro-wrapper');
 const valorMilheiroParceiroWrapper = document.getElementById('valor-milheiro-parceiro-wrapper');
 const valorVendaFinalWrapper = document.getElementById('valor-venda-final-wrapper');
+const valorTotalFinalWrapper = document.getElementById('valor-total-final-wrapper');
 const lucroWrapper = document.getElementById('lucro-wrapper');
 const pontosField = document.getElementById('id_pontos_utilizados');
 const valorRefPontosField = document.getElementById('id_valor_referencia_pontos');
@@ -307,6 +313,7 @@ const valorReferenciaField = document.getElementById('id_valor_referencia');
 const valorTaxasField = document.getElementById('id_valor_taxas');
 const custoParceiroField = document.getElementById('id_valor_milheiro_parceiro');
 const vendaFinalField = document.getElementById('id_valor_venda_final');
+const valorTotalFinalField = document.getElementById('id_valor_total_final');
 const lucroField = document.getElementById('id_lucro');
 const economiaField = document.getElementById('id_economia_obtida');
 const submitButton = document.getElementById('submit-emissao');
@@ -442,13 +449,16 @@ function recalcValoresFinanceiros() {
     const vendaRaw = vendaFinalField ? vendaFinalField.value : "";
     const hasVenda = vendaRaw !== "" && vendaRaw !== null;
     const valorVenda = parseFloat(vendaRaw || 0);
+    const totalRaw = valorTotalFinalField ? valorTotalFinalField.value : "";
+    const hasTotal = totalRaw !== "" && totalRaw !== null;
+    const valorTotal = parseFloat(totalRaw || 0);
     if (economiaField) {
-        economiaField.value = hasVenda
-            ? (valorVenda - custoTotal).toFixed(2)
-            : custoTotal.toFixed(2);
+        economiaField.value = hasVenda ? (valorVenda - valorRef).toFixed(2) : "";
     }
     if (lucroField) {
-        if (hasVenda) {
+        if (hasTotal) {
+            lucroField.value = (valorTotal - custoTotal).toFixed(2);
+        } else if (hasVenda) {
             lucroField.value = (valorVenda - custoTotal).toFixed(2);
         } else if (custoTotal || valorRef) {
             lucroField.value = "0.00";
@@ -463,7 +473,11 @@ function toggleTitularFields() {
     const tipo = getTipoEmissao();
     if (clienteWrapper && contaAdmWrapper) {
         clienteWrapper.style.display = "block";
-        contaAdmWrapper.style.display = tipo === "administrada" ? "block" : "none";
+        const isAdmin = tipo === "administrada";
+        contaAdmWrapper.style.display = isAdmin ? "block" : "none";
+        if (contaAdmRequired) {
+            contaAdmRequired.style.display = isAdmin ? "inline" : "none";
+        }
     }
     if (emissorParceiroWrapper) {
         emissorParceiroWrapper.style.display = tipo === "parceiro" ? "block" : "none";
@@ -473,6 +487,9 @@ function toggleTitularFields() {
     }
     if (valorVendaFinalWrapper) {
         valorVendaFinalWrapper.style.display = "block";
+    }
+    if (valorTotalFinalWrapper) {
+        valorTotalFinalWrapper.style.display = "block";
     }
     if (lucroWrapper) {
         lucroWrapper.style.display = "block";
@@ -515,6 +532,9 @@ if (custoParceiroField) {
 }
 if (vendaFinalField) {
     vendaFinalField.addEventListener('input', recalcValoresFinanceiros);
+}
+if (valorTotalFinalField) {
+    valorTotalFinalField.addEventListener('input', recalcValoresFinanceiros);
 }
 
 function renderPassengerForms() {

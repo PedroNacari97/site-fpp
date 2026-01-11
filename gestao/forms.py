@@ -377,6 +377,7 @@ class EmissaoPassagemForm(forms.ModelForm):
             'detalhes',
             'valor_milheiro_parceiro',
             'valor_venda_final',
+            'valor_total_final',
             'lucro',
         ]
         widgets = {
@@ -385,6 +386,7 @@ class EmissaoPassagemForm(forms.ModelForm):
             'valor_referencia_pontos': forms.NumberInput(attrs={'step': '0.01', 'readonly': 'readonly'}),
             'valor_milheiro_parceiro': forms.NumberInput(attrs={'step': '0.01'}),
             'valor_venda_final': forms.NumberInput(attrs={'step': '0.01'}),
+            'valor_total_final': forms.NumberInput(attrs={'step': '0.01'}),
             'lucro': forms.NumberInput(attrs={'step': '0.01', 'readonly': 'readonly'}),
         }
         

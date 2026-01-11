@@ -304,6 +304,8 @@ const ctx = document.getElementById('emissoesChart');
 if (ctx) {
   const labels = [{% for item in emissoes_programa %}'{{ item.programa }}'{% if not forloop.last %},{% endif %}{% endfor %}];
   const dataVals = [{% for item in emissoes_programa %}{{ item.quantidade }}{% if not forloop.last %},{% endif %}{% endfor %}];
+  const primaryToken = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+  const primaryColor = primaryToken ? `hsl(${primaryToken})` : 'hsl(217 91% 60%)';
 
   new Chart(ctx, {
     type: 'bar',
@@ -312,7 +314,7 @@ if (ctx) {
       datasets: [{ 
         label: 'Emissões', 
         data: dataVals, 
-        backgroundColor: '#3182ce' 
+        backgroundColor: primaryColor 
       }] 
     },
     options: { scales: { y: { beginAtZero: true } } }

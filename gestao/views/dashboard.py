@@ -151,7 +151,10 @@ def build_dashboard_metrics(view_type="clientes", entity_id=None):
             pontos = Decimal(emissao.pontos_utilizados or 0)
             total_pago_parceiro += Decimal(emissao.custo_total or 0)
             total_milhas += pontos
-            if emissao.valor_venda_final is not None:
+            valor_total_final = getattr(emissao, "valor_total_final", None)
+            if valor_total_final not in (None, ""):
+                total_vendas += Decimal(valor_total_final or 0)
+            elif emissao.valor_venda_final is not None:
                 total_vendas += Decimal(emissao.valor_venda_final or 0)
             total_lucro += Decimal(emissao.lucro or 0)
         if total_milhas:
@@ -171,7 +174,14 @@ def build_dashboard_metrics(view_type="clientes", entity_id=None):
         total_titulares = 1
     total_economizado = valor_economizado_emissoes + valor_economizado_hoteis
     if view_type != "parceiros":
-        total_vendas = sum(float(e.valor_venda_final or 0) for e in emissoes)
+        total_vendas = sum(
+            float(
+                getattr(e, "valor_total_final", None)
+                if getattr(e, "valor_total_final", None) not in (None, "")
+                else (e.valor_venda_final or 0)
+            )
+            for e in emissoes
+        )
         total_lucro = sum(float(e.lucro or 0) for e in emissoes)
 
     emissoes_programa_qs = (
