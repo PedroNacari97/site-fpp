@@ -25,32 +25,98 @@
 {% endblock %}
 
 {% block content %}
-  <div class="dashboard">
+  <div class="dashboard dashboard--management">
+    <section class="dashboard-filters card">
+      <div class="dashboard-heading">
+        <div>
+          <p class="dashboard-eyebrow">Filtros globais</p>
+          <h2 class="dashboard-title">Corte operacional do dashboard</h2>
+        </div>
+        <div class="dashboard-filter-actions">
+          <a class="btn btn--ghost btn--sm" href="?{{ management_dashboard.clear_filters_query }}">Limpar seleções</a>
+          <a class="btn btn--outline btn--sm" href="?{{ management_dashboard.previous_period_query }}">Período anterior</a>
+        </div>
+      </div>
+      <form method="get" class="dashboard-global-form">
+        {% if empresa_id %}<input type="hidden" name="empresa_id" value="{{ empresa_id }}">{% endif %}
+        <div class="dashboard-date-grid">
+          <div class="form-field">
+            <label class="form-label" for="data_inicio">Período inicial</label>
+            <input id="data_inicio" type="date" name="data_inicio" value="{{ management_dashboard.start_date }}">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="data_fim">Período final</label>
+            <input id="data_fim" type="date" name="data_fim" value="{{ management_dashboard.end_date }}">
+          </div>
+          <div class="form-field dashboard-submit-wrap">
+            <button class="btn" type="submit">Aplicar período</button>
+          </div>
+        </div>
+      </form>
+      <div class="dashboard-filter-grid dashboard-filter-grid--chips">
+        <div class="card dashboard-chip-card">
+          <div class="dashboard-card__header"><span class="dashboard-card__title">Emissor</span><span class="badge">{{ management_dashboard.filters_summary.selected_emissores }}</span></div>
+          <div class="dashboard-chip-list">
+            {% for item in management_dashboard.filter_options.emissores %}
+              <a class="filter-chip {% if item.selected %}is-selected{% endif %}" href="?{{ item.query }}">{{ item.label }}</a>
+            {% empty %}<span class="dashboard-empty">Nenhum emissor.</span>{% endfor %}
+          </div>
+        </div>
+        <div class="card dashboard-chip-card">
+          <div class="dashboard-card__header"><span class="dashboard-card__title">Cliente</span><span class="badge">{{ management_dashboard.filters_summary.selected_clientes }}</span></div>
+          <div class="dashboard-chip-list">
+            {% for item in management_dashboard.filter_options.clientes %}
+              <a class="filter-chip {% if item.selected %}is-selected{% endif %}" href="?{{ item.query }}">{{ item.label }}</a>
+            {% empty %}<span class="dashboard-empty">Nenhum cliente.</span>{% endfor %}
+          </div>
+        </div>
+        <div class="card dashboard-chip-card">
+          <div class="dashboard-card__header"><span class="dashboard-card__title">Companhia aérea</span><span class="badge">{{ management_dashboard.filters_summary.selected_companhias }}</span></div>
+          <div class="dashboard-chip-list">
+            {% for item in management_dashboard.filter_options.companhias %}
+              <a class="filter-chip {% if item.selected %}is-selected{% endif %}" href="?{{ item.query }}">{{ item.label }}</a>
+            {% empty %}<span class="dashboard-empty">Nenhuma companhia.</span>{% endfor %}
+          </div>
+        </div>
+        <div class="card dashboard-chip-card">
+          <div class="dashboard-card__header"><span class="dashboard-card__title">Programa de pontos</span><span class="badge">{{ management_dashboard.filters_summary.selected_programas }}</span></div>
+          <div class="dashboard-chip-list">
+            {% for item in management_dashboard.filter_options.programas %}
+              <a class="filter-chip {% if item.selected %}is-selected{% endif %}" href="?{{ item.query }}">{{ item.label }}</a>
+            {% empty %}<span class="dashboard-empty">Nenhum programa.</span>{% endfor %}
+          </div>
+        </div>
+        <div class="card dashboard-chip-card">
+          <div class="dashboard-card__header"><span class="dashboard-card__title">Conta utilizada</span><span class="badge">{{ management_dashboard.filters_summary.selected_contas }}</span></div>
+          <div class="dashboard-chip-list">
+            {% for item in management_dashboard.filter_options.contas %}
+              <a class="filter-chip {% if item.selected %}is-selected{% endif %}" href="?{{ item.query }}">{{ item.label }}</a>
+            {% empty %}<span class="dashboard-empty">Nenhuma conta.</span>{% endfor %}
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="dashboard-section">
       <div class="dashboard-heading">
         <div>
-          <p class="dashboard-eyebrow">Resumo rápido</p>
-          <h2 class="dashboard-title">Visão Geral</h2>
+          <p class="dashboard-eyebrow">KPIs</p>
+          <h2 class="dashboard-title">Resultado financeiro e operacional</h2>
         </div>
-        {% if empresas and perfil_dashboard == "superadmin" %}
-          <form method="get" class="dashboard-filter" aria-label="Filtro de empresa">
-            <label class="form-label" for="empresaSelect">Empresa</label>
-            <select id="empresaSelect" name="empresa_id" onchange="this.form.submit()">
-              <option value="">Todas as empresas</option>
-              {% for empresa in empresas %}
-                <option value="{{ empresa.id }}" {% if empresa_selecionada and empresa.id == empresa_selecionada.id %}selected{% endif %}>
-                  {{ empresa.nome }}
-                </option>
-              {% endfor %}
-            </select>
-          </form>
-        {% endif %}
+        <p class="dashboard-caption">Comparativo automático com {{ management_dashboard.previous_period_label }}</p>
       </div>
-      <div class="dashboard-summary-grid">
-        {% for card in resumo_cards %}
-          <div class="card dashboard-summary-card">
+      <div class="dashboard-summary-grid dashboard-summary-grid--kpis">
+        {% for card in management_dashboard.kpis %}
+          <div class="card dashboard-summary-card dashboard-summary-card--{{ card.tone }}">
             <div class="dashboard-card__header">
               <span class="dashboard-card__title">{{ card.titulo }}</span>
+              {% if card.delta != None %}
+                <span class="dashboard-delta {% if card.delta < 0 %}is-negative{% endif %}">
+                  {% if card.delta > 0 %}+{% endif %}{{ card.delta|floatformat:1 }}%
+                </span>
+              {% else %}
+                <span class="dashboard-delta is-muted">sem histórico</span>
+              {% endif %}
             </div>
             <div class="dashboard-card__value">{{ card.valor }}</div>
             <p class="dashboard-card__meta">{{ card.descricao }}</p>
@@ -60,169 +126,130 @@
     </section>
 
     <section class="dashboard-section">
-      <div class="dashboard-heading">
-        <div>
-          <p class="dashboard-eyebrow">Programas de fidelidade</p>
-          <h2 class="dashboard-title">Pontos e valores estimados</h2>
-        </div>
-      </div>
-      <div class="dashboard-program-grid">
-        {% for programa in programas_info %}
-          <div class="card dashboard-program-card">
-            <div class="dashboard-card__header">
-              <span class="dashboard-card__title">{{ programa.nome }}</span>
-            </div>
-            <div class="dashboard-card__value">{{ programa.pontos|default:0 }}</div>
-            <p class="dashboard-card__meta">Pontos acumulados</p>
-            <div class="dashboard-card__divider"></div>
-            <div class="dashboard-card__row">
-              <span>Valor total estimado</span>
-              <strong>R$ {{ programa.valor_total|floatformat:2 }}</strong>
-            </div>
-            <div class="dashboard-card__row">
-              <span>Valor médio (1.000 pts)</span>
-              <strong>R$ {{ programa.valor_medio|floatformat:2 }}</strong>
-            </div>
-            <div class="dashboard-card__row">
-              <span>Valor de referência</span>
-              <strong>R$ {{ programa.valor_referencia|floatformat:2 }}</strong>
-            </div>
-          </div>
-        {% empty %}
-          <p class="dashboard-empty">Nenhum programa cadastrado.</p>
-        {% endfor %}
-      </div>
-    </section>
-
-    <section class="dashboard-section">
-      <div class="dashboard-heading">
-        <div>
-          <p class="dashboard-eyebrow">Alertas de passagens</p>
-          <h2 class="dashboard-title">Oportunidades filtradas por destino</h2>
-        </div>
-      </div>
-      <form method="get" class="dashboard-filter-grid">
-        {% if empresa_id %}
-          <input type="hidden" name="empresa_id" value="{{ empresa_id }}">
-        {% endif %}
-        <div class="form-field">
-          <label class="form-label" for="continente">Continente</label>
-          <select id="continente" name="continente" onchange="this.form.submit()">
-            <option value="">Selecione</option>
-            {% for continente in alert_filters.continentes %}
-              <option value="{{ continente }}" {% if alert_filters.selected_continente == continente %}selected{% endif %}>{{ continente }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-field">
-          <label class="form-label" for="pais">País</label>
-          <select id="pais" name="pais" {% if not alert_filters.paises %}disabled{% endif %} onchange="this.form.submit()">
-            <option value="">Selecione</option>
-            {% for pais in alert_filters.paises %}
-              <option value="{{ pais }}" {% if alert_filters.selected_pais == pais %}selected{% endif %}>{{ pais }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-field">
-          <label class="form-label" for="cidade">Cidade</label>
-          <select id="cidade" name="cidade" {% if not alert_filters.cidades %}disabled{% endif %} onchange="this.form.submit()">
-            <option value="">Selecione</option>
-            {% for cidade in alert_filters.cidades %}
-              <option value="{{ cidade }}" {% if alert_filters.selected_cidade == cidade %}selected{% endif %}>{{ cidade }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      </form>
-      <div class="dashboard-alerts">
-        {% if alert_filters.selected_cidade %}
-          <div class="dashboard-alerts-grid">
-            {% for alerta in alertas_info %}
-              <div class="card dashboard-alert-card">
-                <div class="dashboard-alert-header">
-                  <h3 class="dashboard-alert-route">{{ alerta.origem }} → {{ alerta.destino }}</h3>
-                  <span class="badge">{{ alerta.classe }}</span>
-                </div>
-                <p class="dashboard-card__meta">Programa: {{ alerta.programa }}</p>
-                <p class="dashboard-card__meta">Valor por trecho: {{ alerta.valor_milhas }} milhas</p>
-                <p class="dashboard-card__meta">Status: {{ alerta.status }}</p>
-                <p class="dashboard-card__meta">{{ alerta.datas_resumo }}</p>
-                {% if perfil_dashboard != "cliente" %}
-                  <a class="btn btn--outline btn--sm" href="{% url 'alerta_passagem_detalhe' alerta.id %}">Ver detalhes</a>
-                {% endif %}
-              </div>
-            {% empty %}
-              <p class="dashboard-empty">Nenhum alerta encontrado para a cidade selecionada.</p>
-            {% endfor %}
-          </div>
-        {% else %}
-          <p class="dashboard-empty">Selecione continente, país e cidade para visualizar alertas disponíveis.</p>
-        {% endif %}
-      </div>
-    </section>
-
-    <section class="dashboard-section">
-      <div class="dashboard-grid">
-        <div class="dashboard-column">
+      <div class="dashboard-grid dashboard-grid--analytics">
+        <div class="card dashboard-chart-card">
           <div class="dashboard-heading">
             <div>
-              <p class="dashboard-eyebrow">Últimas emissões</p>
-              <h2 class="dashboard-title">Emissões recentes</h2>
+              <p class="dashboard-eyebrow">Gráfico principal</p>
+              <h2 class="dashboard-title">Receita vs lucro ao longo do tempo</h2>
+            </div>
+            <div class="dashboard-legend">
+              <span><i class="legend-dot legend-dot--revenue"></i>Receita</span>
+              <span><i class="legend-dot legend-dot--profit"></i>Lucro</span>
             </div>
           </div>
+          <div class="line-chart">
+            {% for point in management_dashboard.timeline_series %}
+              <div class="line-chart__group">
+                <div class="line-chart__bars">
+                  <span class="line-chart__bar line-chart__bar--revenue" style="height: {{ point.receita_height }}%"></span>
+                  <span class="line-chart__bar line-chart__bar--profit" style="height: {{ point.lucro_height }}%"></span>
+                </div>
+                <div class="line-chart__label">{{ point.label }}</div>
+                <div class="line-chart__meta">R$ {{ point.receita|floatformat:0 }}</div>
+              </div>
+            {% empty %}
+              <p class="dashboard-empty">Sem emissões para montar a série temporal no período escolhido.</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="card dashboard-chart-card">
+          <div class="dashboard-heading">
+            <div>
+              <p class="dashboard-eyebrow">Insight principal</p>
+              <h2 class="dashboard-title">Custo médio vs venda média por programa</h2>
+            </div>
+          </div>
+          <div class="bar-comparison">
+            {% for item in management_dashboard.cost_vs_sale %}
+              <div class="bar-comparison__row">
+                <div class="bar-comparison__head">
+                  <strong>{{ item.programa }}</strong>
+                  <span>Margem média {{ item.margem_media }}</span>
+                </div>
+                <div class="bar-comparison__track">
+                  <span class="bar-comparison__bar bar-comparison__bar--cost" style="width: {{ item.custo_width }}%"></span>
+                  <span class="bar-comparison__bar bar-comparison__bar--sale" style="width: {{ item.venda_width }}%"></span>
+                </div>
+                <div class="bar-comparison__legend">
+                  <span>Custo {{ item.custo_medio }}</span>
+                  <span>Venda {{ item.venda_media }}</span>
+                </div>
+              </div>
+            {% empty %}
+              <p class="dashboard-empty">Sem dados suficientes para comparar custo e venda por programa.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-section">
+      <div class="dashboard-grid dashboard-grid--insights">
+        <div class="card">
+          <div class="dashboard-heading"><div><p class="dashboard-eyebrow">Melhores programas</p><h2 class="dashboard-title">Maior lucro acumulado</h2></div></div>
+          <div class="ranking-list">
+            {% for item in management_dashboard.best_programs %}
+              <div class="ranking-item"><strong>{{ item.nome }}</strong><span>{{ item.lucro }}</span><small>{{ item.qtd }} emissões • receita {{ item.receita }}</small></div>
+            {% empty %}<p class="dashboard-empty">Sem programas no período.</p>{% endfor %}
+          </div>
+        </div>
+        <div class="card">
+          <div class="dashboard-heading"><div><p class="dashboard-eyebrow">Pontos de atenção</p><h2 class="dashboard-title">Piores resultados</h2></div></div>
+          <div class="ranking-list">
+            {% for item in management_dashboard.worst_programs %}
+              <div class="ranking-item"><strong>{{ item.nome }}</strong><span>{{ item.lucro }}</span><small>{{ item.qtd }} emissões • receita {{ item.receita }}</small></div>
+            {% empty %}<p class="dashboard-empty">Sem programas no período.</p>{% endfor %}
+          </div>
+        </div>
+        <div class="card">
+          <div class="dashboard-heading"><div><p class="dashboard-eyebrow">Emissores</p><h2 class="dashboard-title">Melhores contas / parceiros</h2></div></div>
+          <div class="ranking-list">
+            {% for item in management_dashboard.top_emitters %}
+              <div class="ranking-item"><strong>{{ item.nome }}</strong><span>{{ item.lucro }}</span><small>{{ item.qtd }} emissões • receita {{ item.receita }}</small></div>
+            {% empty %}<p class="dashboard-empty">Sem emissores no período.</p>{% endfor %}
+          </div>
+        </div>
+        <div class="card">
+          <div class="dashboard-heading"><div><p class="dashboard-eyebrow">Companhias</p><h2 class="dashboard-title">Performance por companhia aérea</h2></div></div>
+          <div class="ranking-list">
+            {% for item in management_dashboard.top_airlines %}
+              <div class="ranking-item"><strong>{{ item.nome }}</strong><span>{{ item.lucro }}</span><small>{{ item.qtd }} emissões • receita {{ item.receita }}</small></div>
+            {% empty %}<p class="dashboard-empty">Sem companhias no período.</p>{% endfor %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard-section">
+      <div class="dashboard-grid dashboard-grid--operations">
+        <div class="card">
+          <div class="dashboard-heading"><div><p class="dashboard-eyebrow">Emissões</p><h2 class="dashboard-title">Últimas emissões filtradas</h2></div></div>
           <div class="dashboard-table-wrapper">
             <table class="dashboard-table">
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Programa</th>
-                  <th>Pontos</th>
-                  <th>Status</th>
-                  <th>Data</th>
-                </tr>
-              </thead>
+              <thead><tr><th>Data</th><th>Cliente</th><th>Emissor</th><th>Programa</th><th>Companhia</th><th>Conta</th><th>Receita</th><th>Custo</th><th>Lucro</th></tr></thead>
               <tbody>
-                {% for emissao in emissoes_recentes %}
+                {% for row in management_dashboard.emissions_rows %}
                   <tr>
-                    <td>{{ emissao.cliente }}</td>
-                    <td>{{ emissao.programa }}</td>
-                    <td>{{ emissao.pontos }}</td>
-                    <td><span class="status-badge status-badge--{{ emissao.status_class }}">{{ emissao.status }}</span></td>
-                    <td>{{ emissao.data|date:"d/m/Y" }}</td>
+                    <td>{{ row.data }}</td><td>{{ row.cliente }}</td><td>{{ row.emissor }}</td><td>{{ row.programa }}</td><td>{{ row.companhia }}</td><td>{{ row.conta }}</td><td>{{ row.receita }}</td><td>{{ row.custo }}</td><td><span class="status-badge status-badge--{{ row.lucro_tone }}">{{ row.lucro }}</span></td>
                   </tr>
-                {% empty %}
-                  <tr>
-                    <td class="table-empty" colspan="5">Nenhuma emissão encontrada.</td>
-                  </tr>
-                {% endfor %}
+                {% empty %}<tr><td class="table-empty" colspan="9">Nenhuma emissão encontrada com a combinação atual de filtros.</td></tr>{% endfor %}
               </tbody>
             </table>
           </div>
         </div>
-        <aside class="dashboard-column dashboard-notifications">
-          <div class="dashboard-heading">
-            <div>
-              <p class="dashboard-eyebrow">Notificações e ações pendentes</p>
-              <h2 class="dashboard-title">Prioridades do dia</h2>
-            </div>
-          </div>
+        <div class="card">
+          <div class="dashboard-heading"><div><p class="dashboard-eyebrow">Alertas de margem</p><h2 class="dashboard-title">Onde você está perdendo</h2></div></div>
           <div class="dashboard-notifications-list">
-            {% for notification in notifications %}
-              <div class="card notification-card">
-                <span class="notification-status notification-status--{{ notification.status_class }}">{{ notification.status }}</span>
-                <h3 class="notification-title">{{ notification.titulo }}</h3>
-                <p class="notification-text">{{ notification.descricao }}</p>
-                <div class="notification-actions">
-                  {% if notification.acao_url %}
-                    <a class="btn btn--ghost btn--sm" href="{{ notification.acao_url }}">{{ notification.acao_label }}</a>
-                  {% endif %}
-                  <button class="btn btn--outline btn--sm" type="button">Marcar como resolvido</button>
-                </div>
+            {% for alert in management_dashboard.margin_alerts %}
+              <div class="notification-card notification-card--{{ alert.tone }}">
+                <h3 class="notification-title">{{ alert.titulo }}</h3>
+                <p class="notification-text">{{ alert.descricao }}</p>
               </div>
-            {% empty %}
-              <p class="dashboard-empty">Nenhuma notificação pendente no momento.</p>
             {% endfor %}
           </div>
-        </aside>
+        </div>
       </div>
     </section>
   </div>
