@@ -257,7 +257,7 @@ def admin_dashboard(request):
             "empresa_id": empresa_id,
         }
     )
-    return render(request, "painel_cliente/dashboard.html", context)
+    return render(request, "admin_custom/dashboard.html", context)
 
 
 @login_required
