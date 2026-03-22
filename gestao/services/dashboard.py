@@ -299,8 +299,69 @@ def _parse_date(value, fallback):
         return fallback
 
 
+MANAGEMENT_FILTER_KEYS = ("data_inicio", "data_fim", "cliente", "emissor", "companhia", "programa", "conta", "status")
+MANAGEMENT_FILTER_MULTI_KEYS = ("cliente", "emissor", "companhia", "programa", "conta")
+MANAGEMENT_FILTER_SINGLE_KEYS = ("data_inicio", "data_fim", "status")
+MANAGEMENT_FILTER_SESSION_KEY = "management_dashboard_filters"
+
+
 def _selected_ids(request, key):
     return [value for value in request.GET.getlist(key) if value]
+
+
+def _normalize_management_filters(raw_filters=None):
+    raw_filters = raw_filters or {}
+    normalized = {}
+    for key in MANAGEMENT_FILTER_MULTI_KEYS:
+        value = raw_filters.get(key, [])
+        if isinstance(value, (list, tuple)):
+            normalized[key] = [str(item) for item in value if item not in (None, "")]
+        elif value in (None, ""):
+            normalized[key] = []
+        else:
+            normalized[key] = [str(value)]
+    for key in MANAGEMENT_FILTER_SINGLE_KEYS:
+        value = raw_filters.get(key, "")
+        normalized[key] = "" if value in (None, "") else str(value)
+    return normalized
+
+
+def _current_management_filters(request):
+    stored_filters = _normalize_management_filters(request.session.get(MANAGEMENT_FILTER_SESSION_KEY, {}))
+    has_management_input = any(
+        key in request.GET for key in MANAGEMENT_FILTER_KEYS
+    ) or any(request.GET.getlist(key) for key in MANAGEMENT_FILTER_MULTI_KEYS)
+
+    if request.GET.get("clear_management_filters") == "1":
+        stored_filters = _normalize_management_filters()
+        request.session[MANAGEMENT_FILTER_SESSION_KEY] = stored_filters
+        request.session.modified = True
+        return stored_filters
+
+    if has_management_input:
+        current_filters = {}
+        for key in MANAGEMENT_FILTER_MULTI_KEYS:
+            current_filters[key] = [value for value in request.GET.getlist(key) if value]
+        for key in MANAGEMENT_FILTER_SINGLE_KEYS:
+            current_filters[key] = request.GET.get(key, "")
+        normalized = _normalize_management_filters(current_filters)
+        request.session[MANAGEMENT_FILTER_SESSION_KEY] = normalized
+        request.session.modified = True
+        return normalized
+
+    return stored_filters
+
+
+def _management_filter_value(filters, key, fallback=""):
+    value = filters.get(key, fallback)
+    return fallback if value in (None, "") else value
+
+
+def _management_filter_list(filters, key):
+    value = filters.get(key, [])
+    if isinstance(value, (list, tuple)):
+        return [str(item) for item in value if item not in (None, "")]
+    return []
 
 
 def _format_money(value):
@@ -343,8 +404,9 @@ def _build_query_string(params):
 
 def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
     today = timezone.localdate()
-    end_date = _parse_date(request.GET.get("data_fim"), today)
-    start_date = _parse_date(request.GET.get("data_inicio"), end_date - timedelta(days=29))
+    active_filters = _current_management_filters(request)
+    end_date = _parse_date(_management_filter_value(active_filters, "data_fim"), today)
+    start_date = _parse_date(_management_filter_value(active_filters, "data_inicio"), end_date - timedelta(days=29))
     if start_date > end_date:
         start_date, end_date = end_date, start_date
 
@@ -364,11 +426,11 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
         available_clientes = available_clientes.filter(empresa=empresa)
         available_contas = available_contas.filter(empresa=empresa)
 
-    selected_emissores = _selected_ids(request, "emissor")
-    selected_clientes = _selected_ids(request, "cliente")
-    selected_companhias = _selected_ids(request, "companhia")
-    selected_programas = _selected_ids(request, "programa")
-    selected_contas = _selected_ids(request, "conta")
+    selected_emissores = _management_filter_list(active_filters, "emissor")
+    selected_clientes = _management_filter_list(active_filters, "cliente")
+    selected_companhias = _management_filter_list(active_filters, "companhia")
+    selected_programas = _management_filter_list(active_filters, "programa")
+    selected_contas = _management_filter_list(active_filters, "conta")
 
     if selected_emissores:
         filtered_base = filtered_base.filter(emissor_parceiro_id__in=selected_emissores)
@@ -380,6 +442,11 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
         filtered_base = filtered_base.filter(programa_id__in=selected_programas)
     if selected_contas:
         filtered_base = filtered_base.filter(conta_administrada_id__in=selected_contas)
+    selected_status = _management_filter_value(active_filters, "status")
+    if selected_status == "emitido":
+        filtered_base = filtered_base.exclude(localizador="").exclude(localizador__isnull=True)
+    elif selected_status == "pendente":
+        filtered_base = filtered_base.filter(Q(localizador="") | Q(localizador__isnull=True))
 
     previous_days = (end_date - start_date).days + 1
     prev_end = start_date - timedelta(days=1)
@@ -397,6 +464,10 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
         previous_qs = previous_qs.filter(programa_id__in=selected_programas)
     if selected_contas:
         previous_qs = previous_qs.filter(conta_administrada_id__in=selected_contas)
+    if selected_status == "emitido":
+        previous_qs = previous_qs.exclude(localizador="").exclude(localizador__isnull=True)
+    elif selected_status == "pendente":
+        previous_qs = previous_qs.filter(Q(localizador="") | Q(localizador__isnull=True))
 
     filtered_emissoes = list(filtered_base.select_related(
         "cliente__usuario", "programa", "emissor_parceiro", "companhia_aerea", "conta_administrada"
@@ -616,6 +687,7 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
         "margin_alerts": margin_alerts[:4],
         "emissions_rows": emissions_rows[:10],
         "filter_options": filter_options,
+        "selected_status": selected_status,
         "filters_summary": {
             "selected_emissores": len(selected_emissores),
             "selected_clientes": len(selected_clientes),
@@ -623,7 +695,7 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
             "selected_programas": len(selected_programas),
             "selected_contas": len(selected_contas),
         },
-        "clear_filters_query": _build_query_string(date_params),
+        "clear_filters_query": _build_query_string(base_params + [("clear_management_filters", 1)]),
         "previous_period_query": _build_query_string(prev_date_params),
     }
 

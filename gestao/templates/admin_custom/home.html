@@ -7,6 +7,7 @@
 {% endblock %}
 {% block content %}
 <div class="space-y-6 py-2">
+  {% include "admin_custom/partials/management_filters.html" %}
   <section class="rounded border border-gray-700 bg-gray-800 p-6">
     <h2 class="text-2xl font-semibold text-white">Bem-vindo à operação</h2>
     <p class="mt-2 text-sm text-gray-400">Período atual: {{ home_period_label }}</p>

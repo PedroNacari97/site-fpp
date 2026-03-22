@@ -1,3 +1,4 @@
+from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
@@ -18,7 +19,12 @@ from ..models import (
     Movimentacao,
     Passageiro,
 )
-from ..services.dashboard import build_operational_dashboard_context
+from ..services.dashboard import (
+    build_operational_dashboard_context,
+    _current_management_filters,
+    _management_filter_list,
+    _management_filter_value,
+)
 from ..value_utils import build_valor_milheiro_map, get_valor_referencia_from_map
 from .permissions import require_admin_or_operator
 
@@ -229,8 +235,17 @@ def build_dashboard_metrics(view_type="clientes", entity_id=None):
 
 
 def _build_home_context(*, user, empresa=None, request=None):
+    active_filters = _current_management_filters(request) if request else {}
     today = timezone.localdate()
-    start_date = today.replace(day=1)
+    start_date = today - timedelta(days=29)
+    if request:
+        start_date = timezone.datetime.strptime(_management_filter_value(active_filters, "data_inicio"), "%Y-%m-%d").date() if _management_filter_value(active_filters, "data_inicio") else start_date
+        today = timezone.datetime.strptime(_management_filter_value(active_filters, "data_fim"), "%Y-%m-%d").date() if _management_filter_value(active_filters, "data_fim") else today
+    selected_emissores = _management_filter_list(active_filters, "emissor") if request else []
+    selected_clientes = _management_filter_list(active_filters, "cliente") if request else []
+    selected_companhias = _management_filter_list(active_filters, "companhia") if request else []
+    selected_programas = _management_filter_list(active_filters, "programa") if request else []
+    selected_contas = _management_filter_list(active_filters, "conta") if request else []
     emissoes_qs = EmissaoPassagem.objects.select_related("cliente__usuario", "companhia_aerea", "aeroporto_partida", "aeroporto_destino")
     cotacoes_qs = CotacaoVoo.objects.select_related("cliente__usuario", "origem", "destino", "programa")
     contas_qs = ContaAdministrada.objects.all()
@@ -242,6 +257,28 @@ def _build_home_context(*, user, empresa=None, request=None):
         contas_qs = contas_qs.filter(empresa=empresa)
         clientes_qs = clientes_qs.filter(empresa=empresa)
         movimentacoes_qs = movimentacoes_qs.filter(Q(conta__cliente__empresa=empresa) | Q(conta__conta_administrada__empresa=empresa))
+
+
+    if selected_emissores:
+        emissoes_qs = emissoes_qs.filter(emissor_parceiro_id__in=selected_emissores)
+    if selected_clientes:
+        emissoes_qs = emissoes_qs.filter(cliente_id__in=selected_clientes)
+        cotacoes_qs = cotacoes_qs.filter(cliente_id__in=selected_clientes)
+        clientes_qs = clientes_qs.filter(id__in=selected_clientes)
+    if selected_companhias:
+        emissoes_qs = emissoes_qs.filter(companhia_aerea_id__in=selected_companhias)
+    if selected_programas:
+        emissoes_qs = emissoes_qs.filter(programa_id__in=selected_programas)
+        cotacoes_qs = cotacoes_qs.filter(programa_id__in=selected_programas)
+    if selected_contas:
+        emissoes_qs = emissoes_qs.filter(conta_administrada_id__in=selected_contas)
+        cotacoes_qs = cotacoes_qs.filter(conta_administrada_id__in=selected_contas)
+        contas_qs = contas_qs.filter(id__in=selected_contas)
+    selected_status = _management_filter_value(active_filters, "status") if request else ""
+    if selected_status == "emitido":
+        emissoes_qs = emissoes_qs.exclude(localizador="").exclude(localizador__isnull=True)
+    elif selected_status == "pendente":
+        emissoes_qs = emissoes_qs.filter(Q(localizador="") | Q(localizador__isnull=True))
 
     emissoes_hoje = emissoes_qs.filter(criado_em__date=today)
     emissoes_periodo = emissoes_qs.filter(criado_em__date__gte=start_date, criado_em__date__lte=today)
