@@ -1,324 +1,82 @@
 {% extends "admin_custom/base_admin.html" %}
-{% load static %}
-
 {% block title %}Dashboard{% endblock %}
-{% block header_title %}Dashboard Administrativo{% endblock %}
-{% block header_subtitle %}<p class="page-subtitle">Visão consolidada dos clientes, emissões e reservas com hierarquia clara de informações.</p>{% endblock %}
+{% block header_title %}Dashboard de Milhas{% endblock %}
+{% block header_subtitle %}<span>Visão consolidada da operação com filtros manuais e dados reais da gestão.</span>{% endblock %}
 {% block header_actions %}
-<a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="btn btn--outline">+ Novo Cliente</a>
-<a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="btn">+ Nova Emissão</a>
+<a href="{% url 'admin_novo_cliente' %}" class="rounded bg-gray-900 px-4 py-2 text-sm text-white border border-gray-700">Novo Cliente</a>
+<a href="{% url 'admin_nova_emissao' %}" class="rounded bg-blue-600 px-4 py-2 text-sm text-white">Nova Emissão</a>
 {% endblock %}
 
 {% block content %}
-<div class="stacked">
-  <section class="surface-card filter-panel" data-filters-root>
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Filtro principal</p>
-        <p class="section-title">Escolha o tipo de visão para ajustar os indicadores</p>
-      </div>
-      <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
-    </div>
-    <div class="filter-body is-open" data-filter-panel>
-      <div class="filter-grid">
-        <div class="form-field">
-          <label class="form-label" for="viewSelect">Tipo de visão</label>
-          <select id="viewSelect">
-            <option value="clientes" {% if view_type == "clientes" %}selected{% endif %}>Clientes</option>
-            <option value="contas" {% if view_type == "contas" %}selected{% endif %}>Contas administradas</option>
-            <option value="parceiros" {% if view_type == "parceiros" %}selected{% endif %}>Emissores parceiros</option>
-          </select>
-        </div>
-        <div class="form-field" data-filter-type="clientes">
-          <label class="form-label" for="clienteSelect">Cliente</label>
-          <select id="clienteSelect">
-            <option value="">Selecionar Cliente</option>
-            {% for c in clientes %}
-              <option value="{{ c.id }}" {% if selected_cliente and c.id == selected_cliente.id %}selected{% endif %}>{{ c }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-field" data-filter-type="contas">
-          <label class="form-label" for="contaSelect">Conta administrada</label>
-          <select id="contaSelect">
-            <option value="">Selecionar Conta</option>
-            {% for conta in contas_administradas %}
-              <option value="{{ conta.id }}" {% if selected_conta and conta.id == selected_conta.id %}selected{% endif %}>{{ conta.nome }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-field" data-filter-type="parceiros">
-          <label class="form-label" for="emissorSelect">Emissor parceiro</label>
-          <select id="emissorSelect">
-            <option value="">Selecionar Emissor</option>
-            {% for emissor in emissores_parceiros %}
-              <option value="{{ emissor.id }}" {% if selected_emissor and emissor.id == selected_emissor.id %}selected{% endif %}>{{ emissor.nome }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      </div>
-      <div class="filter-actions">
-        <span class="muted text-sm">Filtre para enxergar cartões e relatórios com o contexto correto.</span>
-      </div>
-    </div>
+<div class="space-y-6 py-2">
+  <section class="rounded border border-gray-700 bg-gray-800 p-6">
+    <form method="get" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div><label for="data_inicio">Data inicial</label><input id="data_inicio" type="date" name="data_inicio" value="{{ management_dashboard.start_date }}"></div>
+      <div><label for="data_fim">Data final</label><input id="data_fim" type="date" name="data_fim" value="{{ management_dashboard.end_date }}"></div>
+      <div><label for="cliente">Cliente</label><select id="cliente" name="cliente"><option value="">Todos</option>{% for item in management_dashboard.filter_options.clientes %}<option value="{{ item.id }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>{% endfor %}</select></div>
+      <div><label for="emissor">Emissor / responsável</label><select id="emissor" name="emissor"><option value="">Todos</option>{% for item in management_dashboard.filter_options.emissores %}<option value="{{ item.id }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>{% endfor %}</select></div>
+      <div><label for="companhia">Companhia aérea</label><select id="companhia" name="companhia"><option value="">Todas</option>{% for item in management_dashboard.filter_options.companhias %}<option value="{{ item.id }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>{% endfor %}</select></div>
+      <div><label for="programa">Programa de fidelidade</label><select id="programa" name="programa"><option value="">Todos</option>{% for item in management_dashboard.filter_options.programas %}<option value="{{ item.id }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>{% endfor %}</select></div>
+      <div><label for="conta">Conta administrativa</label><select id="conta" name="conta"><option value="">Todas</option>{% for item in management_dashboard.filter_options.contas %}<option value="{{ item.id }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>{% endfor %}</select></div>
+      <div class="flex items-end gap-3"><button type="submit" class="rounded bg-blue-600 px-6 py-3 text-white hover:bg-blue-700">Aplicar</button><a href="?{{ management_dashboard.clear_filters_query }}" class="rounded bg-gray-700 px-6 py-3 text-gray-300">Limpar</a></div>
+    </form>
   </section>
 
-  <section class="surface-card stacked">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Indicadores</p>
-        <h2 class="section-title">Resumo rápido</h2>
-      </div>
-    </div>
-    {% if view_type == "parceiros" %}
-    {% if total_emissoes %}
-    <div class="stat-grid stats-grid">
-      <div class="stat-card primary">
-        <p class="stat-label">✈️ Total de Emissões</p>
-        <p class="stat-value">{{ total_emissoes }}</p>
-        <p class="stat-meta">Emissões vinculadas ao emissor selecionado</p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-label">🧾 Total de milhas emitidas</p>
-        <p class="stat-value">{{ parceiros.milhas }}</p>
-        <p class="stat-meta">Milhas usadas nas emissões do parceiro</p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-label">💸 Valor pago ao parceiro</p>
-        <p class="stat-value">R$ {{ parceiros.valor_pago|floatformat:2 }}</p>
-        <p class="stat-meta">Somatório pago ao parceiro</p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-label">💰 Lucro total</p>
-        <p class="stat-value">R$ {{ parceiros.lucro|floatformat:2 }}</p>
-        <p class="stat-meta">Lucro consolidado das emissões</p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-label">📈 Valor médio do milheiro</p>
-        <p class="stat-value">R$ {{ parceiros.valor_medio_milheiro|floatformat:2 }}</p>
-        <p class="stat-meta">Média ponderada por milhas emitidas</p>
-      </div>
-    </div>
-    {% else %}
-      <p class="muted">Nenhuma emissão encontrada para o filtro selecionado.</p>
-    {% endif %}
-    {% else %}
-    <div class="stat-grid stats-grid">
-      <div class="stat-card primary">
-        <p class="stat-label">
-          {% if view_type == "contas" %}🏢 Total de Contas{% else %}👥 Total de Clientes{% endif %}
-        </p>
-        <p class="stat-value">{{ total_titulares }}</p>
-        <p class="stat-meta">
-          {% if view_type == "contas" %}Contas administradas ativas{% else %}Base ativa de clientes acompanhados{% endif %}
-        </p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-label">✈️ Total de Emissões</p>
-        <p class="stat-value">{{ total_emissoes }}</p>
-        <p class="stat-meta">Passagens emitidas em todos os programas</p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-label">💰 Total Economizado</p>
-        <p class="stat-value">R$ {{ total_economizado|floatformat:2 }}</p>
-        <p class="stat-meta">Economia acumulada em emissões e reservas</p>
-      </div>
-    </div>
-    {% endif %}
+  <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Contas admin.</p><p class="mt-3 text-3xl font-semibold text-white">{{ home_counts.contas_administrativas_ativas|default:'—' }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Emissões</p><p class="mt-3 text-3xl font-semibold text-white">{{ management_dashboard.summary.total_emissoes }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Contas fidelidade</p><p class="mt-3 text-3xl font-semibold text-white">{{ home_counts.contas_fidelidade|default:'—' }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Clientes</p><p class="mt-3 text-3xl font-semibold text-white">{{ home_counts.clientes_ativos|default:'—' }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Passageiros</p><p class="mt-3 text-3xl font-semibold text-white">{{ home_counts.passageiros|default:'—' }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Viagens</p><p class="mt-3 text-3xl font-semibold text-white">{{ home_counts.viagens|default:'—' }}</p></article>
   </section>
 
-  {% if view_type != "parceiros" %}
-  <section class="surface-card stacked">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Programas</p>
-        <h2 class="section-title">Pontos, valores e referências</h2>
-      </div>
-    </div>
-    <div class="stat-grid stats-grid">
-      {% for prog in programas %}
-        <div class="stat-card">
-          <p class="stat-label">{{ prog.nome }}</p>
-          <p class="stat-value">{{ prog.pontos }}</p>
-          <p class="stat-meta">Pontos acumulados</p>
-          <div class="section-divider"></div>
-          <p class="label">Valor total</p>
-          <p class="stat-meta">R$ {{ prog.valor_total|floatformat:2 }}</p>
-          <p class="label">Valor médio por 1.000</p>
-          <p class="stat-meta">R$ {{ prog.valor_medio|floatformat:2 }}</p>
-          <p class="label">Valor de referência atual</p>
-          <p class="stat-meta">R$ {{ prog.valor_referencia|floatformat:2 }}</p>
-          {% if prog.conta_id %}
-          <a class="card-link btn btn--ghost" href="{% url 'admin_movimentacoes' prog.conta_id %}">Ver movimentações</a>
-          {% endif %}
-        </div>
-      {% empty %}
-        <p class="muted">Nenhum programa encontrado.</p>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
-
-  {% if view_type == "parceiros" %}
-  <section class="surface-card stacked">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Emissores parceiros</p>
-        <h2 class="section-title">Cards por parceiro</h2>
-      </div>
-    </div>
-    {% if parceiros_cards %}
-      <div class="stat-grid stats-grid">
-        {% for card in parceiros_cards %}
-          <div class="stat-card">
-            <p class="stat-label">{{ card.nome }}</p>
-            <p class="stat-value">{{ card.total_emissoes }}</p>
-            <p class="stat-meta">Emissões registradas</p>
-            <ul class="list-plain">
-              <li>Total de milhas: <strong>{{ card.total_milhas }}</strong></li>
-              <li>Valor pago: <strong>R$ {{ card.valor_pago|floatformat:2 }}</strong></li>
-              <li>Valor médio do milheiro: <strong>R$ {{ card.valor_medio_milheiro|floatformat:2 }}</strong></li>
-            </ul>
-          </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <p class="muted">Nenhuma emissão encontrada para parceiros.</p>
-    {% endif %}
-  </section>
-  {% endif %}
-
-  <section class="surface-card stacked">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Resumo financeiro</p>
-        <h2 class="section-title">{% if view_type == "parceiros" %}Emissões e vendas{% else %}Emissões e Hotéis{% endif %}</h2>
-      </div>
-    </div>
-    <div class="stat-grid stats-grid">
-      <div class="stat-card primary">
-        <p class="stat-label">Emissões</p>
-        <p class="stat-value">{{ emissoes.qtd }}</p>
-        <p class="stat-meta">Quantidade total de emissões</p>
-        <ul class="list-plain">
-          {% if view_type == "parceiros" %}
-            <li>Total de milhas emitidas: <strong>{{ parceiros.milhas }}</strong></li>
-            <li>Valor pago ao parceiro: <strong>R$ {{ parceiros.valor_pago|floatformat:2 }}</strong></li>
-            <li>Valor médio do milheiro: <strong>R$ {{ parceiros.valor_medio_milheiro|floatformat:2 }}</strong></li>
-            <li>Lucro: <strong>R$ {{ parceiros.lucro|floatformat:2 }}</strong></li>
-          {% else %}
-            <li>Total de pontos usados: <strong>{{ emissoes.pontos }}</strong></li>
-            <li>Valor ref.: <strong>R$ {{ emissoes.valor_referencia|floatformat:2 }}</strong></li>
-            <li>Taxas*: <strong>R$ {{ emissoes.valor_taxas|floatformat:2 }}</strong></li>
-            <li>Custo total: <strong>R$ {{ emissoes.custo_total|floatformat:2 }}</strong></li>
-            <li>Economizado: <strong>R$ {{ emissoes.valor_economizado|floatformat:2 }}</strong></li>
-          {% endif %}
-        </ul>
-        {% if view_type != "parceiros" %}
-        <p class="helper-text mt-3">*Taxas de embarque/companhia aérea.</p>
-        {% endif %}
-        <a class="card-link btn btn--ghost" href="{% url 'admin_emissoes' %}">Ver detalhes</a>
-      </div>
-      {% if view_type != "parceiros" %}
-      <div class="stat-card">
-        <p class="stat-label">Hotéis</p>
-        <p class="stat-value">{{ hoteis.qtd }}</p>
-        <p class="stat-meta">Reservas confirmadas</p>
-        <ul class="list-plain">
-          <li>Valor ref. acumulado: <strong>R$ {{ hoteis.valor_referencia|floatformat:2 }}</strong></li>
-          <li>Valor pago: <strong>R$ {{ hoteis.valor_pago|floatformat:2 }}</strong></li>
-          <li>Economizado: <strong>R$ {{ hoteis.valor_economizado|floatformat:2 }}</strong></li>
-        </ul>
-        <a class="card-link btn btn--ghost" href="{% url 'admin_hoteis' %}">Ver detalhes</a>
-      </div>
-      {% endif %}
-    </div>
+  <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+    {% for card in resumo_cards %}<article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">{{ card.titulo }}</p><p class="mt-3 text-3xl font-semibold text-white">{{ card.valor }}</p><p class="mt-2 text-sm text-gray-400">{{ card.descricao }}</p></article>{% endfor %}
   </section>
 
-  <section class="surface-card">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Distribuição</p>
-        <h2 class="section-title">Emissões por programa</h2>
-      </div>
-    </div>
-    <canvas id="emissoesChart"></canvas>
+  <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center"><p class="text-sm uppercase text-gray-400">Emissões no período</p><p class="mt-4 text-6xl font-semibold text-white">{{ management_dashboard.summary.total_emissoes }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center"><p class="text-sm uppercase text-gray-400">Receita total</p><p class="mt-4 text-6xl font-semibold text-white">{{ management_dashboard.summary.receita_total }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center"><p class="text-sm uppercase text-gray-400">Lucro líquido</p><p class="mt-4 text-6xl font-semibold text-white">{{ management_dashboard.summary.lucro_total }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center"><p class="text-sm uppercase text-gray-400">Milhas utilizadas</p><p class="mt-4 text-6xl font-semibold text-white">{{ management_dashboard.summary.milhas_utilizadas }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center"><p class="text-sm uppercase text-gray-400">Preço médio milha</p><p class="mt-4 text-4xl font-semibold text-white">{{ management_dashboard.summary.preco_medio_milha }}</p></article>
+  </section>
+
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Programas de Fidelidade</h2>
+      <div class="h-[200px] space-y-3 overflow-y-auto">{% for programa in programas_info|slice:":4" %}<div class="rounded border border-gray-700 bg-gray-900 p-4"><div class="flex items-center justify-between gap-3"><span class="text-sm text-white">{{ programa.nome }}</span><span class="text-sm text-gray-400">{{ programa.pontos }}</span></div><p class="mt-2 text-xs text-gray-400">Valor total {{ programa.valor_total|floatformat:2 }} • Ref. {{ programa.valor_referencia|floatformat:2 }}</p></div>{% empty %}<div class="flex h-full items-center justify-center rounded border border-gray-700 bg-gray-900 text-sm text-gray-400">Sem programas cadastrados.</div>{% endfor %}</div>
+    </article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Receita x Lucro</h2>
+      <div class="h-[200px] space-y-3 overflow-y-auto rounded border border-gray-700 bg-gray-900 p-4">{% for item in management_dashboard.cost_vs_sale|slice:":4" %}<div class="rounded border border-gray-700 p-4"><div class="flex items-center justify-between text-sm"><span class="text-white">{{ item.programa }}</span><span class="text-gray-400">{{ item.margem_media }}</span></div><div class="mt-3 flex h-3 gap-2"><div class="w-1/2 rounded-full bg-[#fbbf24]"></div><div class="w-1/2 rounded-full bg-[#10b981]"></div></div><div class="mt-2 flex items-center justify-between text-xs text-gray-400"><span>Custo {{ item.custo_medio }}</span><span>Venda {{ item.venda_media }}</span></div></div>{% empty %}<div class="flex h-full items-center justify-center text-sm text-gray-400">Sem comparativos disponíveis.</div>{% endfor %}</div>
+    </article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Alertas / Aeroportos</h2>
+      <div class="max-h-[280px] space-y-2 overflow-y-auto">{% for alerta in alertas_info|slice:":6" %}<div class="rounded border border-gray-700 bg-gray-900 p-4"><div class="mb-2 flex items-center justify-between gap-3 text-sm"><span class="text-white">{{ alerta.origem }} → {{ alerta.destino }}</span><span class="text-gray-400">{{ alerta.status }}</span></div><div class="h-6 rounded-full bg-gray-700"><div class="h-6 rounded-full bg-blue-400 {% cycle 'w-3/4' 'w-2/3' 'w-1/2' 'w-1/3' %}"></div></div><p class="mt-2 text-xs text-gray-400">{{ alerta.datas_resumo }}</p></div>{% empty %}<div class="rounded border border-gray-700 bg-gray-900 p-4 text-sm text-gray-400">Sem alertas ativos.</div>{% endfor %}</div>
+    </article>
+  </section>
+
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <article class="rounded border border-gray-700 bg-gray-800 p-6 lg:col-span-2">
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Principais Indicadores da Operação</h2>
+      <div class="h-[250px] rounded border border-gray-700 bg-gray-900 p-6"><div class="grid h-full grid-cols-1 gap-4 md:grid-cols-2"><div class="space-y-3 overflow-y-auto">{% for item in management_dashboard.best_programs|slice:":4" %}<div class="rounded border border-gray-700 bg-gray-800/50 p-4"><div class="flex items-center justify-between gap-3"><span class="text-sm text-white">{{ item.nome }}</span><span class="text-sm text-green-500">{{ item.lucro }}</span></div><p class="mt-2 text-xs text-gray-400">{{ item.qtd }} emissões • receita {{ item.receita }}</p></div>{% empty %}<div class="flex h-full items-center justify-center rounded border border-gray-700 bg-gray-800/50 text-sm text-gray-400">Sem programas em destaque.</div>{% endfor %}</div><div class="space-y-3 overflow-y-auto">{% for item in management_dashboard.worst_programs|slice:":4" %}<div class="rounded border border-gray-700 bg-gray-800/50 p-4"><div class="flex items-center justify-between gap-3"><span class="text-sm text-white">{{ item.nome }}</span><span class="text-sm text-red-500">{{ item.lucro }}</span></div><p class="mt-2 text-xs text-gray-400">{{ item.qtd }} emissões • receita {{ item.receita }}</p></div>{% empty %}<div class="flex h-full items-center justify-center rounded border border-gray-700 bg-gray-800/50 text-sm text-gray-400">Sem alertas de pior resultado.</div>{% endfor %}</div></div></div>
+    </article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Resumo rápido</h2>
+      <div class="h-[250px] space-y-3 overflow-y-auto rounded border border-gray-700 bg-gray-900 p-4"><div class="rounded border border-gray-700 p-4"><p class="text-sm text-gray-400">Total de taxas</p><p class="mt-2 text-2xl font-semibold text-white">{{ management_dashboard.summary.total_taxas }}</p></div><div class="rounded border border-gray-700 p-4"><p class="text-sm text-gray-400">Clientes filtrados</p><p class="mt-2 text-2xl font-semibold text-white">{{ management_dashboard.filters_summary.selected_clientes }}</p></div><div class="rounded border border-gray-700 p-4"><p class="text-sm text-gray-400">Emissores filtrados</p><p class="mt-2 text-2xl font-semibold text-white">{{ management_dashboard.filters_summary.selected_emissores }}</p></div><div class="rounded border border-gray-700 p-4"><p class="text-sm text-gray-400">Contas filtradas</p><p class="mt-2 text-2xl font-semibold text-white">{{ management_dashboard.filters_summary.selected_contas }}</p></div></div>
+    </article>
+  </section>
+
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><h2 class="mb-4 text-center text-lg font-semibold text-white">Top Emissores</h2><div class="h-[200px] space-y-3 overflow-y-auto rounded border border-gray-700 bg-gray-900 p-4">{% for item in management_dashboard.top_emitters|slice:":6" %}<div class="flex items-center justify-between rounded border border-gray-700 px-4 py-3"><span class="text-sm text-white">{{ item.nome }}</span><span class="text-sm text-purple-500">{{ item.lucro }}</span></div>{% empty %}<div class="flex h-full items-center justify-center text-sm text-gray-400">Sem emissores disponíveis.</div>{% endfor %}</div></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><h2 class="mb-4 text-center text-lg font-semibold text-white">Companhias Aéreas</h2><div class="h-[200px] space-y-3 overflow-y-auto rounded border border-gray-700 bg-gray-900 p-4">{% for item in management_dashboard.top_airlines|slice:":6" %}<div class="flex items-center justify-between rounded border border-gray-700 px-4 py-3"><span class="text-sm text-white">{{ item.nome }}</span><span class="text-sm text-yellow-500">{{ item.lucro }}</span></div>{% empty %}<div class="flex h-full items-center justify-center text-sm text-gray-400">Sem companhias disponíveis.</div>{% endfor %}</div></article>
+  </section>
+
+  <section class="overflow-hidden rounded border border-gray-700 bg-gray-800">
+    <div class="border-b border-gray-700 px-6 py-4"><h2 class="text-lg font-semibold text-white">Tabela de Voos</h2></div>
+    <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-700"><thead class="bg-gray-900/50 text-xs uppercase text-gray-400"><tr><th class="px-4 py-3 text-left">Data</th><th class="px-4 py-3 text-left">Cliente</th><th class="px-4 py-3 text-left">Embarque</th><th class="px-4 py-3 text-left">Aeroporto</th><th class="px-4 py-3 text-left">Companhia</th><th class="px-4 py-3 text-left">Localizador</th><th class="px-4 py-3 text-left">Lucro</th></tr></thead><tbody class="divide-y divide-gray-700">{% for row in management_dashboard.emissions_rows %}<tr class="border-b border-gray-700 hover:bg-gray-750"><td class="px-4 py-3 text-gray-200">{{ row.data }}</td><td class="px-4 py-3 text-gray-200">{{ row.cliente }}</td><td class="px-4 py-3 text-gray-200">{{ row.programa }}</td><td class="px-4 py-3 text-gray-200">{{ row.conta }}</td><td class="px-4 py-3 text-gray-200">{{ row.companhia }}</td><td class="px-4 py-3 text-gray-200">{{ row.emissor }}</td><td class="px-4 py-3 text-gray-200">{{ row.lucro }}</td></tr>{% empty %}<tr class="border-b border-gray-700 hover:bg-gray-750"><td colspan="7" class="px-4 py-3 text-gray-200">Nenhuma emissão encontrada.</td></tr>{% endfor %}</tbody></table></div>
   </section>
 </div>
-{% endblock %}
-
-{% block extra_body %}
-<script>
-const viewSelect = document.getElementById('viewSelect');
-const clienteSelect = document.getElementById('clienteSelect');
-const contaSelect = document.getElementById('contaSelect');
-const emissorSelect = document.getElementById('emissorSelect');
-
-function buildDashboardUrl() {
-  const base = '{% url "admin_dashboard" %}';
-  const view = viewSelect ? viewSelect.value : 'clientes';
-  const params = new URLSearchParams({ view });
-  if (view === 'clientes' && clienteSelect && clienteSelect.value) {
-    params.set('cliente_id', clienteSelect.value);
-  }
-  if (view === 'contas' && contaSelect && contaSelect.value) {
-    params.set('conta_id', contaSelect.value);
-  }
-  if (view === 'parceiros' && emissorSelect && emissorSelect.value) {
-    params.set('emissor_id', emissorSelect.value);
-  }
-  return `${base}?${params.toString()}`;
-}
-
-function toggleFilters() {
-  const view = viewSelect ? viewSelect.value : 'clientes';
-  document.querySelectorAll('[data-filter-type]').forEach((el) => {
-    el.style.display = el.dataset.filterType === view ? 'block' : 'none';
-  });
-}
-
-if (viewSelect) {
-  viewSelect.addEventListener('change', () => {
-    toggleFilters();
-    window.location = buildDashboardUrl();
-  });
-}
-if (clienteSelect) {
-  clienteSelect.addEventListener('change', () => {
-    window.location = buildDashboardUrl();
-  });
-}
-if (contaSelect) {
-  contaSelect.addEventListener('change', () => {
-    window.location = buildDashboardUrl();
-  });
-}
-if (emissorSelect) {
-  emissorSelect.addEventListener('change', () => {
-    window.location = buildDashboardUrl();
-  });
-}
-toggleFilters();
-
-const ctx = document.getElementById('emissoesChart');
-if (ctx) {
-  const labels = [{% for item in emissoes_programa %}'{{ item.programa }}'{% if not forloop.last %},{% endif %}{% endfor %}];
-  const dataVals = [{% for item in emissoes_programa %}{{ item.quantidade }}{% if not forloop.last %},{% endif %}{% endfor %}];
-  const primaryToken = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
-  const primaryColor = primaryToken ? `hsl(${primaryToken})` : 'hsl(217 91% 60%)';
-
-  new Chart(ctx, {
-    type: 'bar',
-    data: { 
-      labels, 
-      datasets: [{ 
-        label: 'Emissões', 
-        data: dataVals, 
-        backgroundColor: primaryColor 
-      }] 
-    },
-    options: { scales: { y: { beginAtZero: true } } }
-  });
-}
-</script>
 {% endblock %}

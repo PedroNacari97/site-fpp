@@ -416,6 +416,7 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
     miles = float(sum(Decimal(item.pontos_utilizados or 0) for item in filtered_emissoes))
     fees = total_of(filtered_emissoes, "valor_taxas")
     emissions_count = len(filtered_emissoes)
+    avg_mile_price = ((total_of(filtered_emissoes, "custo_total") / miles) if miles else 0)
 
     previous_revenue = float(sum(
         Decimal(item.valor_total_final if item.valor_total_final not in (None, "") else (item.valor_venda_final or 0))
@@ -598,6 +599,14 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
         "end_date": end_date.isoformat(),
         "previous_period_label": f"{prev_start.strftime('%d/%m')} a {prev_end.strftime('%d/%m')}",
         "kpis": kpis,
+        "summary": {
+            "total_emissoes": _format_number(emissions_count),
+            "receita_total": _format_money(revenue),
+            "lucro_total": _format_money(profit),
+            "milhas_utilizadas": _format_number(miles),
+            "preco_medio_milha": f"R$ {avg_mile_price:,.4f}",
+            "total_taxas": _format_money(fees),
+        },
         "timeline_series": timeline_series,
         "cost_vs_sale": cost_vs_sale,
         "best_programs": best_programs,

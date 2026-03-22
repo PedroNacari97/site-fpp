@@ -1,5 +1,6 @@
 from django.urls import path
 from gestao.views import (
+    admin_home,
     admin_dashboard,
     admin_clientes,
     admin_contas,
@@ -65,7 +66,8 @@ from gestao.views import (
 )
 
 urlpatterns = [
-    path('painel/', admin_dashboard, name='admin_dashboard'),
+    path('painel/', admin_home, name='admin_dashboard'),
+    path('painel/dashboard/', admin_dashboard, name='admin_dashboard_analytics'),
     path('clientes/', admin_clientes, name='admin_clientes'),
     path('clientes/<int:cliente_id>/editar/', editar_cliente, name='admin_editar_cliente'),
     path('clientes/novo/', criar_cliente, name='admin_novo_cliente'),
