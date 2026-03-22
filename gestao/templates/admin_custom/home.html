@@ -1,0 +1,28 @@
+{% extends "admin_custom/base_admin.html" %}
+{% block title %}Home da Gestão{% endblock %}
+{% block header_title %}Home da Gestão{% endblock %}
+{% block header_subtitle %}<span>Visão operacional do dia com alertas, movimentos e atalhos da gestão.</span>{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_dashboard_analytics' %}" class="rounded border border-gray-700 bg-gray-900 px-4 py-2 text-sm text-white">Abrir Dashboard</a>
+{% endblock %}
+{% block content %}
+<div class="space-y-6 py-2">
+  {% include "admin_custom/partials/management_filters.html" %}
+  <section class="rounded border border-gray-700 bg-gray-800 p-6">
+    <h2 class="text-2xl font-semibold text-white">Bem-vindo à operação</h2>
+    <p class="mt-2 text-sm text-gray-400">Período atual: {{ home_period_label }}</p>
+  </section>
+  <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+    {% for item in home_kpis %}<article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">{{ item.label }}</p><p class="mt-3 text-3xl font-semibold text-white">{{ item.value }}</p></article>{% endfor %}
+  </section>
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><h2 class="mb-4 text-lg font-semibold text-white">Alertas importantes</h2><div class="space-y-3">{% for alert in home_alerts %}<div class="rounded border border-gray-700 bg-gray-900 p-4"><div class="flex items-center justify-between"><span class="text-white">{{ alert.titulo }}</span><span class="text-xs text-gray-400">{{ alert.tone }}</span></div><p class="mt-2 text-sm text-gray-400">{{ alert.descricao }}</p></div>{% empty %}<div class="rounded border border-gray-700 bg-gray-900 p-4 text-sm text-gray-400">Sem alertas relevantes.</div>{% endfor %}</div></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><h2 class="mb-4 text-lg font-semibold text-white">Ações rápidas</h2><div class="grid grid-cols-1 gap-3">{% for action in home_actions %}<a href="{% url action.url %}" class="rounded border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-white hover:bg-gray-750">{{ action.label }}</a>{% endfor %}</div></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><h2 class="mb-4 text-lg font-semibold text-white">Resumo financeiro</h2><div class="space-y-3"><div class="rounded border border-gray-700 bg-gray-900 p-4"><p class="text-sm text-gray-400">Receita no período</p><p class="mt-2 text-2xl font-semibold text-white">{{ home_financial.receita }}</p></div><div class="rounded border border-gray-700 bg-gray-900 p-4"><p class="text-sm text-gray-400">Custo no período</p><p class="mt-2 text-2xl font-semibold text-white">{{ home_financial.custo }}</p></div><div class="rounded border border-gray-700 bg-gray-900 p-4"><p class="text-sm text-gray-400">Lucro / Ticket médio</p><p class="mt-2 text-xl font-semibold text-white">{{ home_financial.lucro }} • {{ home_financial.ticket_medio }}</p></div></div></article>
+  </section>
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><h2 class="mb-4 text-lg font-semibold text-white">Últimas movimentações</h2><div class="space-y-3">{% for item in home_latest_movements %}<div class="rounded border border-gray-700 bg-gray-900 p-4"><div class="flex items-center justify-between gap-3"><span class="text-white">{{ item.tipo }}</span><span class="text-xs text-gray-400">{{ item.meta }}</span></div><p class="mt-2 text-sm text-gray-400">{{ item.titulo }}</p></div>{% empty %}<div class="rounded border border-gray-700 bg-gray-900 p-4 text-sm text-gray-400">Sem movimentações recentes.</div>{% endfor %}</div></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><h2 class="mb-4 text-lg font-semibold text-white">Próximos embarques</h2><div class="space-y-3">{% for item in home_upcoming_boardings %}<div class="rounded border border-gray-700 bg-gray-900 p-4"><div class="flex items-center justify-between gap-3"><span class="text-white">{{ item.cliente }}</span><span class="text-xs text-gray-400">{{ item.status }}</span></div><p class="mt-2 text-sm text-gray-400">{{ item.rota }} • {{ item.data }} • {{ item.companhia }} • {{ item.localizador }}</p></div>{% empty %}<div class="rounded border border-gray-700 bg-gray-900 p-4 text-sm text-gray-400">Sem embarques próximos.</div>{% endfor %}</div></article>
+  </section>
+</div>
+{% endblock %}
