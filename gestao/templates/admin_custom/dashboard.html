@@ -1,130 +1,163 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block title %}Dashboard{% endblock %}
-{% block page_title %}Dashboard de Milhas{% endblock %}
-{% block app_header_subtitle %}<span>Interface visual pronta para integração com backend.</span>{% endblock %}
+{% block header_title %}Dashboard de Milhas{% endblock %}
+{% block header_subtitle %}<span>Visão consolidada da operação com dados reais da gestão.</span>{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_novo_cliente' %}" class="rounded bg-gray-900 px-4 py-2 text-sm text-white border border-gray-700">Novo Cliente</a>
+<a href="{% url 'admin_nova_emissao' %}" class="rounded bg-blue-600 px-4 py-2 text-sm text-white">Nova Emissão</a>
+{% endblock %}
 
 {% block content %}
-<main class="mx-auto w-full max-w-[1600px] space-y-6 px-6 py-8">
-  <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-    <article class="rounded border border-gray-700 bg-gray-800 p-6">
-      <p class="text-sm uppercase text-gray-400">Milhas Ativas</p>
-      <p class="mt-3 text-3xl font-semibold text-white">—</p>
+<div class="space-y-6 py-2">
+  <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+    {% for card in resumo_cards %}
+      <article class="rounded border border-gray-700 bg-gray-800 p-6">
+        <p class="text-sm uppercase text-gray-400">{{ card.titulo }}</p>
+        <p class="mt-3 text-3xl font-semibold text-white">{{ card.valor }}</p>
+        <p class="mt-2 text-sm text-gray-400">{{ card.descricao }}</p>
+      </article>
+    {% endfor %}
+  </section>
+
+  <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center">
+      <p class="text-sm uppercase text-gray-400">Emissões no período</p>
+      <p class="mt-4 text-6xl font-semibold text-white">{{ management_dashboard.summary.total_emissoes }}</p>
     </article>
-    <article class="rounded border border-gray-700 bg-gray-800 p-6">
-      <p class="text-sm uppercase text-gray-400">Clientes Ativos</p>
-      <p class="mt-3 text-3xl font-semibold text-white">—</p>
+    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center">
+      <p class="text-sm uppercase text-gray-400">Receita total</p>
+      <p class="mt-4 text-6xl font-semibold text-white">{{ management_dashboard.summary.receita_total }}</p>
     </article>
-    <article class="rounded border border-gray-700 bg-gray-800 p-6">
-      <p class="text-sm uppercase text-gray-400">Economia Total</p>
-      <p class="mt-3 text-3xl font-semibold text-white">—</p>
-    </article>
-    <article class="rounded border border-gray-700 bg-gray-800 p-6">
-      <p class="text-sm uppercase text-gray-400">Voos Emitidos</p>
-      <p class="mt-3 text-3xl font-semibold text-white">—</p>
+    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center">
+      <p class="text-sm uppercase text-gray-400">Lucro líquido</p>
+      <p class="mt-4 text-6xl font-semibold text-white">{{ management_dashboard.summary.lucro_total }}</p>
     </article>
   </section>
 
-  <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
-    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center">
-      <p class="text-sm uppercase text-gray-400">Clientes Premium</p>
-      <p class="mt-4 text-6xl font-semibold text-white">—</p>
-    </article>
-    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center">
-      <p class="text-sm uppercase text-gray-400">Milhas Reservadas</p>
-      <p class="mt-4 text-6xl font-semibold text-white">—</p>
-    </article>
-    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center">
-      <p class="text-sm uppercase text-gray-400">Companhias Parceiras</p>
-      <p class="mt-4 text-6xl font-semibold text-white">—</p>
-    </article>
-  </section>
-
-  <section class="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-3">
     <article class="rounded border border-gray-700 bg-gray-800 p-6">
-      <h2 class="mb-4 text-center text-lg font-semibold text-white">Volume por Programa</h2>
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Programas de Fidelidade</h2>
+      <div class="h-[200px] space-y-3 overflow-y-auto">
+        {% for programa in programas_info|slice:":4" %}
+          <div class="rounded border border-gray-700 bg-gray-900 p-4">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-sm text-white">{{ programa.nome }}</span>
+              <span class="text-sm text-gray-400">{{ programa.pontos }}</span>
+            </div>
+            <p class="mt-2 text-xs text-gray-400">Valor total {{ programa.valor_total|floatformat:2 }} • Ref. {{ programa.valor_referencia|floatformat:2 }}</p>
+          </div>
+        {% empty %}
+          <div class="flex h-full items-center justify-center rounded border border-gray-700 bg-gray-900 text-sm text-gray-400">Sem programas cadastrados.</div>
+        {% endfor %}
+      </div>
+    </article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Série Temporal</h2>
       <div class="flex h-[200px] items-end justify-between gap-3 rounded border border-gray-700 bg-gray-900 p-4">
-        <div class="flex flex-1 flex-col items-center gap-2"><div class="h-24 w-full rounded-t bg-[#60a5fa]"></div><span class="text-xs text-gray-400">A</span></div>
-        <div class="flex flex-1 flex-col items-center gap-2"><div class="h-32 w-full rounded-t bg-[#60a5fa]"></div><span class="text-xs text-gray-400">B</span></div>
-        <div class="flex flex-1 flex-col items-center gap-2"><div class="h-20 w-full rounded-t bg-[#60a5fa]"></div><span class="text-xs text-gray-400">C</span></div>
-        <div class="flex flex-1 flex-col items-center gap-2"><div class="h-28 w-full rounded-t bg-[#60a5fa]"></div><span class="text-xs text-gray-400">D</span></div>
+        {% for point in management_dashboard.timeline_series|slice:":8" %}
+          <div class="flex flex-1 flex-col items-center gap-2">
+            <div class="w-full rounded-t bg-blue-400 {% cycle 'h-16' 'h-24' 'h-20' 'h-28' 'h-32' 'h-24' 'h-20' 'h-28' %}"></div>
+            <span class="text-[10px] text-gray-400">{{ point.label }}</span>
+          </div>
+        {% empty %}
+          <div class="flex h-full w-full items-center justify-center text-sm text-gray-400">Sem dados no período selecionado.</div>
+        {% endfor %}
       </div>
     </article>
     <article class="rounded border border-gray-700 bg-gray-800 p-6">
-      <h2 class="mb-4 text-center text-lg font-semibold text-white">Receita Estimada</h2>
-      <div class="h-[200px] rounded border border-gray-700 bg-gray-900 p-4">
-        <div class="flex h-full items-end gap-4">
-          <div class="h-24 flex-1 rounded-t bg-[#fbbf24]"></div>
-          <div class="h-32 flex-1 rounded-t bg-[#fbbf24]"></div>
-          <div class="h-20 flex-1 rounded-t bg-[#fbbf24]"></div>
-          <div class="h-28 flex-1 rounded-t bg-[#fbbf24]"></div>
-        </div>
-      </div>
-    </article>
-    <article class="rounded border border-gray-700 bg-gray-800 p-6">
-      <h2 class="mb-4 text-center text-lg font-semibold text-white">Lucro Médio</h2>
-      <div class="h-[200px] rounded border border-gray-700 bg-gray-900 p-4">
-        <div class="flex h-full items-end gap-4">
-          <div class="h-16 flex-1 rounded-t bg-[#10b981]"></div>
-          <div class="h-24 flex-1 rounded-t bg-[#10b981]"></div>
-          <div class="h-20 flex-1 rounded-t bg-[#10b981]"></div>
-          <div class="h-28 flex-1 rounded-t bg-[#10b981]"></div>
-        </div>
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Receita x Lucro</h2>
+      <div class="h-[200px] space-y-3 overflow-y-auto rounded border border-gray-700 bg-gray-900 p-4">
+        {% for item in management_dashboard.cost_vs_sale|slice:":4" %}
+          <div class="rounded border border-gray-700 p-4">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-white">{{ item.programa }}</span>
+              <span class="text-gray-400">{{ item.margem_media }}</span>
+            </div>
+            <div class="mt-3 flex h-3 gap-2">
+              <div class="w-1/2 rounded-full bg-[#fbbf24]"></div>
+              <div class="w-1/2 rounded-full bg-[#10b981]"></div>
+            </div>
+            <div class="mt-2 flex items-center justify-between text-xs text-gray-400">
+              <span>Custo {{ item.custo_medio }}</span>
+              <span>Venda {{ item.venda_media }}</span>
+            </div>
+          </div>
+        {% empty %}
+          <div class="flex h-full items-center justify-center text-sm text-gray-400">Sem comparativos disponíveis.</div>
+        {% endfor %}
       </div>
     </article>
   </section>
 
-  <section class="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-3">
     <article class="rounded border border-gray-700 bg-gray-800 p-6 lg:col-span-2">
-      <h2 class="mb-4 text-center text-lg font-semibold text-white">Gráfico Principal</h2>
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Principais Indicadores da Operação</h2>
       <div class="h-[250px] rounded border border-gray-700 bg-gray-900 p-6">
-        <div class="grid h-full grid-cols-12 items-end gap-3">
-          <div class="col-span-1 h-16 rounded-t bg-[#60a5fa]"></div>
-          <div class="col-span-1 h-24 rounded-t bg-[#60a5fa]"></div>
-          <div class="col-span-1 h-20 rounded-t bg-[#60a5fa]"></div>
-          <div class="col-span-1 h-28 rounded-t bg-[#60a5fa]"></div>
-          <div class="col-span-1 h-32 rounded-t bg-[#60a5fa]"></div>
-          <div class="col-span-1 h-24 rounded-t bg-[#60a5fa]"></div>
-          <div class="col-span-1 h-20 rounded-t bg-[#fbbf24]"></div>
-          <div class="col-span-1 h-28 rounded-t bg-[#fbbf24]"></div>
-          <div class="col-span-1 h-16 rounded-t bg-[#fbbf24]"></div>
-          <div class="col-span-1 h-24 rounded-t bg-[#10b981]"></div>
-          <div class="col-span-1 h-20 rounded-t bg-[#10b981]"></div>
-          <div class="col-span-1 h-28 rounded-t bg-[#10b981]"></div>
+        <div class="grid h-full grid-cols-1 gap-4 md:grid-cols-2">
+          <div class="space-y-3 overflow-y-auto">
+            {% for item in management_dashboard.best_programs|slice:":4" %}
+              <div class="rounded border border-gray-700 bg-gray-800/50 p-4">
+                <div class="flex items-center justify-between gap-3"><span class="text-sm text-white">{{ item.nome }}</span><span class="text-sm text-green-500">{{ item.lucro }}</span></div>
+                <p class="mt-2 text-xs text-gray-400">{{ item.qtd }} emissões • receita {{ item.receita }}</p>
+              </div>
+            {% empty %}
+              <div class="flex h-full items-center justify-center rounded border border-gray-700 bg-gray-800/50 text-sm text-gray-400">Sem programas em destaque.</div>
+            {% endfor %}
+          </div>
+          <div class="space-y-3 overflow-y-auto">
+            {% for item in management_dashboard.worst_programs|slice:":4" %}
+              <div class="rounded border border-gray-700 bg-gray-800/50 p-4">
+                <div class="flex items-center justify-between gap-3"><span class="text-sm text-white">{{ item.nome }}</span><span class="text-sm text-red-500">{{ item.lucro }}</span></div>
+                <p class="mt-2 text-xs text-gray-400">{{ item.qtd }} emissões • receita {{ item.receita }}</p>
+              </div>
+            {% empty %}
+              <div class="flex h-full items-center justify-center rounded border border-gray-700 bg-gray-800/50 text-sm text-gray-400">Sem alertas de pior resultado.</div>
+            {% endfor %}
+          </div>
         </div>
       </div>
     </article>
     <article class="rounded border border-gray-700 bg-gray-800 p-6">
-      <h2 class="mb-4 text-center text-lg font-semibold text-white">Aeroportos</h2>
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Alertas / Aeroportos</h2>
       <div class="max-h-[280px] space-y-2 overflow-y-auto">
-        <div class="rounded border border-gray-700 bg-gray-900 p-4"><div class="mb-2 flex justify-between text-sm text-white"><span>Aeroporto</span><span>—</span></div><div class="h-6 rounded-full bg-gray-700"><div class="h-6 w-3/4 rounded-full bg-blue-400"></div></div></div>
-        <div class="rounded border border-gray-700 bg-gray-900 p-4"><div class="mb-2 flex justify-between text-sm text-white"><span>Aeroporto</span><span>—</span></div><div class="h-6 rounded-full bg-gray-700"><div class="h-6 w-2/3 rounded-full bg-blue-400"></div></div></div>
-        <div class="rounded border border-gray-700 bg-gray-900 p-4"><div class="mb-2 flex justify-between text-sm text-white"><span>Aeroporto</span><span>—</span></div><div class="h-6 rounded-full bg-gray-700"><div class="h-6 w-1/2 rounded-full bg-blue-400"></div></div></div>
-        <div class="rounded border border-gray-700 bg-gray-900 p-4"><div class="mb-2 flex justify-between text-sm text-white"><span>Aeroporto</span><span>—</span></div><div class="h-6 rounded-full bg-gray-700"><div class="h-6 w-1/3 rounded-full bg-blue-400"></div></div></div>
+        {% for alerta in alertas_info|slice:":6" %}
+          <div class="rounded border border-gray-700 bg-gray-900 p-4">
+            <div class="mb-2 flex items-center justify-between gap-3 text-sm"><span class="text-white">{{ alerta.origem }} → {{ alerta.destino }}</span><span class="text-gray-400">{{ alerta.status }}</span></div>
+            <div class="h-6 rounded-full bg-gray-700"><div class="h-6 rounded-full bg-blue-400 {% cycle 'w-3/4' 'w-2/3' 'w-1/2' 'w-1/3' %}"></div></div>
+            <p class="mt-2 text-xs text-gray-400">{{ alerta.datas_resumo }}</p>
+          </div>
+        {% empty %}
+          <div class="rounded border border-gray-700 bg-gray-900 p-4 text-sm text-gray-400">Sem alertas ativos.</div>
+        {% endfor %}
       </div>
     </article>
   </section>
 
-  <section class="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <article class="rounded border border-gray-700 bg-gray-800 p-6">
-      <h2 class="mb-4 text-center text-lg font-semibold text-white">Volume por Companhia</h2>
-      <div class="h-[200px] rounded border border-gray-700 bg-gray-900 p-4">
-        <div class="grid h-full grid-cols-2 gap-4">
-          <div class="rounded border border-gray-700 bg-gray-800"></div>
-          <div class="rounded border border-gray-700 bg-gray-800"></div>
-          <div class="rounded border border-gray-700 bg-gray-800"></div>
-          <div class="rounded border border-gray-700 bg-gray-800"></div>
-        </div>
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Top Emissores</h2>
+      <div class="h-[200px] space-y-3 overflow-y-auto rounded border border-gray-700 bg-gray-900 p-4">
+        {% for item in management_dashboard.top_emitters|slice:":6" %}
+          <div class="flex items-center justify-between rounded border border-gray-700 px-4 py-3">
+            <span class="text-sm text-white">{{ item.nome }}</span>
+            <span class="text-sm text-purple-500">{{ item.lucro }}</span>
+          </div>
+        {% empty %}
+          <div class="flex h-full items-center justify-center text-sm text-gray-400">Sem emissores disponíveis.</div>
+        {% endfor %}
       </div>
     </article>
     <article class="rounded border border-gray-700 bg-gray-800 p-6">
-      <h2 class="mb-4 text-center text-lg font-semibold text-white">Performance por Cliente</h2>
-      <div class="h-[200px] rounded border border-gray-700 bg-gray-900 p-4">
-        <div class="grid h-full grid-cols-2 gap-4">
-          <div class="rounded border border-gray-700 bg-gray-800"></div>
-          <div class="rounded border border-gray-700 bg-gray-800"></div>
-          <div class="rounded border border-gray-700 bg-gray-800"></div>
-          <div class="rounded border border-gray-700 bg-gray-800"></div>
-        </div>
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Companhias Aéreas</h2>
+      <div class="h-[200px] space-y-3 overflow-y-auto rounded border border-gray-700 bg-gray-900 p-4">
+        {% for item in management_dashboard.top_airlines|slice:":6" %}
+          <div class="flex items-center justify-between rounded border border-gray-700 px-4 py-3">
+            <span class="text-sm text-white">{{ item.nome }}</span>
+            <span class="text-sm text-yellow-500">{{ item.lucro }}</span>
+          </div>
+        {% empty %}
+          <div class="flex h-full items-center justify-center text-sm text-gray-400">Sem companhias disponíveis.</div>
+        {% endfor %}
       </div>
     </article>
   </section>
@@ -137,21 +170,32 @@
       <table class="min-w-full divide-y divide-gray-700">
         <thead class="bg-gray-900 text-xs uppercase text-gray-300">
           <tr>
+            <th class="px-4 py-3 text-left">Data</th>
             <th class="px-4 py-3 text-left">Cliente</th>
-            <th class="px-4 py-3 text-left">Origem</th>
-            <th class="px-4 py-3 text-left">Destino</th>
+            <th class="px-4 py-3 text-left">Emissor</th>
             <th class="px-4 py-3 text-left">Programa</th>
-            <th class="px-4 py-3 text-left">Status</th>
+            <th class="px-4 py-3 text-left">Companhia</th>
+            <th class="px-4 py-3 text-left">Receita</th>
+            <th class="px-4 py-3 text-left">Lucro</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-700">
-          <tr class="hover:bg-gray-750"><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td></tr>
-          <tr class="hover:bg-gray-750"><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td></tr>
-          <tr class="hover:bg-gray-750"><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td></tr>
-          <tr class="hover:bg-gray-750"><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td></tr>
+          {% for row in management_dashboard.emissions_rows %}
+            <tr class="hover:bg-gray-750">
+              <td class="px-4 py-3 text-gray-200">{{ row.data }}</td>
+              <td class="px-4 py-3 text-gray-200">{{ row.cliente }}</td>
+              <td class="px-4 py-3 text-gray-200">{{ row.emissor }}</td>
+              <td class="px-4 py-3 text-gray-200">{{ row.programa }}</td>
+              <td class="px-4 py-3 text-gray-200">{{ row.companhia }}</td>
+              <td class="px-4 py-3 text-gray-200">{{ row.receita }}</td>
+              <td class="px-4 py-3 text-gray-200">{{ row.lucro }}</td>
+            </tr>
+          {% empty %}
+            <tr class="hover:bg-gray-750"><td colspan="7" class="px-4 py-3 text-gray-200">Nenhuma emissão encontrada.</td></tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
   </section>
-</main>
+</div>
 {% endblock %}
