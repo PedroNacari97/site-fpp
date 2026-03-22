@@ -1,324 +1,157 @@
 {% extends "admin_custom/base_admin.html" %}
-{% load static %}
-
 {% block title %}Dashboard{% endblock %}
-{% block header_title %}Dashboard Administrativo{% endblock %}
-{% block header_subtitle %}<p class="page-subtitle">Visão consolidada dos clientes, emissões e reservas com hierarquia clara de informações.</p>{% endblock %}
-{% block header_actions %}
-<a id="novoClienteBtn" href="{% url 'admin_novo_cliente' %}" class="btn btn--outline">+ Novo Cliente</a>
-<a id="novaEmissaoBtn" href="{% url 'admin_nova_emissao' %}{% if selected_cliente %}?cliente_id={{ selected_cliente.id }}{% endif %}" class="btn">+ Nova Emissão</a>
-{% endblock %}
+{% block page_title %}Dashboard de Milhas{% endblock %}
+{% block app_header_subtitle %}<span>Interface visual pronta para integração com backend.</span>{% endblock %}
 
 {% block content %}
-<div class="stacked">
-  <section class="surface-card filter-panel" data-filters-root>
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Filtro principal</p>
-        <p class="section-title">Escolha o tipo de visão para ajustar os indicadores</p>
+<main class="mx-auto w-full max-w-[1600px] space-y-6 px-6 py-8">
+  <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <p class="text-sm uppercase text-gray-400">Milhas Ativas</p>
+      <p class="mt-3 text-3xl font-semibold text-white">—</p>
+    </article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <p class="text-sm uppercase text-gray-400">Clientes Ativos</p>
+      <p class="mt-3 text-3xl font-semibold text-white">—</p>
+    </article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <p class="text-sm uppercase text-gray-400">Economia Total</p>
+      <p class="mt-3 text-3xl font-semibold text-white">—</p>
+    </article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <p class="text-sm uppercase text-gray-400">Voos Emitidos</p>
+      <p class="mt-3 text-3xl font-semibold text-white">—</p>
+    </article>
+  </section>
+
+  <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center">
+      <p class="text-sm uppercase text-gray-400">Clientes Premium</p>
+      <p class="mt-4 text-6xl font-semibold text-white">—</p>
+    </article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center">
+      <p class="text-sm uppercase text-gray-400">Milhas Reservadas</p>
+      <p class="mt-4 text-6xl font-semibold text-white">—</p>
+    </article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-8 text-center">
+      <p class="text-sm uppercase text-gray-400">Companhias Parceiras</p>
+      <p class="mt-4 text-6xl font-semibold text-white">—</p>
+    </article>
+  </section>
+
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Volume por Programa</h2>
+      <div class="flex h-[200px] items-end justify-between gap-3 rounded border border-gray-700 bg-gray-900 p-4">
+        <div class="flex flex-1 flex-col items-center gap-2"><div class="h-24 w-full rounded-t bg-[#60a5fa]"></div><span class="text-xs text-gray-400">A</span></div>
+        <div class="flex flex-1 flex-col items-center gap-2"><div class="h-32 w-full rounded-t bg-[#60a5fa]"></div><span class="text-xs text-gray-400">B</span></div>
+        <div class="flex flex-1 flex-col items-center gap-2"><div class="h-20 w-full rounded-t bg-[#60a5fa]"></div><span class="text-xs text-gray-400">C</span></div>
+        <div class="flex flex-1 flex-col items-center gap-2"><div class="h-28 w-full rounded-t bg-[#60a5fa]"></div><span class="text-xs text-gray-400">D</span></div>
       </div>
-      <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
-    </div>
-    <div class="filter-body is-open" data-filter-panel>
-      <div class="filter-grid">
-        <div class="form-field">
-          <label class="form-label" for="viewSelect">Tipo de visão</label>
-          <select id="viewSelect">
-            <option value="clientes" {% if view_type == "clientes" %}selected{% endif %}>Clientes</option>
-            <option value="contas" {% if view_type == "contas" %}selected{% endif %}>Contas administradas</option>
-            <option value="parceiros" {% if view_type == "parceiros" %}selected{% endif %}>Emissores parceiros</option>
-          </select>
+    </article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Receita Estimada</h2>
+      <div class="h-[200px] rounded border border-gray-700 bg-gray-900 p-4">
+        <div class="flex h-full items-end gap-4">
+          <div class="h-24 flex-1 rounded-t bg-[#fbbf24]"></div>
+          <div class="h-32 flex-1 rounded-t bg-[#fbbf24]"></div>
+          <div class="h-20 flex-1 rounded-t bg-[#fbbf24]"></div>
+          <div class="h-28 flex-1 rounded-t bg-[#fbbf24]"></div>
         </div>
-        <div class="form-field" data-filter-type="clientes">
-          <label class="form-label" for="clienteSelect">Cliente</label>
-          <select id="clienteSelect">
-            <option value="">Selecionar Cliente</option>
-            {% for c in clientes %}
-              <option value="{{ c.id }}" {% if selected_cliente and c.id == selected_cliente.id %}selected{% endif %}>{{ c }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-field" data-filter-type="contas">
-          <label class="form-label" for="contaSelect">Conta administrada</label>
-          <select id="contaSelect">
-            <option value="">Selecionar Conta</option>
-            {% for conta in contas_administradas %}
-              <option value="{{ conta.id }}" {% if selected_conta and conta.id == selected_conta.id %}selected{% endif %}>{{ conta.nome }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-field" data-filter-type="parceiros">
-          <label class="form-label" for="emissorSelect">Emissor parceiro</label>
-          <select id="emissorSelect">
-            <option value="">Selecionar Emissor</option>
-            {% for emissor in emissores_parceiros %}
-              <option value="{{ emissor.id }}" {% if selected_emissor and emissor.id == selected_emissor.id %}selected{% endif %}>{{ emissor.nome }}</option>
-            {% endfor %}
-          </select>
+      </div>
+    </article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Lucro Médio</h2>
+      <div class="h-[200px] rounded border border-gray-700 bg-gray-900 p-4">
+        <div class="flex h-full items-end gap-4">
+          <div class="h-16 flex-1 rounded-t bg-[#10b981]"></div>
+          <div class="h-24 flex-1 rounded-t bg-[#10b981]"></div>
+          <div class="h-20 flex-1 rounded-t bg-[#10b981]"></div>
+          <div class="h-28 flex-1 rounded-t bg-[#10b981]"></div>
         </div>
       </div>
-      <div class="filter-actions">
-        <span class="muted text-sm">Filtre para enxergar cartões e relatórios com o contexto correto.</span>
-      </div>
-    </div>
+    </article>
   </section>
 
-  <section class="surface-card stacked">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Indicadores</p>
-        <h2 class="section-title">Resumo rápido</h2>
-      </div>
-    </div>
-    {% if view_type == "parceiros" %}
-    {% if total_emissoes %}
-    <div class="stat-grid stats-grid">
-      <div class="stat-card primary">
-        <p class="stat-label">✈️ Total de Emissões</p>
-        <p class="stat-value">{{ total_emissoes }}</p>
-        <p class="stat-meta">Emissões vinculadas ao emissor selecionado</p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-label">🧾 Total de milhas emitidas</p>
-        <p class="stat-value">{{ parceiros.milhas }}</p>
-        <p class="stat-meta">Milhas usadas nas emissões do parceiro</p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-label">💸 Valor pago ao parceiro</p>
-        <p class="stat-value">R$ {{ parceiros.valor_pago|floatformat:2 }}</p>
-        <p class="stat-meta">Somatório pago ao parceiro</p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-label">💰 Lucro total</p>
-        <p class="stat-value">R$ {{ parceiros.lucro|floatformat:2 }}</p>
-        <p class="stat-meta">Lucro consolidado das emissões</p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-label">📈 Valor médio do milheiro</p>
-        <p class="stat-value">R$ {{ parceiros.valor_medio_milheiro|floatformat:2 }}</p>
-        <p class="stat-meta">Média ponderada por milhas emitidas</p>
-      </div>
-    </div>
-    {% else %}
-      <p class="muted">Nenhuma emissão encontrada para o filtro selecionado.</p>
-    {% endif %}
-    {% else %}
-    <div class="stat-grid stats-grid">
-      <div class="stat-card primary">
-        <p class="stat-label">
-          {% if view_type == "contas" %}🏢 Total de Contas{% else %}👥 Total de Clientes{% endif %}
-        </p>
-        <p class="stat-value">{{ total_titulares }}</p>
-        <p class="stat-meta">
-          {% if view_type == "contas" %}Contas administradas ativas{% else %}Base ativa de clientes acompanhados{% endif %}
-        </p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-label">✈️ Total de Emissões</p>
-        <p class="stat-value">{{ total_emissoes }}</p>
-        <p class="stat-meta">Passagens emitidas em todos os programas</p>
-      </div>
-      <div class="stat-card">
-        <p class="stat-label">💰 Total Economizado</p>
-        <p class="stat-value">R$ {{ total_economizado|floatformat:2 }}</p>
-        <p class="stat-meta">Economia acumulada em emissões e reservas</p>
-      </div>
-    </div>
-    {% endif %}
-  </section>
-
-  {% if view_type != "parceiros" %}
-  <section class="surface-card stacked">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Programas</p>
-        <h2 class="section-title">Pontos, valores e referências</h2>
-      </div>
-    </div>
-    <div class="stat-grid stats-grid">
-      {% for prog in programas %}
-        <div class="stat-card">
-          <p class="stat-label">{{ prog.nome }}</p>
-          <p class="stat-value">{{ prog.pontos }}</p>
-          <p class="stat-meta">Pontos acumulados</p>
-          <div class="section-divider"></div>
-          <p class="label">Valor total</p>
-          <p class="stat-meta">R$ {{ prog.valor_total|floatformat:2 }}</p>
-          <p class="label">Valor médio por 1.000</p>
-          <p class="stat-meta">R$ {{ prog.valor_medio|floatformat:2 }}</p>
-          <p class="label">Valor de referência atual</p>
-          <p class="stat-meta">R$ {{ prog.valor_referencia|floatformat:2 }}</p>
-          {% if prog.conta_id %}
-          <a class="card-link btn btn--ghost" href="{% url 'admin_movimentacoes' prog.conta_id %}">Ver movimentações</a>
-          {% endif %}
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
+    <article class="rounded border border-gray-700 bg-gray-800 p-6 lg:col-span-2">
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Gráfico Principal</h2>
+      <div class="h-[250px] rounded border border-gray-700 bg-gray-900 p-6">
+        <div class="grid h-full grid-cols-12 items-end gap-3">
+          <div class="col-span-1 h-16 rounded-t bg-[#60a5fa]"></div>
+          <div class="col-span-1 h-24 rounded-t bg-[#60a5fa]"></div>
+          <div class="col-span-1 h-20 rounded-t bg-[#60a5fa]"></div>
+          <div class="col-span-1 h-28 rounded-t bg-[#60a5fa]"></div>
+          <div class="col-span-1 h-32 rounded-t bg-[#60a5fa]"></div>
+          <div class="col-span-1 h-24 rounded-t bg-[#60a5fa]"></div>
+          <div class="col-span-1 h-20 rounded-t bg-[#fbbf24]"></div>
+          <div class="col-span-1 h-28 rounded-t bg-[#fbbf24]"></div>
+          <div class="col-span-1 h-16 rounded-t bg-[#fbbf24]"></div>
+          <div class="col-span-1 h-24 rounded-t bg-[#10b981]"></div>
+          <div class="col-span-1 h-20 rounded-t bg-[#10b981]"></div>
+          <div class="col-span-1 h-28 rounded-t bg-[#10b981]"></div>
         </div>
-      {% empty %}
-        <p class="muted">Nenhum programa encontrado.</p>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
-
-  {% if view_type == "parceiros" %}
-  <section class="surface-card stacked">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Emissores parceiros</p>
-        <h2 class="section-title">Cards por parceiro</h2>
       </div>
-    </div>
-    {% if parceiros_cards %}
-      <div class="stat-grid stats-grid">
-        {% for card in parceiros_cards %}
-          <div class="stat-card">
-            <p class="stat-label">{{ card.nome }}</p>
-            <p class="stat-value">{{ card.total_emissoes }}</p>
-            <p class="stat-meta">Emissões registradas</p>
-            <ul class="list-plain">
-              <li>Total de milhas: <strong>{{ card.total_milhas }}</strong></li>
-              <li>Valor pago: <strong>R$ {{ card.valor_pago|floatformat:2 }}</strong></li>
-              <li>Valor médio do milheiro: <strong>R$ {{ card.valor_medio_milheiro|floatformat:2 }}</strong></li>
-            </ul>
-          </div>
-        {% endfor %}
+    </article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Aeroportos</h2>
+      <div class="max-h-[280px] space-y-2 overflow-y-auto">
+        <div class="rounded border border-gray-700 bg-gray-900 p-4"><div class="mb-2 flex justify-between text-sm text-white"><span>Aeroporto</span><span>—</span></div><div class="h-6 rounded-full bg-gray-700"><div class="h-6 w-3/4 rounded-full bg-blue-400"></div></div></div>
+        <div class="rounded border border-gray-700 bg-gray-900 p-4"><div class="mb-2 flex justify-between text-sm text-white"><span>Aeroporto</span><span>—</span></div><div class="h-6 rounded-full bg-gray-700"><div class="h-6 w-2/3 rounded-full bg-blue-400"></div></div></div>
+        <div class="rounded border border-gray-700 bg-gray-900 p-4"><div class="mb-2 flex justify-between text-sm text-white"><span>Aeroporto</span><span>—</span></div><div class="h-6 rounded-full bg-gray-700"><div class="h-6 w-1/2 rounded-full bg-blue-400"></div></div></div>
+        <div class="rounded border border-gray-700 bg-gray-900 p-4"><div class="mb-2 flex justify-between text-sm text-white"><span>Aeroporto</span><span>—</span></div><div class="h-6 rounded-full bg-gray-700"><div class="h-6 w-1/3 rounded-full bg-blue-400"></div></div></div>
       </div>
-    {% else %}
-      <p class="muted">Nenhuma emissão encontrada para parceiros.</p>
-    {% endif %}
-  </section>
-  {% endif %}
-
-  <section class="surface-card stacked">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Resumo financeiro</p>
-        <h2 class="section-title">{% if view_type == "parceiros" %}Emissões e vendas{% else %}Emissões e Hotéis{% endif %}</h2>
-      </div>
-    </div>
-    <div class="stat-grid stats-grid">
-      <div class="stat-card primary">
-        <p class="stat-label">Emissões</p>
-        <p class="stat-value">{{ emissoes.qtd }}</p>
-        <p class="stat-meta">Quantidade total de emissões</p>
-        <ul class="list-plain">
-          {% if view_type == "parceiros" %}
-            <li>Total de milhas emitidas: <strong>{{ parceiros.milhas }}</strong></li>
-            <li>Valor pago ao parceiro: <strong>R$ {{ parceiros.valor_pago|floatformat:2 }}</strong></li>
-            <li>Valor médio do milheiro: <strong>R$ {{ parceiros.valor_medio_milheiro|floatformat:2 }}</strong></li>
-            <li>Lucro: <strong>R$ {{ parceiros.lucro|floatformat:2 }}</strong></li>
-          {% else %}
-            <li>Total de pontos usados: <strong>{{ emissoes.pontos }}</strong></li>
-            <li>Valor ref.: <strong>R$ {{ emissoes.valor_referencia|floatformat:2 }}</strong></li>
-            <li>Taxas*: <strong>R$ {{ emissoes.valor_taxas|floatformat:2 }}</strong></li>
-            <li>Custo total: <strong>R$ {{ emissoes.custo_total|floatformat:2 }}</strong></li>
-            <li>Economizado: <strong>R$ {{ emissoes.valor_economizado|floatformat:2 }}</strong></li>
-          {% endif %}
-        </ul>
-        {% if view_type != "parceiros" %}
-        <p class="helper-text mt-3">*Taxas de embarque/companhia aérea.</p>
-        {% endif %}
-        <a class="card-link btn btn--ghost" href="{% url 'admin_emissoes' %}">Ver detalhes</a>
-      </div>
-      {% if view_type != "parceiros" %}
-      <div class="stat-card">
-        <p class="stat-label">Hotéis</p>
-        <p class="stat-value">{{ hoteis.qtd }}</p>
-        <p class="stat-meta">Reservas confirmadas</p>
-        <ul class="list-plain">
-          <li>Valor ref. acumulado: <strong>R$ {{ hoteis.valor_referencia|floatformat:2 }}</strong></li>
-          <li>Valor pago: <strong>R$ {{ hoteis.valor_pago|floatformat:2 }}</strong></li>
-          <li>Economizado: <strong>R$ {{ hoteis.valor_economizado|floatformat:2 }}</strong></li>
-        </ul>
-        <a class="card-link btn btn--ghost" href="{% url 'admin_hoteis' %}">Ver detalhes</a>
-      </div>
-      {% endif %}
-    </div>
+    </article>
   </section>
 
-  <section class="surface-card">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow">Distribuição</p>
-        <h2 class="section-title">Emissões por programa</h2>
+  <section class="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Volume por Companhia</h2>
+      <div class="h-[200px] rounded border border-gray-700 bg-gray-900 p-4">
+        <div class="grid h-full grid-cols-2 gap-4">
+          <div class="rounded border border-gray-700 bg-gray-800"></div>
+          <div class="rounded border border-gray-700 bg-gray-800"></div>
+          <div class="rounded border border-gray-700 bg-gray-800"></div>
+          <div class="rounded border border-gray-700 bg-gray-800"></div>
+        </div>
       </div>
-    </div>
-    <canvas id="emissoesChart"></canvas>
+    </article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6">
+      <h2 class="mb-4 text-center text-lg font-semibold text-white">Performance por Cliente</h2>
+      <div class="h-[200px] rounded border border-gray-700 bg-gray-900 p-4">
+        <div class="grid h-full grid-cols-2 gap-4">
+          <div class="rounded border border-gray-700 bg-gray-800"></div>
+          <div class="rounded border border-gray-700 bg-gray-800"></div>
+          <div class="rounded border border-gray-700 bg-gray-800"></div>
+          <div class="rounded border border-gray-700 bg-gray-800"></div>
+        </div>
+      </div>
+    </article>
   </section>
-</div>
-{% endblock %}
 
-{% block extra_body %}
-<script>
-const viewSelect = document.getElementById('viewSelect');
-const clienteSelect = document.getElementById('clienteSelect');
-const contaSelect = document.getElementById('contaSelect');
-const emissorSelect = document.getElementById('emissorSelect');
-
-function buildDashboardUrl() {
-  const base = '{% url "admin_dashboard" %}';
-  const view = viewSelect ? viewSelect.value : 'clientes';
-  const params = new URLSearchParams({ view });
-  if (view === 'clientes' && clienteSelect && clienteSelect.value) {
-    params.set('cliente_id', clienteSelect.value);
-  }
-  if (view === 'contas' && contaSelect && contaSelect.value) {
-    params.set('conta_id', contaSelect.value);
-  }
-  if (view === 'parceiros' && emissorSelect && emissorSelect.value) {
-    params.set('emissor_id', emissorSelect.value);
-  }
-  return `${base}?${params.toString()}`;
-}
-
-function toggleFilters() {
-  const view = viewSelect ? viewSelect.value : 'clientes';
-  document.querySelectorAll('[data-filter-type]').forEach((el) => {
-    el.style.display = el.dataset.filterType === view ? 'block' : 'none';
-  });
-}
-
-if (viewSelect) {
-  viewSelect.addEventListener('change', () => {
-    toggleFilters();
-    window.location = buildDashboardUrl();
-  });
-}
-if (clienteSelect) {
-  clienteSelect.addEventListener('change', () => {
-    window.location = buildDashboardUrl();
-  });
-}
-if (contaSelect) {
-  contaSelect.addEventListener('change', () => {
-    window.location = buildDashboardUrl();
-  });
-}
-if (emissorSelect) {
-  emissorSelect.addEventListener('change', () => {
-    window.location = buildDashboardUrl();
-  });
-}
-toggleFilters();
-
-const ctx = document.getElementById('emissoesChart');
-if (ctx) {
-  const labels = [{% for item in emissoes_programa %}'{{ item.programa }}'{% if not forloop.last %},{% endif %}{% endfor %}];
-  const dataVals = [{% for item in emissoes_programa %}{{ item.quantidade }}{% if not forloop.last %},{% endif %}{% endfor %}];
-  const primaryToken = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
-  const primaryColor = primaryToken ? `hsl(${primaryToken})` : 'hsl(217 91% 60%)';
-
-  new Chart(ctx, {
-    type: 'bar',
-    data: { 
-      labels, 
-      datasets: [{ 
-        label: 'Emissões', 
-        data: dataVals, 
-        backgroundColor: primaryColor 
-      }] 
-    },
-    options: { scales: { y: { beginAtZero: true } } }
-  });
-}
-</script>
+  <section class="overflow-hidden rounded border border-gray-700 bg-gray-800">
+    <div class="border-b border-gray-700 px-6 py-4">
+      <h2 class="text-lg font-semibold text-white">Tabela de Voos</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-700">
+        <thead class="bg-gray-900 text-xs uppercase text-gray-300">
+          <tr>
+            <th class="px-4 py-3 text-left">Cliente</th>
+            <th class="px-4 py-3 text-left">Origem</th>
+            <th class="px-4 py-3 text-left">Destino</th>
+            <th class="px-4 py-3 text-left">Programa</th>
+            <th class="px-4 py-3 text-left">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-700">
+          <tr class="hover:bg-gray-750"><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td></tr>
+          <tr class="hover:bg-gray-750"><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td></tr>
+          <tr class="hover:bg-gray-750"><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td></tr>
+          <tr class="hover:bg-gray-750"><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td><td class="px-4 py-3 text-gray-200">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
 {% endblock %}
