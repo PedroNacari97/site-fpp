@@ -310,3 +310,256 @@
     align-items: flex-start;
   }
 }
+
+.dashboard--management {
+  padding-bottom: var(--space-xl);
+}
+
+.dashboard-filters {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.dashboard-filter-actions,
+.dashboard-date-grid,
+.dashboard-chip-list,
+.dashboard-legend,
+.bar-comparison__legend,
+.bar-comparison__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.dashboard-global-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.dashboard-date-grid {
+  align-items: end;
+}
+
+.dashboard-date-grid .form-field {
+  min-width: 180px;
+}
+
+.dashboard-submit-wrap {
+  justify-content: flex-end;
+}
+
+.dashboard-filter-grid--chips {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.dashboard-chip-card {
+  padding: var(--space-md);
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+
+.filter-chip.is-selected {
+  background: hsl(var(--primary));
+  color: var(--color-surface);
+  border-color: hsl(var(--primary));
+}
+
+.dashboard-summary-grid--kpis {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.dashboard-summary-card--revenue {
+  border-top: 4px solid #3B82F6;
+}
+
+.dashboard-summary-card--profit {
+  border-top: 4px solid #22C55E;
+}
+
+.dashboard-summary-card--loss {
+  border-top: 4px solid #EF4444;
+}
+
+.dashboard-summary-card--neutral {
+  border-top: 4px solid #6B7280;
+}
+
+.dashboard-delta {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #22C55E;
+}
+
+.dashboard-delta.is-negative {
+  color: #EF4444;
+}
+
+.dashboard-delta.is-muted,
+.dashboard-caption {
+  color: var(--color-muted);
+}
+
+.dashboard-grid--analytics {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+}
+
+.dashboard-grid--insights {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.dashboard-grid--operations {
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.8fr);
+}
+
+.dashboard-chart-card {
+  padding: var(--space-md);
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-right: 6px;
+}
+
+.legend-dot--revenue,
+.line-chart__bar--revenue,
+.bar-comparison__bar--sale {
+  background: #3B82F6;
+}
+
+.legend-dot--profit,
+.line-chart__bar--profit {
+  background: #22C55E;
+}
+
+.bar-comparison__bar--cost {
+  background: #6B7280;
+}
+
+.line-chart {
+  min-height: 320px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(52px, 1fr));
+  align-items: end;
+  gap: 10px;
+}
+
+.line-chart__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.line-chart__bars {
+  width: 100%;
+  min-height: 220px;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 4px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.line-chart__bar {
+  width: 18px;
+  border-radius: 8px 8px 0 0;
+  min-height: 2px;
+}
+
+.line-chart__label,
+.line-chart__meta {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.bar-comparison {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.bar-comparison__track {
+  position: relative;
+  height: 12px;
+  background: hsl(var(--muted-foreground) / 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar-comparison__bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.bar-comparison__bar--sale {
+  opacity: 0.6;
+}
+
+.ranking-list {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.ranking-item {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.ranking-item span {
+  color: var(--color-heading);
+  font-weight: 700;
+}
+
+.ranking-item small {
+  color: var(--color-muted);
+}
+
+.status-badge--profit {
+  background: hsl(var(--success) / 0.12);
+  color: hsl(var(--success));
+}
+
+.status-badge--loss {
+  background: hsl(var(--destructive) / 0.12);
+  color: hsl(var(--destructive));
+}
+
+.notification-card--loss {
+  border: 1px solid hsl(var(--destructive) / 0.25);
+}
+
+.notification-card--profit {
+  border: 1px solid hsl(var(--success) / 0.25);
+}
+
+@media (max-width: 1100px) {
+  .dashboard-grid--analytics,
+  .dashboard-grid--operations {
+    grid-template-columns: 1fr;
+  }
+}

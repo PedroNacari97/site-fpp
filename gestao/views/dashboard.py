@@ -240,6 +240,7 @@ def admin_dashboard(request):
 
     context = build_operational_dashboard_context(
         user=request.user,
+        request=request,
         empresa=empresa,
         selected_continente=request.GET.get("continente"),
         selected_pais=request.GET.get("pais"),

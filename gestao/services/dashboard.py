@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from datetime import timedelta
+from decimal import Decimal
+from urllib.parse import urlencode
 
 from django.db.models import Q
 from django.urls import reverse
@@ -9,9 +12,13 @@ from django.utils import timezone
 from gestao.models import (
     AlertaViagem,
     Cliente,
+    CompanhiaAerea,
+    ContaAdministrada,
     ContaFidelidade,
     CotacaoVoo,
     EmissaoPassagem,
+    EmissorParceiro,
+    ProgramaFidelidade,
 )
 from gestao.value_utils import build_valor_milheiro_map, get_valor_referencia_from_map
 
@@ -283,9 +290,339 @@ def _build_notifications(*, perfil, emissoes_qs, cotacoes_qs, alertas_qs):
     return notifications[:6]
 
 
+def _parse_date(value, fallback):
+    if not value:
+        return fallback
+    try:
+        return timezone.datetime.strptime(value, "%Y-%m-%d").date()
+    except ValueError:
+        return fallback
+
+
+def _selected_ids(request, key):
+    return [value for value in request.GET.getlist(key) if value]
+
+
+def _format_money(value):
+    return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def _format_number(value):
+    return f"{int(value):,}".replace(",", ".")
+
+
+def _percent_change(current, previous):
+    if not previous:
+        return None
+    return ((current - previous) / previous) * 100
+
+
+def _build_kpi(title, value, description, tone="neutral", delta=None):
+    return {
+        "titulo": title,
+        "valor": value,
+        "descricao": description,
+        "tone": tone,
+        "delta": delta,
+    }
+
+
+def _build_query_string(params):
+    cleaned = []
+    for key, value in params:
+        if value in (None, ""):
+            continue
+        if isinstance(value, (list, tuple)):
+            for item in value:
+                if item not in (None, ""):
+                    cleaned.append((key, item))
+        else:
+            cleaned.append((key, value))
+    return urlencode(cleaned, doseq=True)
+
+
+def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
+    today = timezone.localdate()
+    end_date = _parse_date(request.GET.get("data_fim"), today)
+    start_date = _parse_date(request.GET.get("data_inicio"), end_date - timedelta(days=29))
+    if start_date > end_date:
+        start_date, end_date = end_date, start_date
+
+    filtered_base = emissoes_qs.filter(criado_em__date__gte=start_date, criado_em__date__lte=end_date)
+    if empresa:
+        filtered_base = filtered_base.filter(
+            Q(cliente__empresa=empresa) | Q(conta_administrada__empresa=empresa)
+        )
+
+    available_emissores = EmissorParceiro.objects.filter(ativo=True)
+    available_clientes = Cliente.objects.filter(perfil="cliente", ativo=True)
+    available_companhias = CompanhiaAerea.objects.all()
+    available_programas = ProgramaFidelidade.objects.all()
+    available_contas = ContaAdministrada.objects.filter(ativo=True)
+    if empresa:
+        available_emissores = available_emissores.filter(empresa=empresa)
+        available_clientes = available_clientes.filter(empresa=empresa)
+        available_contas = available_contas.filter(empresa=empresa)
+
+    selected_emissores = _selected_ids(request, "emissor")
+    selected_clientes = _selected_ids(request, "cliente")
+    selected_companhias = _selected_ids(request, "companhia")
+    selected_programas = _selected_ids(request, "programa")
+    selected_contas = _selected_ids(request, "conta")
+
+    if selected_emissores:
+        filtered_base = filtered_base.filter(emissor_parceiro_id__in=selected_emissores)
+    if selected_clientes:
+        filtered_base = filtered_base.filter(cliente_id__in=selected_clientes)
+    if selected_companhias:
+        filtered_base = filtered_base.filter(companhia_aerea_id__in=selected_companhias)
+    if selected_programas:
+        filtered_base = filtered_base.filter(programa_id__in=selected_programas)
+    if selected_contas:
+        filtered_base = filtered_base.filter(conta_administrada_id__in=selected_contas)
+
+    previous_days = (end_date - start_date).days + 1
+    prev_end = start_date - timedelta(days=1)
+    prev_start = prev_end - timedelta(days=previous_days - 1)
+    previous_qs = emissoes_qs.filter(criado_em__date__gte=prev_start, criado_em__date__lte=prev_end)
+    if empresa:
+        previous_qs = previous_qs.filter(Q(cliente__empresa=empresa) | Q(conta_administrada__empresa=empresa))
+    if selected_emissores:
+        previous_qs = previous_qs.filter(emissor_parceiro_id__in=selected_emissores)
+    if selected_clientes:
+        previous_qs = previous_qs.filter(cliente_id__in=selected_clientes)
+    if selected_companhias:
+        previous_qs = previous_qs.filter(companhia_aerea_id__in=selected_companhias)
+    if selected_programas:
+        previous_qs = previous_qs.filter(programa_id__in=selected_programas)
+    if selected_contas:
+        previous_qs = previous_qs.filter(conta_administrada_id__in=selected_contas)
+
+    filtered_emissoes = list(filtered_base.select_related(
+        "cliente__usuario", "programa", "emissor_parceiro", "companhia_aerea", "conta_administrada"
+    ).order_by("criado_em"))
+    previous_emissoes = list(previous_qs)
+
+    def total_of(items, attr):
+        return float(sum(Decimal(getattr(item, attr) or 0) for item in items))
+
+    revenue = total_of(filtered_emissoes, "valor_total_final") + total_of(filtered_emissoes, "valor_venda_final")
+    # avoid double counting when both fields populated
+    revenue = float(sum(
+        Decimal(item.valor_total_final if item.valor_total_final not in (None, "") else (item.valor_venda_final or 0))
+        for item in filtered_emissoes
+    ))
+    profit = total_of(filtered_emissoes, "lucro")
+    miles = float(sum(Decimal(item.pontos_utilizados or 0) for item in filtered_emissoes))
+    fees = total_of(filtered_emissoes, "valor_taxas")
+    emissions_count = len(filtered_emissoes)
+
+    previous_revenue = float(sum(
+        Decimal(item.valor_total_final if item.valor_total_final not in (None, "") else (item.valor_venda_final or 0))
+        for item in previous_emissoes
+    ))
+    previous_profit = total_of(previous_emissoes, "lucro")
+    previous_emissions_count = len(previous_emissoes)
+    previous_miles = float(sum(Decimal(item.pontos_utilizados or 0) for item in previous_emissoes))
+    previous_fees = total_of(previous_emissoes, "valor_taxas")
+
+    kpis = [
+        _build_kpi("Receita total", _format_money(revenue), "Valor vendido no período", "revenue", _percent_change(revenue, previous_revenue)),
+        _build_kpi("Lucro líquido", _format_money(profit), "Resultado final após custos e taxas", "profit" if profit >= 0 else "loss", _percent_change(profit, previous_profit)),
+        _build_kpi("Total de emissões", _format_number(emissions_count), "Quantidade de bilhetes emitidos", "neutral", _percent_change(emissions_count, previous_emissions_count)),
+        _build_kpi("Milhas utilizadas", _format_number(miles), "Consumo total de milhas", "neutral", _percent_change(miles, previous_miles)),
+        _build_kpi("Total de taxas", _format_money(fees), "Taxas cobradas nas emissões", "neutral", _percent_change(fees, previous_fees)),
+    ]
+
+    time_bucket = "month" if previous_days > 90 else "day"
+    timeline = defaultdict(lambda: {"receita": 0.0, "lucro": 0.0})
+    for emissao in filtered_emissoes:
+        key_date = timezone.localtime(emissao.criado_em).date()
+        key = key_date.strftime("%Y-%m") if time_bucket == "month" else key_date.isoformat()
+        receita_item = Decimal(emissao.valor_total_final if emissao.valor_total_final not in (None, "") else (emissao.valor_venda_final or 0))
+        timeline[key]["receita"] += float(receita_item)
+        timeline[key]["lucro"] += float(Decimal(emissao.lucro or 0))
+    chart_max = max([max(values["receita"], values["lucro"], 0) for values in timeline.values()] or [1])
+    timeline_series = [
+        {
+            "label": key if time_bucket == "month" else timezone.datetime.strptime(key, "%Y-%m-%d").strftime("%d/%m"),
+            "receita": values["receita"],
+            "lucro": values["lucro"],
+            "receita_height": max((values["receita"] / chart_max) * 100, 2) if values["receita"] else 0,
+            "lucro_height": max((values["lucro"] / chart_max) * 100, 2) if values["lucro"] else 0,
+        }
+        for key, values in sorted(timeline.items())
+    ]
+
+    programa_stats = defaultdict(lambda: {"programa": "—", "custo": 0.0, "venda": 0.0, "qtd": 0, "lucro": 0.0})
+    emissor_stats = defaultdict(lambda: {"nome": "Sem emissor", "receita": 0.0, "lucro": 0.0, "qtd": 0})
+    companhia_stats = defaultdict(lambda: {"nome": "Sem companhia", "receita": 0.0, "lucro": 0.0, "qtd": 0})
+    margin_alerts = []
+    emissions_rows = []
+    for emissao in sorted(filtered_emissoes, key=lambda item: item.criado_em, reverse=True):
+        receita_item = float(Decimal(emissao.valor_total_final if emissao.valor_total_final not in (None, "") else (emissao.valor_venda_final or 0)))
+        custo_item = float(Decimal(emissao.custo_total or 0))
+        lucro_item = float(Decimal(emissao.lucro or 0))
+        programa_nome = emissao.programa.nome if emissao.programa else "Sem programa"
+        emissor_nome = emissao.emissor_parceiro.nome if emissao.emissor_parceiro else "Sem emissor"
+        companhia_nome = emissao.companhia_aerea.nome if emissao.companhia_aerea else "Sem companhia"
+
+        p = programa_stats[programa_nome]
+        p["programa"] = programa_nome
+        p["custo"] += custo_item
+        p["venda"] += receita_item
+        p["qtd"] += 1
+        p["lucro"] += lucro_item
+
+        e = emissor_stats[emissor_nome]
+        e["nome"] = emissor_nome
+        e["receita"] += receita_item
+        e["lucro"] += lucro_item
+        e["qtd"] += 1
+
+        c = companhia_stats[companhia_nome]
+        c["nome"] = companhia_nome
+        c["receita"] += receita_item
+        c["lucro"] += lucro_item
+        c["qtd"] += 1
+
+        if lucro_item < 0:
+            margin_alerts.append({
+                "titulo": f"Prejuízo em {programa_nome}",
+                "descricao": f"{_get_titular_name(emissao)} gerou {_format_money(lucro_item)} em {timezone.localtime(emissao.criado_em).strftime('%d/%m/%Y')}",
+                "tone": "loss",
+            })
+
+        emissions_rows.append({
+            "cliente": _get_titular_name(emissao),
+            "emissor": emissor_nome,
+            "programa": programa_nome,
+            "companhia": companhia_nome,
+            "conta": str(emissao.conta_administrada) if emissao.conta_administrada else "—",
+            "receita": _format_money(receita_item),
+            "custo": _format_money(custo_item),
+            "lucro": _format_money(lucro_item),
+            "lucro_tone": "profit" if lucro_item >= 0 else "loss",
+            "data": timezone.localtime(emissao.criado_em).strftime("%d/%m/%Y"),
+        })
+
+    cost_vs_sale = []
+    max_bar = max([max(v["custo"], v["venda"], 0) for v in programa_stats.values()] or [1])
+    for values in sorted(programa_stats.values(), key=lambda item: item["lucro"], reverse=True):
+        avg_cost = values["custo"] / values["qtd"] if values["qtd"] else 0
+        avg_sale = values["venda"] / values["qtd"] if values["qtd"] else 0
+        cost_vs_sale.append({
+            "programa": values["programa"],
+            "custo_medio": _format_money(avg_cost),
+            "venda_media": _format_money(avg_sale),
+            "margem_media": _format_money(avg_sale - avg_cost),
+            "custo_width": max((avg_cost / max_bar) * 100, 4) if avg_cost else 0,
+            "venda_width": max((avg_sale / max_bar) * 100, 4) if avg_sale else 0,
+        })
+
+    best_programs = [
+        {
+            "nome": values["programa"],
+            "lucro": _format_money(values["lucro"]),
+            "receita": _format_money(values["venda"]),
+            "qtd": values["qtd"],
+        }
+        for values in sorted(programa_stats.values(), key=lambda item: item["lucro"], reverse=True)[:5]
+    ]
+    worst_programs = [
+        {
+            "nome": values["programa"],
+            "lucro": _format_money(values["lucro"]),
+            "receita": _format_money(values["venda"]),
+            "qtd": values["qtd"],
+        }
+        for values in sorted(programa_stats.values(), key=lambda item: item["lucro"])[:5]
+    ]
+    top_emitters = [
+        {
+            "nome": values["nome"],
+            "lucro": _format_money(values["lucro"]),
+            "receita": _format_money(values["receita"]),
+            "qtd": values["qtd"],
+        }
+        for values in sorted(emissor_stats.values(), key=lambda item: item["lucro"], reverse=True)[:5]
+    ]
+    top_airlines = [
+        {
+            "nome": values["nome"],
+            "lucro": _format_money(values["lucro"]),
+            "receita": _format_money(values["receita"]),
+            "qtd": values["qtd"],
+        }
+        for values in sorted(companhia_stats.values(), key=lambda item: item["lucro"], reverse=True)[:5]
+    ]
+
+    if not margin_alerts:
+        margin_alerts.append({
+            "titulo": "Operação sem prejuízos no período",
+            "descricao": "Nenhuma emissão com lucro negativo foi encontrada dentro dos filtros aplicados.",
+            "tone": "profit",
+        })
+
+    base_params = []
+    if request.GET.get("empresa_id"):
+        base_params.append(("empresa_id", request.GET.get("empresa_id")))
+    date_params = base_params + [("data_inicio", start_date.isoformat()), ("data_fim", end_date.isoformat())]
+    prev_date_params = base_params + [("data_inicio", prev_start.isoformat()), ("data_fim", prev_end.isoformat())]
+
+    filter_options = {
+        "emissores": [
+            {"id": item.id, "label": item.nome, "selected": str(item.id) in selected_emissores, "query": _build_query_string(date_params + [("emissor", item.id)] + [("emissor", value) for value in selected_emissores if value != str(item.id)] + [("cliente", value) for value in selected_clientes] + [("companhia", value) for value in selected_companhias] + [("programa", value) for value in selected_programas] + [("conta", value) for value in selected_contas])}
+            for item in available_emissores.order_by("nome")
+        ],
+        "clientes": [
+            {"id": item.id, "label": str(item), "selected": str(item.id) in selected_clientes, "query": _build_query_string(date_params + [("cliente", item.id)] + [("cliente", value) for value in selected_clientes if value != str(item.id)] + [("emissor", value) for value in selected_emissores] + [("companhia", value) for value in selected_companhias] + [("programa", value) for value in selected_programas] + [("conta", value) for value in selected_contas])}
+            for item in available_clientes.order_by("usuario__first_name", "usuario__username")
+        ],
+        "companhias": [
+            {"id": item.id, "label": item.nome, "selected": str(item.id) in selected_companhias, "query": _build_query_string(date_params + [("companhia", item.id)] + [("companhia", value) for value in selected_companhias if value != str(item.id)] + [("emissor", value) for value in selected_emissores] + [("cliente", value) for value in selected_clientes] + [("programa", value) for value in selected_programas] + [("conta", value) for value in selected_contas])}
+            for item in available_companhias.order_by("nome")
+        ],
+        "programas": [
+            {"id": item.id, "label": item.nome, "selected": str(item.id) in selected_programas, "query": _build_query_string(date_params + [("programa", item.id)] + [("programa", value) for value in selected_programas if value != str(item.id)] + [("emissor", value) for value in selected_emissores] + [("cliente", value) for value in selected_clientes] + [("companhia", value) for value in selected_companhias] + [("conta", value) for value in selected_contas])}
+            for item in available_programas.order_by("nome")
+        ],
+        "contas": [
+            {"id": item.id, "label": item.nome, "selected": str(item.id) in selected_contas, "query": _build_query_string(date_params + [("conta", item.id)] + [("conta", value) for value in selected_contas if value != str(item.id)] + [("emissor", value) for value in selected_emissores] + [("cliente", value) for value in selected_clientes] + [("companhia", value) for value in selected_companhias] + [("programa", value) for value in selected_programas])}
+            for item in available_contas.order_by("nome")
+        ],
+    }
+
+    return {
+        "start_date": start_date.isoformat(),
+        "end_date": end_date.isoformat(),
+        "previous_period_label": f"{prev_start.strftime('%d/%m')} a {prev_end.strftime('%d/%m')}",
+        "kpis": kpis,
+        "timeline_series": timeline_series,
+        "cost_vs_sale": cost_vs_sale,
+        "best_programs": best_programs,
+        "worst_programs": worst_programs,
+        "top_emitters": top_emitters,
+        "top_airlines": top_airlines,
+        "margin_alerts": margin_alerts[:4],
+        "emissions_rows": emissions_rows[:10],
+        "filter_options": filter_options,
+        "filters_summary": {
+            "selected_emissores": len(selected_emissores),
+            "selected_clientes": len(selected_clientes),
+            "selected_companhias": len(selected_companhias),
+            "selected_programas": len(selected_programas),
+            "selected_contas": len(selected_contas),
+        },
+        "clear_filters_query": _build_query_string(date_params),
+        "previous_period_query": _build_query_string(prev_date_params),
+    }
+
+
 def build_operational_dashboard_context(
     *,
     user,
+    request,
     cliente=None,
     empresa=None,
     selected_continente=None,
@@ -388,6 +725,8 @@ def build_operational_dashboard_context(
         alertas_qs=AlertaViagem.objects.filter(ativo=True),
     )
 
+    management_dashboard = _build_management_dashboard(emissoes_qs, request, empresa=empresa)
+
     return {
         "perfil_dashboard": perfil,
         "resumo_cards": resumo_cards,
@@ -396,4 +735,5 @@ def build_operational_dashboard_context(
         "alert_filters": alert_filter_data,
         "emissoes_recentes": emissoes_recentes,
         "notifications": notifications,
+        "management_dashboard": management_dashboard,
     }
