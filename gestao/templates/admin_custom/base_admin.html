@@ -17,6 +17,19 @@
     <link rel="stylesheet" href="{% static 'painel_cliente/css/components/buttons.css' %}">
     <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
     <link rel="stylesheet" href="{% static 'gestao/css/admin-theme.css' %}">
+    
+    <style>
+        .page-shell table, .page-shell .data-table, main table { width: 100%; }
+        .page-shell thead tr, main thead tr { background: rgba(17,24,39,.5); color: rgb(156 163 175); text-transform: uppercase; font-size: .75rem; }
+        .page-shell tbody tr, main tbody tr { border-bottom: 1px solid rgb(55 65 81); }
+        .page-shell tbody tr:hover, main tbody tr:hover { background: #2d3748; }
+        .page-shell td, .page-shell th, main td, main th { padding: .75rem 1rem; }
+        .page-shell td, main td { color: rgb(229 231 235); }
+        .page-shell input:not([type=checkbox]):not([type=radio]), .page-shell select, .page-shell textarea, main form input:not([type=checkbox]):not([type=radio]), main form select, main form textarea { background: rgb(17 24 39); border: 1px solid rgb(55 65 81); padding: .75rem; color: rgb(209 213 219); border-radius: .375rem; width: 100%; }
+        .page-shell input:focus, .page-shell select:focus, .page-shell textarea:focus, main form input:focus, main form select:focus, main form textarea:focus { outline: none; border-color: rgb(59 130 246); }
+        .page-shell label, .form-label, main form label { display:block; margin-bottom:.25rem; font-size:.875rem; color: rgb(156 163 175); }
+        .form-wrapper, .surface-card, .card, .table-wrapper, .section-card, .page-shell section { background: rgb(31 41 55); border: 1px solid rgb(55 65 81); border-radius: .5rem; }
+    </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body class="h-full bg-gray-900 font-sans text-white antialiased">
