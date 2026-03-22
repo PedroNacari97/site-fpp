@@ -1,7 +1,7 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block title %}Clientes{% endblock %}
 {% block header_title %}Gestão de Clientes{% endblock %}
-{% block header_subtitle %}<span>Base integrada de clientes com filtros, status e ações.</span>{% endblock %}
+{% block header_subtitle %}<span>Base integrada de clientes com filtros, status, ações e paginação reais.</span>{% endblock %}
 {% block header_actions %}
 <a href="{% url 'admin_novo_cliente' %}" class="rounded bg-blue-600 px-4 py-2 text-sm text-white">Novo Cliente</a>
 {% endblock %}
@@ -10,66 +10,33 @@
 <div class="space-y-6 py-2">
     <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <article class="flex justify-between rounded border border-gray-700 bg-gray-800 p-6"><div><p class="text-sm uppercase text-gray-400">Total de clientes</p><p class="mt-3 text-3xl font-semibold text-white">{{ total_clientes }}</p></div><div class="h-12 w-12 rounded-lg bg-blue-500/10"></div></article>
-        <article class="flex justify-between rounded border border-gray-700 bg-gray-800 p-6"><div><p class="text-sm uppercase text-gray-400">Ativos na página</p><p class="mt-3 text-3xl font-semibold text-white">{{ page_obj.object_list|length }}</p></div><div class="h-12 w-12 rounded-lg bg-green-500/10"></div></article>
+        <article class="flex justify-between rounded border border-gray-700 bg-gray-800 p-6"><div><p class="text-sm uppercase text-gray-400">Registros na página</p><p class="mt-3 text-3xl font-semibold text-white">{{ page_obj.object_list|length }}</p></div><div class="h-12 w-12 rounded-lg bg-green-500/10"></div></article>
         <article class="flex justify-between rounded border border-gray-700 bg-gray-800 p-6"><div><p class="text-sm uppercase text-gray-400">Página atual</p><p class="mt-3 text-3xl font-semibold text-white">{{ page_obj.number }}</p></div><div class="h-12 w-12 rounded-lg bg-yellow-500/10"></div></article>
         <article class="flex justify-between rounded border border-gray-700 bg-gray-800 p-6"><div><p class="text-sm uppercase text-gray-400">Total de páginas</p><p class="mt-3 text-3xl font-semibold text-white">{{ page_obj.paginator.num_pages }}</p></div><div class="h-12 w-12 rounded-lg bg-purple-500/10"></div></article>
     </section>
 
     <section class="rounded border border-gray-700 bg-gray-800 p-6">
-        <form method="get" class="flex flex-col gap-4 lg:flex-row">
-            <input type="text" name="busca" value="{{ busca }}" placeholder="Buscar cliente por nome ou usuário" class="flex-1 rounded border border-gray-700 bg-gray-900 p-3 text-white placeholder:text-gray-400">
-            <button type="submit" class="rounded bg-blue-600 px-6 py-3 text-white hover:bg-blue-700">Buscar</button>
+        <form method="get" class="flex flex-col gap-4 lg:flex-row lg:items-end">
+            <div class="flex-1"><label class="mb-2 block text-sm text-gray-400" for="busca">Busca</label><input id="busca" type="text" name="busca" value="{{ busca }}" placeholder="Buscar cliente por nome ou usuário" class="w-full rounded border border-gray-700 bg-gray-900 p-3 text-white placeholder:text-gray-400"></div>
+            <div class="w-full lg:w-56"><label class="mb-2 block text-sm text-gray-400" for="status">Status</label><select id="status" name="status" class="w-full rounded border border-gray-700 bg-gray-900 p-3 text-white"><option value="">Todos</option><option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativo</option><option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativo</option></select></div>
+            <button type="submit" class="rounded bg-blue-600 px-6 py-3 text-white hover:bg-blue-700">Filtrar</button>
             <a href="{% url 'admin_clientes' %}" class="rounded border border-gray-700 bg-gray-900 px-6 py-3 text-center text-gray-400">Limpar</a>
         </form>
     </section>
 
     <section class="overflow-hidden rounded border border-gray-700 bg-gray-800">
-        <div class="border-b border-gray-700 px-6 py-4 flex items-center justify-between gap-3">
-            <h2 class="text-lg font-semibold text-white">Clientes cadastrados</h2>
-            <span class="text-sm text-gray-400">{{ total_clientes }} registros</span>
-        </div>
+        <div class="flex items-center justify-between gap-3 border-b border-gray-700 px-6 py-4"><h2 class="text-lg font-semibold text-white">Clientes cadastrados</h2><span class="text-sm text-gray-400">{{ total_clientes }} registros</span></div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-700">
-                <thead class="bg-gray-900 text-xs uppercase text-gray-300">
-                    <tr>
-                        <th class="px-4 py-3 text-left">Nome</th>
-                        <th class="px-4 py-3 text-left">Usuário</th>
-                        <th class="px-4 py-3 text-left">Status</th>
-                        <th class="px-4 py-3 text-left">Ações</th>
-                    </tr>
-                </thead>
+                <thead class="bg-gray-900 text-xs uppercase text-gray-300"><tr><th class="px-4 py-3 text-left">Nome</th><th class="px-4 py-3 text-left">Usuário</th><th class="px-4 py-3 text-left">Status</th><th class="px-4 py-3 text-left">Ações</th></tr></thead>
                 <tbody class="divide-y divide-gray-700">
                     {% for cliente in page_obj %}
-                    <tr class="hover:bg-gray-750">
-                        <td class="px-4 py-3 text-gray-200">{{ cliente.usuario.get_full_name|default:cliente.usuario.username }}</td>
-                        <td class="px-4 py-3 text-gray-200">{{ cliente.usuario.username }}</td>
-                        <td class="px-4 py-3 text-gray-200">
-                            {% if cliente.ativo %}
-                                <span class="inline-flex rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs text-green-500">Ativo</span>
-                            {% else %}
-                                <span class="inline-flex rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs text-red-500">Inativo</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-4 py-3 text-gray-200">
-                            <div class="flex flex-wrap gap-2">
-                                <a href="{% url 'admin_visualizar_cliente' cliente.id %}" class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white">Ver</a>
-                                <a href="{% url 'admin_editar_cliente' cliente.id %}" class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white">Editar</a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr class="hover:bg-gray-750"><td colspan="4" class="px-4 py-3 text-gray-200">Nenhum cliente encontrado.</td></tr>
-                    {% endfor %}
+                    <tr class="hover:bg-gray-750"><td class="px-4 py-3 text-gray-200">{{ cliente.usuario.get_full_name|default:cliente.usuario.username }}</td><td class="px-4 py-3 text-gray-200">{{ cliente.usuario.username }}</td><td class="px-4 py-3 text-gray-200">{% if cliente.ativo %}<span class="inline-flex rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs text-green-500">Ativo</span>{% else %}<span class="inline-flex rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs text-red-500">Inativo</span>{% endif %}</td><td class="px-4 py-3 text-gray-200"><div class="flex flex-wrap gap-2"><a href="{% url 'admin_visualizar_cliente' cliente.id %}" class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white">Ver</a><a href="{% url 'admin_editar_cliente' cliente.id %}" class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white">Editar</a></div></td></tr>
+                    {% empty %}<tr class="hover:bg-gray-750"><td colspan="4" class="px-4 py-3 text-gray-200">Nenhum cliente encontrado.</td></tr>{% endfor %}
                 </tbody>
             </table>
         </div>
-        <div class="flex flex-col gap-4 border-t border-gray-700 px-6 py-4 text-sm text-gray-400 sm:flex-row sm:items-center sm:justify-between">
-            <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-            <div class="flex flex-wrap gap-2">
-                {% if page_obj.has_previous %}<a class="rounded border border-gray-700 bg-gray-900 px-4 py-2 text-white" href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}">Anterior</a>{% endif %}
-                {% if page_obj.has_next %}<a class="rounded border border-gray-700 bg-gray-900 px-4 py-2 text-white" href="?page={{ page_obj.next_page_number }}&busca={{ busca }}">Próxima</a>{% endif %}
-            </div>
-        </div>
+        <div class="flex flex-col gap-4 border-t border-gray-700 px-6 py-4 text-sm text-gray-400 sm:flex-row sm:items-center sm:justify-between"><span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span><div class="flex flex-wrap gap-2">{% if page_obj.has_previous %}<a class="rounded border border-gray-700 bg-gray-900 px-4 py-2 text-white" href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}&status={{ status }}">Anterior</a>{% endif %}{% if page_obj.has_next %}<a class="rounded border border-gray-700 bg-gray-900 px-4 py-2 text-white" href="?page={{ page_obj.next_page_number }}&busca={{ busca }}&status={{ status }}">Próxima</a>{% endif %}</div></div>
     </section>
 </div>
 {% endblock %}

@@ -9,6 +9,29 @@
 
 {% block content %}
 <div class="space-y-6 py-2">
+  <section class="rounded border border-gray-700 bg-gray-800 p-6">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div class="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div><p class="mb-2 text-sm text-gray-400">Período</p><div class="rounded border border-gray-700 bg-gray-900 p-3 text-sm text-gray-200">{{ management_dashboard.start_date }} até {{ management_dashboard.end_date }}</div></div>
+        <div><p class="mb-2 text-sm text-gray-400">Clientes</p><div class="flex flex-wrap gap-2">{% for item in management_dashboard.filter_options.clientes|slice:":4" %}<a href="?{{ item.query }}" class="rounded border px-3 py-2 text-xs {% if item.selected %}border-blue-500 bg-blue-600 text-white{% else %}border-gray-700 bg-gray-900 text-gray-400{% endif %}">{{ item.label }}</a>{% empty %}<span class="text-sm text-gray-400">Sem opções</span>{% endfor %}</div></div>
+        <div><p class="mb-2 text-sm text-gray-400">Emissores</p><div class="flex flex-wrap gap-2">{% for item in management_dashboard.filter_options.emissores|slice:":4" %}<a href="?{{ item.query }}" class="rounded border px-3 py-2 text-xs {% if item.selected %}border-blue-500 bg-blue-600 text-white{% else %}border-gray-700 bg-gray-900 text-gray-400{% endif %}">{{ item.label }}</a>{% empty %}<span class="text-sm text-gray-400">Sem opções</span>{% endfor %}</div></div>
+        <div><p class="mb-2 text-sm text-gray-400">Companhias / Programas</p><div class="flex flex-wrap gap-2">{% for item in management_dashboard.filter_options.companhias|slice:":2" %}<a href="?{{ item.query }}" class="rounded border px-3 py-2 text-xs {% if item.selected %}border-blue-500 bg-blue-600 text-white{% else %}border-gray-700 bg-gray-900 text-gray-400{% endif %}">{{ item.label }}</a>{% endfor %}{% for item in management_dashboard.filter_options.programas|slice:":2" %}<a href="?{{ item.query }}" class="rounded border px-3 py-2 text-xs {% if item.selected %}border-blue-500 bg-blue-600 text-white{% else %}border-gray-700 bg-gray-900 text-gray-400{% endif %}">{{ item.label }}</a>{% endfor %}</div></div>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <a href="?{{ management_dashboard.clear_filters_query }}" class="rounded border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-gray-400">Limpar filtros</a>
+        <a href="?{{ management_dashboard.previous_period_query }}" class="rounded border border-gray-700 bg-gray-900 px-4 py-3 text-sm text-white">Período anterior</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Contas admin.</p><p class="mt-3 text-3xl font-semibold text-white">{{ home_counts.contas_administrativas_ativas|default:'—' }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Emissões</p><p class="mt-3 text-3xl font-semibold text-white">{{ management_dashboard.summary.total_emissoes }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Contas fidelidade</p><p class="mt-3 text-3xl font-semibold text-white">{{ home_counts.contas_fidelidade|default:'—' }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Clientes</p><p class="mt-3 text-3xl font-semibold text-white">{{ home_counts.clientes_ativos|default:'—' }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Passageiros</p><p class="mt-3 text-3xl font-semibold text-white">{{ home_counts.passageiros|default:'—' }}</p></article>
+    <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Viagens</p><p class="mt-3 text-3xl font-semibold text-white">{{ home_counts.viagens|default:'—' }}</p></article>
+  </section>
   <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
     {% for card in resumo_cards %}
       <article class="rounded border border-gray-700 bg-gray-800 p-6">

@@ -10,20 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        gray: {
-                            750: '#2d3748'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif']
-                    }
-                }
-            }
-        }
+        tailwind.config = { theme: { extend: { colors: { gray: { 750: '#2d3748' } }, fontFamily: { sans: ['Inter', 'sans-serif'] } } } }
     </script>
     <link rel="stylesheet" href="{% static 'gestao/css/base/variables.css' %}">
     <link rel="stylesheet" href="{% static 'gestao/css/layout.css' %}">
@@ -41,31 +28,41 @@
                 <span class="text-xl font-semibold text-white">NC Fly</span>
             </a>
         </div>
-
         <nav class="flex-1 overflow-y-auto py-4">
-            {% if not request.user.is_superuser %}
-                <a href="{% url 'admin_dashboard' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'dashboard' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Dashboard</span></a>
-                <a href="{% url 'admin_clientes' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'clientes' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Clientes</span></a>
-                <a href="{% url 'admin_contas' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'contas' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Contas Fidelidade</span></a>
-                <a href="{% url 'admin_contas_administradas' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'contas_adm' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Contas Administradas</span></a>
-                <a href="{% url 'admin_cotacoes_voo' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'cotacoes' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Cotações</span></a>
-                <a href="{% url 'admin_emissoes' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'emissoes' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Emissões</span></a>
-                <a href="{% url 'alertas_passagens' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'alertas' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Alertas</span></a>
-                <a href="{% url 'admin_hoteis' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'hoteis' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Hotéis</span></a>
-                <a href="{% url 'admin_auditoria' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'auditoria' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Auditoria</span></a>
-            {% else %}
+            {% if request.user.is_superuser %}
                 <a href="{% url 'admin_empresas' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'empresas' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Empresas</span></a>
                 <a href="{% url 'admin_alertas_passagens' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'alertas' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Alertas de Passagens</span></a>
+            {% else %}
+                <a href="{% url 'admin_dashboard' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'home' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Home</span></a>
+                <a href="{% url 'admin_dashboard_analytics' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'dashboard' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Dashboard</span></a>
+                <a href="{% url 'admin_clientes' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'clientes' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Clientes</span></a>
+                <a href="{% url 'admin_contas' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'contas' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Contas Fidelidade</span></a>
+                <a href="{% url 'admin_contas_administradas' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'contas_adm' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Contas Administrativas</span></a>
+                <a href="{% url 'admin_cotacoes_voo' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'cotacoes' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Cotações</span></a>
+                <a href="{% url 'admin_emissoes' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'emissoes' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Emissões</span></a>
+                <a href="{% url 'alertas_passagens' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'alertas' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Avulso de Passagens</span></a>
+                <a href="{% url 'admin_hoteis' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'hoteis' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Hotéis</span></a>
+                <a href="{% url 'admin_calculadora_cotacao' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'calculadora' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Calculadora</span></a>
+                <a href="{% url 'admin_emissores_parceiros' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'emissores' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Rotas Compartilhadas</span></a>
+                <details class="{% if menu_ativo == 'aeroportos' or menu_ativo == 'companhias' or menu_ativo == 'programas' %}open{% endif %}">
+                    <summary class="flex cursor-pointer items-center justify-between px-6 py-3 text-sm text-gray-400 hover:bg-gray-900"><span>Operações</span></summary>
+                    <div class="pb-2">
+                        <a href="{% url 'admin_aeroportos' %}" class="flex items-center justify-between px-10 py-2 text-sm {% if menu_ativo == 'aeroportos' %}text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Aeroportos</span></a>
+                        <a href="{% url 'admin_companhias' %}" class="flex items-center justify-between px-10 py-2 text-sm {% if menu_ativo == 'companhias' %}text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Companhias</span></a>
+                        <a href="{% url 'admin_programas' %}" class="flex items-center justify-between px-10 py-2 text-sm {% if menu_ativo == 'programas' %}text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Programas</span></a>
+                    </div>
+                </details>
+                <a href="{% url 'admin_auditoria' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'auditoria' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Auditorias</span></a>
+                {% with perfil=request.user.cliente_gestao.perfil %}
+                    {% if perfil == 'admin' or request.user.is_superuser %}
+                        <a href="{% url 'user_list' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'usuarios' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Usuários Administrativos</span></a>
+                        <a href="{% url 'operator_list' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'operadores' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Operadores</span></a>
+                    {% endif %}
+                {% endwith %}
             {% endif %}
         </nav>
-
-        <div class="border-t border-gray-800 p-4">
-            <a href="{% url 'logout' %}" class="flex items-center justify-between rounded px-4 py-3 text-sm text-gray-400 hover:bg-gray-900">
-                <span>Logout</span>
-            </a>
-        </div>
+        <div class="border-t border-gray-800 p-4"><a href="{% url 'logout' %}" class="flex items-center justify-between rounded px-4 py-3 text-sm text-gray-400 hover:bg-gray-900"><span>Logout</span></a></div>
     </aside>
-
     <div class="flex min-w-0 flex-1 flex-col">
         <header class="border-b border-gray-700 bg-gray-800 px-6 py-4">
             <div class="flex items-center justify-between gap-4">
@@ -75,34 +72,14 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="hidden flex-wrap items-center gap-2 lg:flex">{% block header_actions %}{% endblock %}</div>
-                    <button type="button" class="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 bg-gray-900 text-gray-400">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0a3 3 0 0 1-6 0m6 0H9" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/>
-                        </svg>
-                        <span class="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-500 px-1 text-xs font-semibold text-white">3</span>
-                    </button>
+                    <button type="button" class="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 bg-gray-900 text-gray-400"><span>🔔</span><span class="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-500 px-1 text-xs font-semibold text-white">3</span></button>
                     <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
-                    <div class="hidden text-sm md:block">
-                        <div class="font-medium text-white">{{ request.user.get_full_name|default:request.user.username }}</div>
-                        <div class="text-gray-400">{% if request.user.is_superuser %}Superusuário{% else %}Operação{% endif %}</div>
-                    </div>
+                    <div class="hidden text-sm md:block"><div class="font-medium text-white">{{ request.user.get_full_name|default:request.user.username }}</div><div class="text-gray-400">{% if request.user.is_superuser %}Superusuário{% else %}Operação{% endif %}</div></div>
                 </div>
             </div>
             <div class="mt-4 flex flex-wrap gap-2 lg:hidden">{% block mobile_header_actions %}{% endblock %}</div>
         </header>
-
-        <main class="min-h-0 flex-1 overflow-y-auto bg-gray-900">
-            <div class="mx-auto w-full max-w-[1600px] px-6 py-6">
-                {% if messages %}
-                    <div class="mb-6 space-y-3">
-                        {% for message in messages %}
-                            <div class="rounded border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-gray-200">{{ message }}</div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                {% block content %}{% endblock %}
-            </div>
-        </main>
+        <main class="min-h-0 flex-1 overflow-y-auto bg-gray-900"><div class="mx-auto w-full max-w-[1600px] px-6 py-6">{% if messages %}<div class="mb-6 space-y-3">{% for message in messages %}<div class="rounded border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-gray-200">{{ message }}</div>{% endfor %}</div>{% endif %}{% block content %}{% endblock %}</div></main>
     </div>
 </div>
 <script src="{% static 'gestao/js/forms.js' %}" defer></script>

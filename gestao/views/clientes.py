@@ -135,12 +135,17 @@ def admin_clientes(request):
         return redirect("admin_clientes")
 
     busca = request.GET.get("busca", "")
+    status = request.GET.get("status", "")
     clientes = Cliente.objects.filter(perfil="cliente").select_related("usuario")
     if busca:
         clientes = clientes.filter(
             Q(usuario__username__icontains=busca)
             | Q(usuario__first_name__icontains=busca)
         )
+    if status == "ativo":
+        clientes = clientes.filter(ativo=True)
+    elif status == "inativo":
+        clientes = clientes.filter(ativo=False)
 
     paginator = Paginator(clientes, 20)
     page_number = request.GET.get("page")
@@ -151,6 +156,7 @@ def admin_clientes(request):
         {
             "page_obj": page_obj,
             "busca": busca,
+            "status": status,
             "total_clientes": clientes.count(),
             "menu_ativo": "clientes",
         },
