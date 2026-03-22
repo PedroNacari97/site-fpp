@@ -1,99 +1,72 @@
 {% extends "admin_custom/base_admin.html" %}
-{% load static %}
 {% block title %}Clientes{% endblock %}
-{% block header_title %}Clientes{% endblock %}
-{% block header_subtitle %}<p class="page-subtitle">Cadastre, pesquise e acompanhe clientes com status e ações consistentes.</p>{% endblock %}
-{% block header_actions %}
-<a href="{% url 'admin_novo_cliente' %}" class="btn">+ Novo Cliente</a>
-{% endblock %}
+{% block page_title %}Gestão de Clientes{% endblock %}
+{% block app_header_subtitle %}<span>Estrutura visual de gestão pronta para integração.</span>{% endblock %}
 
 {% block content %}
-<div class="stacked">
-    <section class="surface-card filter-panel" data-filters-root>
-        <div class="section-heading">
-            <div>
-                <p class="eyebrow">Filtros</p>
-                <h2 class="section-title">Buscar clientes</h2>
-            </div>
-            <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
-        </div>
-        <div class="filter-body is-open" data-filter-panel>
-            <form method="get" class="filter-grid">
-                <div class="form-field">
-                    <label class="form-label" for="busca">Nome ou usuário</label>
-                    <input
-                        type="text"
-                        id="busca"
-                        name="busca"
-                        value="{{ busca }}"
-                        placeholder="Buscar..."
-                    />
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn">Buscar</button>
-                    <a href="{% url 'admin_clientes' %}" class="btn btn--ghost">Limpar</a>
-                </div>
-            </form>
+<div class="mx-auto w-full max-w-[1600px] space-y-6 p-8">
+    <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <article class="flex justify-between rounded border border-gray-700 bg-gray-800 p-6"><div><p class="text-sm uppercase text-gray-400">Clientes</p><p class="mt-3 text-3xl font-semibold text-white">—</p></div><div class="h-12 w-12 rounded-lg bg-blue-500/10"></div></article>
+        <article class="flex justify-between rounded border border-gray-700 bg-gray-800 p-6"><div><p class="text-sm uppercase text-gray-400">Ativos</p><p class="mt-3 text-3xl font-semibold text-white">—</p></div><div class="h-12 w-12 rounded-lg bg-green-500/10"></div></article>
+        <article class="flex justify-between rounded border border-gray-700 bg-gray-800 p-6"><div><p class="text-sm uppercase text-gray-400">Inativos</p><p class="mt-3 text-3xl font-semibold text-white">—</p></div><div class="h-12 w-12 rounded-lg bg-red-500/10"></div></article>
+        <article class="flex justify-between rounded border border-gray-700 bg-gray-800 p-6"><div><p class="text-sm uppercase text-gray-400">Programas</p><p class="mt-3 text-3xl font-semibold text-white">—</p></div><div class="h-12 w-12 rounded-lg bg-purple-500/10"></div></article>
+    </section>
+
+    <section class="rounded border border-gray-700 bg-gray-800 p-6">
+        <div class="flex flex-col gap-4 lg:flex-row">
+            <input type="text" placeholder="Buscar cliente" class="flex-1 rounded border border-gray-700 bg-gray-900 p-3 text-white placeholder:text-gray-400">
+            <input type="text" placeholder="Programa" class="rounded border border-gray-700 bg-gray-900 p-3 text-white placeholder:text-gray-400">
+            <input type="text" placeholder="Status" class="rounded border border-gray-700 bg-gray-900 p-3 text-white placeholder:text-gray-400">
+            <button type="button" class="rounded bg-blue-600 px-6 py-3 text-white hover:bg-blue-700">Buscar</button>
         </div>
     </section>
 
-    <section class="surface-card">
-        <div class="section-heading">
-            <div>
-                <p class="eyebrow">Clientes</p>
-                <h2 class="section-title">Lista de clientes</h2>
-                <p class="section-subtitle">Status e ações alinhados em todas as telas.</p>
-            </div>
-            <div class="muted">Total: {{ total_clientes }}</div>
+    <section class="overflow-hidden rounded border border-gray-700 bg-gray-800">
+        <div class="border-b border-gray-700 px-6 py-4">
+            <h2 class="text-lg font-semibold text-white">Clientes cadastrados</h2>
         </div>
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-700">
+                <thead class="bg-gray-900 text-xs uppercase text-gray-300">
                     <tr>
-                        <th>Nome</th>
-                        <th class="hidden md:table-cell">Usuário</th>
-                        <th>Status</th>
-                        <th>Ações</th>
+                        <th class="px-4 py-3 text-left">Nome</th>
+                        <th class="px-4 py-3 text-left">E-mail</th>
+                        <th class="px-4 py-3 text-left">Programa</th>
+                        <th class="px-4 py-3 text-left">Status</th>
+                        <th class="px-4 py-3 text-left">Ações</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {% for cliente in page_obj %}
-                    <tr>
-                        <td>{{ cliente.usuario.first_name|default:cliente.usuario.username }}</td>
-                        <td class="hidden md:table-cell">{{ cliente.usuario.username }}</td>
-                        <td>
-                            {% if cliente.ativo %}
-                                <span class="pill pill-success">Ativo</span>
-                            {% else %}
-                                <span class="pill pill-danger">Inativo</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <details class="dropdown">
-                                <summary class="btn btn-icon" aria-label="Ações do cliente">⋮</summary>
-                                <div class="dropdown-panel">
-                                    <a class="" href="{% url 'admin_visualizar_cliente' cliente.id %}">👁️ Ver</a>
-                                    <a class="" href="{% url 'admin_editar_cliente' cliente.id %}">✏️ Editar</a>
-                                </div>
-                            </details>
-                        </td>
+                <tbody class="divide-y divide-gray-700">
+                    <tr class="hover:bg-gray-750">
+                        <td class="px-4 py-3 text-gray-200">—</td>
+                        <td class="px-4 py-3 text-gray-200">—</td>
+                        <td class="px-4 py-3 text-gray-200">—</td>
+                        <td class="px-4 py-3 text-gray-200"><span class="inline-flex rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs text-green-500">Ativo</span></td>
+                        <td class="px-4 py-3 text-gray-200"><div class="flex gap-2"><span class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white">Ver</span><span class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white">Editar</span></div></td>
                     </tr>
-                    {% empty %}
-                    <tr><td colspan="4">Nenhum cliente encontrado.</td></tr>
-                    {% endfor %}
+                    <tr class="hover:bg-gray-750">
+                        <td class="px-4 py-3 text-gray-200">—</td>
+                        <td class="px-4 py-3 text-gray-200">—</td>
+                        <td class="px-4 py-3 text-gray-200">—</td>
+                        <td class="px-4 py-3 text-gray-200"><span class="inline-flex rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs text-red-500">Inativo</span></td>
+                        <td class="px-4 py-3 text-gray-200"><div class="flex gap-2"><span class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white">Ver</span><span class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white">Editar</span></div></td>
+                    </tr>
+                    <tr class="hover:bg-gray-750">
+                        <td class="px-4 py-3 text-gray-200">—</td>
+                        <td class="px-4 py-3 text-gray-200">—</td>
+                        <td class="px-4 py-3 text-gray-200">—</td>
+                        <td class="px-4 py-3 text-gray-200"><span class="inline-flex rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs text-green-500">Ativo</span></td>
+                        <td class="px-4 py-3 text-gray-200"><div class="flex gap-2"><span class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white">Ver</span><span class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white">Editar</span></div></td>
+                    </tr>
+                    <tr class="hover:bg-gray-750">
+                        <td class="px-4 py-3 text-gray-200">—</td>
+                        <td class="px-4 py-3 text-gray-200">—</td>
+                        <td class="px-4 py-3 text-gray-200">—</td>
+                        <td class="px-4 py-3 text-gray-200"><span class="inline-flex rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs text-red-500">Inativo</span></td>
+                        <td class="px-4 py-3 text-gray-200"><div class="flex gap-2"><span class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white">Ver</span><span class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-sm text-white">Editar</span></div></td>
+                    </tr>
                 </tbody>
             </table>
-        </div>
-        <div class="table-foot">
-            <div>Mostrando página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</div>
-            <div class="page-actions">
-                {% if page_obj.has_previous %}
-                    <a class="btn btn--ghost" href="?page={{ page_obj.previous_page_number }}&busca={{ busca }}">Anterior</a>
-                {% endif %}
-                {% if page_obj.has_next %}
-                    <a class="btn btn--ghost" href="?page={{ page_obj.next_page_number }}&busca={{ busca }}">Próxima</a>
-                {% endif %}
-            </div>
         </div>
     </section>
 </div>

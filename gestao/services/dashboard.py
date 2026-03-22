@@ -598,6 +598,13 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
         "end_date": end_date.isoformat(),
         "previous_period_label": f"{prev_start.strftime('%d/%m')} a {prev_end.strftime('%d/%m')}",
         "kpis": kpis,
+        "summary": {
+            "total_emissoes": _format_number(emissions_count),
+            "receita_total": _format_money(revenue),
+            "lucro_total": _format_money(profit),
+            "milhas_utilizadas": _format_number(miles),
+            "total_taxas": _format_money(fees),
+        },
         "timeline_series": timeline_series,
         "cost_vs_sale": cost_vs_sale,
         "best_programs": best_programs,
