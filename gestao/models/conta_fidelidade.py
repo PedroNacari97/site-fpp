@@ -1,9 +1,11 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from .cliente import Cliente
-from .programa_fidelidade import ProgramaFidelidade
-from .conta_administrada import ContaAdministrada
+
 from gestao.utils import normalize_cpf
+
+from .cliente import Cliente
+from .conta_administrada import ContaAdministrada
+from .programa_fidelidade import ProgramaFidelidade
 
 
 class ContaFidelidade(models.Model):
@@ -37,6 +39,23 @@ class ContaFidelidade(models.Model):
         help_text="Quantidade de CPFs que ainda podem ser utilizados com este programa. Deixe vazio para ilimitado.",
     )
 
+    PERIODICIDADE_CLUBE = (
+        ("nenhum", "Nenhum"),
+        ("mensal", "Mensal"),
+        ("trimestral", "Trimestral"),
+        ("semestral", "Semestral"),
+        ("anual", "Anual"),
+    )
+    clube_periodicidade = models.CharField(
+        max_length=12, choices=PERIODICIDADE_CLUBE, default="nenhum"
+    )
+    pontos_clube_mes = models.IntegerField(default=0)
+    valor_assinatura_clube = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0
+    )
+    data_inicio_clube = models.DateField(null=True, blank=True)
+    validade = models.DateField(null=True, blank=True)
+
     def clean(self):
         super().clean()
         if bool(self.cliente) == bool(self.conta_administrada):
@@ -55,7 +74,6 @@ class ContaFidelidade(models.Model):
         return self.programa.programa_base if self.programa.is_vinculado else None
 
     def conta_saldo(self):
-        """Conta que efetivamente guarda saldo/movimentações (programa base)."""
         if not self.programa.is_vinculado:
             return self
         filtros = {"programa": self.programa.programa_base}
@@ -67,45 +85,12 @@ class ContaFidelidade(models.Model):
 
     @property
     def valor_medio_por_mil(self):
-        """
-        Calcula o valor médio por mil pontos para este programa.
-        
-        IMPORTANTE: O valor médio é SEMPRE calculado dividindo o valor pago
-        pela quantidade de pontos, independente se é programa base ou vinculado.
-        
-        Fórmula: valor_pago / (saldo_pontos / 1000)
-        
-        Exemplo:
-        - Azul Pelo Mundo: R$ 610 / (44.000 / 1000) = R$ 13.86 por mil
-        - Livelo: R$ 915 / (30.000 / 1000) = R$ 30.50 por mil
-        - Smiles: R$ 915 / (60.000 / 1000) = R$ 15.25 por mil
-        
-        O preco_medio_milheiro do programa é para o VALOR DE REFERÊNCIA,
-        não para o custo médio calculado.
-        """
-        
-        # Sempre calcular com saldo/valor da conta base
         saldo = self.saldo_pontos
+        if self.programa.is_vinculado and saldo > 0 and getattr(self.programa, "preco_medio_milheiro", None):
+            return float(self.programa.preco_medio_milheiro)
         if saldo > 0:
             return float(self.valor_total_pago) / (saldo / 1000)
         return 0
-
-    PERIODICIDADE_CLUBE = (
-        ("nenhum", "Nenhum"),
-        ("mensal", "Mensal"),
-        ("trimestral", "Trimestral"),
-        ("semestral", "Semestral"),
-        ("anual", "Anual"),
-    )
-    clube_periodicidade = models.CharField(
-        max_length=12, choices=PERIODICIDADE_CLUBE, default="nenhum"
-    )
-    pontos_clube_mes = models.IntegerField(default=0)
-    valor_assinatura_clube = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0
-    )
-    data_inicio_clube = models.DateField(null=True, blank=True)
-    validade = models.DateField(null=True, blank=True)
 
     @property
     def saldo_pontos(self):
@@ -120,36 +105,47 @@ class ContaFidelidade(models.Model):
         return sum(float(m.valor_pago) for m in movs) if movs.exists() else 0
 
     @property
-    def cpfs_utilizados(self):
-        limite = self.quantidade_cpfs_disponiveis
-        if limite is None:
-            return None
-        from gestao.models import Passageiro
+    def limite_cpfs(self):
+        return self.programa.limite_cpfs
 
-        filtros = {"emissao__programa_id": self.programa_id}
-        if self.cliente_id:
-            filtros["emissao__cliente_id"] = self.cliente_id
-            filtros["emissao__conta_administrada__isnull"] = True
-        if self.conta_administrada_id:
-            filtros["emissao__conta_administrada_id"] = self.conta_administrada_id
-        cpfs = set()
-        for cpf in Passageiro.objects.filter(**filtros).values_list("cpf", flat=True):
-            normalized = normalize_cpf(cpf)
-            if normalized:
-                cpfs.add(normalized)
-        return len(cpfs)
+    def get_usos_cpf_queryset(self):
+        return self.usos_cpf.select_related("conta_fidelidade__programa")
+
+    @property
+    def cpfs_usados(self):
+        return self.get_usos_cpf_queryset().filter(data_ultima_emissao__isnull=False).count()
+
+    @property
+    def cpfs_utilizados(self):
+        return self.cpfs_usados
 
     @property
     def cpfs_disponiveis(self):
-        limite = self.quantidade_cpfs_disponiveis
+        limite = self.limite_cpfs
         if limite is None:
             return None
-        usados = self.cpfs_utilizados or 0
-        return max(limite - usados, 0)
+        return max(limite - self.cpfs_usados, 0)
+
+    @property
+    def status_cpf(self):
+        limite = self.limite_cpfs
+        if limite is None:
+            return {"tone": "disponivel", "label": "Disponível", "ratio": 0}
+        usados = self.cpfs_usados
+        if usados >= limite:
+            return {"tone": "bloqueado", "label": "Bloqueado", "ratio": 1}
+        ratio = usados / limite if limite else 0
+        if ratio >= 0.8:
+            return {"tone": "proximo", "label": "Próximo do limite", "ratio": ratio}
+        return {"tone": "disponivel", "label": "Disponível", "ratio": ratio}
 
     @property
     def movimentacoes_compartilhadas(self):
         return self.conta_saldo().movimentacoes.all()
+
+    def cpf_ja_utilizado(self, cpf):
+        cpf = normalize_cpf(cpf)
+        return self.usos_cpf.filter(cpf=cpf).exists()
 
     def __str__(self):
         titular = self.cliente or self.conta_administrada

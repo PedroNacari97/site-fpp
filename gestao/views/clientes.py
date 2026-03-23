@@ -16,6 +16,7 @@ from ..forms import (
     EmissaoPassagemForm,
     EmissaoHotelForm,
     CotacaoVooForm,
+    PassageiroFrequenteForm,
 )
 from ..models import (
     Cliente,
@@ -30,9 +31,11 @@ from ..models import (
     Escala,
     CompanhiaAerea,
     AcessoClienteLog,
+    PassageiroFrequente,
 )
 from gestao.utils import generate_unique_username, sync_cliente_activation
 from gestao.services.dashboard import build_operational_dashboard_context
+from gestao.services.cpf_limite import get_cpf_control_data
 from .permissions import require_admin_or_operator
 
 import csv
@@ -207,17 +210,42 @@ def visualizar_cliente(request, cliente_id):
     AcessoClienteLog.objects.create(admin=request.user, cliente=cliente)
     context = build_operational_dashboard_context(
         user=request.user,
+        request=request,
         cliente=cliente,
         selected_continente=request.GET.get("continente"),
         selected_pais=request.GET.get("pais"),
         selected_cidade=request.GET.get("cidade"),
     )
+    passageiros = cliente.passageiros_frequentes.all().order_by("nome")
+    passageiro_form = PassageiroFrequenteForm()
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action in {"add_passageiro", "edit_passageiro"}:
+            instance = None
+            if action == "edit_passageiro":
+                instance = get_object_or_404(PassageiroFrequente, id=request.POST.get("passageiro_id"), cliente=cliente)
+            passageiro_form = PassageiroFrequenteForm(request.POST, instance=instance)
+            if passageiro_form.is_valid():
+                passageiro = passageiro_form.save(commit=False)
+                passageiro.cliente = cliente
+                passageiro.save()
+                messages.success(request, "Passageiro frequente salvo com sucesso.")
+                return redirect("admin_visualizar_cliente", cliente_id=cliente.id)
+        elif action == "delete_passageiro":
+            passageiro = get_object_or_404(PassageiroFrequente, id=request.POST.get("passageiro_id"), cliente=cliente)
+            passageiro.delete()
+            messages.success(request, "Passageiro frequente removido com sucesso.")
+            return redirect("admin_visualizar_cliente", cliente_id=cliente.id)
+
     context.update(
         {
             "cliente_obj": cliente,
             "dashboard_base": "admin_custom/base_admin.html",
             "dashboard_title": f"Painel do Cliente: {cliente}",
             "dashboard_subtitle": "Visualização operacional do cliente com alertas e emissões.",
+            "passageiros_frequentes": passageiros,
+            "passageiro_form": passageiro_form,
+            "passageiro_form_prefix": "passageiro-frequente",
             "menu_ativo": "clientes",
         }
     )

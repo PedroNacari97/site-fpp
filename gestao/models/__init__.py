@@ -15,6 +15,7 @@ from .cotacao_voo import CotacaoVoo
 from .companhia_aerea import CompanhiaAerea
 from .emissor_parceiro import EmissorParceiro
 from .passageiro_frequente import PassageiroFrequente
+from .uso_cpf import UsoCPF
 from .audit_log import AuditLog
 from .alerta_viagem import AlertaViagem
 from .notificacao_sistema import NotificacaoSistema
@@ -37,6 +38,7 @@ __all__ = [
     'CompanhiaAerea',
     'EmissorParceiro',
     'PassageiroFrequente',
+    'UsoCPF',
     'AuditLog',
     'AlertaViagem',
     'NotificacaoSistema',

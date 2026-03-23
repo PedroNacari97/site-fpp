@@ -9,6 +9,12 @@ class ProgramaFidelidade(models.Model):
         (TIPO_PRINCIPAL, "Programa principal"),
         (TIPO_VINCULADO, "Programa vinculado"),
     )
+    REGRA_RESET_DIAS = "dias"
+    REGRA_RESET_ANO = "ano"
+    REGRAS_RESET = (
+        (REGRA_RESET_DIAS, "Dias"),
+        (REGRA_RESET_ANO, "Ano civil"),
+    )
 
     nome = models.CharField(max_length=100)
     descricao = models.TextField(blank=True)
@@ -30,6 +36,22 @@ class ProgramaFidelidade(models.Model):
         blank=True,
         help_text="Quantidade total de CPFs disponíveis no programa",
     )
+    limite_cpfs = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Limite configurável de CPFs por conta fidelidade para este programa.",
+    )
+    tipo_regra_reset = models.CharField(
+        max_length=10,
+        choices=REGRAS_RESET,
+        default=REGRA_RESET_ANO,
+        help_text="Define quando um CPF volta a ficar disponível para reutilização.",
+    )
+    dias_reset = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Obrigatório quando a regra de reset for baseada em dias.",
+    )
 
     def clean(self):
         errors = {}
@@ -44,6 +66,11 @@ class ProgramaFidelidade(models.Model):
                 errors["programa_base"] = "Um programa não pode estar vinculado a ele mesmo."
             elif getattr(self.programa_base, "tipo", self.TIPO_PRINCIPAL) != self.TIPO_PRINCIPAL:
                 errors["programa_base"] = "O programa base precisa ser um programa principal."
+
+        if self.tipo_regra_reset == self.REGRA_RESET_DIAS and not self.dias_reset:
+            errors["dias_reset"] = "Informe a quantidade de dias para resetar o CPF."
+        if self.tipo_regra_reset == self.REGRA_RESET_ANO:
+            self.dias_reset = None
 
         if errors:
             raise ValidationError(errors)

@@ -23,6 +23,7 @@ from .models import (
     Empresa,
     EmissorParceiro,
     AlertaViagem,
+    PassageiroFrequente,
 )
 
 
@@ -141,6 +142,9 @@ class ProgramaFidelidadeForm(forms.ModelForm):
             "descricao",
             "preco_medio_milheiro",
             "quantidade_cpfs_disponiveis",
+            "limite_cpfs",
+            "tipo_regra_reset",
+            "dias_reset",
             "tipo",
             "programa_base",
         ]
@@ -154,6 +158,9 @@ class ProgramaFidelidadeForm(forms.ModelForm):
         labels = {
             "preco_medio_milheiro": "Preço médio do milheiro (R$)",
             "quantidade_cpfs_disponiveis": "Quantidade de CPFs disponíveis por programa",
+            "limite_cpfs": "Limite de CPFs por conta",
+            "tipo_regra_reset": "Regra de liberação de CPF",
+            "dias_reset": "Dias para nova liberação",
         }
 
     def __init__(self, *args, **kwargs):
@@ -390,6 +397,36 @@ class EmissaoPassagemForm(forms.ModelForm):
             'lucro': forms.NumberInput(attrs={'step': '0.01', 'readonly': 'readonly'}),
         }
         
+
+
+
+class PassageiroFrequenteForm(forms.ModelForm):
+    class Meta:
+        model = PassageiroFrequente
+        fields = [
+            "nome",
+            "cpf",
+            "data_nascimento",
+            "relacao",
+        ]
+        widgets = {
+            "data_nascimento": forms.TextInput(
+                attrs={
+                    "placeholder": "DD/MM/AAAA",
+                    "data-mask": "date",
+                    "inputmode": "numeric",
+                    "maxlength": "10",
+                }
+            ),
+            "relacao": forms.TextInput(attrs={"placeholder": "Ex.: Filho, Cônjuge, Sócio"}),
+        }
+
+    def clean_cpf(self):
+        return validate_cpf_digits(self.cleaned_data.get("cpf"), field_label="CPF do passageiro")
+
+    def clean_data_nascimento(self):
+        return parse_br_date(self.cleaned_data.get("data_nascimento"), field_label="Data de nascimento")
+
 
 class EmissaoHotelForm(forms.ModelForm):
     class Meta:

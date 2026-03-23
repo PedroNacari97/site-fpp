@@ -68,6 +68,7 @@
                 <p id="programa-info" class="helper-text mt-1"></p>
                 <p id="cpf-usados-info" class="helper-text mt-1"></p>
                 <p id="cpf-consumo-info" class="helper-text mt-1"></p>
+                <div id="cpf-status-badge" class="mt-2 inline-flex rounded-full border px-3 py-1 text-xs"></div>
                 <p id="cpf-limite-error" class="helper-text mt-1 text-red-500"></p>
             </div>
         </div>
@@ -195,6 +196,7 @@
         <div>
             <div class="section-title">Dados de cada passageiro</div>
             <p class="helper-text mb-2">Os campos abaixo aparecem conforme as quantidades informadas.</p>
+            <p class="helper-text mb-3">Ao selecionar um cliente, você pode reaproveitar passageiros frequentes ou preencher manualmente.</p>
             <input type="hidden" name="total_passageiros" id="id_total_passageiros" value="0" />
             <div id="passageiros-container"></div>
         </div>
@@ -288,6 +290,8 @@ const aeroportos = {{ aeroportos_json|safe }};
 const clienteProgramas = {{ cliente_programas_json|safe }};
 const contasAdmProgramas = {{ contas_adm_programas_json|safe }};
 const empresaProgramas = {{ empresa_programas_json|safe }};
+const passageirosFrequentes = {{ passageiros_frequentes_json|safe }};
+const cpfControleInicial = {{ cpf_controle_json|safe }};
 
 const passageirosContainer = document.getElementById('passageiros-container');
 const clienteSelect = document.getElementById('id_cliente');
@@ -296,6 +300,7 @@ const programaInfo = document.getElementById('programa-info');
 const cpfUsadosInfo = document.getElementById('cpf-usados-info');
 const cpfConsumoInfo = document.getElementById('cpf-consumo-info');
 const cpfLimiteError = document.getElementById('cpf-limite-error');
+const cpfStatusBadge = document.getElementById('cpf-status-badge');
 const tipoEmissaoSelect = document.getElementById('id_tipo_emissao');
 const contaAdmSelect = document.getElementById('id_conta_administrada');
 const emissorParceiroSelect = document.getElementById('id_emissor_parceiro');
@@ -381,6 +386,19 @@ function getProgramasDisponiveis() {
     return (clienteProgramas && clienteId) ? (clienteProgramas[clienteId] || []) : [];
 }
 
+function renderCpfStatus(status) {
+    if (!cpfStatusBadge) return;
+    const tone = status || 'disponivel';
+    const map = {
+        disponivel: ['🟢 Disponível', 'border-green-500/20 bg-green-500/10 text-green-400'],
+        proximo: ['🟡 Próximo do limite', 'border-yellow-500/20 bg-yellow-500/10 text-yellow-300'],
+        bloqueado: ['🔴 Bloqueado', 'border-red-500/20 bg-red-500/10 text-red-400'],
+    };
+    const current = map[tone] || map.disponivel;
+    cpfStatusBadge.className = `mt-2 inline-flex rounded-full border px-3 py-1 text-xs ${current[1]}`;
+    cpfStatusBadge.textContent = current[0];
+}
+
 function updateProgramaInfo() {
     if (!programaInfo) return;
     const programas = getProgramasDisponiveis();
@@ -395,17 +413,17 @@ function updateProgramaInfo() {
             programaInfo.textContent = `Referência do milheiro: R$ ${Number(selected.valor_medio || 0).toFixed(2)} • ${cpfsTxt}`;
         }
         if (cpfUsadosInfo) {
-            const usadosList = selected.cpfs_usados_list || [];
-            cpfUsadosInfo.textContent = usadosList.length
-                ? `CPFs usados na conta: ${usadosList.join(", ")}`
-                : "CPFs usados na conta: nenhum";
+            cpfUsadosInfo.textContent = `CPFs usados: ${selected.cpfs_usados || 0} • Disponíveis: ${selected.cpfs_disponiveis ?? 'Ilimitado'}`;
         }
+        renderCpfStatus(selected.status || cpfControleInicial.status);
     } else if (programas.length) {
         programaInfo.textContent = "Nenhum programa disponível para o titular selecionado.";
         if (cpfUsadosInfo) cpfUsadosInfo.textContent = "";
+        renderCpfStatus('disponivel');
     } else {
         programaInfo.textContent = "";
         if (cpfUsadosInfo) cpfUsadosInfo.textContent = "";
+        renderCpfStatus('disponivel');
     }
     updateCpfLimite();
     recalcValoresFinanceiros();
@@ -565,7 +583,13 @@ function renderPassengerForms() {
             const div = document.createElement('div');
             div.className = 'form-group single passageiro-fields';
             div.dataset.index = index;
+            const frequentes = (passageirosFrequentes[parseInt(clienteSelect?.value || 0, 10)] || []);
+            const options = ['<option value="">Preencher manualmente</option>']
+                .concat(frequentes.map(item => `<option value="${item.id}">${item.nome} • ${item.cpf}</option>`))
+                .join('');
             div.innerHTML = `
+                <label class="form-label">${cat.nome} ${i+1} - Passageiro frequente</label>
+                <select name="passageiro-${index}-frequente" data-passageiro-frequente="${index}">${options}</select>
                 <label class="form-label">${cat.nome} ${i+1} - Nome</label>
                 <input type="text" name="passageiro-${index}-nome" required />
                 <label class="form-label">CPF</label>
@@ -607,6 +631,21 @@ function renderPassengerForms() {
             if(observacoes) observacoes.value = p.observacoes || "";
             if(cat && p.categoria) cat.value = p.categoria;
         }
+    });
+    passageirosContainer.querySelectorAll('[data-passageiro-frequente]').forEach((select) => {
+        select.addEventListener('change', (event) => {
+            const idx = event.currentTarget.dataset.passageiroFrequente;
+            const lista = passageirosFrequentes[parseInt(clienteSelect?.value || 0, 10)] || [];
+            const passageiro = lista.find(item => String(item.id) === event.currentTarget.value);
+            if (!passageiro) return;
+            const nome = document.getElementsByName(`passageiro-${idx}-nome`)[0];
+            const cpf = document.getElementsByName(`passageiro-${idx}-cpf`)[0];
+            const dataNascimento = document.getElementsByName(`passageiro-${idx}-data-nascimento`)[0];
+            if (nome) nome.value = passageiro.nome || '';
+            if (cpf) cpf.value = passageiro.cpf || '';
+            if (dataNascimento) dataNascimento.value = passageiro.data_nascimento || '';
+            updateCpfLimite();
+        });
     });
     updateCpfLimite();
     updatePassaporteRequirements();
@@ -673,14 +712,19 @@ function updateCpfLimite() {
     }
 
     const excedeu = !ilimitado && consumo > (selected.cpfs_disponiveis || 0);
+    if (selected.status === 'bloqueado') {
+        cpfConsumoInfo.textContent = `Conta bloqueada: ${selected.cpfs_usados || 0} CPF(s) em uso de ${selected.cpfs_total}.`;
+    }
+    const bloqueado = selected.status === 'bloqueado';
     if (cpfLimiteError) {
-        cpfLimiteError.textContent = excedeu
-            ? "Limite de CPFs excedido para este programa. Revise os CPFs informados."
-            : "";
+        cpfLimiteError.textContent = bloqueado
+            ? "Conta bloqueada para nova emissão até a próxima liberação de CPF."
+            : (excedeu ? "Limite de CPFs excedido para este programa. Revise os CPFs informados." : "");
     }
     if (submitButton) {
-        submitButton.disabled = excedeu;
-        submitButton.setAttribute("aria-disabled", excedeu ? "true" : "false");
+        const shouldDisable = bloqueado || excedeu;
+        submitButton.disabled = shouldDisable;
+        submitButton.setAttribute("aria-disabled", shouldDisable ? "true" : "false");
     }
 }
 

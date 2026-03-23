@@ -1,0 +1,32 @@
+{% extends "admin_custom/base_admin.html" %}
+{% block title %}Controle de CPFs{% endblock %}
+{% block header_title %}Controle de CPFs{% endblock %}
+{% block content %}
+<div class="stacked">
+  <section class="surface-card filter-panel">
+    <form method="get" class="filter-grid">
+      <div class="form-field"><label class="form-label" for="tipo">Tipo</label><select id="tipo" name="tipo"><option value="">Todos</option><option value="cliente" {% if params.tipo == 'cliente' %}selected{% endif %}>Cliente</option><option value="administrada" {% if params.tipo == 'administrada' %}selected{% endif %}>Conta administrada</option></select></div>
+      <div class="form-field"><label class="form-label" for="conta">Conta fidelidade</label><select id="conta" name="conta"><option value="">Todas</option>{% for conta in contas %}<option value="{{ conta.id }}" {% if params.conta == conta.id|stringformat:'s' %}selected{% endif %}>{{ conta }}</option>{% endfor %}</select></div>
+      <div class="form-field"><label class="form-label" for="programa">Programa</label><select id="programa" name="programa"><option value="">Todos</option>{% for programa in programas %}<option value="{{ programa.id }}" {% if params.programa == programa.id|stringformat:'s' %}selected{% endif %}>{{ programa.nome }}</option>{% endfor %}</select></div>
+      <div class="form-field"><label class="form-label" for="cpf">CPF</label><input id="cpf" name="cpf" value="{{ params.cpf }}"></div>
+      <div class="form-field"><label class="form-label" for="status">Status</label><select id="status" name="status"><option value="">Todos</option><option value="disponivel" {% if params.status == 'disponivel' %}selected{% endif %}>Disponível</option><option value="bloqueado" {% if params.status == 'bloqueado' %}selected{% endif %}>Bloqueado</option></select></div>
+      <div class="form-actions"><button class="btn" type="submit">Filtrar</button><a class="btn btn--ghost" href="{% url 'admin_controle_cpfs' %}">Limpar</a></div>
+    </form>
+  </section>
+  <section class="surface-card">
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead><tr><th>Conta</th><th>Tipo</th><th>Programa</th><th>CPF</th><th>Última emissão</th><th>Próxima liberação</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for row in rows %}
+          <tr>
+            <td>{{ row.conta }}</td><td>{{ row.tipo }}</td><td>{{ row.programa.nome }}</td><td>{{ row.uso.cpf }}</td><td>{{ row.uso.data_ultima_emissao|date:"d/m/Y" }}</td><td>{{ row.uso.proxima_liberacao|date:"d/m/Y" }}</td>
+            <td><span class="inline-flex rounded-full border px-3 py-1 text-xs {% if row.status == 'bloqueado' %}border-red-500/20 bg-red-500/10 text-red-400{% else %}border-green-500/20 bg-green-500/10 text-green-400{% endif %}">{{ row.status_label }}</span></td>
+          </tr>
+          {% empty %}<tr><td colspan="7" class="table-empty">Nenhum CPF encontrado.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}
