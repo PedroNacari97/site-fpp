@@ -210,6 +210,7 @@ def visualizar_cliente(request, cliente_id):
     AcessoClienteLog.objects.create(admin=request.user, cliente=cliente)
     context = build_operational_dashboard_context(
         user=request.user,
+        request=request,
         cliente=cliente,
         selected_continente=request.GET.get("continente"),
         selected_pais=request.GET.get("pais"),
