@@ -5,8 +5,9 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ..forms import ContaFidelidadeForm, ContaAdministradaForm
-from ..models import ContaFidelidade, ContaAdministrada
+from ..models import ContaFidelidade, ContaAdministrada, UsoCPF
 from .permissions import require_admin_or_operator
+from gestao.services.cpf_limite import get_cpf_control_data
 
 
 @login_required
@@ -224,3 +225,59 @@ def programas_da_conta_administrada(request, conta_id):
             "menu_ativo": "contas_adm",
         },
     )
+
+
+@login_required
+def admin_controle_cpfs(request):
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    usos = UsoCPF.objects.select_related(
+        "conta_fidelidade__programa",
+        "conta_fidelidade__cliente__usuario",
+        "conta_fidelidade__conta_administrada",
+    )
+    if empresa:
+        usos = usos.filter(Q(conta_fidelidade__cliente__empresa=empresa) | Q(conta_fidelidade__conta_administrada__empresa=empresa))
+    tipo = request.GET.get("tipo")
+    conta_id = request.GET.get("conta")
+    programa_id = request.GET.get("programa")
+    cpf = request.GET.get("cpf")
+    status = request.GET.get("status")
+    if tipo == "cliente":
+        usos = usos.filter(conta_fidelidade__cliente__isnull=False)
+    elif tipo == "administrada":
+        usos = usos.filter(conta_fidelidade__conta_administrada__isnull=False)
+    if conta_id:
+        usos = usos.filter(conta_fidelidade_id=conta_id)
+    if programa_id:
+        usos = usos.filter(conta_fidelidade__programa_id=programa_id)
+    if cpf:
+        usos = usos.filter(cpf__icontains=cpf)
+
+    rows = []
+    for uso in usos.order_by('-data_ultima_emissao', 'cpf'):
+        controle = get_cpf_control_data(uso.conta_fidelidade)
+        row_status = 'disponivel' if uso.liberado else 'bloqueado'
+        if status and row_status != status:
+            continue
+        rows.append({
+            'uso': uso,
+            'conta': uso.conta_fidelidade,
+            'tipo': 'cliente' if uso.conta_fidelidade.cliente_id else 'administrada',
+            'programa': uso.conta_fidelidade.programa,
+            'status': row_status,
+            'status_label': 'Disponível' if uso.liberado else 'Bloqueado',
+            'controle': controle,
+        })
+
+    contas = ContaFidelidade.objects.select_related('programa', 'cliente__usuario', 'conta_administrada')
+    if empresa:
+        contas = contas.filter(Q(cliente__empresa=empresa) | Q(conta_administrada__empresa=empresa))
+    return render(request, 'admin_custom/controle_cpfs.html', {
+        'rows': rows,
+        'contas': contas.order_by('programa__nome'),
+        'programas': [c.programa for c in contas.order_by('programa__nome')],
+        'params': request.GET,
+        'menu_ativo': 'controle_cpfs',
+    })

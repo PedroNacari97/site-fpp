@@ -1,38 +1,16 @@
-"""Serviços para validação de limite de CPFs por programa."""
+"""Serviços para validação e sincronização do controle de CPFs por conta."""
 
-from typing import Iterable, Set, Tuple
+from collections.abc import Iterable
+from datetime import timedelta
 
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
-from gestao.models import ContaFidelidade, Passageiro
+from gestao.models import ContaFidelidade, UsoCPF
 from gestao.utils import normalize_cpf
 
 
-def _build_existing_cpfs(
-    *,
-    conta: ContaFidelidade,
-    exclude_emissao_id: int | None = None,
-) -> Set[str]:
-    filtros = {"emissao__programa_id": conta.programa_id}
-    if conta.cliente_id:
-        filtros["emissao__cliente_id"] = conta.cliente_id
-        filtros["emissao__conta_administrada__isnull"] = True
-    if conta.conta_administrada_id:
-        filtros["emissao__conta_administrada_id"] = conta.conta_administrada_id
-
-    qs = Passageiro.objects.filter(**filtros)
-    if exclude_emissao_id:
-        qs = qs.exclude(emissao_id=exclude_emissao_id)
-
-    cpfs = set()
-    for cpf in qs.values_list("cpf", flat=True):
-        normalized = normalize_cpf(cpf)
-        if normalized:
-            cpfs.add(normalized)
-    return cpfs
-
-
-def _normalize_cpfs(cpfs: Iterable[str]) -> Set[str]:
+def _normalize_cpfs(cpfs: Iterable[str]) -> set[str]:
     normalized_cpfs = set()
     for cpf in cpfs:
         normalized = normalize_cpf(cpf)
@@ -41,34 +19,73 @@ def _normalize_cpfs(cpfs: Iterable[str]) -> Set[str]:
     return normalized_cpfs
 
 
-def _get_limite_conta(conta: ContaFidelidade) -> int | None:
-    return conta.quantidade_cpfs_disponiveis
+def _cpf_liberado(uso: UsoCPF) -> bool:
+    programa = uso.conta_fidelidade.programa
+    hoje = timezone.localdate()
+    if programa.tipo_regra_reset == programa.REGRA_RESET_DIAS and programa.dias_reset:
+        return hoje >= uso.data_ultima_emissao + timedelta(days=programa.dias_reset)
+    return hoje.year > uso.data_ultima_emissao.year
 
 
-def validar_limite_cpfs(
-    conta: ContaFidelidade | None, cpfs: Iterable[str], emissao_id: int | None = None
-) -> Tuple[int, int | None]:
-    """Valida o consumo de CPFs e retorna (cpfs_novos, cpfs_disponiveis)."""
+def get_cpf_control_data(conta: ContaFidelidade | None):
+    if conta is None:
+        return None
 
+    usos = list(conta.get_usos_cpf_queryset().order_by('cpf'))
+    usados = sum(1 for uso in usos if not _cpf_liberado(uso))
+    limite = conta.limite_cpfs
+    disponiveis = None if limite is None else max(limite - usados, 0)
+    tone = 'disponivel'
+    label = 'Disponível'
+    if limite is not None:
+        if usados >= limite:
+            tone = 'bloqueado'
+            label = 'Bloqueado'
+        elif limite and (usados / limite) >= 0.8:
+            tone = 'proximo'
+            label = 'Próximo do limite'
+    return {
+        'limite_cpfs': limite,
+        'cpfs_usados': usados,
+        'cpfs_disponiveis': disponiveis,
+        'status': tone,
+        'status_label': label,
+        'usos': usos,
+    }
+
+
+def validar_limite_cpfs(conta: ContaFidelidade | None, cpfs: Iterable[str], emissao_id: int | None = None):
     if conta is None:
         return 0, None
 
-    limite = _get_limite_conta(conta)
+    controle = get_cpf_control_data(conta)
+    limite = controle['limite_cpfs']
     if limite is None:
         return 0, None
 
-    cpfs_existentes = _build_existing_cpfs(
-        conta=conta,
-        exclude_emissao_id=emissao_id,
-    )
+    existentes_bloqueados = {
+        uso.cpf for uso in controle['usos'] if not _cpf_liberado(uso)
+    }
     cpfs_na_emissao = _normalize_cpfs(cpfs)
-    cpfs_novos = cpfs_na_emissao - cpfs_existentes
-    cpfs_disponiveis = max(limite - len(cpfs_existentes), 0)
+    cpfs_novos = {cpf for cpf in cpfs_na_emissao if cpf not in existentes_bloqueados}
+    cpfs_disponiveis = controle['cpfs_disponiveis']
 
     if len(cpfs_novos) > cpfs_disponiveis:
         raise ValidationError(
             f"Limite de CPFs excedido. Esta emissão adiciona {len(cpfs_novos)} CPF(s) novos, "
-            f"mas restam apenas {cpfs_disponiveis} disponível(is) no programa."
+            f"mas restam apenas {cpfs_disponiveis} disponível(is) para a conta selecionada."
         )
 
     return len(cpfs_novos), cpfs_disponiveis
+
+
+def registrar_uso_cpfs(conta: ContaFidelidade | None, cpfs: Iterable[str], data_emissao=None):
+    if conta is None:
+        return
+    data_emissao = data_emissao or timezone.localdate()
+    for cpf in _normalize_cpfs(cpfs):
+        UsoCPF.objects.update_or_create(
+            conta_fidelidade=conta,
+            cpf=cpf,
+            defaults={'data_ultima_emissao': data_emissao},
+        )

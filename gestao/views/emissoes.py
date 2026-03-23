@@ -51,9 +51,71 @@ from gestao.services.clientes_programas import (
     build_contas_administradas_programas_map,
     build_empresa_programas_map,
 )
-from gestao.services.cpf_limite import validar_limite_cpfs
+from gestao.services.cpf_limite import get_cpf_control_data, registrar_uso_cpfs, validar_limite_cpfs
 from gestao.utils import normalize_cpf, parse_br_date, validate_cpf_digits
 
+
+
+
+def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=None, passageiros_json="[]", escalas_por_tipo=None, aeroportos=None, menu_ativo="emissoes"):
+    escalas_por_tipo = escalas_por_tipo or {"ida": [], "volta": []}
+    aeroportos = aeroportos or list(Aeroporto.objects.values("id", "nome", "sigla"))
+    cliente_programas = build_clientes_programas_map(empresa_id=getattr(empresa, "id", None))
+    contas_adm_programas = build_contas_administradas_programas_map(empresa_id=getattr(empresa, "id", None))
+    empresa_programas = build_empresa_programas_map(empresa_id=getattr(empresa, "id", None))
+    conta = None
+    tipo = getattr(form.instance, 'emissor_parceiro_id', None) and 'parceiro' or ('administrada' if getattr(form.instance, 'conta_administrada_id', None) else 'cliente')
+    if form.is_bound:
+        tipo = form.data.get('tipo_emissao') or tipo
+        programa_id = form.data.get('programa')
+        cliente_sel = form.data.get('cliente')
+        conta_adm_sel = form.data.get('conta_administrada')
+    else:
+        programa_id = getattr(form.instance, 'programa_id', None) or form.initial.get('programa')
+        cliente_sel = getattr(form.instance, 'cliente_id', None) or form.initial.get('cliente')
+        conta_adm_sel = getattr(form.instance, 'conta_administrada_id', None) or form.initial.get('conta_administrada')
+    if programa_id:
+        filtros = {'programa_id': programa_id}
+        if tipo == 'administrada' and conta_adm_sel:
+            filtros['conta_administrada_id'] = conta_adm_sel
+        elif tipo == 'cliente' and cliente_sel:
+            filtros['cliente_id'] = cliente_sel
+        if len(filtros) > 1:
+            conta = ContaFidelidade.objects.filter(**filtros).select_related('programa', 'cliente__usuario', 'conta_administrada').first()
+    controle = get_cpf_control_data(conta)
+    passageiros_frequentes = {}
+    clientes_ids = set(cliente_programas.keys())
+    if cliente_sel:
+        try:
+            clientes_ids.add(int(cliente_sel))
+        except (TypeError, ValueError):
+            pass
+    for cliente in Cliente.objects.filter(id__in=clientes_ids).prefetch_related('passageiros_frequentes'):
+        passageiros_frequentes[cliente.id] = [
+            {
+                'id': item.id,
+                'nome': item.nome,
+                'cpf': item.cpf,
+                'data_nascimento': item.data_nascimento.isoformat() if item.data_nascimento else '',
+                'relacao': item.relacao,
+            }
+            for item in cliente.passageiros_frequentes.all().order_by('nome')
+        ]
+    return {
+        'form': form,
+        'emissoes': emissoes if emissoes is not None else EmissaoPassagem.objects.all().order_by('-data_ida'),
+        'passageiros_json': passageiros_json,
+        'escalas_ida_json': json.dumps(escalas_por_tipo['ida']),
+        'escalas_volta_json': json.dumps(escalas_por_tipo['volta']),
+        'aeroportos_json': json.dumps(aeroportos),
+        'cliente_id': cliente_id,
+        'cliente_programas_json': json.dumps(cliente_programas),
+        'contas_adm_programas_json': json.dumps(contas_adm_programas),
+        'empresa_programas_json': json.dumps(empresa_programas),
+        'passageiros_frequentes_json': json.dumps(passageiros_frequentes),
+        'cpf_controle_json': json.dumps(controle or {}),
+        'menu_ativo': menu_ativo,
+    }
 
 def _build_escalas_from_request(request):
     escalas = []
@@ -394,35 +456,20 @@ def nova_emissao(request):
                                 request, "Não foi possível salvar a emissão. Inconsistência no número de passageiros."
                             )
                             emissoes = EmissaoPassagem.objects.all().order_by("-data_ida")
-                            aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
                             return render(
                                 request,
                                 "admin_custom/form_emissao_passagem.html",
-                                {
-                                    "form": form,
-                                    "emissoes": emissoes,
-                                    "passageiros_json": "[]",
-                                    "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
-                                    "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
-                                    "aeroportos_json": json.dumps(aeroportos),
-                                    "cliente_id": cliente_id,
-                                "cliente_programas_json": json.dumps(
-                                    build_clientes_programas_map(empresa_id=getattr(empresa, "id", None))
+                                _build_emissao_template_context(
+                                    form=form,
+                                    empresa=empresa,
+                                    cliente_id=cliente_id,
+                                    emissoes=emissoes,
+                                    passageiros_json="[]",
+                                    escalas_por_tipo=escalas_por_tipo,
                                 ),
-                                "contas_adm_programas_json": json.dumps(
-                                    build_contas_administradas_programas_map(
-                                        empresa_id=getattr(empresa, "id", None)
-                                    )
-                                ),
-                                "empresa_programas_json": json.dumps(
-                                    build_empresa_programas_map(
-                                        empresa_id=getattr(empresa, "id", None)
-                                    )
-                                ),
-                                "menu_ativo": "emissoes",
-                            },
                             )
 
+                        registrar_uso_cpfs(conta, cpfs, emissao.data_ida.date())
                         for passageiro in passageiros:
                             Passageiro.objects.create(
                                 emissao=emissao,
@@ -459,29 +506,17 @@ def nova_emissao(request):
         initial = {"cliente": cliente_id} if cliente_id else {}
         form = EmissaoPassagemForm(initial=initial, empresa=empresa)
     emissoes = EmissaoPassagem.objects.all().order_by("-data_ida")
-    aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
     return render(
         request,
         "admin_custom/form_emissao_passagem.html",
-        {
-            "form": form,
-            "emissoes": emissoes,
-            "passageiros_json": "[]",
-            "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
-            "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
-            "aeroportos_json": json.dumps(aeroportos),
-            "cliente_id": cliente_id,
-            "cliente_programas_json": json.dumps(build_clientes_programas_map(empresa_id=getattr(empresa, "id", None))),
-            "contas_adm_programas_json": json.dumps(
-                build_contas_administradas_programas_map(
-                    empresa_id=getattr(empresa, "id", None)
-                )
-            ),
-            "empresa_programas_json": json.dumps(
-                build_empresa_programas_map(empresa_id=getattr(empresa, "id", None))
-            ),
-            "menu_ativo": "emissoes",
-        },
+        _build_emissao_template_context(
+            form=form,
+            empresa=empresa,
+            cliente_id=cliente_id,
+            emissoes=emissoes,
+            passageiros_json="[]",
+            escalas_por_tipo=escalas_por_tipo,
+        ),
     )
 
 
@@ -590,32 +625,16 @@ def editar_emissao(request, emissao_id):
                                 "categoria",
                             )
                         ))
-                        aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
                         return render(
                             request,
                             "admin_custom/form_emissao_passagem.html",
-                            {
-                                "form": form,
-                                "emissoes": EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida"),
-                                "passageiros_json": json.dumps(passageiros),
-                                "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
-                                "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
-                                "aeroportos_json": json.dumps(aeroportos),
-                                "cliente_programas_json": json.dumps(
-                                    build_clientes_programas_map(emissao, empresa_id=getattr(empresa, "id", None))
-                                ),
-                                "contas_adm_programas_json": json.dumps(
-                                    build_contas_administradas_programas_map(
-                                        empresa_id=getattr(empresa, "id", None), instance=emissao
-                                    )
-                                ),
-                                "empresa_programas_json": json.dumps(
-                                    build_empresa_programas_map(
-                                        empresa_id=getattr(empresa, "id", None), instance=emissao
-                                    )
-                                ),
-                                "menu_ativo": "emissoes",
-                            },
+                            _build_emissao_template_context(
+                                form=form,
+                                empresa=empresa,
+                                emissoes=EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida"),
+                                passageiros_json=json.dumps(passageiros),
+                                escalas_por_tipo=escalas_por_tipo,
+                            ),
                         )
 
                     if tipo_emissao in ("cliente", "administrada") and valor_medio_milheiro is not None:
@@ -683,34 +702,19 @@ def editar_emissao(request, emissao_id):
                                 "categoria",
                             )
                         ))
-                        aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
                         return render(
                             request,
                             "admin_custom/form_emissao_passagem.html",
-                            {
-                                "form": form,
-                                "emissoes": EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida"),
-                                "passageiros_json": json.dumps(passageiros),
-                                "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
-                                "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
-                                "aeroportos_json": json.dumps(aeroportos),
-                                "cliente_programas_json": json.dumps(
-                                    build_clientes_programas_map(emissao, empresa_id=getattr(empresa, "id", None))
-                                ),
-                                "contas_adm_programas_json": json.dumps(
-                                    build_contas_administradas_programas_map(
-                                        empresa_id=getattr(empresa, "id", None), instance=emissao
-                                    )
-                                ),
-                                "empresa_programas_json": json.dumps(
-                                    build_empresa_programas_map(
-                                        empresa_id=getattr(empresa, "id", None), instance=emissao
-                                    )
-                                ),
-                                "menu_ativo": "emissoes",
-                            },
+                            _build_emissao_template_context(
+                                form=form,
+                                empresa=empresa,
+                                emissoes=EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida"),
+                                passageiros_json=json.dumps(passageiros),
+                                escalas_por_tipo=escalas_por_tipo,
+                            ),
                         )
 
+                    registrar_uso_cpfs(conta, cpfs, emissao.data_ida.date())
                     emissao.passageiros.all().delete()
                     for passageiro in passageiros:
                         Passageiro.objects.create(
@@ -781,30 +785,16 @@ def editar_emissao(request, emissao_id):
             "categoria",
         )
     ))
-    aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
     return render(
         request,
         "admin_custom/form_emissao_passagem.html",
-        {
-            "form": form,
-            "emissoes": emissoes,
-            "passageiros_json": json.dumps(passageiros),
-            "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
-            "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
-            "aeroportos_json": json.dumps(aeroportos),
-            "cliente_programas_json": json.dumps(
-                build_clientes_programas_map(emissao, empresa_id=getattr(empresa, "id", None))
-            ),
-            "contas_adm_programas_json": json.dumps(
-                build_contas_administradas_programas_map(
-                    empresa_id=getattr(empresa, "id", None), instance=emissao
-                )
-            ),
-            "empresa_programas_json": json.dumps(
-                build_empresa_programas_map(empresa_id=getattr(empresa, "id", None), instance=emissao)
-            ),
-            "menu_ativo": "emissoes",
-        },
+        _build_emissao_template_context(
+            form=form,
+            empresa=empresa,
+            emissoes=emissoes,
+            passageiros_json=json.dumps(passageiros),
+            escalas_por_tipo=escalas_por_tipo,
+        ),
     )
 
 
