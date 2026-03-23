@@ -252,5 +252,53 @@
         </div>
       </div>
     </section>
+
+    {% if cliente_obj and passageiros_frequentes is not None %}
+    <section class="dashboard-section">
+      <div class="dashboard-grid dashboard-grid--operations">
+        <div class="card">
+          <div class="dashboard-heading"><div><p class="dashboard-eyebrow">Cliente</p><h2 class="dashboard-title">Passageiros frequentes</h2></div></div>
+          <div class="dashboard-table-wrapper">
+            <table class="dashboard-table">
+              <thead><tr><th>Nome</th><th>CPF</th><th>Data de nascimento</th><th>Relação</th><th>Ações</th></tr></thead>
+              <tbody>
+                {% for passageiro in passageiros_frequentes %}
+                  <tr>
+                    <td>{{ passageiro.nome }}</td>
+                    <td>{{ passageiro.cpf }}</td>
+                    <td>{{ passageiro.data_nascimento|date:"d/m/Y"|default:"—" }}</td>
+                    <td>{{ passageiro.relacao|default:"—" }}</td>
+                    <td>
+                      <form method="post" class="flex flex-wrap gap-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="passageiro_id" value="{{ passageiro.id }}">
+                        <input type="hidden" name="action" value="delete_passageiro">
+                        <button class="btn btn--ghost btn--sm" type="submit">Remover</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% empty %}<tr><td class="table-empty" colspan="5">Nenhum passageiro frequente cadastrado.</td></tr>{% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="dashboard-heading"><div><p class="dashboard-eyebrow">Cadastro</p><h2 class="dashboard-title">Adicionar passageiro frequente</h2></div></div>
+          <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_passageiro">
+            {% for field in passageiro_form %}
+              <div>
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<div class="text-red-400 text-sm mt-1">{{ field.errors }}</div>{% endif %}
+              </div>
+            {% endfor %}
+            <button class="btn" type="submit">Salvar passageiro</button>
+          </form>
+        </div>
+      </div>
+    </section>
+    {% endif %}
   </div>
 {% endblock %}

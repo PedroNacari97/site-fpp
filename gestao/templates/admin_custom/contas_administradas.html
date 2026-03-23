@@ -48,7 +48,7 @@
                         <th class="hidden lg:table-cell">Saldo Pontos</th>
                         <th class="hidden lg:table-cell">Valor Pago</th>
                         <th>Valor Médio</th>
-                        <th>Ações</th>
+                        <th>CPFs usados</th><th>CPFs disponíveis</th><th>Status</th><th>Ações</th>
                         <th class="hidden lg:table-cell">Todos</th>
                     </tr>
                 </thead>
@@ -62,6 +62,9 @@
                         <td class="hidden lg:table-cell">{{ conta.saldo_pontos }}</td>
                         <td class="hidden lg:table-cell">R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
                         <td>R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
+                        <td>{{ conta.cpfs_usados }}</td>
+                        <td>{{ conta.cpfs_disponiveis|default:"Ilimitado" }}</td>
+                        <td><span class="inline-flex rounded-full border px-3 py-1 text-xs {% if conta.status_cpf.tone == "bloqueado" %}border-red-500/20 bg-red-500/10 text-red-400{% elif conta.status_cpf.tone == "proximo" %}border-yellow-500/20 bg-yellow-500/10 text-yellow-300{% else %}border-green-500/20 bg-green-500/10 text-green-400{% endif %}">{{ conta.status_cpf.label }}</span></td>
                         <td>
                             <details class="dropdown">
                                 <summary class="btn btn-icon" aria-label="Ações da conta administrada">⋮</summary>

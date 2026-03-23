@@ -5,6 +5,7 @@ from django.db.models import Q
 
 from gestao.models import ContaFidelidade, EmissaoPassagem, Passageiro, ProgramaFidelidade
 from gestao.utils import normalize_cpf
+from gestao.services.cpf_limite import get_cpf_control_data
 
 
 def _build_cpfs_sets_map(empresa_id=None, exclude_emissao_id=None) -> Dict[tuple, set]:
@@ -71,10 +72,11 @@ def build_clientes_programas_map(
     data = {}
     for conta in contas:
         key = ("cliente", conta.cliente_id, conta.programa_id)
+        controle = get_cpf_control_data(conta) or {}
         cpfs_usados_list = sorted(cpfs_sets_map.get(key, set()))
-        cpfs_usados = len(cpfs_usados_list)
-        limite_cpfs = _get_limite_cpfs(conta)
-        cpfs_disponiveis = None if limite_cpfs is None else max(limite_cpfs - cpfs_usados, 0)
+        cpfs_usados = controle.get("cpfs_usados", len(cpfs_usados_list))
+        limite_cpfs = conta.limite_cpfs
+        cpfs_disponiveis = controle.get("cpfs_disponiveis")
         data.setdefault(conta.cliente_id, [])
         data[conta.cliente_id].append(
             {
@@ -86,6 +88,7 @@ def build_clientes_programas_map(
                 "cpfs_total": limite_cpfs,
                 "cpfs_usados": cpfs_usados,
                 "cpfs_usados_list": cpfs_usados_list,
+                "status": controle.get("status", "disponivel"),
             }
         )
 
@@ -126,10 +129,11 @@ def build_contas_administradas_programas_map(
     data: Dict[int, List[dict]] = {}
     for conta in contas:
         key = ("administrada", conta.conta_administrada_id, conta.programa_id)
+        controle = get_cpf_control_data(conta) or {}
         cpfs_usados_list = sorted(cpfs_sets_map.get(key, set()))
-        cpfs_usados = len(cpfs_usados_list)
-        limite_cpfs = _get_limite_cpfs(conta)
-        cpfs_disponiveis = None if limite_cpfs is None else max(limite_cpfs - cpfs_usados, 0)
+        cpfs_usados = controle.get("cpfs_usados", len(cpfs_usados_list))
+        limite_cpfs = conta.limite_cpfs
+        cpfs_disponiveis = controle.get("cpfs_disponiveis")
         data.setdefault(conta.conta_administrada_id, [])
         data[conta.conta_administrada_id].append(
             {
@@ -141,6 +145,7 @@ def build_contas_administradas_programas_map(
                 "cpfs_total": limite_cpfs,
                 "cpfs_usados": cpfs_usados,
                 "cpfs_usados_list": cpfs_usados_list,
+                "status": controle.get("status", "disponivel"),
             }
         )
 
