@@ -53,6 +53,12 @@ from gestao.services.clientes_programas import (
 )
 from gestao.services.cpf_limite import get_cpf_control_data, registrar_uso_cpfs, validar_limite_cpfs
 from gestao.utils import normalize_cpf, parse_br_date, validate_cpf_digits
+from gestao.services.dashboard import (
+    _current_management_filters,
+    _management_filter_list,
+    _management_filter_value,
+    build_operational_dashboard_context,
+)
 
 
 
@@ -272,12 +278,16 @@ def _validate_passageiros(passageiros):
 def admin_emissoes(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
-    programa_id = request.GET.get("programa")
-    cliente_id = request.GET.get("cliente")
-    emissor_parceiro_id = request.GET.get("emissor_parceiro_id")
-    q = request.GET.get("q")
-    data_ini = request.GET.get("data_ini")
-    data_fim = request.GET.get("data_fim")
+    management_context = build_operational_dashboard_context(user=request.user, request=request)
+    management_dashboard = management_context["management_dashboard"]
+    active_filters = _current_management_filters(request)
+    start_date = _management_filter_value(active_filters, "data_inicio")
+    end_date = _management_filter_value(active_filters, "data_fim")
+    selected_clientes = _management_filter_list(active_filters, "cliente")
+    selected_emissores = _management_filter_list(active_filters, "emissor")
+    selected_programas = _management_filter_list(active_filters, "programa")
+    selected_contas = _management_filter_list(active_filters, "conta")
+    selected_status = _management_filter_value(active_filters, "status")
 
     emissoes = EmissaoPassagem.objects.filter(
         Q(cliente__perfil="cliente", cliente__ativo=True) | Q(conta_administrada__isnull=False)
@@ -289,24 +299,22 @@ def admin_emissoes(request):
         "conta_administrada",
         "emissor_parceiro",
     )
-    if programa_id:
-        emissoes = emissoes.filter(programa_id=programa_id)
-    if cliente_id:
-        emissoes = emissoes.filter(cliente_id=cliente_id)
-    if emissor_parceiro_id:
-        emissoes = emissoes.filter(emissor_parceiro_id=emissor_parceiro_id)
-    if q:
-        emissoes = emissoes.filter(
-            Q(aeroporto_partida__sigla__icontains=q)
-            | Q(aeroporto_destino__sigla__icontains=q)
-            | Q(aeroporto_partida__nome__icontains=q)
-            | Q(aeroporto_destino__nome__icontains=q)
-            | Q(cliente__usuario__username__icontains=q)
-        )
-    if data_ini:
-        emissoes = emissoes.filter(data_ida__gte=data_ini)
-    if data_fim:
-        emissoes = emissoes.filter(data_volta__lte=data_fim)
+    if start_date:
+        emissoes = emissoes.filter(criado_em__date__gte=start_date)
+    if end_date:
+        emissoes = emissoes.filter(criado_em__date__lte=end_date)
+    if selected_clientes:
+        emissoes = emissoes.filter(cliente_id__in=selected_clientes)
+    if selected_emissores:
+        emissoes = emissoes.filter(emissor_parceiro_id__in=selected_emissores)
+    if selected_programas:
+        emissoes = emissoes.filter(programa_id__in=selected_programas)
+    if selected_contas:
+        emissoes = emissoes.filter(conta_administrada_id__in=selected_contas)
+    if selected_status == "emitido":
+        emissoes = emissoes.exclude(localizador="").exclude(localizador__isnull=True)
+    elif selected_status == "pendente":
+        emissoes = emissoes.filter(Q(localizador="") | Q(localizador__isnull=True))
 
     if request.GET.get("export") == "excel":
         response = HttpResponse(content_type="text/csv")
@@ -347,16 +355,22 @@ def admin_emissoes(request):
             )
         return response
 
-    programas = ProgramaFidelidade.objects.all()
-    clientes = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
+    total_emissoes = emissoes.count()
+    total_receita = sum(float(item.valor_total_final or item.valor_venda_final or 0) for item in emissoes)
+    total_custo = sum(float(item.custo_total or 0) for item in emissoes)
+    total_lucro = sum(float(item.lucro or 0) for item in emissoes)
     return render(
         request,
         "admin_custom/emissoes.html",
         {
             "emissoes": emissoes,
-            "programas": programas,
-            "clientes": clientes,
-            "params": request.GET,
+            "management_dashboard": management_dashboard,
+            "emissao_totais": {
+                "total": total_emissoes,
+                "receita": f"R$ {total_receita:,.2f}",
+                "custo": f"R$ {total_custo:,.2f}",
+                "lucro": f"R$ {total_lucro:,.2f}",
+            },
             "menu_ativo": "emissoes",
         },
     )
