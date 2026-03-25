@@ -48,5 +48,46 @@
             </table>
         </div>
     </section>
+
+    <section class="overflow-hidden rounded border border-gray-700 bg-gray-800">
+        <div class="border-b border-gray-700 px-6 py-4"><h2 class="text-lg font-semibold text-white">Passageiros frequentes</h2></div>
+        <div class="grid grid-cols-1 gap-6 p-6 lg:grid-cols-2">
+            <article class="rounded border border-gray-700 bg-gray-900 p-4">
+                <h3 class="mb-3 text-sm font-semibold uppercase text-gray-300">Adicionar passageiro</h3>
+                <form method="post" class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_passageiro">
+                    <div class="md:col-span-2"><label class="mb-1 block text-sm text-gray-300">Nome</label><input type="text" name="nome" required></div>
+                    <div><label class="mb-1 block text-sm text-gray-300">CPF</label><input type="text" name="cpf" required></div>
+                    <div><label class="mb-1 block text-sm text-gray-300">Data nascimento</label><input type="text" name="data_nascimento" placeholder="DD/MM/AAAA" required></div>
+                    <div class="md:col-span-2"><label class="mb-1 block text-sm text-gray-300">Relação</label><input type="text" name="relacao" placeholder="Ex.: Filho, Cônjuge" required></div>
+                    <div class="md:col-span-2"><button type="submit" class="rounded bg-blue-600 px-4 py-2 text-sm text-white">Adicionar</button></div>
+                </form>
+            </article>
+            <article class="rounded border border-gray-700 bg-gray-900 p-4">
+                <h3 class="mb-3 text-sm font-semibold uppercase text-gray-300">Lista de passageiros</h3>
+                <div class="space-y-3">
+                    {% for passageiro in passageiros_frequentes %}
+                    <div class="rounded border border-gray-700 bg-gray-800 p-4">
+                        <form method="post" class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="passageiro_id" value="{{ passageiro.id }}">
+                            <div class="md:col-span-2"><label class="mb-1 block text-sm text-gray-300">Nome</label><input type="text" name="nome" value="{{ passageiro.nome }}" required></div>
+                            <div><label class="mb-1 block text-sm text-gray-300">CPF</label><input type="text" name="cpf" value="{{ passageiro.cpf }}" required></div>
+                            <div><label class="mb-1 block text-sm text-gray-300">Data nascimento</label><input type="text" name="data_nascimento" value="{{ passageiro.data_nascimento|date:'d/m/Y' }}" required></div>
+                            <div class="md:col-span-2"><label class="mb-1 block text-sm text-gray-300">Relação</label><input type="text" name="relacao" value="{{ passageiro.relacao }}" required></div>
+                            <div class="md:col-span-2 flex flex-wrap gap-2">
+                                <button type="submit" name="action" value="edit_passageiro" class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-xs text-white">Salvar</button>
+                                <button type="submit" name="action" value="delete_passageiro" onclick="return confirm('Remover passageiro frequente?');" class="rounded border border-red-500/40 bg-red-900/20 px-3 py-2 text-xs text-red-300">Remover</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <div class="rounded border border-gray-700 bg-gray-800 p-4 text-sm text-gray-400">Nenhum passageiro frequente cadastrado.</div>
+                    {% endfor %}
+                </div>
+            </article>
+        </div>
+    </section>
 </div>
 {% endblock %}
