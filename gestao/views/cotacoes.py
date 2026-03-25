@@ -49,6 +49,12 @@ from datetime import timedelta
 from decimal import Decimal
 
 from .permissions import require_admin_or_operator
+from gestao.services.dashboard import (
+    _current_management_filters,
+    _management_filter_list,
+    _management_filter_value,
+    build_operational_dashboard_context,
+)
 
 
 def _build_escalas_from_request(request):
@@ -149,23 +155,56 @@ def deletar_cotacao(request, cotacao_id):
 def admin_cotacoes_voo(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
-    busca = request.GET.get("busca", "")
+    management_context = build_operational_dashboard_context(user=request.user, request=request)
+    management_dashboard = management_context["management_dashboard"]
+    active_filters = _current_management_filters(request)
+    start_date = _management_filter_value(active_filters, "data_inicio")
+    end_date = _management_filter_value(active_filters, "data_fim")
+    selected_clientes = _management_filter_list(active_filters, "cliente")
+    selected_programas = _management_filter_list(active_filters, "programa")
+    selected_contas = _management_filter_list(active_filters, "conta")
+    selected_status = _management_filter_value(active_filters, "status")
+
     cotacoes = CotacaoVoo.objects.filter(
         Q(cliente__perfil="cliente", cliente__ativo=True) | Q(conta_administrada__isnull=False)
     ).select_related(
         "cliente__usuario", "origem", "destino", "conta_administrada"
     )
-    if busca:
-        cotacoes = cotacoes.filter(
-            Q(cliente__usuario__username__icontains=busca)
-            | Q(cliente__usuario__first_name__icontains=busca)
-            | Q(origem__nome__icontains=busca)
-            | Q(destino__nome__icontains=busca)
-        )
+    if start_date:
+        cotacoes = cotacoes.filter(criado_em__date__gte=start_date)
+    if end_date:
+        cotacoes = cotacoes.filter(criado_em__date__lte=end_date)
+    if selected_clientes:
+        cotacoes = cotacoes.filter(cliente_id__in=selected_clientes)
+    if selected_programas:
+        cotacoes = cotacoes.filter(programa_id__in=selected_programas)
+    if selected_contas:
+        cotacoes = cotacoes.filter(conta_administrada_id__in=selected_contas)
+    if selected_status:
+        status_map = {"pendente": "pendente", "emitido": "emissao"}
+        mapped_status = status_map.get(selected_status)
+        if mapped_status:
+            cotacoes = cotacoes.filter(status=mapped_status)
+
+    total = cotacoes.count()
+    valor_referencia_total = sum((c.valor_passagem or 0) for c in cotacoes)
+    valor_venda_total = sum((c.valor_vista or 0) for c in cotacoes)
+    economia_total = sum((c.economia or 0) for c in cotacoes)
+
     return render(
         request,
         "admin_custom/cotacoes_voo.html",
-        {"cotacoes": cotacoes, "busca": busca, "menu_ativo": "cotacoes"},
+        {
+            "cotacoes": cotacoes.order_by("-criado_em"),
+            "cotacao_totais": {
+                "total": total,
+                "referencia": f"R$ {valor_referencia_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+                "venda": f"R$ {valor_venda_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+                "economia": f"R$ {economia_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+            },
+            "management_dashboard": management_dashboard,
+            "menu_ativo": "cotacoes",
+        },
     )
 
 

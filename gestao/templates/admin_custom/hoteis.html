@@ -1,74 +1,52 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block title %}Emissões de Hotéis{% endblock %}
 {% block header_title %}Emissões de Hotéis{% endblock %}
-{% block header_subtitle %}<p class="page-subtitle">Reservas com filtros claros, ações alinhadas e rolagem horizontal para mobile.</p>{% endblock %}
+{% block header_subtitle %}<span>Padrão global com filtros, indicadores e tabela operacional.</span>{% endblock %}
 {% block header_actions %}
-<a href="{% url 'admin_nova_emissao_hotel' %}" class="btn">+ Nova Emissão</a>
+<a href="{% url 'admin_nova_emissao_hotel' %}" class="rounded bg-blue-600 px-4 py-2 text-sm text-white">+ Nova Emissão</a>
 {% endblock %}
+
 {% block content %}
-<div class="stacked">
-    <section class="surface-card filter-panel" data-filters-root>
-        <div class="section-heading">
-            <div>
-                <p class="eyebrow">Filtros</p>
-                <h2 class="section-title">Buscar reservas</h2>
-            </div>
-            <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
-        </div>
-        <div class="filter-body is-open" data-filter-panel>
-            <form method="get" class="filter-grid">
-                <div class="form-field">
-                    <label class="form-label" for="busca">Cliente ou hotel</label>
-                    <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar..." />
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn">Buscar</button>
-                    <a href="{% url 'admin_hoteis' %}" class="btn btn--ghost">Limpar</a>
-                </div>
-            </form>
-        </div>
+<div class="space-y-6 py-2">
+    {% include "admin_custom/partials/management_filters.html" %}
+
+    <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Reservas filtradas</p><p class="mt-3 text-3xl font-semibold text-white">{{ hotel_totais.total }}</p></article>
+        <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Valor referência</p><p class="mt-3 text-3xl font-semibold text-white">{{ hotel_totais.referencia }}</p></article>
+        <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Valor pago</p><p class="mt-3 text-3xl font-semibold text-white">{{ hotel_totais.pago }}</p></article>
+        <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Economia total</p><p class="mt-3 text-3xl font-semibold text-white">{{ hotel_totais.economia }}</p></article>
     </section>
 
-    <section class="surface-card">
-        <div class="section-heading">
-            <div>
-                <p class="eyebrow">Hotéis</p>
-                <h2 class="section-title">Reservas emitidas</h2>
-            </div>
-        </div>
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
+    <section class="overflow-hidden rounded border border-gray-700 bg-gray-800">
+        <div class="border-b border-gray-700 px-6 py-4"><h2 class="text-lg font-semibold text-white">Lista de emissões de hotel</h2></div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-900 border-b border-gray-700">
                     <tr>
-                        <th>Cliente</th>
-                        <th>Hotel</th>
-                        <th>Check-in</th>
-                        <th>Check-out</th>
-                        <th>Valor Ref.</th>
-                        <th>Pago</th>
-                        <th>Economia</th>
-                        <th>Ações</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Cliente</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Hotel</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Check-in</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Check-out</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Valor Ref.</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Pago</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Economia</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for e in emissoes %}
-                    <tr>
-                        <td>{{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}</td>
-                        <td>{{ e.nome_hotel }}</td>
-                        <td>{{ e.check_in|date:"d/m/Y" }}</td>
-                        <td>{{ e.check_out|date:"d/m/Y" }}</td>
-                        <td>R$ {{ e.valor_referencia|floatformat:2 }}</td>
-                        <td>R$ {{ e.valor_pago|floatformat:2 }}</td>
-                        <td>R$ {{ e.economia_obtida|floatformat:2 }}</td>
-                        <td>
-                            <div class="page-actions">
-                                <a href="{% url 'admin_editar_emissao_hotel' e.id %}" class="btn btn--ghost">Editar</a>
-                                <a href="{% url 'admin_deletar_emissao_hotel' e.id %}" class="btn btn--ghost">Deletar</a>
-                            </div>
-                        </td>
+                    <tr class="border-b border-gray-700 hover:bg-gray-750">
+                        <td class="px-4 py-3 text-gray-200">{{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}</td>
+                        <td class="px-4 py-3 text-gray-200">{{ e.nome_hotel }}</td>
+                        <td class="px-4 py-3 text-gray-200">{{ e.check_in|date:"d/m/Y" }}</td>
+                        <td class="px-4 py-3 text-gray-200">{{ e.check_out|date:"d/m/Y" }}</td>
+                        <td class="px-4 py-3 text-gray-200">R$ {{ e.valor_referencia|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-gray-200">R$ {{ e.valor_pago|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-gray-200">R$ {{ e.economia_obtida|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-gray-200"><div class="flex flex-wrap gap-2"><a href="{% url 'admin_editar_emissao_hotel' e.id %}" class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-xs text-white">Editar</a><a href="{% url 'admin_deletar_emissao_hotel' e.id %}" class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-xs text-white">Deletar</a></div></td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="8" class="text-center text-red-400 py-4">Nenhuma emissão encontrada.</td></tr>
+                    <tr class="border-b border-gray-700 hover:bg-gray-750"><td colspan="8" class="px-4 py-3 text-gray-200">Nenhuma emissão encontrada.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -8,6 +8,12 @@ from django.db.models import Q
 from ..forms import AlertaViagemForm
 from ..models import AlertaViagem
 from .permissions import require_admin_or_operator
+from gestao.services.dashboard import (
+    _current_management_filters,
+    _management_filter_list,
+    _management_filter_value,
+    build_operational_dashboard_context,
+)
 
 
 def _require_superuser(request):
@@ -25,21 +31,78 @@ def _extract_link(conteudo):
 
 @login_required
 def admin_alertas_passagens(request):
-    if permission_denied := _require_superuser(request):
+    if permission_denied := require_admin_or_operator(request):
         return permission_denied
-    busca = request.GET.get("busca", "").strip()
+    management_context = build_operational_dashboard_context(user=request.user, request=request)
+    management_dashboard = management_context["management_dashboard"]
+    active_filters = _current_management_filters(request)
+    start_date = _management_filter_value(active_filters, "data_inicio")
+    end_date = _management_filter_value(active_filters, "data_fim")
+    selected_status = _management_filter_value(active_filters, "status")
+    selected_clientes = _management_filter_list(active_filters, "cliente")
+    selected_programas = _management_filter_list(active_filters, "programa")
+
     alertas = AlertaViagem.objects.all()
-    if busca:
-        alertas = alertas.filter(
-            Q(titulo__icontains=busca)
-            | Q(continente__icontains=busca)
-            | Q(pais__icontains=busca)
-            | Q(cidade_destino__icontains=busca)
-        )
+    if start_date:
+        alertas = alertas.filter(criado_em__date__gte=start_date)
+    if end_date:
+        alertas = alertas.filter(criado_em__date__lte=end_date)
+    if selected_status == "pendente":
+        alertas = alertas.filter(ativo=True)
+    elif selected_status == "emitido":
+        alertas = alertas.filter(ativo=False)
+    if selected_programas:
+        programas = management_dashboard.get("filter_options", {}).get("programas", [])
+        allowed_program_names = {
+            item["label"]
+            for item in programas
+            if str(item.get("id")) in {str(pid) for pid in selected_programas}
+        }
+        if allowed_program_names:
+            alertas = alertas.filter(programa_fidelidade__in=allowed_program_names)
+    if selected_clientes:
+        clientes = management_dashboard.get("filter_options", {}).get("clientes", [])
+        allowed_client_names = {
+            item["label"]
+            for item in clientes
+            if str(item.get("id")) in {str(cid) for cid in selected_clientes}
+        }
+        if allowed_client_names:
+            alertas = alertas.filter(titulo__iregex=r"(" + "|".join(map(re.escape, allowed_client_names)) + r")")
+
+    alertas = alertas.order_by("-criado_em")
+    alertas_rows = []
+    criticos_count = 0
+    for alerta in alertas:
+        conteudo = (alerta.conteudo or "").lower()
+        titulo = (alerta.titulo or "").lower()
+        is_critico = "crític" in conteudo or "urgente" in conteudo or "crític" in titulo
+        if is_critico and alerta.ativo:
+            status_label = "🔴 crítico"
+            criticos_count += 1
+        elif alerta.ativo:
+            status_label = "🟡 atenção"
+        else:
+            status_label = "🟢 resolvido"
+        alertas_rows.append({"alerta": alerta, "status_label": status_label})
+
+    alertas_ativos = sum(1 for item in alertas_rows if item["alerta"].ativo)
+    alertas_resolvidos = sum(1 for item in alertas_rows if not item["alerta"].ativo)
+    total_monitorado = len(alertas_rows)
     return render(
         request,
         "admin_custom/alertas_list.html",
-        {"alertas": alertas, "busca": busca, "menu_ativo": "alertas"},
+        {
+            "alertas_rows": alertas_rows,
+            "alerta_totais": {
+                "ativos": alertas_ativos,
+                "resolvidos": alertas_resolvidos,
+                "criticos": criticos_count,
+                "monitorado": total_monitorado,
+            },
+            "management_dashboard": management_dashboard,
+            "menu_ativo": "alertas",
+        },
     )
 
 

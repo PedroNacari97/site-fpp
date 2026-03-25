@@ -858,18 +858,39 @@ def deletar_emissao(request, emissao_id):
 def admin_hoteis(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
-    busca = request.GET.get("busca", "")
+    management_context = build_operational_dashboard_context(user=request.user, request=request)
+    management_dashboard = management_context["management_dashboard"]
+    active_filters = _current_management_filters(request)
+    start_date = _management_filter_value(active_filters, "data_inicio")
+    end_date = _management_filter_value(active_filters, "data_fim")
+    selected_clientes = _management_filter_list(active_filters, "cliente")
+
     emissoes = EmissaoHotel.objects.all().select_related("cliente__usuario")
-    if busca:
-        emissoes = emissoes.filter(
-            Q(cliente__usuario__username__icontains=busca)
-            | Q(cliente__usuario__first_name__icontains=busca)
-            | Q(nome_hotel__icontains=busca)
-        )
+    if start_date:
+        emissoes = emissoes.filter(check_in__gte=start_date)
+    if end_date:
+        emissoes = emissoes.filter(check_out__lte=end_date)
+    if selected_clientes:
+        emissoes = emissoes.filter(cliente_id__in=selected_clientes)
+
+    total = emissoes.count()
+    valor_referencia_total = sum((e.valor_referencia or 0) for e in emissoes)
+    valor_pago_total = sum((e.valor_pago or 0) for e in emissoes)
+    economia_total = sum((e.economia_obtida or 0) for e in emissoes)
     return render(
         request,
         "admin_custom/hoteis.html",
-        {"emissoes": emissoes, "busca": busca, "menu_ativo": "hoteis"},
+        {
+            "emissoes": emissoes.order_by("-check_in"),
+            "hotel_totais": {
+                "total": total,
+                "referencia": f"R$ {valor_referencia_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+                "pago": f"R$ {valor_pago_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+                "economia": f"R$ {economia_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+            },
+            "management_dashboard": management_dashboard,
+            "menu_ativo": "hoteis",
+        },
     )
 
 
