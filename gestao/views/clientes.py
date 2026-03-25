@@ -34,7 +34,11 @@ from ..models import (
     PassageiroFrequente,
 )
 from gestao.utils import generate_unique_username, sync_cliente_activation
-from gestao.services.dashboard import build_operational_dashboard_context
+from gestao.services.dashboard import (
+    _current_management_filters,
+    _management_filter_list,
+    build_operational_dashboard_context,
+)
 from gestao.services.cpf_limite import get_cpf_control_data
 from .permissions import require_admin_or_operator
 
@@ -137,9 +141,16 @@ def admin_clientes(request):
         sync_cliente_activation(cli)
         return redirect("admin_clientes")
 
+    management_context = build_operational_dashboard_context(user=request.user, request=request)
+    management_dashboard = management_context["management_dashboard"]
+    active_filters = _current_management_filters(request)
+    selected_clientes = _management_filter_list(active_filters, "cliente")
+
     busca = request.GET.get("busca", "")
     status = request.GET.get("status", "")
     clientes = Cliente.objects.filter(perfil="cliente").select_related("usuario")
+    if selected_clientes:
+        clientes = clientes.filter(id__in=selected_clientes)
     if busca:
         clientes = clientes.filter(
             Q(usuario__username__icontains=busca)
@@ -161,6 +172,7 @@ def admin_clientes(request):
             "busca": busca,
             "status": status,
             "total_clientes": clientes.count(),
+            "management_dashboard": management_dashboard,
             "menu_ativo": "clientes",
         },
     )
@@ -240,13 +252,10 @@ def visualizar_cliente(request, cliente_id):
     context.update(
         {
             "cliente_obj": cliente,
-            "dashboard_base": "admin_custom/base_admin.html",
-            "dashboard_title": f"Painel do Cliente: {cliente}",
-            "dashboard_subtitle": "Visualização operacional do cliente com alertas e emissões.",
             "passageiros_frequentes": passageiros,
             "passageiro_form": passageiro_form,
             "passageiro_form_prefix": "passageiro-frequente",
             "menu_ativo": "clientes",
         }
     )
-    return render(request, "painel_cliente/dashboard.html", context)
+    return render(request, "admin_custom/cliente_dashboard.html", context)

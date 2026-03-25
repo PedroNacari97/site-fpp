@@ -1,134 +1,55 @@
 {% extends "admin_custom/base_admin.html" %}
 {% block title %}Emissões Detalhadas{% endblock %}
 {% block header_title %}Emissões Detalhadas{% endblock %}
-{% block header_subtitle %}<p class="page-subtitle">Organização única para voos, passageiros e resultados financeiros.</p>{% endblock %}
+{% block header_subtitle %}<span>Padrão global com filtros, indicadores e tabela operacional.</span>{% endblock %}
 {% block header_actions %}
-<a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}export=excel" class="btn btn--outline">Exportar Excel</a>
-<a href="{% url 'admin_nova_emissao' %}" class="btn">+ Nova Emissão</a>
+<a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}export=excel" class="rounded border border-gray-700 bg-gray-900 px-4 py-2 text-sm text-white">Exportar Excel</a>
+<a href="{% url 'admin_nova_emissao' %}" class="rounded bg-blue-600 px-4 py-2 text-sm text-white">+ Nova Emissão</a>
 {% endblock %}
 
 {% block content %}
-<div class="stacked">
-    <section class="surface-card filter-panel" data-filters-root>
-        <div class="section-heading">
-            <div>
-                <p class="eyebrow">Filtros</p>
-                <h2 class="section-title">Buscar emissões</h2>
-            </div>
-            <button class="btn btn--ghost filter-toggle" type="button" data-filter-toggle aria-expanded="true">Mostrar filtros</button>
-        </div>
-        <div class="filter-body is-open" data-filter-panel>
-            <form method="get" class="filter-grid">
-                <div class="form-field">
-                    <label class="form-label" for="cliente">Cliente</label>
-                    <select name="cliente" id="cliente">
-                        <option value="">Todos</option>
-                        {% for c in clientes %}
-                        <option value="{{ c.id }}" {% if params.cliente == c.id|stringformat:'s' %}selected{% endif %}>
-                            {{ c.usuario.get_full_name|default:c.usuario.username }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-field">
-                    <label class="form-label" for="programa">Programa</label>
-                    <select name="programa" id="programa">
-                        <option value="">Todos</option>
-                        {% for p in programas %}
-                        <option value="{{ p.id }}" {% if params.programa == p.id|stringformat:'s' %}selected{% endif %}>{{ p.nome }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-field">
-                    <label class="form-label" for="q">Buscar aeroporto ou nome</label>
-                    <input type="text" id="q" name="q" value="{{ params.q|default_if_none:'' }}" placeholder="Buscar" />
-                </div>
-                <div class="form-field">
-                    <label class="form-label" for="data_ini">Data ida de</label>
-                    <input type="date" id="data_ini" name="data_ini" value="{{ params.data_ini|default_if_none:'' }}" />
-                </div>
-                <div class="form-field">
-                    <label class="form-label" for="data_fim">Data volta até</label>
-                    <input type="date" id="data_fim" name="data_fim" value="{{ params.data_fim|default_if_none:'' }}" />
-                </div>
-                <div class="form-actions">
-                    <button class="btn">Filtrar</button>
-                    <a href="{% url 'admin_emissoes' %}" class="btn btn--ghost">Limpar</a>
-                </div>
-            </form>
-        </div>
+<div class="space-y-6 py-2">
+    {% include "admin_custom/partials/management_filters.html" %}
+
+    <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Emissões filtradas</p><p class="mt-3 text-3xl font-semibold text-white">{{ emissao_totais.total }}</p></article>
+        <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Receita total</p><p class="mt-3 text-3xl font-semibold text-white">{{ emissao_totais.receita }}</p></article>
+        <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Custo total</p><p class="mt-3 text-3xl font-semibold text-white">{{ emissao_totais.custo }}</p></article>
+        <article class="rounded border border-gray-700 bg-gray-800 p-6"><p class="text-sm uppercase text-gray-400">Lucro total</p><p class="mt-3 text-3xl font-semibold text-white">{{ emissao_totais.lucro }}</p></article>
     </section>
 
-    <section class="surface-card">
-        <div class="section-heading">
-            <div>
-                <p class="eyebrow">Emissões</p>
-                <h2 class="section-title">Resultados</h2>
-                <p class="section-subtitle">Tabela com rolagem horizontal para comportar todos os campos.</p>
-            </div>
-        </div>
-        <div class="table-wrapper">
-            <table class="data-table data-table--wide">
-                <thead>
+    <section class="overflow-hidden rounded border border-gray-700 bg-gray-800">
+        <div class="border-b border-gray-700 px-6 py-4"><h2 class="text-lg font-semibold text-white">Lista de emissões</h2></div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-900 border-b border-gray-700">
                     <tr>
-                        <th>Cliente</th>
-                        <th>Programa</th>
-                        <th>Aeroporto Ida</th>
-                        <th>Aeroporto Volta</th>
-                        <th>Data Ida</th>
-                        <th>Data Volta</th>
-                        <th>Data Emissão</th>
-                        <th>Qtd</th>
-                        <th>Companhia</th>
-                        <th>Localizador</th>
-                        <th>Tipo</th>
-                        <th>Valor Ref.</th>
-                        <th>Taxas</th>
-                        <th>Pontos</th>
-                        <th>Economia</th>
-                        <th>Detalhes</th>
-                        <th>Ações</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Cliente</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Programa</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Origem</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Destino</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Data ida</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Companhia</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Status</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Lucro</th>
+                        <th class="px-4 py-3 text-left text-sm uppercase text-gray-300">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for e in emissoes %}
-                    <tr>
-                        <td>{{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}</td>
-                        <td class="text-blue-400 font-medium">{{ e.programa }}</td>
-                        <td>{{ e.aeroporto_partida }}</td>
-                        <td>{{ e.aeroporto_destino }}</td>
-                        <td>{{ e.data_ida|date:"d/m/Y H:i" }}</td>
-                        <td>{{ e.data_volta|date:"d/m/Y H:i" }}</td>
-                        <td>{{ e.criado_em|date:"d/m/Y H:i" }}</td>
-                        <td>{{ e.qtd_passageiros }}</td>
-                        <td>{{ e.companhia_aerea }}</td>
-                        <td>{{ e.localizador }}</td>
-                        <td>
-                          {% if e.emissor_parceiro %}
-                            Emissor Parceiro
-                          {% elif e.conta_administrada %}
-                            Conta Administrada
-                          {% else %}
-                            Cliente
-                          {% endif %}
-                        </td>
-                        <td>R$ {{ e.valor_referencia|floatformat:2 }}</td>
-                        <td>R$ {{ e.valor_taxas|floatformat:2 }}</td>
-                        <td>{{ e.pontos_utilizados }}</td>
-                        <td>R$ {{ e.economia_obtida|floatformat:2 }}</td>
-                        <td>{{ e.detalhes }}</td>
-                        <td>
-                            <div class="page-actions">
-                                <a href="{% url 'admin_emissao_pdf' e.id %}" class="btn btn--ghost">PDF</a>
-                                <a href="{% url 'admin_editar_emissao' e.id %}" class="btn btn--ghost">Editar</a>
-                                <a href="{% url 'admin_deletar_emissao' e.id %}" class="btn btn--ghost">Deletar</a>
-                            </div>
-                        </td>
+                    <tr class="border-b border-gray-700 hover:bg-gray-750">
+                        <td class="px-4 py-3 text-gray-200">{{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}</td>
+                        <td class="px-4 py-3 text-gray-200">{{ e.programa }}</td>
+                        <td class="px-4 py-3 text-gray-200">{{ e.aeroporto_partida }}</td>
+                        <td class="px-4 py-3 text-gray-200">{{ e.aeroporto_destino }}</td>
+                        <td class="px-4 py-3 text-gray-200">{{ e.data_ida|date:"d/m/Y H:i" }}</td>
+                        <td class="px-4 py-3 text-gray-200">{{ e.companhia_aerea }}</td>
+                        <td class="px-4 py-3 text-gray-200">{% if e.localizador %}Emitido{% else %}Pendente{% endif %}</td>
+                        <td class="px-4 py-3 text-gray-200">R$ {{ e.lucro|floatformat:2 }}</td>
+                        <td class="px-4 py-3 text-gray-200"><div class="flex flex-wrap gap-2"><a href="{% url 'admin_emissao_pdf' e.id %}" class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-xs text-white">PDF</a><a href="{% url 'admin_editar_emissao' e.id %}" class="rounded border border-gray-700 bg-gray-900 px-3 py-2 text-xs text-white">Editar</a></div></td>
                     </tr>
                     {% empty %}
-                    <tr>
-                        <td colspan="17" class="text-center text-red-400 py-4">Nenhuma emissão encontrada.</td>
-                    </tr>
+                    <tr class="border-b border-gray-700 hover:bg-gray-750"><td colspan="9" class="px-4 py-3 text-gray-200">Nenhuma emissão encontrada.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
