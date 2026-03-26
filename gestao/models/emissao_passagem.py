@@ -8,6 +8,7 @@ from .programa_fidelidade import ProgramaFidelidade
 from .aeroporto import Aeroporto
 from .companhia_aerea import CompanhiaAerea
 from .emissor_parceiro import EmissorParceiro
+from .emissao_hotel import EmissaoHotel
 
 
 class EmissaoPassagem(models.Model):
@@ -39,10 +40,24 @@ class EmissaoPassagem(models.Model):
     valor_total_final = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
+    custo_emissor = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    valor_cobrado_cliente = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    milhas_do_cliente = models.BooleanField(default=False)
     custo_total = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     lucro = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    hotel_vinculado = models.ForeignKey(
+        EmissaoHotel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="emissoes_vinculadas",
+    )
 
     companhia_aerea = models.ForeignKey(
         CompanhiaAerea,
@@ -95,10 +110,14 @@ class EmissaoPassagem(models.Model):
         custo_milhas = (pontos / Decimal("1000")) * valor_milheiro
         incluir_taxas = not self.emissor_parceiro_id and not self.conta_administrada_id
         custo_total = custo_milhas + (Decimal(self.valor_taxas or 0) if incluir_taxas else Decimal("0"))
+        if self.emissor_parceiro_id and self.custo_emissor not in (None, ""):
+            custo_total = Decimal(self.custo_emissor or 0)
         self.custo_total = custo_total
         valor_final_cliente = self.valor_venda_final
         valor_total = self.valor_total_final
-        if valor_total not in (None, ""):
+        if self.emissor_parceiro_id and self.valor_cobrado_cliente not in (None, ""):
+            base_lucro = Decimal(self.valor_cobrado_cliente or 0)
+        elif valor_total not in (None, ""):
             base_lucro = Decimal(valor_total or 0)
         elif valor_final_cliente not in (None, ""):
             base_lucro = Decimal(valor_final_cliente or 0)
@@ -108,8 +127,13 @@ class EmissaoPassagem(models.Model):
             self.lucro = base_lucro - custo_total
         elif self.lucro is None:
             self.lucro = Decimal("0")
-        if valor_final_cliente not in (None, ""):
-            self.economia_obtida = Decimal(valor_final_cliente or 0) - Decimal(self.valor_referencia or 0)
+        valor_cliente = (
+            Decimal(self.valor_cobrado_cliente or 0)
+            if self.emissor_parceiro_id and self.valor_cobrado_cliente not in (None, "")
+            else (Decimal(valor_final_cliente or 0) if valor_final_cliente not in (None, "") else None)
+        )
+        if valor_cliente is not None:
+            self.economia_obtida = valor_cliente - Decimal(self.valor_referencia or 0)
         else:
             self.economia_obtida = None
         super().save(*args, **kwargs)

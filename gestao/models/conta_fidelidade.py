@@ -106,7 +106,11 @@ class ContaFidelidade(models.Model):
 
     @property
     def limite_cpfs(self):
-        return self.programa.limite_cpfs
+        if self.quantidade_cpfs_disponiveis is not None:
+            return self.quantidade_cpfs_disponiveis
+        if self.programa.limite_cpfs is not None:
+            return self.programa.limite_cpfs
+        return self.programa.quantidade_cpfs_disponiveis
 
     def get_usos_cpf_queryset(self):
         return self.usos_cpf.select_related("conta_fidelidade__programa")

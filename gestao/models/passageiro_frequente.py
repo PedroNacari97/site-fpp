@@ -6,11 +6,21 @@ from .cliente import Cliente
 
 
 class PassageiroFrequente(models.Model):
+    TIPO_ADULTO = "adulto"
+    TIPO_CRIANCA = "crianca"
+    TIPO_ADOLESCENTE = "adolescente"
+    TIPO_CHOICES = (
+        (TIPO_ADULTO, "Adulto"),
+        (TIPO_CRIANCA, "Criança"),
+        (TIPO_ADOLESCENTE, "Adolescente"),
+    )
+
     cliente = models.ForeignKey(
         Cliente, on_delete=models.CASCADE, related_name="passageiros_frequentes"
     )
     nome = models.CharField(max_length=150)
     cpf = models.CharField(max_length=14)
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default=TIPO_ADULTO)
     rg = models.CharField(max_length=50, blank=True)
     passaporte = models.CharField(max_length=30, blank=True)
     passaporte_validade = models.DateField(null=True, blank=True)

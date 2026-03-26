@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils import timezone
 
 from ..models import (
@@ -298,7 +299,7 @@ def _build_home_context(*, user, empresa=None, request=None):
             low_balance.append({
                 'titulo': 'Conta com saldo baixo',
                 'descricao': f'{titular} em {conta.programa.nome} com {saldo} pontos',
-                'url': None,
+                'url': reverse("admin_alertas_passagens"),
                 'tone': 'yellow',
             })
             if len(low_balance) >= 2:
@@ -306,13 +307,13 @@ def _build_home_context(*, user, empresa=None, request=None):
     alerts.extend(low_balance)
     loss_emission = emissoes_periodo.filter(lucro__lt=0).first()
     if loss_emission:
-        alerts.append({'titulo': 'Emissão com prejuízo', 'descricao': str(loss_emission), 'url': None, 'tone': 'red'})
+        alerts.append({'titulo': 'Emissão com prejuízo', 'descricao': str(loss_emission), 'url': reverse("admin_alertas_passagens"), 'tone': 'red'})
     upcoming = emissoes_qs.filter(data_ida__date__gte=today).order_by('data_ida')[:3]
     if upcoming:
-        alerts.append({'titulo': 'Embarques próximos', 'descricao': f'{upcoming.count()} embarques previstos para os próximos dias', 'url': None, 'tone': 'blue'})
+        alerts.append({'titulo': 'Embarques próximos', 'descricao': f'{upcoming.count()} embarques previstos para os próximos dias', 'url': reverse("admin_emissoes"), 'tone': 'blue'})
     pending_quote = cotacoes_qs.filter(status='pendente').first()
     if pending_quote:
-        alerts.append({'titulo': 'Cotações sem retorno', 'descricao': str(pending_quote), 'url': None, 'tone': 'purple'})
+        alerts.append({'titulo': 'Cotações sem retorno', 'descricao': str(pending_quote), 'url': reverse("admin_alertas_passagens"), 'tone': 'purple'})
 
     quick_actions = [
         {'label': 'Nova emissão', 'url': 'admin_nova_emissao'},
@@ -341,6 +342,7 @@ def _build_home_context(*, user, empresa=None, request=None):
             'companhia': getattr(e.companhia_aerea, 'nome', '—'),
             'localizador': e.localizador or '—',
             'status': 'Emitido' if e.localizador else 'Pendente',
+            'url': reverse("admin_emissoes"),
         }
         for e in upcoming
     ]

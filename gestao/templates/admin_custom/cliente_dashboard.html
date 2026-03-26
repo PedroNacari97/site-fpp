@@ -15,6 +15,11 @@
             <p class="mt-2 text-sm text-gray-400">{{ card.descricao }}</p>
         </article>
         {% endfor %}
+        <article class="rounded border border-gray-700 bg-gray-800 p-6">
+            <p class="text-sm uppercase text-gray-400">Economia acumulada</p>
+            <p class="mt-3 text-3xl font-semibold text-white">R$ {{ economia_cliente|floatformat:2 }}</p>
+            <p class="mt-2 text-sm text-gray-400">Preço cheio - valor pago nas emissões.</p>
+        </article>
     </section>
 
     <section class="overflow-hidden rounded border border-gray-700 bg-gray-800">
@@ -57,10 +62,14 @@
                 <form method="post" class="grid grid-cols-1 gap-3 md:grid-cols-2">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="add_passageiro">
-                    <div class="md:col-span-2"><label class="mb-1 block text-sm text-gray-300">Nome</label><input type="text" name="nome" required></div>
-                    <div><label class="mb-1 block text-sm text-gray-300">CPF</label><input type="text" name="cpf" required></div>
-                    <div><label class="mb-1 block text-sm text-gray-300">Data nascimento</label><input type="text" name="data_nascimento" placeholder="DD/MM/AAAA" required></div>
-                    <div class="md:col-span-2"><label class="mb-1 block text-sm text-gray-300">Relação</label><input type="text" name="relacao" placeholder="Ex.: Filho, Cônjuge" required></div>
+                    <div class="md:col-span-2"><label class="mb-1 block text-sm text-gray-300">Nome</label>{{ passageiro_form.nome }}</div>
+                    <div><label class="mb-1 block text-sm text-gray-300">Tipo</label>{{ passageiro_form.tipo }}</div>
+                    <div><label class="mb-1 block text-sm text-gray-300">CPF</label>{{ passageiro_form.cpf }}</div>
+                    <div><label class="mb-1 block text-sm text-gray-300">RG</label>{{ passageiro_form.rg }}</div>
+                    <div><label class="mb-1 block text-sm text-gray-300">Passaporte</label>{{ passageiro_form.passaporte }}</div>
+                    <div><label class="mb-1 block text-sm text-gray-300">Validade passaporte</label>{{ passageiro_form.passaporte_validade }}</div>
+                    <div><label class="mb-1 block text-sm text-gray-300">Data nascimento</label>{{ passageiro_form.data_nascimento }}</div>
+                    <div class="md:col-span-2"><label class="mb-1 block text-sm text-gray-300">Relação</label>{{ passageiro_form.relacao }}</div>
                     <div class="md:col-span-2"><button type="submit" class="rounded bg-blue-600 px-4 py-2 text-sm text-white">Adicionar</button></div>
                 </form>
             </article>
@@ -73,7 +82,11 @@
                             {% csrf_token %}
                             <input type="hidden" name="passageiro_id" value="{{ passageiro.id }}">
                             <div class="md:col-span-2"><label class="mb-1 block text-sm text-gray-300">Nome</label><input type="text" name="nome" value="{{ passageiro.nome }}" required></div>
+                            <div><label class="mb-1 block text-sm text-gray-300">Tipo</label><select name="tipo"><option value="adulto" {% if passageiro.tipo == 'adulto' %}selected{% endif %}>Adulto</option><option value="crianca" {% if passageiro.tipo == 'crianca' %}selected{% endif %}>Criança</option><option value="adolescente" {% if passageiro.tipo == 'adolescente' %}selected{% endif %}>Adolescente</option></select></div>
                             <div><label class="mb-1 block text-sm text-gray-300">CPF</label><input type="text" name="cpf" value="{{ passageiro.cpf }}" required></div>
+                            <div><label class="mb-1 block text-sm text-gray-300">RG</label><input type="text" name="rg" value="{{ passageiro.rg }}" required></div>
+                            <div><label class="mb-1 block text-sm text-gray-300">Passaporte</label><input type="text" name="passaporte" value="{{ passageiro.passaporte }}"></div>
+                            <div><label class="mb-1 block text-sm text-gray-300">Validade passaporte</label><input type="date" name="passaporte_validade" value="{{ passageiro.passaporte_validade|date:'Y-m-d' }}"></div>
                             <div><label class="mb-1 block text-sm text-gray-300">Data nascimento</label><input type="text" name="data_nascimento" value="{{ passageiro.data_nascimento|date:'d/m/Y' }}" required></div>
                             <div class="md:col-span-2"><label class="mb-1 block text-sm text-gray-300">Relação</label><input type="text" name="relacao" value="{{ passageiro.relacao }}" required></div>
                             <div class="md:col-span-2 flex flex-wrap gap-2">

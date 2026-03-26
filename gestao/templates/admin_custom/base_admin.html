@@ -57,7 +57,7 @@
                 <a href="{% url 'admin_alertas_passagens' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'alertas' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Alertas</span></a>
                 <a href="{% url 'admin_hoteis' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'hoteis' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Hotéis</span></a>
                 <a href="{% url 'admin_calculadora_cotacao' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'calculadora' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Calculadora</span></a>
-                <a href="{% url 'admin_emissores_parceiros' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'emissores' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Rotas Compartilhadas</span></a>
+                <a href="{% url 'admin_emissores_parceiros' %}" class="flex items-center justify-between px-6 py-3 text-sm {% if menu_ativo == 'emissores' %}border-l-4 border-blue-500 bg-blue-600 text-white{% else %}text-gray-400 hover:bg-gray-900{% endif %}"><span>Emissor parceiro</span></a>
                 <details class="{% if menu_ativo == 'aeroportos' or menu_ativo == 'companhias' or menu_ativo == 'programas' %}open{% endif %}">
                     <summary class="flex cursor-pointer items-center justify-between px-6 py-3 text-sm text-gray-400 hover:bg-gray-900"><span>Operações</span></summary>
                     <div class="pb-2">
@@ -86,7 +86,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="hidden flex-wrap items-center gap-2 lg:flex">{% block header_actions %}{% endblock %}</div>
-                    <button type="button" class="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 bg-gray-900 text-gray-400"><span>🔔</span><span class="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-500 px-1 text-xs font-semibold text-white">3</span></button>
+                    <a href="{% url 'admin_alertas_passagens' %}" class="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 bg-gray-900 text-gray-400"><span>🔔</span></a>
                     <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
                     <div class="hidden text-sm md:block"><div class="font-medium text-white">{{ request.user.get_full_name|default:request.user.username }}</div><div class="text-gray-400">{% if request.user.is_superuser %}Superusuário{% else %}Operação{% endif %}</div></div>
                 </div>

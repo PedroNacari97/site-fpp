@@ -102,11 +102,22 @@ def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=
                 'id': item.id,
                 'nome': item.nome,
                 'cpf': item.cpf,
+                'rg': item.rg,
+                'passaporte': item.passaporte,
+                'passaporte_validade': item.passaporte_validade.isoformat() if item.passaporte_validade else '',
                 'data_nascimento': item.data_nascimento.isoformat() if item.data_nascimento else '',
+                'tipo': item.tipo,
                 'relacao': item.relacao,
             }
             for item in cliente.passageiros_frequentes.all().order_by('nome')
         ]
+    clientes_data = {
+        cliente.id: {
+            "nome": cliente.usuario.get_full_name() or cliente.usuario.username,
+            "cpf": cliente.cpf,
+        }
+        for cliente in Cliente.objects.filter(id__in=clientes_ids).select_related("usuario")
+    }
     return {
         'form': form,
         'emissoes': emissoes if emissoes is not None else EmissaoPassagem.objects.all().order_by('-data_ida'),
@@ -119,6 +130,7 @@ def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=
         'contas_adm_programas_json': json.dumps(contas_adm_programas),
         'empresa_programas_json': json.dumps(empresa_programas),
         'passageiros_frequentes_json': json.dumps(passageiros_frequentes),
+        'clientes_data_json': json.dumps(clientes_data),
         'cpf_controle_json': json.dumps(controle or {}),
         'menu_ativo': menu_ativo,
     }
@@ -315,6 +327,7 @@ def admin_emissoes(request):
         emissoes = emissoes.exclude(localizador="").exclude(localizador__isnull=True)
     elif selected_status == "pendente":
         emissoes = emissoes.filter(Q(localizador="") | Q(localizador__isnull=True))
+    emissoes = emissoes.order_by("-criado_em")
 
     if request.GET.get("export") == "excel":
         response = HttpResponse(content_type="text/csv")
@@ -441,6 +454,18 @@ def nova_emissao(request):
                     form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
                 else:
                     with transaction.atomic():
+                        criar_hotel_nome = (form.cleaned_data.get("criar_hotel_nome") or "").strip()
+                        if criar_hotel_nome:
+                            hotel = EmissaoHotel.objects.create(
+                                cliente=emissao.cliente,
+                                nome_hotel=criar_hotel_nome,
+                                check_in=form.cleaned_data.get("criar_hotel_check_in") or emissao.data_ida.date(),
+                                check_out=form.cleaned_data.get("criar_hotel_check_out") or emissao.data_ida.date(),
+                                valor_referencia=Decimal("0"),
+                                valor_pago=Decimal("0"),
+                                economia_obtida=Decimal("0"),
+                            )
+                            emissao.hotel_vinculado = hotel
                         if tipo_emissao in ("cliente", "administrada") and valor_medio_milheiro is not None:
                             emissao.valor_milheiro_parceiro = Decimal(str(valor_medio_milheiro))
                         valor_milheiro = emissao.valor_milheiro_parceiro or 0
@@ -587,6 +612,18 @@ def editar_emissao(request, emissao_id):
                         "Não foi possível salvar a emissão: valor médio do milheiro ausente para o titular.",
                     )
                 else:
+                    criar_hotel_nome = (form.cleaned_data.get("criar_hotel_nome") or "").strip()
+                    if criar_hotel_nome:
+                        hotel = EmissaoHotel.objects.create(
+                            cliente=emissao.cliente,
+                            nome_hotel=criar_hotel_nome,
+                            check_in=form.cleaned_data.get("criar_hotel_check_in") or emissao.data_ida.date(),
+                            check_out=form.cleaned_data.get("criar_hotel_check_out") or emissao.data_ida.date(),
+                            valor_referencia=Decimal("0"),
+                            valor_pago=Decimal("0"),
+                            economia_obtida=Decimal("0"),
+                        )
+                        emissao.hotel_vinculado = hotel
                     passageiros = _parse_passageiros(request.POST)
                     passageiros_errors = _validate_passageiros(passageiros)
                     for err in passageiros_errors:

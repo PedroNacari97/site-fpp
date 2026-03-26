@@ -270,6 +270,12 @@ class EmissaoPassagemForm(forms.ModelForm):
     conta_administrada = forms.ModelChoiceField(
         queryset=ContaAdministrada.objects.none(), required=False
     )
+    hotel_vinculado = forms.ModelChoiceField(
+        queryset=EmissaoHotel.objects.none(), required=False
+    )
+    criar_hotel_nome = forms.CharField(required=False)
+    criar_hotel_check_in = forms.DateField(required=False, input_formats=["%Y-%m-%d"])
+    criar_hotel_check_out = forms.DateField(required=False, input_formats=["%Y-%m-%d"])
 
     def __init__(self, *args, **kwargs):
         empresa = kwargs.pop("empresa", None)
@@ -296,6 +302,10 @@ class EmissaoPassagemForm(forms.ModelForm):
             contas_adm_qs = contas_adm_qs | ContaAdministrada.objects.filter(pk=self.instance.conta_administrada_id)
         self.fields["cliente"].queryset = clientes_qs
         self.fields["conta_administrada"].queryset = contas_adm_qs
+        hoteis_qs = EmissaoHotel.objects.select_related("cliente")
+        if empresa:
+            hoteis_qs = hoteis_qs.filter(cliente__empresa=empresa)
+        self.fields["hotel_vinculado"].queryset = hoteis_qs.order_by("-check_in")
 
         selected_tipo = self.data.get("tipo_emissao")
         if not selected_tipo:
@@ -357,6 +367,10 @@ class EmissaoPassagemForm(forms.ModelForm):
             cleaned["conta_administrada"] = None
         else:
             cleaned["emissor_parceiro"] = None
+        criar_nome = (cleaned.get("criar_hotel_nome") or "").strip()
+        hotel_vinculado = cleaned.get("hotel_vinculado")
+        if criar_nome and hotel_vinculado:
+            raise forms.ValidationError("Escolha um hotel existente ou crie um novo, não ambos.")
         return cleaned
 
     class Meta:
@@ -385,7 +399,11 @@ class EmissaoPassagemForm(forms.ModelForm):
             'valor_milheiro_parceiro',
             'valor_venda_final',
             'valor_total_final',
+            'custo_emissor',
+            'valor_cobrado_cliente',
+            'milhas_do_cliente',
             'lucro',
+            'hotel_vinculado',
         ]
         widgets = {
             'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
@@ -394,7 +412,11 @@ class EmissaoPassagemForm(forms.ModelForm):
             'valor_milheiro_parceiro': forms.NumberInput(attrs={'step': '0.01'}),
             'valor_venda_final': forms.NumberInput(attrs={'step': '0.01'}),
             'valor_total_final': forms.NumberInput(attrs={'step': '0.01'}),
+            'custo_emissor': forms.NumberInput(attrs={'step': '0.01'}),
+            'valor_cobrado_cliente': forms.NumberInput(attrs={'step': '0.01'}),
             'lucro': forms.NumberInput(attrs={'step': '0.01', 'readonly': 'readonly'}),
+            'criar_hotel_check_in': forms.DateInput(attrs={'type': 'date'}),
+            'criar_hotel_check_out': forms.DateInput(attrs={'type': 'date'}),
         }
         
 
@@ -405,7 +427,11 @@ class PassageiroFrequenteForm(forms.ModelForm):
         model = PassageiroFrequente
         fields = [
             "nome",
+            "tipo",
             "cpf",
+            "rg",
+            "passaporte",
+            "passaporte_validade",
             "data_nascimento",
             "relacao",
         ]
@@ -418,6 +444,7 @@ class PassageiroFrequenteForm(forms.ModelForm):
                     "maxlength": "10",
                 }
             ),
+            "passaporte_validade": forms.DateInput(attrs={"type": "date"}),
             "relacao": forms.TextInput(attrs={"placeholder": "Ex.: Filho, Cônjuge, Sócio"}),
         }
 
@@ -426,6 +453,15 @@ class PassageiroFrequenteForm(forms.ModelForm):
 
     def clean_data_nascimento(self):
         return parse_br_date(self.cleaned_data.get("data_nascimento"), field_label="Data de nascimento")
+
+    def clean(self):
+        cleaned = super().clean()
+        if not (cleaned.get("rg") or "").strip():
+            self.add_error("rg", "Informe o RG.")
+        passaporte = (cleaned.get("passaporte") or "").strip()
+        if passaporte and not cleaned.get("passaporte_validade"):
+            self.add_error("passaporte_validade", "Informe a validade do passaporte.")
+        return cleaned
 
 
 class EmissaoHotelForm(forms.ModelForm):
