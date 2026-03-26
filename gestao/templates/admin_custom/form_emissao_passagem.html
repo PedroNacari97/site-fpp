@@ -326,12 +326,16 @@
                 <p class="section-card__description">Revise as informações antes de salvar.</p>
             </div>
         </div>
-        <div class="form-actions">
-            <a href="{% url 'admin_emissoes' %}" class="btn btn--outline">Cancelar</a>
-            <button type="button" class="btn btn--outline" id="wizard-prev">← Voltar</button>
-            <button type="button" class="btn btn--outline" id="wizard-next">Próximo →</button>
-            <button class="btn" type="submit" id="submit-emissao">💾 Salvar emissão</button>
+        <div class="rounded border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300">
+            ✅ Pronto para finalizar. Clique em “Salvar emissão” para concluir.
         </div>
+    </div>
+
+    <div class="form-actions wizard-nav">
+        <a href="{% url 'admin_emissoes' %}" class="btn btn--outline">Cancelar</a>
+        <button type="button" class="btn btn--outline" id="wizard-prev">← Voltar</button>
+        <button type="button" class="btn btn--outline" id="wizard-next">Próximo →</button>
+        <button class="btn" type="submit" id="submit-emissao">💾 Salvar emissão</button>
     </div>
 </form>
 </div>
