@@ -242,6 +242,18 @@
                 <label class="form-label" for="{{ form.lucro.id_for_label }}">Lucro (R$)</label>
                 {{ form.lucro }}
             </div>
+            <div class="form-field--compact">
+                <label class="form-label" for="{{ form.custo_emissor.id_for_label }}">Custo emissor (R$)</label>
+                {{ form.custo_emissor }}
+            </div>
+            <div class="form-field--compact">
+                <label class="form-label" for="{{ form.valor_cobrado_cliente.id_for_label }}">Valor cobrado cliente (R$)</label>
+                {{ form.valor_cobrado_cliente }}
+            </div>
+            <div class="form-field--compact">
+                <label class="form-label" for="{{ form.milhas_do_cliente.id_for_label }}">Milhas do cliente?</label>
+                {{ form.milhas_do_cliente }}
+            </div>
         </div>
         <div class="form-grid form-grid--3">
             <div>
@@ -254,6 +266,20 @@
             </div>
         </div>
         <div class="section-title">Detalhes adicionais</div>
+        <div class="form-grid form-grid--3">
+            <div>
+                <label class="form-label" for="{{ form.hotel_vinculado.id_for_label }}">Hotel vinculado</label>
+                {{ form.hotel_vinculado }}
+            </div>
+            <div>
+                <label class="form-label" for="{{ form.criar_hotel_nome.id_for_label }}">Ou criar novo hotel</label>
+                {{ form.criar_hotel_nome }}
+            </div>
+            <div>
+                <label class="form-label" for="{{ form.criar_hotel_check_in.id_for_label }}">Check-in / Check-out</label>
+                <div class="grid grid-cols-2 gap-2">{{ form.criar_hotel_check_in }}{{ form.criar_hotel_check_out }}</div>
+            </div>
+        </div>
         <div class="form-grid form-grid--2">
             <div>
                 <label class="form-label" for="{{ form.localizador.id_for_label }}">Localizador <span class="required-asterisk">*</span></label>
@@ -291,6 +317,7 @@ const clienteProgramas = {{ cliente_programas_json|safe }};
 const contasAdmProgramas = {{ contas_adm_programas_json|safe }};
 const empresaProgramas = {{ empresa_programas_json|safe }};
 const passageirosFrequentes = {{ passageiros_frequentes_json|safe }};
+const clientesData = {{ clientes_data_json|safe }};
 const cpfControleInicial = {{ cpf_controle_json|safe }};
 
 const passageirosContainer = document.getElementById('passageiros-container');
@@ -321,6 +348,9 @@ const vendaFinalField = document.getElementById('id_valor_venda_final');
 const valorTotalFinalField = document.getElementById('id_valor_total_final');
 const lucroField = document.getElementById('id_lucro');
 const economiaField = document.getElementById('id_economia_obtida');
+const custoEmissorField = document.getElementById('id_custo_emissor');
+const valorCobradoClienteField = document.getElementById('id_valor_cobrado_cliente');
+const milhasClienteField = document.getElementById('id_milhas_do_cliente');
 const submitButton = document.getElementById('submit-emissao');
 const resumoTrechos = document.getElementById('resumo-trechos');
 const resumoDatas = document.getElementById('resumo-datas');
@@ -473,7 +503,13 @@ function recalcValoresFinanceiros() {
     if (economiaField) {
         economiaField.value = hasVenda ? (valorVenda - valorRef).toFixed(2) : "";
     }
-    if (lucroField) {
+    if (getTipoEmissao() === "parceiro" && custoEmissorField && valorCobradoClienteField) {
+        const custoEmissor = parseFloat(custoEmissorField.value || 0);
+        const valorCobrado = parseFloat(valorCobradoClienteField.value || 0);
+        if (lucroField) {
+            lucroField.value = (valorCobrado - custoEmissor).toFixed(2);
+        }
+    } else if (lucroField) {
         if (hasTotal) {
             lucroField.value = (valorTotal - custoTotal).toFixed(2);
         } else if (hasVenda) {
@@ -554,6 +590,12 @@ if (vendaFinalField) {
 if (valorTotalFinalField) {
     valorTotalFinalField.addEventListener('input', recalcValoresFinanceiros);
 }
+if (custoEmissorField) {
+    custoEmissorField.addEventListener('input', recalcValoresFinanceiros);
+}
+if (valorCobradoClienteField) {
+    valorCobradoClienteField.addEventListener('input', recalcValoresFinanceiros);
+}
 
 function renderPassengerForms() {
     const prev = [];
@@ -585,6 +627,7 @@ function renderPassengerForms() {
             div.dataset.index = index;
             const frequentes = (passageirosFrequentes[parseInt(clienteSelect?.value || 0, 10)] || []);
             const options = ['<option value="">Preencher manualmente</option>']
+                .concat(['<option value="__cliente__">Usar dados do cliente</option>'])
                 .concat(frequentes.map(item => `<option value="${item.id}">${item.nome} • ${item.cpf}</option>`))
                 .join('');
             div.innerHTML = `
@@ -637,12 +680,29 @@ function renderPassengerForms() {
             const idx = event.currentTarget.dataset.passageiroFrequente;
             const lista = passageirosFrequentes[parseInt(clienteSelect?.value || 0, 10)] || [];
             const passageiro = lista.find(item => String(item.id) === event.currentTarget.value);
-            if (!passageiro) return;
             const nome = document.getElementsByName(`passageiro-${idx}-nome`)[0];
             const cpf = document.getElementsByName(`passageiro-${idx}-cpf`)[0];
+            const rg = document.getElementsByName(`passageiro-${idx}-rg`)[0];
+            const passaporte = document.getElementsByName(`passageiro-${idx}-passaporte`)[0];
+            const passaporteValidade = document.getElementsByName(`passageiro-${idx}-passaporte-validade`)[0];
             const dataNascimento = document.getElementsByName(`passageiro-${idx}-data-nascimento`)[0];
+            if (event.currentTarget.value === "__cliente__") {
+                const cliente = clientesData[parseInt(clienteSelect?.value || 0, 10)] || {};
+                if (nome) nome.value = cliente.nome || '';
+                if (cpf) cpf.value = cliente.cpf || '';
+                if (rg) rg.value = '';
+                if (passaporte) passaporte.value = '';
+                if (passaporteValidade) passaporteValidade.value = '';
+                if (dataNascimento) dataNascimento.value = '';
+                updateCpfLimite();
+                return;
+            }
+            if (!passageiro) return;
             if (nome) nome.value = passageiro.nome || '';
             if (cpf) cpf.value = passageiro.cpf || '';
+            if (rg) rg.value = passageiro.rg || '';
+            if (passaporte) passaporte.value = passageiro.passaporte || '';
+            if (passaporteValidade) passaporteValidade.value = passageiro.passaporte_validade || '';
             if (dataNascimento) dataNascimento.value = passageiro.data_nascimento || '';
             updateCpfLimite();
         });

@@ -229,6 +229,12 @@ def visualizar_cliente(request, cliente_id):
         selected_cidade=request.GET.get("cidade"),
     )
     passageiros = cliente.passageiros_frequentes.all().order_by("nome")
+    total_preco_cheio = sum(float(e.valor_referencia or 0) for e in EmissaoPassagem.objects.filter(cliente=cliente))
+    total_pago_cliente = sum(
+        float((e.valor_total_final if e.valor_total_final not in (None, "") else (e.valor_venda_final or 0)) or 0)
+        for e in EmissaoPassagem.objects.filter(cliente=cliente)
+    )
+    economia_cliente = total_preco_cheio - total_pago_cliente
     passageiro_form = PassageiroFrequenteForm()
     if request.method == "POST":
         action = request.POST.get("action")
@@ -255,6 +261,7 @@ def visualizar_cliente(request, cliente_id):
             "passageiros_frequentes": passageiros,
             "passageiro_form": passageiro_form,
             "passageiro_form_prefix": "passageiro-frequente",
+            "economia_cliente": economia_cliente,
             "menu_ativo": "clientes",
         }
     )

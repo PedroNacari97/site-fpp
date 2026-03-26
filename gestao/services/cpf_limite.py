@@ -66,6 +66,13 @@ def validar_limite_cpfs(conta: ContaFidelidade | None, cpfs: Iterable[str], emis
     existentes_bloqueados = {
         uso.cpf for uso in controle['usos'] if not _cpf_liberado(uso)
     }
+    if emissao_id:
+        from gestao.models import Passageiro
+
+        cpfs_emissao = _normalize_cpfs(
+            Passageiro.objects.filter(emissao_id=emissao_id).values_list("cpf", flat=True)
+        )
+        existentes_bloqueados = {cpf for cpf in existentes_bloqueados if cpf not in cpfs_emissao}
     cpfs_na_emissao = _normalize_cpfs(cpfs)
     cpfs_novos = {cpf for cpf in cpfs_na_emissao if cpf not in existentes_bloqueados}
     cpfs_disponiveis = controle['cpfs_disponiveis']
