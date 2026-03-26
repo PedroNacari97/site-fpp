@@ -33,6 +33,65 @@
   margin: 0 0 0.5rem;
 }
 
+.wizard-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wizard-autosave {
+  font-size: 11px;
+  color: #34d399;
+  font-weight: 600;
+}
+
+.wizard-stepper {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.wizard-stepper__item {
+  border: 1px solid var(--border);
+  background: var(--color-input-bg);
+  color: var(--muted);
+  border-radius: 8px;
+  height: 34px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.wizard-stepper__item span {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wizard-stepper__item.is-active {
+  color: #fff;
+  border-color: #3b82f6;
+  background: #2563eb;
+}
+
+.wizard-stepper__item.is-complete {
+  color: #fff;
+  border-color: #10b981;
+  background: #059669;
+}
+
+.wizard-stepper__item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .form-shell {
   display: flex;
   flex-direction: column;
@@ -373,6 +432,38 @@ textarea:focus {
   color: var(--heading);
 }
 
+.review-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.review-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--color-input-bg);
+}
+
+.review-card p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.review-card button {
+  width: fit-content;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--heading);
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
 @media (max-width: 640px) {
   .form-wrapper {
     padding: 0.75rem;
@@ -386,6 +477,15 @@ textarea:focus {
     position: static;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .wizard-stepper {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .wizard-stepper__item {
+    min-width: 120px;
   }
 }
 

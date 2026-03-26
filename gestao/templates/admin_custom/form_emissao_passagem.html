@@ -32,7 +32,19 @@
         <p class="form-subtitle">Fluxo organizado: cliente, trechos, horários, passageiros, escalas e valores.</p>
     </div>
 
-    <div class="section-card">
+    <div class="wizard-header">
+        <div id="wizard-autosave" class="wizard-autosave">Rascunho local ativo</div>
+        <div class="wizard-stepper" id="wizard-stepper">
+            <button type="button" class="wizard-stepper__item is-active" data-go-step="1"><span>1</span> Cliente</button>
+            <button type="button" class="wizard-stepper__item" data-go-step="2"><span>2</span> Ida</button>
+            <button type="button" class="wizard-stepper__item" data-go-step="3"><span>3</span> Volta</button>
+            <button type="button" class="wizard-stepper__item" data-go-step="4"><span>4</span> Passageiros</button>
+            <button type="button" class="wizard-stepper__item" data-go-step="5"><span>5</span> Valores</button>
+            <button type="button" class="wizard-stepper__item" data-go-step="6"><span>6</span> Revisão</button>
+        </div>
+    </div>
+
+    <div class="section-card wizard-step" data-step="1">
         <div class="section-card__header">
             <div>
                 <p class="eyebrow">Dados do cliente</p>
@@ -74,7 +86,7 @@
         </div>
     </div>
 
-    <div class="section-card">
+    <div class="section-card wizard-step" data-step="2">
         <div class="section-card__header">
             <div>
                 <p class="eyebrow">Detalhes do voo</p>
@@ -110,16 +122,9 @@
             <p class="helper-text">Ative para adicionar escalas no voo de ida.</p>
         </div>
         <hr class="section-divider" />
-        <div class="toggle-row">
-            <label class="toggle-pill" for="possui-volta">
-                <input type="checkbox" id="possui-volta" class="w-4 h-4" />
-                Possui volta?
-            </label>
-            <p class="helper-text">Ative para informar o trecho de retorno.</p>
-        </div>
     </div>
 
-    <div id="escala-ida-wrapper" class="section-card collapse-section">
+    <div id="escala-ida-wrapper" class="section-card collapse-section wizard-step" data-step="2">
         <div class="section-card__header">
             <div>
                 <p class="eyebrow">Escalas</p>
@@ -133,7 +138,17 @@
         <button type="button" class="btn btn--outline btn--sm" data-add-escala="ida">+ Adicionar escala</button>
     </div>
 
-    <div id="voo-volta-card" class="section-card collapse-section">
+    <div class="section-card wizard-step" data-step="3">
+        <div class="toggle-row">
+            <label class="toggle-pill" for="possui-volta">
+                <input type="checkbox" id="possui-volta" class="w-4 h-4" />
+                Possui voo de volta?
+            </label>
+            <p class="helper-text">Ative para informar o trecho de retorno.</p>
+        </div>
+    </div>
+
+    <div id="voo-volta-card" class="section-card collapse-section wizard-step" data-step="3">
         <div class="section-card__header">
             <div>
                 <p class="eyebrow">Retorno</p>
@@ -157,7 +172,7 @@
         </div>
     </div>
 
-    <div id="escala-volta-wrapper" class="section-card collapse-section">
+    <div id="escala-volta-wrapper" class="section-card collapse-section wizard-step" data-step="3">
         <div class="section-card__header">
             <div>
                 <p class="eyebrow">Escalas</p>
@@ -171,7 +186,7 @@
         <button type="button" class="btn btn--outline btn--sm" data-add-escala="volta">+ Adicionar escala</button>
     </div>
 
-    <div class="section-card">
+    <div class="section-card wizard-step" data-step="4">
         <div class="section-card__header">
             <div>
                 <p class="eyebrow">Passageiros</p>
@@ -202,7 +217,7 @@
         </div>
     </div>
 
-    <div class="section-card">
+    <div class="section-card wizard-step" data-step="5">
         <div class="section-card__header">
             <div>
                 <p class="eyebrow">Valores e financeiro</p>
@@ -292,7 +307,18 @@
         </div>
     </div>
 
-    <div class="section-card">
+    <div class="section-card wizard-step" data-step="6" id="review-step-card">
+        <div class="section-card__header">
+            <div>
+                <p class="eyebrow">Revisão final</p>
+                <h2 class="section-card__title">Confira os dados antes de salvar</h2>
+                <p class="section-card__description">Use “Editar” para voltar em qualquer etapa sem perder informações.</p>
+            </div>
+        </div>
+        <div id="review-grid" class="review-grid"></div>
+    </div>
+
+    <div class="section-card wizard-step" data-step="6">
         <div class="section-card__header">
             <div>
                 <p class="eyebrow">Ações finais</p>
@@ -302,6 +328,8 @@
         </div>
         <div class="form-actions">
             <a href="{% url 'admin_emissoes' %}" class="btn btn--outline">Cancelar</a>
+            <button type="button" class="btn btn--outline" id="wizard-prev">← Voltar</button>
+            <button type="button" class="btn btn--outline" id="wizard-next">Próximo →</button>
             <button class="btn" type="submit" id="submit-emissao">💾 Salvar emissão</button>
         </div>
     </div>
@@ -950,5 +978,127 @@ function updateResumoVisual(){
         resumoValores.textContent = `${valorTxt} • ${taxasTxt} • ${pontosTxt}`;
     }
 }
+
+const DRAFT_KEY = "emission_draft_v2";
+let currentStep = 1;
+const totalSteps = 6;
+const wizardSteps = Array.from(document.querySelectorAll('.wizard-step'));
+const stepperItems = Array.from(document.querySelectorAll('.wizard-stepper__item'));
+const prevButton = document.getElementById('wizard-prev');
+const nextButton = document.getElementById('wizard-next');
+const autosaveLabel = document.getElementById('wizard-autosave');
+const reviewGrid = document.getElementById('review-grid');
+
+function isVisible(el) {
+    return !!(el && (el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+}
+
+function validateStep(step) {
+    const scope = wizardSteps.filter((el) => Number(el.dataset.step) === step && isVisible(el));
+    for (const block of scope) {
+        const requiredFields = block.querySelectorAll('input[required], select[required], textarea[required]');
+        for (const field of requiredFields) {
+            if (!field.value) {
+                field.focus();
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+function setStep(step) {
+    currentStep = Math.max(1, Math.min(totalSteps, step));
+    wizardSteps.forEach((item) => {
+        item.style.display = Number(item.dataset.step) === currentStep ? '' : 'none';
+    });
+    stepperItems.forEach((item) => {
+        const itemStep = Number(item.dataset.goStep);
+        item.classList.toggle('is-active', itemStep === currentStep);
+        item.classList.toggle('is-complete', itemStep < currentStep);
+        item.disabled = itemStep > currentStep;
+    });
+    if (prevButton) prevButton.style.display = currentStep === 1 ? 'none' : 'inline-flex';
+    if (nextButton) nextButton.style.display = currentStep === totalSteps ? 'none' : 'inline-flex';
+    if (submitButton) submitButton.style.display = currentStep === totalSteps ? 'inline-flex' : 'none';
+    updateReview();
+}
+
+function saveDraft() {
+    const payload = {};
+    document.querySelectorAll('input, select, textarea').forEach((field) => {
+        if (!field.name || field.name === 'csrfmiddlewaretoken') return;
+        payload[field.name] = field.type === 'checkbox' ? field.checked : field.value;
+    });
+    payload.__step = currentStep;
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
+    if (autosaveLabel) {
+        autosaveLabel.textContent = `Autossalvo agora • ${new Date().toLocaleTimeString('pt-BR')}`;
+    }
+}
+
+function restoreDraft() {
+    try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        Object.entries(data).forEach(([name, value]) => {
+            if (name === '__step') return;
+            const field = document.querySelector(`[name="${name}"]`);
+            if (!field) return;
+            if (field.type === 'checkbox') {
+                field.checked = Boolean(value);
+            } else {
+                field.value = value;
+            }
+        });
+        if (Number(data.__step)) currentStep = Number(data.__step);
+    } catch (e) {
+        console.warn('Não foi possível recuperar rascunho', e);
+    }
+}
+
+function updateReview() {
+    if (!reviewGrid) return;
+    const clienteTxt = clienteSelect?.selectedOptions?.[0]?.text || 'Não informado';
+    const programaTxt = programaSelect?.selectedOptions?.[0]?.text || 'Não informado';
+    const idaTxt = `${document.getElementById('id_aeroporto_partida')?.selectedOptions?.[0]?.text || '-'} → ${document.getElementById('id_aeroporto_destino')?.selectedOptions?.[0]?.text || '-'}`;
+    const voltaTxt = document.getElementById('id_data_volta')?.value || 'Sem volta';
+    const valorTotalTxt = valorTotalFinalField?.value || vendaFinalField?.value || '0,00';
+    const lucroTxt = lucroField?.value || '0,00';
+    const passageirosQtd = (parseInt(document.getElementById('id_qtd_adultos')?.value || 0, 10) + parseInt(document.getElementById('id_qtd_criancas')?.value || 0, 10) + parseInt(document.getElementById('id_qtd_bebes')?.value || 0, 10));
+    reviewGrid.innerHTML = `
+        <div class="review-card"><strong>Cliente & Programa</strong><p>${clienteTxt}</p><p>${programaTxt}</p><button type="button" data-edit-step="1">Editar</button></div>
+        <div class="review-card"><strong>Voos</strong><p>Ida: ${idaTxt}</p><p>Volta: ${voltaTxt}</p><button type="button" data-edit-step="2">Editar</button></div>
+        <div class="review-card"><strong>Passageiros</strong><p>${passageirosQtd} viajante(s)</p><button type="button" data-edit-step="4">Editar</button></div>
+        <div class="review-card"><strong>Valores</strong><p>Total: R$ ${valorTotalTxt}</p><p>Lucro: R$ ${lucroTxt}</p><button type="button" data-edit-step="5">Editar</button></div>
+    `;
+    reviewGrid.querySelectorAll('[data-edit-step]').forEach((btn) => btn.addEventListener('click', () => setStep(Number(btn.dataset.editStep))));
+}
+
+if (prevButton) prevButton.addEventListener('click', () => setStep(currentStep - 1));
+if (nextButton) nextButton.addEventListener('click', () => {
+    if (!validateStep(currentStep)) {
+        alert('Preencha os campos obrigatórios desta etapa antes de avançar.');
+        return;
+    }
+    setStep(currentStep + 1);
+});
+stepperItems.forEach((item) => item.addEventListener('click', () => {
+    const target = Number(item.dataset.goStep);
+    if (target <= currentStep) setStep(target);
+}));
+
+document.querySelector('form')?.addEventListener('input', saveDraft);
+document.querySelector('form')?.addEventListener('change', saveDraft);
+document.querySelector('form')?.addEventListener('submit', () => localStorage.removeItem(DRAFT_KEY));
+
+restoreDraft();
+toggleTitularFields();
+updateProgramaOptions();
+recalcValoresFinanceiros();
+renderPassengerForms();
+setVoltaVisibility();
+setStep(currentStep);
 </script>
 {% endblock %}
