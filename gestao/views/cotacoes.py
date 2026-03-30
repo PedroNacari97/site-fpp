@@ -109,6 +109,63 @@ def _format_escalas(escalas_queryset):
     return escalas_por_tipo
 
 
+def _resolve_cotacao_conta(form):
+    conta_filters = {"programa": form.cleaned_data["programa"]}
+    if form.cleaned_data.get("conta_administrada"):
+        conta_filters["conta_administrada"] = form.cleaned_data["conta_administrada"]
+    else:
+        conta_filters["cliente"] = form.cleaned_data["cliente"]
+
+    conta = ContaFidelidade.objects.filter(**conta_filters).select_related("programa").first()
+    valor_medio_milheiro = None
+    if conta:
+        valor_medio_milheiro = conta.valor_medio_por_mil
+        if (
+            (not valor_medio_milheiro or valor_medio_milheiro <= 0)
+            and getattr(conta.programa, "preco_medio_milheiro", None)
+        ):
+            valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
+    return conta, valor_medio_milheiro
+
+
+def _render_cotacao_form(
+    request,
+    *,
+    form,
+    empresa,
+    escalas_por_tipo,
+    menu_ativo="cotacoes",
+    cliente_programas_source=None,
+    conta_programas_instance=None,
+):
+    aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
+    return render(
+        request,
+        "admin_custom/form_cotacao.html",
+        {
+            "form": form,
+            "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
+            "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
+            "aeroportos_json": json.dumps(aeroportos),
+            "cliente_programas_json": json.dumps(
+                build_clientes_programas_map(
+                    cliente_programas_source,
+                    empresa_id=getattr(empresa, "id", None),
+                )
+                if cliente_programas_source is not None
+                else build_clientes_programas_map(empresa_id=getattr(empresa, "id", None))
+            ),
+            "contas_adm_programas_json": json.dumps(
+                build_contas_administradas_programas_map(
+                    empresa_id=getattr(empresa, "id", None),
+                    instance=conta_programas_instance,
+                )
+            ),
+            "menu_ativo": menu_ativo,
+        },
+    )
+
+
 # --- COTAÇÕES ---
 @login_required
 def admin_cotacoes(request):
@@ -238,17 +295,7 @@ def nova_cotacao_voo(request):
         escalas_payload = _build_escalas_from_request(request)
         escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
-            conta_filters = {"programa": form.cleaned_data["programa"]}
-            if form.cleaned_data.get("conta_administrada"):
-                conta_filters["conta_administrada"] = form.cleaned_data["conta_administrada"]
-            else:
-                conta_filters["cliente"] = form.cleaned_data["cliente"]
-            conta = ContaFidelidade.objects.filter(**conta_filters).select_related("programa").first()
-            valor_medio_milheiro = None
-            if conta:
-                valor_medio_milheiro = conta.valor_medio_por_mil
-                if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
-                    valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
+            conta, valor_medio_milheiro = _resolve_cotacao_conta(form)
             if not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
             if form.errors:
@@ -329,23 +376,11 @@ def nova_cotacao_voo(request):
             )
     else:
         form = CotacaoVooForm(initial=initial, empresa=empresa)
-    aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
-    return render(
+    return _render_cotacao_form(
         request,
-        "admin_custom/form_cotacao.html",
-        {
-            "form": form,
-            "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
-            "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
-            "aeroportos_json": json.dumps(aeroportos),
-            "cliente_programas_json": json.dumps(build_clientes_programas_map(empresa_id=getattr(empresa, "id", None))),
-            "contas_adm_programas_json": json.dumps(
-                build_contas_administradas_programas_map(
-                    empresa_id=getattr(empresa, "id", None)
-                )
-            ),
-            "menu_ativo": "cotacoes",
-        },
+        form=form,
+        empresa=empresa,
+        escalas_por_tipo=escalas_por_tipo,
     )
 
 
@@ -364,17 +399,7 @@ def editar_cotacao_voo(request, cotacao_id):
         escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
             with transaction.atomic():
-                conta_filters = {"programa": form.cleaned_data["programa"]}
-                if form.cleaned_data.get("conta_administrada"):
-                    conta_filters["conta_administrada"] = form.cleaned_data["conta_administrada"]
-                else:
-                    conta_filters["cliente"] = form.cleaned_data["cliente"]
-                conta = ContaFidelidade.objects.filter(**conta_filters).select_related("programa").first()
-                valor_medio_milheiro = None
-                if conta:
-                    valor_medio_milheiro = conta.valor_medio_por_mil
-                    if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
-                        valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
+                conta, valor_medio_milheiro = _resolve_cotacao_conta(form)
                 if not conta:
                     form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
                 if form.errors:
@@ -450,25 +475,13 @@ def editar_cotacao_voo(request, cotacao_id):
                     return redirect("admin_cotacoes_voo")
     else:
         form = CotacaoVooForm(instance=cotacao, empresa=empresa)
-    aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
-    return render(
+    return _render_cotacao_form(
         request,
-        "admin_custom/form_cotacao.html",
-        {
-            "form": form,
-            "escalas_ida_json": json.dumps(escalas_por_tipo["ida"]),
-            "escalas_volta_json": json.dumps(escalas_por_tipo["volta"]),
-            "aeroportos_json": json.dumps(aeroportos),
-            "cliente_programas_json": json.dumps(
-                build_clientes_programas_map(cotacao, empresa_id=getattr(empresa, "id", None))
-            ),
-            "contas_adm_programas_json": json.dumps(
-                build_contas_administradas_programas_map(
-                    empresa_id=getattr(empresa, "id", None), instance=cotacao
-                )
-            ),
-            "menu_ativo": "cotacoes",
-        },
+        form=form,
+        empresa=empresa,
+        escalas_por_tipo=escalas_por_tipo,
+        cliente_programas_source=cotacao,
+        conta_programas_instance=cotacao,
     )
 
 

@@ -48,6 +48,7 @@ def _annotate_cpf_consumo(movimentacoes):
 @login_required
 def sair(request):
     """Logout the current user and redirect to login."""
+    request._session_key_before_logout = request.session.session_key or ""
     logout(request)
     return redirect("/login/")
 

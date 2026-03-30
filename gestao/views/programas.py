@@ -60,7 +60,7 @@ def criar_programa(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     if request.method == "POST":
-        form = ProgramaFidelidadeForm(request.POST)
+        form = ProgramaFidelidadeForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             return redirect("admin_programas")
@@ -79,7 +79,7 @@ def editar_programa(request, programa_id):
         return permission_denied
     programa = ProgramaFidelidade.objects.get(id=programa_id)
     if request.method == "POST":
-        form = ProgramaFidelidadeForm(request.POST, instance=programa)
+        form = ProgramaFidelidadeForm(request.POST, request.FILES, instance=programa)
         if form.is_valid():
             form.save()
             return redirect("admin_programas")

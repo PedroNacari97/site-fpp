@@ -3,49 +3,110 @@
 
 {% block title %}Nova Empresa{% endblock %}
 {% block header_title %}Nova Empresa{% endblock %}
+{% block header_subtitle %}<span>Cadastre uma nova empresa e ja vincule o administrador inicial.</span>{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
+<link rel="stylesheet" href="{% static 'gestao/css/superadmin_figma.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="form-wrapper">
-  <form method="POST">
+<div class="superadmin-page">
+  <section class="superadmin-hero">
+    <div>
+      <p class="superadmin-hero__eyebrow">Super Admin</p>
+      <h2 class="superadmin-hero__title">Criar nova empresa</h2>
+      <p class="superadmin-hero__subtitle">Defina dados da organizacao e o primeiro administrador em uma unica tela.</p>
+    </div>
+  </section>
+
+  <form method="post" class="superadmin-form">
     {% csrf_token %}
-    <div class="form-title">Dados da empresa</div>
-    <div class="form-group single">
-      <label class="form-label" for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>
-      {{ form.nome }}
-    </div>
-    <div class="form-group single">
-      <label class="form-label" for="{{ form.limite_colaboradores.id_for_label }}">{{ form.limite_colaboradores.label }}</label>
-      {{ form.limite_colaboradores }}
-      <p class="text-xs text-gray-500 mt-1">Limite máximo de operadores que a empresa poderá criar.</p>
-    </div>
-    <div class="form-group single">
-      <label class="form-label" for="{{ form.ativo.id_for_label }}">{{ form.ativo.label }}</label>
-      {{ form.ativo }}
+
+    {% if form.non_field_errors %}
+      <div class="superadmin-alert">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="superadmin-form__layout">
+      <section class="superadmin-card">
+        <div class="superadmin-card__head">
+          <div>
+            <p class="superadmin-card__eyebrow">Organizacao</p>
+            <h3 class="superadmin-card__title">Dados da empresa</h3>
+          </div>
+        </div>
+
+        <div class="superadmin-form__grid">
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.nome.id_for_label }}">{{ form.nome.label }}</label>
+            {{ form.nome }}
+            {% for error in form.nome.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.limite_colaboradores.id_for_label }}">{{ form.limite_colaboradores.label }}</label>
+            {{ form.limite_colaboradores }}
+            <p class="superadmin-helper">Limite maximo de operadores que essa empresa podera criar.</p>
+            {% for error in form.limite_colaboradores.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="superadmin-toggle-card">
+          <label class="superadmin-toggle">
+            {{ form.ativo }}
+            <span>Empresa ativa para operar logo apos a criacao</span>
+          </label>
+          {% for error in form.ativo.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+        </div>
+      </section>
+
+      <aside class="superadmin-card superadmin-card--sidebar">
+        <div class="superadmin-card__head">
+          <div>
+            <p class="superadmin-card__eyebrow">Administrador</p>
+            <h3 class="superadmin-card__title">Acesso inicial</h3>
+          </div>
+        </div>
+
+        <div class="superadmin-form__stack">
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.admin_nome.id_for_label }}">{{ form.admin_nome.label }}</label>
+            {{ form.admin_nome }}
+            {% for error in form.admin_nome.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.admin_cpf.id_for_label }}">{{ form.admin_cpf.label }}</label>
+            {{ form.admin_cpf }}
+            {% for error in form.admin_cpf.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.admin_email.id_for_label }}">{{ form.admin_email.label }}</label>
+            {{ form.admin_email }}
+            {% for error in form.admin_email.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.admin_password.id_for_label }}">{{ form.admin_password.label }}</label>
+            {{ form.admin_password }}
+            {% for error in form.admin_password.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="superadmin-sidebar-note">
+          <span class="superadmin-sidebar-note__label">Resumo</span>
+          <p>Ao salvar, o sistema cria a empresa e ja gera o primeiro usuario administrador com acesso ao painel interno.</p>
+        </div>
+      </aside>
     </div>
 
-    <div class="form-title mt-6">Administrador da empresa</div>
-    <div class="form-group single">
-      <label class="form-label" for="{{ form.admin_nome.id_for_label }}">{{ form.admin_nome.label }}</label>
-      {{ form.admin_nome }}
-    </div>
-    <div class="form-group single">
-      <label class="form-label" for="{{ form.admin_cpf.id_for_label }}">{{ form.admin_cpf.label }}</label>
-      {{ form.admin_cpf }}
-    </div>
-    <div class="form-group single">
-      <label class="form-label" for="{{ form.admin_email.id_for_label }}">{{ form.admin_email.label }}</label>
-      {{ form.admin_email }}
-    </div>
-    <div class="form-group single">
-      <label class="form-label" for="{{ form.admin_password.id_for_label }}">{{ form.admin_password.label }}</label>
-      {{ form.admin_password }}
-    </div>
-    <div class="form-actions">
-      <button type="submit" class="btn">Salvar</button>
+    <div class="superadmin-form__actions">
+      <a href="{% url 'admin_empresas' %}" class="btn btn--outline">Cancelar</a>
+      <button type="submit" class="btn">Salvar empresa</button>
     </div>
   </form>
 </div>

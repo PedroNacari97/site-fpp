@@ -27,7 +27,7 @@
   </div>
   {% endif %}
 
-  <form method="post" class="points-program-form__layout" novalidate>
+  <form method="post" class="points-program-form__layout" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
 
     <div class="points-program-form__column">
@@ -41,6 +41,30 @@
             <label for="{{ form.nome.id_for_label }}">Nome</label>
             {{ form.nome }}
             {% for error in form.nome.errors %}<div class="points-program-form__field-error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="points-program-form__field">
+            <label for="{{ form.logo.id_for_label }}">Logo do programa</label>
+            <div class="points-program-form__logo-upload">
+              <div class="points-program-form__logo-preview" data-program-logo-preview>
+                {% if form.instance.logo_url %}
+                  <img src="{{ form.instance.logo_url }}" alt="Logo {{ form.instance.nome }}" class="points-program-form__logo-image" data-program-logo-img>
+                {% endif %}
+                <span class="points-program-form__logo-fallback">{{ form.instance.logo_badge_text|default:"PF" }}</span>
+              </div>
+              <div class="points-program-form__logo-copy">
+                <p class="points-program-form__logo-title">Anexe o simbolo do programa</p>
+                <p class="points-program-form__logo-text">PNG com fundo transparente, formato quadrado e ate 50KB. Recomendado: 200x200px ou 400x400px.</p>
+              </div>
+            </div>
+            {{ form.logo }}
+            {% for error in form.logo.errors %}<div class="points-program-form__field-error">{{ error }}</div>{% endfor %}
+            {% if form.instance.logo %}
+            <label class="points-program-form__checkline" for="{{ form.remover_logo.id_for_label }}">
+              {{ form.remover_logo }}
+              <span>Remover logo atual</span>
+            </label>
+            {% endif %}
           </div>
 
           <div class="points-program-form__field">
@@ -136,30 +160,5 @@
 {% endblock %}
 
 {% block extra_body %}
-<script>
-  (function () {
-    const tipo = document.getElementById("id_tipo");
-    const programaBase = document.getElementById("id_programa_base");
-    const regraReset = document.getElementById("id_tipo_regra_reset");
-    const diasReset = document.getElementById("id_dias_reset");
-    if (!tipo || !programaBase || !regraReset || !diasReset) return;
-
-    const syncProgramaBase = () => {
-      const isPrincipal = tipo.value === "principal";
-      programaBase.disabled = isPrincipal;
-      if (isPrincipal) programaBase.value = "";
-    };
-
-    const syncDiasReset = () => {
-      const usesDays = regraReset.value === "dias";
-      diasReset.disabled = !usesDays;
-      if (!usesDays) diasReset.value = "";
-    };
-
-    tipo.addEventListener("change", syncProgramaBase);
-    regraReset.addEventListener("change", syncDiasReset);
-    syncProgramaBase();
-    syncDiasReset();
-  })();
-</script>
+<script src="{% static 'gestao/js/programa_form.js' %}"></script>
 {% endblock %}

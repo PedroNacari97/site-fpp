@@ -1,21 +1,42 @@
 from pathlib import Path
 import os
+
+from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse_lazy
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "chave-super-secreta-para-dev")
 
-DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() in ("1", "true", "yes")
+def _env_bool(name, default=False):
+    return os.environ.get(name, str(default)).lower() in ("1", "true", "yes", "on")
 
-ALLOWED_HOSTS = [
-    "*",  # permite qualquer domínio temporariamente
-]
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://*",
-]
+def _env_list(name, default=None):
+    raw_value = os.environ.get(name)
+    if raw_value is None:
+        return list(default or [])
+    return [item.strip() for item in raw_value.split(",") if item.strip()]
 
+
+DEBUG = _env_bool("DJANGO_DEBUG", True)
+
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "chave-super-secreta-para-dev"
+    else:
+        raise ImproperlyConfigured("Defina DJANGO_SECRET_KEY para execucao em producao.")
+
+ALLOWED_HOSTS = _env_list(
+    "DJANGO_ALLOWED_HOSTS",
+    ["127.0.0.1", "localhost"] if DEBUG else [],
+)
+
+CSRF_TRUSTED_ORIGINS = _env_list(
+    "DJANGO_CSRF_TRUSTED_ORIGINS",
+    ["http://127.0.0.1:8000", "http://localhost:8000"] if DEBUG else [],
+)
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -46,6 +67,9 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "accounts.middleware.SingleSessionMiddleware",
+    "accounts.middleware.SessionInactivityMiddleware",
+    "accounts.middleware.AdminAreaAccessMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "gestao.middleware.AuditLogMiddleware",
 ]
@@ -70,8 +94,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
-# === Banco de dados: alterna entre SQLite e MySQL via ENV ===
-DB_ENGINE = os.getenv("DB_ENGINE", "sqlite")  # "sqlite" ou "mysql"
+DB_ENGINE = os.getenv("DB_ENGINE", "sqlite")
 
 if DB_ENGINE == "mysql":
     DATABASES = {
@@ -111,7 +134,60 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# === Arquivos estáticos ===
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+X_FRAME_OPTIONS = "DENY"
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = _env_bool("DJANGO_SECURE_SSL_REDIRECT", True)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = int(os.environ.get("DJANGO_SECURE_HSTS_SECONDS", "31536000"))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool(
+        "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", True
+    )
+    SECURE_HSTS_PRELOAD = _env_bool("DJANGO_SECURE_HSTS_PRELOAD", True)
+else:
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+
+SECURITY_LOGIN_FAILURE_LIMIT = int(os.environ.get("SECURITY_LOGIN_FAILURE_LIMIT", "5"))
+SECURITY_LOGIN_LOCKOUT_MINUTES = int(os.environ.get("SECURITY_LOGIN_LOCKOUT_MINUTES", "15"))
+ADMIN_SESSION_IDLE_TIMEOUT_SECONDS = int(
+    os.environ.get("ADMIN_SESSION_IDLE_TIMEOUT_SECONDS", str(30 * 60))
+)
+USER_SESSION_IDLE_TIMEOUT_SECONDS = int(
+    os.environ.get("USER_SESSION_IDLE_TIMEOUT_SECONDS", str(60 * 60))
+)
+SUPERADMIN_MFA_ENABLED = _env_bool("SUPERADMIN_MFA_ENABLED", True)
+SUPERADMIN_MFA_CODE_TTL_MINUTES = int(
+    os.environ.get("SUPERADMIN_MFA_CODE_TTL_MINUTES", "10")
+)
+SUPERADMIN_MFA_ATTEMPT_LIMIT = int(
+    os.environ.get("SUPERADMIN_MFA_ATTEMPT_LIMIT", "5")
+)
+
+EMAIL_BACKEND = os.environ.get(
+    "DJANGO_EMAIL_BACKEND",
+    "django.core.mail.backends.console.EmailBackend"
+    if DEBUG
+    else "django.core.mail.backends.smtp.EmailBackend",
+)
+EMAIL_HOST = os.environ.get("DJANGO_EMAIL_HOST", "localhost")
+EMAIL_PORT = int(os.environ.get("DJANGO_EMAIL_PORT", "25"))
+EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = _env_bool("DJANGO_EMAIL_USE_TLS", False)
+EMAIL_USE_SSL = _env_bool("DJANGO_EMAIL_USE_SSL", False)
+DEFAULT_FROM_EMAIL = os.environ.get("DJANGO_DEFAULT_FROM_EMAIL", "no-reply@ncfly.local")
+
 if os.environ.get("AWS_STORAGE_BUCKET_NAME"):
     AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
     AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "us-east-1")
@@ -125,6 +201,9 @@ else:
     STATIC_ROOT = BASE_DIR / "staticfiles"
     STATICFILES_DIRS = [BASE_DIR / "painel_cliente/static"]
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+MEDIA_URL = os.environ.get("DJANGO_MEDIA_URL", "/media/")
+MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT", BASE_DIR / "media"))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -147,7 +226,6 @@ LOGGING = {
     },
 }
 
-# === URLs de login/logout ===
 LOGIN_URL = reverse_lazy("login_custom")
 LOGIN_REDIRECT_URL = reverse_lazy("painel_dashboard")
 LOGOUT_REDIRECT_URL = reverse_lazy("login_custom")

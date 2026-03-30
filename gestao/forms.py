@@ -240,6 +240,70 @@ class ProgramaFidelidadeForm(forms.ModelForm):
         self.fields["programa_base"].empty_label = "Selecione..."
 
 
+class ProgramaFidelidadeForm(ProgramaFidelidadeForm):
+    remover_logo = forms.BooleanField(required=False)
+
+    class Meta(ProgramaFidelidadeForm.Meta):
+        fields = [
+            "nome",
+            "logo",
+            "descricao",
+            "preco_medio_milheiro",
+            "quantidade_cpfs_disponiveis",
+            "limite_cpfs",
+            "tipo_regra_reset",
+            "dias_reset",
+            "tipo",
+            "programa_base",
+        ]
+        widgets = {
+            **ProgramaFidelidadeForm.Meta.widgets,
+            "logo": forms.FileInput(
+                attrs={
+                    "accept": ".png,image/png",
+                }
+            ),
+        }
+        labels = {
+            **ProgramaFidelidadeForm.Meta.labels,
+            "logo": "Logo do programa",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["remover_logo"].initial = False
+        self.fields["logo"].widget.attrs.update({
+            "class": "points-program-form__file-input",
+        })
+        self.fields["remover_logo"].widget.attrs.update({
+            "class": "points-program-form__checkbox",
+        })
+
+    def clean_logo(self):
+        logo = self.cleaned_data.get("logo")
+        if not logo:
+            return logo
+
+        if getattr(logo, "size", 0) > 50 * 1024:
+            raise forms.ValidationError("Envie uma logo com no maximo 50KB.")
+
+        content_type = getattr(logo, "content_type", "")
+        if content_type and content_type != "image/png":
+            raise forms.ValidationError("Envie a logo em PNG com fundo transparente.")
+
+        return logo
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if self.cleaned_data.get("remover_logo") and not self.cleaned_data.get("logo") and instance.logo:
+            instance.logo.delete(save=False)
+            instance.logo = None
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance
+
+
 class ContaAdministradaForm(forms.ModelForm):
     class Meta:
         model = ContaAdministrada
@@ -868,6 +932,24 @@ class EmpresaForm(forms.ModelForm):
                 attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2", "min": 0}
             ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        placeholders = {
+            "nome": "Nome da empresa",
+            "limite_colaboradores": "Ex: 10",
+            "admin_nome": "Nome completo do administrador",
+            "admin_cpf": "000.000.000-00",
+            "admin_email": "email@empresa.com",
+            "admin_password": "Senha inicial",
+        }
+        for field_name, field in self.fields.items():
+            field.widget.attrs.pop("class", None)
+            field.widget.attrs["autocomplete"] = "off"
+            if field_name in placeholders:
+                field.widget.attrs["placeholder"] = placeholders[field_name]
+        self.fields["limite_colaboradores"].widget.attrs["min"] = 0
+        self.fields["ativo"].widget.attrs["class"] = "superadmin-form__checkbox"
 
     def clean_admin_cpf(self):
         cpf = validate_cpf_digits(self.cleaned_data.get("admin_cpf"), field_label="CPF do admin")

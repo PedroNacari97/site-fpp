@@ -234,6 +234,16 @@ body.login-page {
   gap: 12px;
 }
 
+.login-form__hint {
+  padding: 12px 14px;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 16px;
+  background: rgba(239, 246, 255, 0.8);
+  color: #1d4ed8;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
 .login-form__field {
   display: grid;
   gap: 8px;
@@ -301,6 +311,25 @@ body.login-page {
 
 .login-form__submit:active {
   transform: translateY(0);
+}
+
+.login-form__actions {
+  display: grid;
+  gap: 10px;
+}
+
+.login-form__secondary {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 .login-card__footer {

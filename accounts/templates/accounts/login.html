@@ -4,11 +4,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="description" content="Login - NCFly Sistema de Gestao de Voos e Programas de Fidelidade" />
-  <title>Login - NCFly</title>
+  <meta name="description" content="{{ login_title|default:'Login - NCFly' }}" />
+  <title>{{ login_title|default:"Login - NCFly" }} - NCFly</title>
   <link rel="stylesheet" href="{% static 'gestao/css/login.css' %}">
 </head>
-<body class="login-page">
+<body class="login-page{% if login_mode == 'superadmin' %} login-page--superadmin{% endif %}">
   <div class="login-background" aria-hidden="true">
     <span class="login-background__glow login-background__glow--blue"></span>
     <span class="login-background__glow login-background__glow--pink"></span>
@@ -19,14 +19,14 @@
     <section class="login-brand-panel">
       <div class="login-brand-panel__inner">
         <img src="{% static 'painel_cliente/ncfly_logo.png' %}" alt="Logo NCfly" class="login-brand-panel__logo">
-        <h1 class="login-brand-panel__title">Acesso ao painel</h1>
+        <h1 class="login-brand-panel__title">{{ login_title|default:"Acesso ao painel" }}</h1>
 
         <div class="login-brand-panel__features">
           <article class="login-brand-panel__feature">
             <span class="login-brand-panel__feature-icon">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.97-2.84 9.62-7 11-4.16-1.38-7-6.03-7-11V6l7-3Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
             </span>
-            <h3>Segurança</h3>
+            <h3>Seguranca</h3>
             <p>Dados protegidos com criptografia.</p>
           </article>
           <article class="login-brand-panel__feature">
@@ -34,7 +34,7 @@
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13 2-9 12h6l-1 8 9-12h-6l1-8Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
             </span>
             <h3>Rapidez</h3>
-            <p>Acesso instantâneo ao sistema.</p>
+            <p>Acesso instantaneo ao sistema.</p>
           </article>
           <article class="login-brand-panel__feature">
             <span class="login-brand-panel__feature-icon">
@@ -45,16 +45,16 @@
           </article>
         </div>
 
-        <p class="login-brand-panel__copyright">© 2026 NCfly. Todos os direitos reservados.</p>
+        <p class="login-brand-panel__copyright">&copy; 2026 NCfly. Todos os direitos reservados.</p>
       </div>
     </section>
 
     <section class="login-card-wrap">
       <div class="login-card">
         <div class="login-card__header">
-          <p class="login-card__eyebrow">Entrar</p>
+          <p class="login-card__eyebrow">{% if login_mode == "superadmin" %}Super Admin{% else %}Entrar{% endif %}</p>
           <h2 class="login-card__title">Bem-vindo</h2>
-          <p class="login-card__subtitle">Use suas credenciais para continuar.</p>
+          <p class="login-card__subtitle">{{ login_subtitle|default:"Use suas credenciais para continuar." }}</p>
         </div>
 
         {% if messages %}
@@ -65,38 +65,79 @@
           </div>
         {% endif %}
 
-        <form method="POST" class="login-form">
+        <form method="post" class="login-form" data-login-form data-login-mode="{{ login_mode|default:'default' }}">
           {% csrf_token %}
-          <div class="login-form__field">
-            <label for="username">CPF</label>
-            <input type="text" id="username" name="identifier" placeholder="Digite seu CPF" required />
-          </div>
+          {% if mfa_pending %}
+            <input type="hidden" name="action" value="verify_mfa" />
+            <div class="login-form__hint">
+              Codigo enviado para <strong>{{ mfa_masked_email }}</strong>.
+            </div>
+            <div class="login-form__field">
+              <label for="mfa_code">Codigo de verificacao</label>
+              <input
+                type="text"
+                id="mfa_code"
+                name="mfa_code"
+                placeholder="Digite o codigo de 6 digitos"
+                inputmode="numeric"
+                maxlength="6"
+                autocomplete="one-time-code"
+                data-mfa-code
+                required
+              />
+            </div>
+            <div class="login-form__actions">
+              <button type="submit" class="login-form__submit">Validar codigo</button>
+              <a href="{% url 'superadmin_login' %}?reset_mfa=1" class="login-form__secondary">Usar outra conta</a>
+            </div>
+          {% else %}
+            <div class="login-form__field">
+              <label for="username">{{ identifier_label|default:"CPF" }}</label>
+              <input
+                type="text"
+                id="username"
+                name="identifier"
+                placeholder="{{ identifier_placeholder|default:'Digite seu CPF' }}"
+                value="{{ entered_identifier }}"
+                data-identifier-type="{% if login_mode == 'superadmin' %}username{% else %}cpf{% endif %}"
+                required
+              />
+            </div>
 
-          <div class="login-form__field">
-            <label for="password">Senha</label>
-            <input type="password" id="password" name="password" placeholder="Digite sua senha" required />
-          </div>
+            <div class="login-form__field">
+              <label for="password">Senha</label>
+              <input type="password" id="password" name="password" placeholder="Digite sua senha" required />
+            </div>
 
-          <div class="login-form__field">
-            <label for="perfil">Tipo de acesso</label>
-            <select id="perfil" name="perfil" required>
-              <option value="cliente">Cliente</option>
-              <option value="parceiro">Emissor Parceiro</option>
-              <option value="operador">Operador</option>
-              <option value="admin">Administrador</option>
-              <option value="superadmin">Super Admin</option>
-            </select>
-          </div>
+            {% if show_access_select %}
+              <div class="login-form__field">
+                <label for="perfil">Tipo de acesso</label>
+                <select id="perfil" name="perfil" required>
+                  <option value="cliente" {% if selected_profile == "cliente" %}selected{% endif %}>Cliente</option>
+                  <option value="parceiro" {% if selected_profile == "parceiro" %}selected{% endif %}>Emissor Parceiro</option>
+                  <option value="operador" {% if selected_profile == "operador" %}selected{% endif %}>Operador</option>
+                  <option value="admin" {% if selected_profile == "admin" %}selected{% endif %}>Administrador</option>
+                </select>
+              </div>
+            {% else %}
+              <input type="hidden" name="perfil" value="superadmin" />
+            {% endif %}
 
-          <button type="submit" class="login-form__submit">Entrar</button>
+            <button type="submit" class="login-form__submit">Entrar</button>
+          {% endif %}
         </form>
 
         <div class="login-card__footer">
           <a href="{% url 'password_help' %}" class="login-card__link">Esqueceu sua senha?</a>
           <div class="login-card__register">
-            <span>Não tem uma conta?</span>
-            <a href="{% url 'cliente_create' %}" class="login-card__link login-card__link--strong">Cadastre-se</a>
+            <a href="{{ alternate_login_url }}" class="login-card__link login-card__link--strong">{{ alternate_login_label }}</a>
           </div>
+          {% if show_register %}
+            <div class="login-card__register">
+              <span>Nao tem uma conta?</span>
+              <a href="{% url 'cliente_create' %}" class="login-card__link login-card__link--strong">Cadastre-se</a>
+            </div>
+          {% endif %}
         </div>
       </div>
     </section>

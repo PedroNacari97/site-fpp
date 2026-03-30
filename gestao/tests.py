@@ -2,9 +2,11 @@ from datetime import date
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
+from gestao.forms import ProgramaFidelidadeForm
 from gestao.models import Cliente, ContaFidelidade, Movimentacao, ProgramaFidelidade
 
 User = get_user_model()
@@ -129,3 +131,29 @@ class ProgramaVinculadoSaldoTest(TestCase):
         self.assertEqual(
             response.url, reverse("admin_movimentacoes", args=[self.conta_base.id])
         )
+
+
+class ProgramaLogoValidationTest(TestCase):
+    def test_logo_must_be_png_with_max_50kb(self):
+        oversized_logo = SimpleUploadedFile(
+            "livelo.png",
+            b"\x89PNG\r\n\x1a\n" + b"0" * (50 * 1024),
+            content_type="image/png",
+        )
+        form = ProgramaFidelidadeForm(
+            data={
+                "nome": "Livelo",
+                "descricao": "",
+                "preco_medio_milheiro": "15.00",
+                "quantidade_cpfs_disponiveis": "",
+                "limite_cpfs": "",
+                "tipo_regra_reset": "ano",
+                "dias_reset": "",
+                "tipo": "principal",
+                "programa_base": "",
+            },
+            files={"logo": oversized_logo},
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("logo", form.errors)

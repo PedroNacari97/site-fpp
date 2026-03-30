@@ -192,6 +192,110 @@
   font-weight: 500;
 }
 
+.points-program__identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.points-program__identity-copy {
+  min-width: 0;
+}
+
+.points-program__logo,
+.points-program-form__logo-preview {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #364153;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(21, 93, 252, 0.24), rgba(15, 20, 25, 0.92));
+  overflow: hidden;
+}
+
+.points-program-form__logo-preview {
+  width: 72px;
+  height: 72px;
+  flex-basis: 72px;
+  border-radius: 18px;
+}
+
+.points-program__logo-image,
+.points-program-form__logo-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #ffffff;
+  z-index: 1;
+}
+
+.points-program__logo-fallback,
+.points-program-form__logo-fallback {
+  position: relative;
+  z-index: 0;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.points-program-form__logo-upload {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px dashed #364153;
+  border-radius: 12px;
+  background: rgba(15, 20, 25, 0.72);
+}
+
+.points-program-form__logo-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.points-program-form__logo-title {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.points-program-form__logo-text {
+  color: #99a1af;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.points-program-form__file-input {
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+}
+
+.points-program-form__checkline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #d1d5dc;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.points-program-form__checkbox {
+  width: 16px;
+  height: 16px;
+}
+
 .points-program__actions {
   display: inline-flex;
   gap: 8px;

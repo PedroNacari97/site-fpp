@@ -1,4 +1,4 @@
-import { initLoginFocus } from "./modules/login.js";
+import { initLoginExperience } from "./modules/login.js";
 import { initTableEnhancements } from "./modules/tables.js";
 import { initThemeToggle } from "./modules/theme.js";
 
@@ -136,7 +136,7 @@ const initAdminNotifications = () => {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  initLoginFocus();
+  initLoginExperience();
   initTableEnhancements();
   initSidebarToggle();
   initAdminNotifications();

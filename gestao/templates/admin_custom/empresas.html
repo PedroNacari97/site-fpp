@@ -3,58 +3,94 @@
 
 {% block title %}Empresas{% endblock %}
 {% block header_title %}Empresas{% endblock %}
-{% block header_subtitle %}<p class="page-subtitle">Visão clara das empresas, perfis administrativos e limites de operadores.</p>{% endblock %}
+{% block header_subtitle %}<span>Gestao central das organizacoes, administradores e capacidade operacional.</span>{% endblock %}
 {% block header_actions %}
-<a href="{% url 'admin_criar_empresa' %}" class="btn">+ Nova Empresa</a>
+<a href="{% url 'admin_criar_empresa' %}" class="btn">Nova Empresa</a>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/superadmin_figma.css' %}">
 {% endblock %}
 
 {% block content %}
-<section class="surface-card">
-  <div class="section-heading">
+<div class="superadmin-page">
+  <section class="superadmin-hero">
     <div>
-      <p class="eyebrow">Empresas</p>
-      <h2 class="section-title">Organizações cadastradas</h2>
+      <p class="superadmin-hero__eyebrow">Super Admin</p>
+      <h2 class="superadmin-hero__title">Empresas cadastradas</h2>
+      <p class="superadmin-hero__subtitle">Acompanhe quantidade de empresas, admins vinculados, operadores e base de clientes em um unico painel.</p>
     </div>
-  </div>
-  <div class="table-wrapper">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Admin</th>
-          <th>Limite de operadores</th>
-          <th>Operadores atuais</th>
-          <th>Clientes</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for info in empresas_info %}
-        <tr>
-          <td>{{ info.empresa.nome }}</td>
-          <td>
-            {{ info.empresa.admin.usuario.get_full_name|default:info.empresa.admin.usuario.username|default:"—" }}
-          </td>
-          <td>
-            {{ info.empresa.limite_colaboradores|default:"0" }}
-          </td>
-          <td>
-            {{ info.operadores }}
-          </td>
-          <td>
-            {{ info.clientes }}
-          </td>
-          <td>
-            {% if info.empresa.ativo %}<span class="pill pill-success">Ativa</span>{% else %}<span class="pill pill-danger">Inativa</span>{% endif %}
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="6" class="text-center text-red-500 py-4">Nenhuma empresa cadastrada.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</section>
+  </section>
+
+  <section class="superadmin-kpis">
+    <article class="superadmin-kpi">
+      <span class="superadmin-kpi__label">Empresas</span>
+      <strong class="superadmin-kpi__value">{{ totais.empresas }}</strong>
+    </article>
+    <article class="superadmin-kpi">
+      <span class="superadmin-kpi__label">Empresas ativas</span>
+      <strong class="superadmin-kpi__value">{{ totais.ativas }}</strong>
+    </article>
+    <article class="superadmin-kpi">
+      <span class="superadmin-kpi__label">Operadores</span>
+      <strong class="superadmin-kpi__value">{{ totais.operadores }}</strong>
+    </article>
+    <article class="superadmin-kpi">
+      <span class="superadmin-kpi__label">Clientes</span>
+      <strong class="superadmin-kpi__value">{{ totais.clientes }}</strong>
+    </article>
+  </section>
+
+  <section class="superadmin-card">
+    <div class="superadmin-card__head">
+      <div>
+        <p class="superadmin-card__eyebrow">Organizacoes</p>
+        <h3 class="superadmin-card__title">Lista de empresas</h3>
+      </div>
+      <span class="superadmin-card__meta">{{ totais.empresas }} registro(s)</span>
+    </div>
+
+    {% if empresas_info %}
+      <div class="superadmin-table-wrap">
+        <table class="superadmin-table">
+          <thead>
+            <tr>
+              <th>Empresa</th>
+              <th>Administrador</th>
+              <th>Limite de operadores</th>
+              <th>Operadores atuais</th>
+              <th>Clientes</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for info in empresas_info %}
+              <tr>
+                <td>
+                  <div class="superadmin-company">
+                    <strong>{{ info.empresa.nome }}</strong>
+                    <span>ID {{ info.empresa.id }}</span>
+                  </div>
+                </td>
+                <td>{{ info.empresa.admin.usuario.get_full_name|default:info.empresa.admin.usuario.username|default:"-" }}</td>
+                <td>{{ info.empresa.limite_colaboradores|default:"0" }}</td>
+                <td>{{ info.operadores }}</td>
+                <td>{{ info.clientes }}</td>
+                <td>
+                  {% if info.empresa.ativo %}
+                    <span class="superadmin-tag superadmin-tag--success">Ativa</span>
+                  {% else %}
+                    <span class="superadmin-tag superadmin-tag--danger">Inativa</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="superadmin-empty">Nenhuma empresa cadastrada.</div>
+    {% endif %}
+  </section>
+</div>
 {% endblock %}

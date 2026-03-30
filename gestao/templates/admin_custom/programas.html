@@ -40,7 +40,7 @@
     <header class="points-program__table-head">
       <p class="points-program__eyebrow">Programas</p>
       <h2>Catalogo de Pontos</h2>
-      <p class="points-program__subtext">Consistencia visual para valores, CPFs e descricoes.</p>
+      <p class="points-program__subtext">Consistencia visual para valores, CPFs, descricoes e identidade visual.</p>
     </header>
 
     <div class="points-program__table-wrap">
@@ -58,11 +58,23 @@
         <tbody>
           {% for p in programas %}
           <tr>
-            <td class="points-program__name">{{ p.nome }}</td>
+            <td>
+              <div class="points-program__identity">
+                <div class="points-program__logo" data-program-logo-preview>
+                  {% if p.logo_url %}
+                    <img src="{{ p.logo_url }}" alt="Logo {{ p.nome }}" class="points-program__logo-image" data-program-logo-img>
+                  {% endif %}
+                  <span class="points-program__logo-fallback">{{ p.logo_badge_text }}</span>
+                </div>
+                <div class="points-program__identity-copy">
+                  <div class="points-program__name">{{ p.nome }}</div>
+                </div>
+              </div>
+            </td>
             <td>{{ p.get_tipo_display }}</td>
             <td>R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
-            <td>{{ p.quantidade_cpfs_disponiveis|default:"—" }}</td>
-            <td>{{ p.descricao|default:p.programa_base|default:"—" }}</td>
+            <td>{{ p.quantidade_cpfs_disponiveis|default:"--" }}</td>
+            <td>{{ p.descricao|default:p.programa_base|default:"--" }}</td>
             <td>
               <div class="points-program__actions">
                 <a href="{% url 'admin_editar_programa' p.id %}" class="points-program__action">Editar</a>
@@ -80,4 +92,8 @@
     </div>
   </section>
 </div>
+{% endblock %}
+
+{% block extra_body %}
+<script src="{% static 'gestao/js/programa_form.js' %}"></script>
 {% endblock %}

@@ -32,7 +32,7 @@
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="admin-body h-full font-sans antialiased">
+<body class="admin-body dark-mode h-full font-sans antialiased">
 <div class="admin-shell">
     <div class="admin-sidebar-overlay" data-sidebar-overlay></div>
 
@@ -66,9 +66,40 @@
                     <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 20V8h12v12M9 4h6v4H9zM10 12h.01M14 12h.01M10 16h.01M14 16h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
                     <span class="admin-sidebar__label">Empresas</span>
                 </a>
+                <a href="{% url 'user_list' %}" class="admin-sidebar__link {% if menu_ativo == 'usuarios' %}is-active{% endif %}" data-sidebar-link title="Usuarios Administrativos">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM21 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Usuarios Administrativos</span>
+                </a>
+                <details class="admin-sidebar__group" {% if menu_ativo == 'aeroportos' or menu_ativo == 'companhias' or menu_ativo == 'programas' %}open{% endif %}>
+                    <summary class="admin-sidebar__summary" title="Catalogos">
+                        <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+                        <span class="admin-sidebar__label">Catalogos</span>
+                        <span class="admin-sidebar__summary-caret">
+                            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+                        </span>
+                    </summary>
+                    <div class="admin-sidebar__group-body">
+                        <a href="{% url 'admin_programas' %}" class="admin-sidebar__sublink {% if menu_ativo == 'programas' %}is-active{% endif %}" data-sidebar-link title="Programas">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Programas</span>
+                        </a>
+                        <a href="{% url 'admin_companhias' %}" class="admin-sidebar__sublink {% if menu_ativo == 'companhias' %}is-active{% endif %}" data-sidebar-link title="Companhias">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Companhias</span>
+                        </a>
+                        <a href="{% url 'admin_aeroportos' %}" class="admin-sidebar__sublink {% if menu_ativo == 'aeroportos' %}is-active{% endif %}" data-sidebar-link title="Aeroportos">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Aeroportos</span>
+                        </a>
+                    </div>
+                </details>
                 <a href="{% url 'admin_alertas_passagens' %}" class="admin-sidebar__link {% if menu_ativo == 'alertas' %}is-active{% endif %}" data-sidebar-link title="Alertas de Passagens">
                     <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.29 3.86l-7.5 13A1 1 0 0 0 3.65 18h16.7a1 1 0 0 0 .86-1.5l-7.5-13a1 1 0 0 0-1.72 0Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
                     <span class="admin-sidebar__label">Alertas de Passagens</span>
+                </a>
+                <a href="{% url 'admin_auditoria' %}" class="admin-sidebar__link {% if menu_ativo == 'auditoria' %}is-active{% endif %}" data-sidebar-link title="Auditorias">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V10M12 20V4M18 20v-7M4 20h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Auditorias</span>
                 </a>
             {% else %}
                 <a href="{% url 'admin_dashboard' %}" class="admin-sidebar__link {% if menu_ativo == 'home' %}is-active{% endif %}" data-sidebar-link title="Home">

@@ -1,74 +1,102 @@
 {% extends "admin_custom/base_admin.html" %}
 {% load static %}
+
 {% block title %}{{ form_title }}{% endblock %}
-{% block header_title %}Gerenciar Usuarios{% endblock %}
-{% block header_subtitle %}<p class="page-subtitle">{{ form_subtitle }}</p>{% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'gestao/css/admin_users_figma.css' %}">{% endblock %}
+{% block header_title %}Usuarios Administrativos{% endblock %}
+{% block header_subtitle %}<span>{{ form_subtitle }}</span>{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/superadmin_figma.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="admin-users">
-  <section class="admin-users__card" style="max-width: 800px; margin: 0 auto; width: 100%;">
-    <div class="admin-users__card-head">
-      <div class="admin-users__card-title-row">
-        <span class="admin-users__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="8.5" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M20 8v6M23 11h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </span>
-        <h3 class="admin-users__card-title">{{ form_title }}</h3>
+<div class="superadmin-page">
+  <section class="superadmin-hero">
+    <div>
+      <p class="superadmin-hero__eyebrow">Acesso administrativo</p>
+      <h2 class="superadmin-hero__title">{{ form_title }}</h2>
+      <p class="superadmin-hero__subtitle">{{ form_subtitle }}</p>
+    </div>
+  </section>
+
+  <form method="post" class="superadmin-form">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="superadmin-alert">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
       </div>
+    {% endif %}
+
+    <div class="superadmin-form__layout">
+      <section class="superadmin-card">
+        <div class="superadmin-card__head">
+          <div>
+            <p class="superadmin-card__eyebrow">Identificacao</p>
+            <h3 class="superadmin-card__title">Dados do usuario</h3>
+          </div>
+        </div>
+
+        <div class="superadmin-form__grid">
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.nome_completo.id_for_label }}">Nome completo</label>
+            {{ form.nome_completo }}
+            {% for error in form.nome_completo.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.cpf.id_for_label }}">CPF</label>
+            {{ form.cpf }}
+            {% for error in form.cpf.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          {% if form.empresa %}
+            <div class="superadmin-field">
+              <label class="superadmin-label" for="{{ form.empresa.id_for_label }}">Empresa</label>
+              {{ form.empresa }}
+              {% if form.empresa.help_text %}<p class="superadmin-helper">{{ form.empresa.help_text }}</p>{% endif %}
+              {% for error in form.empresa.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.perfil.id_for_label }}">Perfil</label>
+            {{ form.perfil }}
+            {% for error in form.perfil.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <aside class="superadmin-card superadmin-card--sidebar">
+        <div class="superadmin-card__head">
+          <div>
+            <p class="superadmin-card__eyebrow">Seguranca</p>
+            <h3 class="superadmin-card__title">Senha e acesso</h3>
+          </div>
+        </div>
+
+        <div class="superadmin-form__stack">
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.password.id_for_label }}">Senha</label>
+            {{ form.password }}
+            {% if form.password.help_text %}<p class="superadmin-helper">{{ form.password.help_text }}</p>{% endif %}
+            {% for error in form.password.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="superadmin-sidebar-note">
+          <span class="superadmin-sidebar-note__label">Resumo</span>
+          <p>Esse formulario cria ou atualiza administradores e operadores usando a mesma logica atual de permissao do projeto.</p>
+        </div>
+      </aside>
     </div>
 
-    <form method="POST" class="admin-users__form">
-      {% csrf_token %}
-      {% if form.non_field_errors %}
-        <div class="admin-users__error-box">
-          {% for error in form.non_field_errors %}
-            <div>{{ error }}</div>
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      <div class="admin-users__field">
-        <label class="admin-users__label" for="{{ form.nome_completo.id_for_label }}">Nome completo</label>
-        {{ form.nome_completo }}
-        {% for error in form.nome_completo.errors %}<div class="admin-users__field-error">{{ error }}</div>{% endfor %}
-      </div>
-
-      <div class="admin-users__field">
-        <label class="admin-users__label" for="{{ form.cpf.id_for_label }}">CPF</label>
-        {{ form.cpf }}
-        {% for error in form.cpf.errors %}<div class="admin-users__field-error">{{ error }}</div>{% endfor %}
-      </div>
-
-      {% if form.empresa %}
-        <div class="admin-users__field">
-          <label class="admin-users__label" for="{{ form.empresa.id_for_label }}">Empresa</label>
-          {{ form.empresa }}
-          {% if form.empresa.help_text %}<p class="admin-users__helper">{{ form.empresa.help_text }}</p>{% endif %}
-          {% for error in form.empresa.errors %}<div class="admin-users__field-error">{{ error }}</div>{% endfor %}
-        </div>
-      {% endif %}
-
-      <div class="admin-users__field">
-        <label class="admin-users__label" for="{{ form.perfil.id_for_label }}">Perfil</label>
-        {{ form.perfil }}
-        {% for error in form.perfil.errors %}<div class="admin-users__field-error">{{ error }}</div>{% endfor %}
-      </div>
-
-      <div class="admin-users__field">
-        <label class="admin-users__label" for="{{ form.password.id_for_label }}">Password</label>
-        {{ form.password }}
-        {% if form.password.help_text %}<p class="admin-users__helper">{{ form.password.help_text }}</p>{% endif %}
-        {% for error in form.password.errors %}<div class="admin-users__field-error">{{ error }}</div>{% endfor %}
-      </div>
-
-      <div class="admin-users__form-actions">
-        <a href="{{ list_url }}" class="admin-users__secondary">Cancelar</a>
-        <button type="submit" class="admin-users__primary">{{ submit_label }}</button>
-      </div>
-    </form>
-  </section>
+    <div class="superadmin-form__actions">
+      <a href="{{ list_url }}" class="btn btn--outline">Cancelar</a>
+      <button type="submit" class="btn">{{ submit_label }}</button>
+    </div>
+  </form>
 </div>
 {% endblock %}
