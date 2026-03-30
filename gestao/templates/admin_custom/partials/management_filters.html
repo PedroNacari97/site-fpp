@@ -1,0 +1,53 @@
+<section class="surface-card filter-panel">
+  <form method="get" class="filter-grid">
+    {% if empresa_id %}<input type="hidden" name="empresa_id" value="{{ empresa_id }}">{% endif %}
+    <div class="form-field">
+      <label for="data_inicio" class="form-label">Data inicial</label>
+      <input id="data_inicio" type="date" name="data_inicio" value="{{ management_dashboard.start_date }}">
+    </div>
+    <div class="form-field">
+      <label for="data_fim" class="form-label">Data final</label>
+      <input id="data_fim" type="date" name="data_fim" value="{{ management_dashboard.end_date }}">
+    </div>
+    <div class="form-field">
+      <label for="cliente" class="form-label">Cliente</label>
+      <select id="cliente" name="cliente">
+        <option value="">Todos</option>
+        {% for item in management_dashboard.filter_options.clientes %}<option value="{{ item.id }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="conta" class="form-label">Conta</label>
+      <select id="conta" name="conta">
+        <option value="">Todas</option>
+        {% for item in management_dashboard.filter_options.contas %}<option value="{{ item.id }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="programa" class="form-label">Programa</label>
+      <select id="programa" name="programa">
+        <option value="">Todos</option>
+        {% for item in management_dashboard.filter_options.programas %}<option value="{{ item.id }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="status_home" class="form-label">Status</label>
+      <select id="status_home" name="status">
+        <option value="">Todos</option>
+        <option value="pendente" {% if management_dashboard.selected_status == 'pendente' %}selected{% endif %}>Pendente</option>
+        <option value="emitido" {% if management_dashboard.selected_status == 'emitido' %}selected{% endif %}>Emitido</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="emissor" class="form-label">Emissor</label>
+      <select id="emissor" name="emissor">
+        <option value="">Todos</option>
+        {% for item in management_dashboard.filter_options.emissores %}<option value="{{ item.id }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Aplicar</button>
+      <a href="?{{ management_dashboard.clear_filters_query }}" class="btn btn-secondary">Limpar</a>
+    </div>
+  </form>
+</section>

@@ -1,0 +1,105 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Emissoes Detalhadas{% endblock %}
+{% block header_title %}Emissoes Detalhadas{% endblock %}
+{% block header_subtitle %}<span>Padrao global com filtros, indicadores e tabela operacional.</span>{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/home_figma.css' %}">
+<link rel="stylesheet" href="{% static 'gestao/css/emissoes_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="emissions-page">
+  <div class="emissions-page__header">
+    <div>
+      <h2 class="emissions-page__title">Emissoes Detalhadas</h2>
+      <p class="emissions-page__subtitle">Padrao global com filtros, indicadores e tabela operacional.</p>
+    </div>
+    <div class="emissions-page__header-actions">
+      <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}export=excel" class="emissions-page__button emissions-page__button--ghost">Exportar Excel</a>
+      <a href="{% url 'admin_nova_emissao' %}" class="emissions-page__button emissions-page__button--primary">Nova Emissao</a>
+    </div>
+  </div>
+
+  <section class="home-ops__filters">
+    {% include "admin_custom/partials/home_management_filters.html" %}
+  </section>
+
+  <section class="emissions-page__stats">
+    <article class="emissions-page__stat-card">
+      <p class="emissions-page__stat-label">Emissoes filtradas</p>
+      <p class="emissions-page__stat-value">{{ emissao_totais.total }}</p>
+    </article>
+    <article class="emissions-page__stat-card">
+      <p class="emissions-page__stat-label">Receita total</p>
+      <p class="emissions-page__stat-value">{{ emissao_totais.receita }}</p>
+    </article>
+    <article class="emissions-page__stat-card">
+      <p class="emissions-page__stat-label">Custo total</p>
+      <p class="emissions-page__stat-value">{{ emissao_totais.custo }}</p>
+    </article>
+    <article class="emissions-page__stat-card">
+      <p class="emissions-page__stat-label">Lucro total</p>
+      <p class="emissions-page__stat-value">{{ emissao_totais.lucro }}</p>
+    </article>
+  </section>
+
+  <section class="emissions-page__panel emissions-page__table-panel">
+    <div class="emissions-page__table-head">
+      <h3>Lista de emissoes</h3>
+    </div>
+    <div class="emissions-page__table-wrap">
+      <table class="emissions-page__table">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Programa</th>
+            <th>Origem</th>
+            <th>Destino</th>
+            <th>Data Ida</th>
+            <th>Companhia</th>
+            <th>Status</th>
+            <th>Lucro</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in emissoes %}
+            <tr>
+              <td>
+                {% if e.cliente %}
+                  {{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}
+                {% elif e.conta_administrada %}
+                  {{ e.conta_administrada.nome }}
+                {% elif e.emissor_parceiro %}
+                  {{ e.emissor_parceiro.nome }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>{{ e.programa|default:"-" }}</td>
+              <td>{{ e.aeroporto_partida|default:"-" }}</td>
+              <td>{{ e.aeroporto_destino|default:"-" }}</td>
+              <td>{{ e.data_ida|date:"d/m/Y H:i" }}</td>
+              <td>{{ e.companhia_aerea|default:"-" }}</td>
+              <td>{{ e.localizador|yesno:"Emitido,Pendente" }}</td>
+              <td>R$ {{ e.lucro|default:0|floatformat:2 }}</td>
+              <td>
+                <div class="emissions-page__row-actions">
+                  <a href="{% url 'admin_emissao_pdf' e.id %}" class="emissions-page__row-button">PDF</a>
+                  <a href="{% url 'admin_editar_emissao' e.id %}" class="emissions-page__row-button">Editar</a>
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="9" class="emissions-page__empty">Nenhuma emissao encontrada.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

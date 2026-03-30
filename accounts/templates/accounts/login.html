@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Login - NCFly Sistema de Gestao de Voos e Programas de Fidelidade" />
+  <title>Login - NCFly</title>
+  <link rel="stylesheet" href="{% static 'gestao/css/login.css' %}">
+</head>
+<body class="login-page">
+  <div class="login-background" aria-hidden="true">
+    <span class="login-background__glow login-background__glow--blue"></span>
+    <span class="login-background__glow login-background__glow--pink"></span>
+    <span class="login-background__glow login-background__glow--gold"></span>
+  </div>
+
+  <main class="login-layout">
+    <section class="login-brand-panel">
+      <div class="login-brand-panel__inner">
+        <img src="{% static 'painel_cliente/ncfly_logo.png' %}" alt="Logo NCfly" class="login-brand-panel__logo">
+        <h1 class="login-brand-panel__title">Acesso ao painel</h1>
+
+        <div class="login-brand-panel__features">
+          <article class="login-brand-panel__feature">
+            <span class="login-brand-panel__feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.97-2.84 9.62-7 11-4.16-1.38-7-6.03-7-11V6l7-3Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+            </span>
+            <h3>Segurança</h3>
+            <p>Dados protegidos com criptografia.</p>
+          </article>
+          <article class="login-brand-panel__feature">
+            <span class="login-brand-panel__feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13 2-9 12h6l-1 8 9-12h-6l1-8Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+            </span>
+            <h3>Rapidez</h3>
+            <p>Acesso instantâneo ao sistema.</p>
+          </article>
+          <article class="login-brand-panel__feature">
+            <span class="login-brand-panel__feature-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M12 3a15.3 15.3 0 0 1 4 9 15.3 15.3 0 0 1-4 9 15.3 15.3 0 0 1-4-9 15.3 15.3 0 0 1 4-9ZM5 7.5h14M5 16.5h14" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+            </span>
+            <h3>Global</h3>
+            <p>Acesse de qualquer lugar.</p>
+          </article>
+        </div>
+
+        <p class="login-brand-panel__copyright">© 2026 NCfly. Todos os direitos reservados.</p>
+      </div>
+    </section>
+
+    <section class="login-card-wrap">
+      <div class="login-card">
+        <div class="login-card__header">
+          <p class="login-card__eyebrow">Entrar</p>
+          <h2 class="login-card__title">Bem-vindo</h2>
+          <p class="login-card__subtitle">Use suas credenciais para continuar.</p>
+        </div>
+
+        {% if messages %}
+          <div class="login-alert" role="alert">
+            {% for message in messages %}
+              <div>{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="POST" class="login-form">
+          {% csrf_token %}
+          <div class="login-form__field">
+            <label for="username">CPF</label>
+            <input type="text" id="username" name="identifier" placeholder="Digite seu CPF" required />
+          </div>
+
+          <div class="login-form__field">
+            <label for="password">Senha</label>
+            <input type="password" id="password" name="password" placeholder="Digite sua senha" required />
+          </div>
+
+          <div class="login-form__field">
+            <label for="perfil">Tipo de acesso</label>
+            <select id="perfil" name="perfil" required>
+              <option value="cliente">Cliente</option>
+              <option value="parceiro">Emissor Parceiro</option>
+              <option value="operador">Operador</option>
+              <option value="admin">Administrador</option>
+              <option value="superadmin">Super Admin</option>
+            </select>
+          </div>
+
+          <button type="submit" class="login-form__submit">Entrar</button>
+        </form>
+
+        <div class="login-card__footer">
+          <a href="{% url 'password_help' %}" class="login-card__link">Esqueceu sua senha?</a>
+          <div class="login-card__register">
+            <span>Não tem uma conta?</span>
+            <a href="{% url 'cliente_create' %}" class="login-card__link login-card__link--strong">Cadastre-se</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="{% static 'painel_cliente/js/app.js' %}" defer></script>
+</body>
+</html>

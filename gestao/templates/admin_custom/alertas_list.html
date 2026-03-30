@@ -1,0 +1,189 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Alertas{% endblock %}
+{% block header_title %}Alertas de Passagens{% endblock %}
+{% block header_subtitle %}<span>Veja alertas em um painel unico com navegação por destino e cards operacionais.</span>{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/alertas_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="alerts-page">
+  <div class="alerts-page__shell">
+    <div class="alerts-page__grid-4">
+      <article class="alerts-page__card">
+        <div class="alerts-page__stat-head">
+          <div>
+            <p class="alerts-page__stat-label">Alertas ativos</p>
+            <p class="alerts-page__stat-value">{{ alerta_totais.ativos }}</p>
+          </div>
+          <span class="alerts-page__stat-icon alerts-page__stat-icon--blue"></span>
+        </div>
+        <p class="alerts-page__stat-note">+{{ alerta_totais.recentes }} no recorte mais recente</p>
+      </article>
+      <article class="alerts-page__card">
+        <div class="alerts-page__stat-head">
+          <div>
+            <p class="alerts-page__stat-label">Melhorando</p>
+            <p class="alerts-page__stat-value">{{ alerta_totais.melhorando }}</p>
+          </div>
+          <span class="alerts-page__stat-icon alerts-page__stat-icon--green"></span>
+        </div>
+        <p class="alerts-page__stat-note">Tendencia positiva nos alertas filtrados</p>
+      </article>
+      <article class="alerts-page__card">
+        <div class="alerts-page__stat-head">
+          <div>
+            <p class="alerts-page__stat-label">Favoritos</p>
+            <p class="alerts-page__stat-value">{{ alerta_totais.favoritos }}</p>
+          </div>
+          <span class="alerts-page__stat-icon alerts-page__stat-icon--yellow"></span>
+        </div>
+        <p class="alerts-page__stat-note">Marcados por disponibilidade favoravel</p>
+      </article>
+      <article class="alerts-page__card">
+        <div class="alerts-page__stat-head">
+          <div>
+            <p class="alerts-page__stat-label">Emissoes realizadas</p>
+            <p class="alerts-page__stat-value">{{ alerta_totais.realizadas }}</p>
+          </div>
+          <span class="alerts-page__stat-icon alerts-page__stat-icon--purple"></span>
+        </div>
+        <p class="alerts-page__stat-note">Alertas resolvidos ou encerrados</p>
+      </article>
+    </div>
+
+    <div class="alerts-page__nav-box">
+      <div class="alerts-page__box-head">
+        <div>
+          <h2 class="alerts-page__box-title">Navegacao por destino</h2>
+          <p class="alerts-page__box-subtitle">Refine os alertas pela geografia do trecho monitorado.</p>
+        </div>
+        <div class="alerts-page__actions">
+          <a href="?{{ clear_destination_query }}" class="alerts-page__button-secondary">Alterar destino</a>
+          {% if request.user.is_superuser %}
+            <a href="{% url 'admin_alerta_passagem_novo' %}" class="alerts-page__button">Criar Novo Alerta</a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="alerts-page__crumbs">
+        {% for item in continente_options %}
+          <a href="?{{ item.query }}" class="alerts-page__crumb {% if item.selected %}is-selected{% endif %}">
+            <span class="alerts-page__crumb-dot"></span>{{ item.label }}
+          </a>
+        {% endfor %}
+        {% for item in pais_options %}
+          <a href="?{{ item.query }}" class="alerts-page__crumb {% if item.selected %}is-selected{% endif %}">
+            <span class="alerts-page__crumb-dot"></span>{{ item.label }}
+          </a>
+        {% endfor %}
+        {% for item in cidade_options %}
+          <a href="?{{ item.query }}" class="alerts-page__crumb {% if item.selected %}is-selected{% endif %}">
+            <span class="alerts-page__crumb-dot"></span>{{ item.label }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="alerts-page__filter-box">
+      <form method="get">
+        <input type="hidden" name="status_alerta" value="{{ selected_status }}">
+        <input type="hidden" name="continente" value="{{ request.GET.continente|default:'' }}">
+        <input type="hidden" name="pais" value="{{ request.GET.pais|default:'' }}">
+        <input type="hidden" name="cidade" value="{{ request.GET.cidade|default:'' }}">
+        <div class="alerts-page__form-grid">
+          <div class="alerts-page__field">
+            <input type="text" name="q" value="{{ search_query }}" placeholder="Buscar alertas por destino, programa ou companhia...">
+          </div>
+          <div class="alerts-page__field">
+            <select name="programa">
+              <option value="">Todos os programas</option>
+              {% for option in programa_options %}
+                <option value="{{ option }}" {% if option == selected_programa %}selected{% endif %}>{{ option }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="alerts-page__field">
+            <select name="classe">
+              <option value="">Todas as classes</option>
+              <option value="economica" {% if selected_classe == 'economica' %}selected{% endif %}>Economica</option>
+              <option value="executiva" {% if selected_classe == 'executiva' %}selected{% endif %}>Executiva</option>
+            </select>
+          </div>
+          <button type="submit" class="alerts-page__button-secondary">Mais Filtros</button>
+          <a href="?{{ clear_filters_query }}" class="alerts-page__button">Limpar</a>
+        </div>
+      </form>
+      <div class="alerts-page__chip-row">
+        {% for chip in status_chips %}
+          <a href="?{{ chip.query }}" class="alerts-page__chip {% if chip.selected %}is-selected{% endif %}">{{ chip.label }}</a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="alerts-page__list-head">
+      <div>
+        <h2 class="alerts-page__list-title">Alertas Recentes</h2>
+        <p class="alerts-page__list-note">{{ alerta_totais.monitorado }} alerta(s) configurado(s) com os filtros atuais.</p>
+      </div>
+      <span class="alerts-page__button-secondary">{{ selected_status|capfirst }}</span>
+    </div>
+
+    {% for row in alert_cards %}
+      {% with alerta=row.alerta meta=row.meta programa=alerta.programa_fidelidade|lower %}
+        <article class="alerts-page__alert-card">
+          <div class="alerts-page__alert-top">
+            <div class="alerts-page__alert-top-left">
+              <span class="alerts-page__pill {% if 'latam' in programa %}alerts-page__pill--program-red{% elif 'smiles' in programa %}alerts-page__pill--program-orange{% elif 'privilege' in programa %}alerts-page__pill--program-purple{% else %}alerts-page__pill--program-blue{% endif %}">{{ alerta.programa_fidelidade }}</span>
+              <span class="alerts-page__pill alerts-page__pill--availability-{{ meta.availability_tone }}">{{ meta.availability_label }}</span>
+              <span class="alerts-page__meta-note">{{ row.time_ago }}</span>
+              {% if meta.is_favorite %}<span class="alerts-page__star">&starf;</span>{% endif %}
+            </div>
+            <span class="alerts-page__trend alerts-page__trend--{{ meta.trend_tone }}">{{ meta.trend_label }}</span>
+          </div>
+
+          <div class="alerts-page__route">
+            <div class="alerts-page__route-stop">
+              <strong>{{ alerta.origem }}</strong>
+              <span>Origem</span>
+            </div>
+            <div class="alerts-page__route-arrow">&#9992;</div>
+            <div class="alerts-page__route-stop">
+              <strong>{{ alerta.destino }}</strong>
+              <span>{{ alerta.cidade_destino }}</span>
+            </div>
+          </div>
+
+          <div class="alerts-page__alert-bottom">
+            <div class="alerts-page__details">
+              <div>
+                <span class="alerts-page__detail-label">Companhia</span>
+                <span class="alerts-page__detail-value">{{ alerta.companhia_aerea }}</span>
+              </div>
+              <div>
+                <span class="alerts-page__detail-label">Classe</span>
+                <span class="alerts-page__detail-value">{{ row.classe_label }}</span>
+              </div>
+              <div>
+                <span class="alerts-page__detail-label">Milhas Necessarias</span>
+                <span class="alerts-page__detail-value">{{ row.milhas_label }}</span>
+              </div>
+              <div>
+                <span class="alerts-page__detail-label">Periodo</span>
+                <span class="alerts-page__detail-value">{{ row.periodo }}</span>
+              </div>
+            </div>
+            <div class="alerts-page__card-actions">
+              {% if row.edit_url %}<a href="{{ row.edit_url }}" class="alerts-page__icon-action" aria-label="Editar alerta">&#9998;</a>{% endif %}
+              {% if row.delete_url %}<a href="{{ row.delete_url }}" class="alerts-page__icon-action" aria-label="Excluir alerta">&#128465;</a>{% endif %}
+              <a href="{{ row.detail_url }}" class="alerts-page__button">Ver Detalhes</a>
+            </div>
+          </div>
+        </article>
+      {% endwith %}
+    {% empty %}
+      <div class="alerts-page__empty">Nenhum alerta encontrado com os filtros atuais.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "painel_cliente/base_painel.html" %}
+
+{% block title %}Movimentações do Parceiro{% endblock %}
+{% block page_title %}Movimentações{% endblock %}
+{% block header_subtitle %}
+  <p class="page-subtitle">Emissões realizadas por {{ emissor.nome }}.</p>
+{% endblock %}
+
+{% block content %}
+  <section class="surface-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Movimentações</p>
+        <h2 class="section-title">Emissões do parceiro</h2>
+      </div>
+    </div>
+    <div class="dashboard-table-wrapper">
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Origem</th>
+            <th>Destino</th>
+            <th>Total de milhas</th>
+            <th>Valor pago ao parceiro</th>
+            <th>Valor final ao cliente</th>
+            <th>Economia obtida</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for emissao in emissoes %}
+            <tr>
+              <td>{{ emissao.criado_em|date:"d/m/Y" }}</td>
+              <td>{{ emissao.aeroporto_partida }}</td>
+              <td>{{ emissao.aeroporto_destino }}</td>
+              <td>{{ emissao.pontos_utilizados|default:0 }}</td>
+              <td>R$ {{ emissao.custo_total|floatformat:2 }}</td>
+              <td>
+                {% if emissao.valor_venda_final is not None %}
+                  R$ {{ emissao.valor_venda_final|floatformat:2 }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td class="table-empty" colspan="7">Nenhuma emissão encontrada.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

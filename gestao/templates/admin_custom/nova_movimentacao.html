@@ -1,0 +1,69 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Nova Movimentacao{% endblock %}
+{% block header_title %}Nova Movimentacao{% endblock %}
+{% block header_subtitle %}<span>Painel de gestao de milhas.</span>{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/movimentacoes_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="movement-form-page">
+  <section class="movement-form-page__card">
+    <header class="movement-form-page__head">
+      <p class="movement-form-page__eyebrow">Movimentacoes</p>
+      <h2 class="movement-form-page__title">Nova Movimentacao</h2>
+      <p class="movement-form-page__subtitle">Registre entrada ou saida de pontos para {{ conta.programa.nome }}.</p>
+    </header>
+
+    <form method="post" class="movement-form-page__form" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div class="movement-form-page__errors">
+        {% for error in form.non_field_errors %}
+        <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="movement-form-page__field">
+        <label for="{{ form.data.id_for_label }}">Data</label>
+        {{ form.data }}
+        {% for error in form.data.errors %}
+        <div class="movement-form-page__field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="movement-form-page__field">
+        <label for="{{ form.pontos.id_for_label }}">Pontos</label>
+        {{ form.pontos }}
+        {% for error in form.pontos.errors %}
+        <div class="movement-form-page__field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="movement-form-page__field">
+        <label for="{{ form.valor_pago.id_for_label }}">Valor pago</label>
+        {{ form.valor_pago }}
+        {% for error in form.valor_pago.errors %}
+        <div class="movement-form-page__field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="movement-form-page__field">
+        <label for="{{ form.descricao.id_for_label }}">Descricao</label>
+        {{ form.descricao }}
+        {% for error in form.descricao.errors %}
+        <div class="movement-form-page__field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="movement-form-page__actions">
+        <button type="submit" class="movement-form-page__submit">Salvar</button>
+        <a href="{% url 'admin_movimentacoes' conta.id %}" class="movement-form-page__cancel">Cancelar</a>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Movimentacoes do Programa: {{ conta.programa.nome }} - {{ titular_tipo }}: {{ titular_nome }}{% endblock %}
+{% block header_title %}Movimentacoes do Programa: {{ conta.programa.nome }} - {{ titular_tipo }}: {{ titular_nome }}{% endblock %}
+{% block header_subtitle %}<span>Historico organizado de pontos e valores com acoes no mesmo lugar.</span>{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/movimentacoes_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="movement-page">
+  {% if conta.programa.is_vinculado %}
+  <div class="movement-page__notice">
+    <div>
+      <strong>Programa vinculado ao saldo base.</strong>
+      <span>Este programa compartilha saldo e movimentacoes com {{ conta_base.programa.nome }}.</span>
+    </div>
+    <a href="{% url 'admin_movimentacoes' conta_base.id %}" class="movement-page__notice-link">Ir para programa base</a>
+  </div>
+  {% endif %}
+
+  <section class="movement-page__card">
+    <header class="movement-page__card-head">
+      <div>
+        <p class="movement-page__eyebrow">Movimentacoes</p>
+        <h2 class="movement-page__title">Historico de Movimentacoes</h2>
+      </div>
+      <div class="movement-page__actions">
+        {% if conta.cliente_id and not conta.programa.is_vinculado %}
+        <a href="{% url 'admin_transferir_pontos' conta.id %}" class="movement-page__secondary-action movement-page__secondary-action--success">Transferir pontos</a>
+        {% endif %}
+        <a href="{% url 'admin_nova_movimentacao' conta.id %}" class="movement-page__primary-action">Nova Movimentacao</a>
+      </div>
+    </header>
+
+    <div class="movement-page__table-wrap">
+      <table class="movement-page__table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Pontos</th>
+            <th>Valor</th>
+            <th>Descricao</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for mov in movimentacoes %}
+          <tr>
+            <td>{{ mov.data|date:"d/m/Y" }}</td>
+            <td>
+              <span class="movement-page__metric {% if mov.pontos > 0 %}movement-page__metric--positive{% elif mov.pontos < 0 %}movement-page__metric--negative{% endif %}">
+                {% if mov.pontos > 0 %}+{% endif %}{{ mov.pontos }}
+              </span>
+            </td>
+            <td>
+              <span class="movement-page__metric {% if mov.valor_pago > 0 %}movement-page__metric--positive{% elif mov.valor_pago < 0 %}movement-page__metric--negative{% endif %}">
+                {% if mov.valor_pago > 0 %}+{% endif %}R$ {{ mov.valor_pago|floatformat:2 }}
+              </span>
+            </td>
+            <td class="movement-page__description">
+              {% if mov.emissao_id %}
+              <a href="{% url 'admin_emissao_detalhe' mov.emissao_id %}" class="movement-page__description-link">{{ mov.descricao }}</a>
+              {% else %}
+              {{ mov.descricao }}
+              {% endif %}
+            </td>
+            <td>
+              {% if mov.emissao_id %}
+              <a href="{% url 'admin_emissao_detalhe' mov.emissao_id %}" class="movement-page__row-action">Ver emissao</a>
+              {% else %}
+              <span class="movement-page__empty-action">-</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="movement-page__empty">Nenhuma movimentacao lancada.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if titular_programas_url %}
+    <footer class="movement-page__footer">
+      <a href="{{ titular_programas_url }}" class="movement-page__back-action">Voltar para Programas</a>
+    </footer>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

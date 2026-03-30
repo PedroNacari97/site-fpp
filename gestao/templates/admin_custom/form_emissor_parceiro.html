@@ -1,0 +1,141 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Editar Emissor Parceiro{% else %}Novo Emissor Parceiro{% endif %}{% endblock %}
+{% block header_title %}{% if form.instance.pk %}Editar Emissor Parceiro{% else %}Novo Emissor Parceiro{% endif %}{% endblock %}
+{% block header_subtitle %}<span>Cadastre um novo parceiro emissor de milhas.</span>{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/emissores_parceiros_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="partner-form">
+  {% if form.errors %}
+  <div class="partner-form__alert">
+    <p class="partner-form__alert-title">Nao foi possivel salvar. Corrija os campos destacados.</p>
+    <ul class="partner-form__alert-list">
+      {% for field in form %}
+        {% for error in field.errors %}
+        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <form method="post" class="partner-form__layout" novalidate>
+    {% csrf_token %}
+
+    <section class="partner-form__card">
+      <header class="partner-form__card-head">
+        <p class="partner-form__eyebrow">Dados do Emissor</p>
+        <h2>Informacoes principais</h2>
+      </header>
+      <div class="partner-form__card-body">
+        <div class="partner-form__field">
+          <label for="{{ form.nome.id_for_label }}">Nome do Emissor <span>*</span></label>
+          {{ form.nome }}
+          {% for error in form.nome.errors %}
+          <div class="partner-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="partner-form__field">
+          <label for="{{ form.telefone.id_for_label }}">Telefone</label>
+          {{ form.telefone }}
+          {% for error in form.telefone.errors %}
+          <div class="partner-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="partner-form__field">
+          <label for="{{ form.usuario.id_for_label }}">Usuario Vinculado</label>
+          {{ form.usuario }}
+          <p class="partner-form__hint">Define o usuario que acessara a sessao do parceiro.</p>
+          {% for error in form.usuario.errors %}
+          <div class="partner-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="partner-form__toggle-card">
+          <label class="partner-form__toggle">
+            {{ form.ativo }}
+            <span>Parceiro ativo para novas emissoes</span>
+          </label>
+          {% for error in form.ativo.errors %}
+          <div class="partner-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <div class="partner-form__side">
+      <section class="partner-form__card">
+        <header class="partner-form__card-head">
+          <p class="partner-form__eyebrow">Programas de Fidelidade</p>
+          <h2>Configuracao de acesso</h2>
+        </header>
+        <div class="partner-form__card-body">
+          <div class="partner-form__program-list">
+            {% with selected_programas=form.programas.value %}
+              {% for programa in form.programas.field.queryset %}
+              <label class="partner-form__program-card">
+                <div class="partner-form__program-head">
+                  <div>
+                    <p class="partner-form__program-name">{{ programa.nome }}</p>
+                    <p class="partner-form__program-meta">Programa de pontos {{ programa.nome }}</p>
+                  </div>
+                  <span class="partner-form__program-icon">{{ programa.nome|first|upper }}</span>
+                </div>
+                <div class="partner-form__program-toggle">
+                  <input
+                    type="checkbox"
+                    name="programas"
+                    value="{{ programa.id }}"
+                    {% if selected_programas and programa.id|stringformat:"s" in selected_programas %}checked{% endif %}
+                  >
+                  <span>Ativar programa</span>
+                </div>
+              </label>
+              {% empty %}
+              <div class="partner-form__empty-box">Nenhum programa de fidelidade disponivel para esta empresa.</div>
+              {% endfor %}
+            {% endwith %}
+          </div>
+          <p class="partner-form__hint">Selecione os programas disponiveis para este emissor (opcional).</p>
+          {% for error in form.programas.errors %}
+          <div class="partner-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="partner-form__card">
+        <header class="partner-form__card-head">
+          <p class="partner-form__eyebrow">Observacoes</p>
+          <h2>Anotacoes adicionais</h2>
+        </header>
+        <div class="partner-form__card-body">
+          <div class="partner-form__field">
+            {{ form.observacoes }}
+            {% for error in form.observacoes.errors %}
+            <div class="partner-form__field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="partner-form__actions">
+      {% if form.instance.pk %}
+      <a href="{% url 'admin_emissor_parceiro_movimentacoes' form.instance.pk %}" class="partner-form__ghost">Movimentacoes</a>
+      {% endif %}
+      <a href="{% url 'admin_emissores_parceiros' %}" class="partner-form__cancel">Cancelar</a>
+      <button type="submit" class="partner-form__submit">Salvar Emissor</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

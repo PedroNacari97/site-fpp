@@ -1,0 +1,75 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Programas da Conta Administrada {{ conta.nome }}{% endblock %}
+{% block header_title %}Programas da Conta Administrada {{ conta.nome }}{% endblock %}
+{% block header_subtitle %}<span>Saldo, valores e navegacao das contas administradas em um layout unico.</span>{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_contas_administradas' %}" class="btn btn-secondary">Voltar</a>
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/programas_fidelidade_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="fidelity-programs">
+  <section class="fidelity-programs__card">
+    <header class="fidelity-programs__head">
+      <p class="fidelity-programs__eyebrow">Programas</p>
+      <h2 class="fidelity-programs__title">Programas da conta</h2>
+    </header>
+
+    <div class="fidelity-programs__table-wrap">
+      <table class="fidelity-programs__table">
+        <thead>
+          <tr>
+            <th>Programa</th>
+            <th>Pontos</th>
+            <th>Valor pago</th>
+            <th>Valor medio</th>
+            <th>Limite CPFs</th>
+            <th>CPFs usados</th>
+            <th>CPFs disponiveis</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in lista_contas %}
+            <tr>
+              <td>{{ c.conta.programa.nome }}</td>
+              <td>{{ c.saldo_pontos }}</td>
+              <td>R$ {{ c.valor_pago|floatformat:2 }}</td>
+              <td>R$ {{ c.valor_medio_milheiro|floatformat:2 }}</td>
+              <td>
+                {% if c.cpfs_total is None %}
+                  <span class="fidelity-programs__pill">Ilimitado</span>
+                {% else %}
+                  {{ c.cpfs_total }}
+                {% endif %}
+              </td>
+              <td>{{ c.cpfs_usados|default:"0" }}</td>
+              <td>
+                {% if c.cpfs_disponiveis is None %}
+                  <span class="fidelity-programs__pill">Ilimitado</span>
+                {% else %}
+                  {{ c.cpfs_disponiveis }}
+                {% endif %}
+              </td>
+              <td>
+                <a href="{% url 'admin_movimentacoes' c.conta.id %}" class="fidelity-programs__action">Movimentacoes</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8" class="fidelity-programs__empty">Nenhum programa encontrado para esta conta administrada.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="fidelity-programs__footer">
+      <a href="{% url 'admin_contas_administradas' %}" class="fidelity-programs__back">Voltar para Contas</a>
+    </footer>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,989 @@
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.core.exceptions import ValidationError
+from django.db.models import Q
+from django.http import HttpResponse
+from django.contrib import messages
+from decimal import Decimal
+from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
+from django.db import models, transaction
+
+from ..forms import (
+    ContaFidelidadeForm,
+    ProgramaFidelidadeForm,
+    ClienteForm,
+    NovoClienteForm,
+    AeroportoForm,
+    EmissaoPassagemForm,
+    EmissaoHotelForm,
+    CotacaoVooForm,
+)
+from django.contrib.auth.models import User
+from ..models import (
+    Cliente,
+    ContaFidelidade,
+    ProgramaFidelidade,
+    EmissaoPassagem,
+    Aeroporto,
+    ValorMilheiro,
+    EmissaoHotel,
+    CotacaoVoo,
+    Passageiro,
+    Escala,
+    CompanhiaAerea,
+)
+from services.pdf_service import emissao_pdf_response
+import csv
+import json
+from datetime import timedelta
+
+from .permissions import require_admin_or_operator
+from gestao.services.emissao_financeiro import (
+    calcular_custo_milhas,
+    calcular_custo_total_emissao,
+    calcular_economia,
+    calcular_lucro_emissao,
+    registrar_movimentacao_pontos,
+)
+from gestao.services.clientes_programas import (
+    build_clientes_programas_map,
+    build_contas_administradas_programas_map,
+    build_empresa_programas_map,
+)
+from gestao.services.cpf_limite import get_cpf_control_data, registrar_uso_cpfs, validar_limite_cpfs
+from gestao.utils import normalize_cpf, parse_br_date, validate_cpf_digits
+from gestao.services.dashboard import (
+    _current_management_filters,
+    _management_filter_list,
+    _management_filter_value,
+    build_operational_dashboard_context,
+)
+
+
+
+
+def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=None, passageiros_json="[]", escalas_por_tipo=None, aeroportos=None, menu_ativo="emissoes"):
+    escalas_por_tipo = escalas_por_tipo or {"ida": [], "volta": []}
+    aeroportos = aeroportos or list(Aeroporto.objects.values("id", "nome", "sigla"))
+    cliente_programas = build_clientes_programas_map(empresa_id=getattr(empresa, "id", None))
+    contas_adm_programas = build_contas_administradas_programas_map(empresa_id=getattr(empresa, "id", None))
+    empresa_programas = build_empresa_programas_map(empresa_id=getattr(empresa, "id", None))
+    conta = None
+    tipo = getattr(form.instance, 'emissor_parceiro_id', None) and 'parceiro' or ('administrada' if getattr(form.instance, 'conta_administrada_id', None) else 'cliente')
+    if form.is_bound:
+        tipo = form.data.get('tipo_emissao') or tipo
+        programa_id = form.data.get('programa')
+        cliente_sel = form.data.get('cliente')
+        conta_adm_sel = form.data.get('conta_administrada')
+    else:
+        programa_id = getattr(form.instance, 'programa_id', None) or form.initial.get('programa')
+        cliente_sel = getattr(form.instance, 'cliente_id', None) or form.initial.get('cliente')
+        conta_adm_sel = getattr(form.instance, 'conta_administrada_id', None) or form.initial.get('conta_administrada')
+    if programa_id:
+        filtros = {'programa_id': programa_id}
+        if tipo == 'administrada' and conta_adm_sel:
+            filtros['conta_administrada_id'] = conta_adm_sel
+        elif tipo == 'cliente' and cliente_sel:
+            filtros['cliente_id'] = cliente_sel
+        if len(filtros) > 1:
+            conta = ContaFidelidade.objects.filter(**filtros).select_related('programa', 'cliente__usuario', 'conta_administrada').first()
+    controle = get_cpf_control_data(conta)
+    passageiros_frequentes = {}
+    clientes_ids = set(cliente_programas.keys())
+    if cliente_sel:
+        try:
+            clientes_ids.add(int(cliente_sel))
+        except (TypeError, ValueError):
+            pass
+    for cliente in Cliente.objects.filter(id__in=clientes_ids).prefetch_related('passageiros_frequentes'):
+        passageiros_frequentes[cliente.id] = [
+            {
+                'id': item.id,
+                'nome': item.nome,
+                'cpf': item.cpf,
+                'rg': item.rg,
+                'passaporte': item.passaporte,
+                'passaporte_validade': item.passaporte_validade.isoformat() if item.passaporte_validade else '',
+                'data_nascimento': item.data_nascimento.isoformat() if item.data_nascimento else '',
+                'tipo': item.tipo,
+                'relacao': item.relacao,
+            }
+            for item in cliente.passageiros_frequentes.all().order_by('nome')
+        ]
+    clientes_data = {
+        cliente.id: {
+            "nome": cliente.usuario.get_full_name() or cliente.usuario.username,
+            "cpf": cliente.cpf,
+        }
+        for cliente in Cliente.objects.filter(id__in=clientes_ids).select_related("usuario")
+    }
+    return {
+        'form': form,
+        'emissoes': emissoes if emissoes is not None else EmissaoPassagem.objects.all().order_by('-data_ida'),
+        'passageiros_json': passageiros_json,
+        'escalas_ida_json': json.dumps(escalas_por_tipo['ida']),
+        'escalas_volta_json': json.dumps(escalas_por_tipo['volta']),
+        'aeroportos_json': json.dumps(aeroportos),
+        'cliente_id': cliente_id,
+        'cliente_programas_json': json.dumps(cliente_programas),
+        'contas_adm_programas_json': json.dumps(contas_adm_programas),
+        'empresa_programas_json': json.dumps(empresa_programas),
+        'passageiros_frequentes_json': json.dumps(passageiros_frequentes),
+        'clientes_data_json': json.dumps(clientes_data),
+        'cpf_controle_json': json.dumps(controle or {}),
+        'menu_ativo': menu_ativo,
+    }
+
+def _build_escalas_from_request(request):
+    escalas = []
+    for tipo in ("ida", "volta"):
+        if not request.POST.get(f"{tipo}_tem_escala"):
+            continue
+        try:
+            total_escalas = int(request.POST.get(f"total_escalas_{tipo}", 0) or 0)
+        except (TypeError, ValueError):
+            total_escalas = 0
+        for i in range(total_escalas):
+            aeroporto_id = request.POST.get(f"escala-{tipo}-{i}-aeroporto")
+            dur = request.POST.get(f"escala-{tipo}-{i}-duracao")
+            cidade = request.POST.get(f"escala-{tipo}-{i}-cidade")
+            if aeroporto_id and dur:
+                try:
+                    h, m = map(int, dur.split(":"))
+                except (TypeError, ValueError):
+                    continue
+                escalas.append(
+                    {
+                        "aeroporto_id": aeroporto_id,
+                        "duracao": timedelta(hours=h, minutes=m),
+                        "cidade": cidade or "",
+                        "tipo": tipo,
+                        "ordem": i + 1,
+                    }
+                )
+    return escalas
+
+
+def _format_escalas(escalas_queryset):
+    escalas_por_tipo = {"ida": [], "volta": []}
+    for e in escalas_queryset:
+        total_seconds = int(e["duracao"].total_seconds())
+        h = total_seconds // 3600
+        m = (total_seconds % 3600) // 60
+        escala_formatada = {
+            "aeroporto_id": e["aeroporto_id"],
+            "duracao": f"{h:02d}:{m:02d}",
+            "cidade": e["cidade"],
+            "ordem": e.get("ordem") or 0,
+        }
+        escalas_por_tipo.get(e.get("tipo") or "ida", escalas_por_tipo["ida"]).append(
+            escala_formatada
+        )
+    for tipo in escalas_por_tipo:
+        escalas_por_tipo[tipo] = sorted(
+            escalas_por_tipo[tipo], key=lambda esc: esc.get("ordem") or 0
+        )
+    return escalas_por_tipo
+
+
+def _serialize_passageiros_list(passageiros):
+    for row in passageiros:
+        for field in ("passaporte_validade", "data_nascimento"):
+            if row.get(field):
+                row[field] = row[field].isoformat()
+    return passageiros
+
+
+def _parse_passageiros(post_data):
+    passageiros = []
+    try:
+        total = int(post_data.get("total_passageiros", 0))
+    except (TypeError, ValueError):
+        total = 0
+    for i in range(total):
+        nome = post_data.get(f"passageiro-{i}-nome")
+        cpf = post_data.get(f"passageiro-{i}-cpf")
+        rg = post_data.get(f"passageiro-{i}-rg")
+        passaporte = post_data.get(f"passageiro-{i}-passaporte")
+        passaporte_validade = post_data.get(f"passageiro-{i}-passaporte-validade")
+        data_nascimento = post_data.get(f"passageiro-{i}-data-nascimento")
+        observacoes = post_data.get(f"passageiro-{i}-observacoes")
+        categoria = post_data.get(f"passageiro-{i}-categoria")
+
+        passageiros.append(
+            {
+                "nome": nome,
+                "cpf": cpf,
+                "rg": rg,
+                "passaporte": passaporte,
+                "passaporte_validade": passaporte_validade,
+                "data_nascimento": data_nascimento,
+                "observacoes": observacoes,
+                "categoria": categoria,
+            }
+        )
+    return passageiros
+
+
+def _validate_passageiros(passageiros):
+    from datetime import date
+
+    errors = []
+    for idx, passageiro in enumerate(passageiros, start=1):
+        nome = (passageiro.get("nome") or "").strip()
+        cpf = passageiro.get("cpf")
+        categoria = passageiro.get("categoria")
+        passaporte = (passageiro.get("passaporte") or "").strip()
+        passaporte_validade_raw = passageiro.get("passaporte_validade")
+
+        if not nome:
+            errors.append(f"Passageiro {idx}: informe o nome.")
+        normalized_cpf = None
+        try:
+            normalized_cpf = validate_cpf_digits(
+                cpf or "", field_label=f"CPF do passageiro {idx}"
+            )
+        except ValidationError as exc:
+            errors.append(str(exc.message))
+        if not categoria:
+            errors.append(f"Passageiro {idx}: informe a categoria.")
+
+        passaporte_validade = None
+        if passaporte_validade_raw:
+            try:
+                passaporte_validade = parse_br_date(
+                    passaporte_validade_raw, field_label=f"Validade do passaporte do passageiro {idx}"
+                )
+            except ValidationError as exc:
+                errors.append(str(exc.message))
+        if passaporte:
+            if not passaporte_validade:
+                errors.append(
+                    f"Passageiro {idx}: validade do passaporte é obrigatória quando o passaporte é informado."
+                )
+            elif passaporte_validade < date.today():
+                errors.append(
+                    f"Passageiro {idx}: validade do passaporte não pode estar no passado."
+                )
+        passageiro["passaporte_validade"] = passaporte_validade
+        try:
+            passageiro["data_nascimento"] = parse_br_date(
+                passageiro.get("data_nascimento"),
+                field_label=f"Data de nascimento do passageiro {idx}",
+            )
+        except ValidationError as exc:
+            errors.append(str(exc.message))
+            passageiro["data_nascimento"] = None
+        if not passageiro.get("data_nascimento"):
+            errors.append(f"Passageiro {idx}: data de nascimento é obrigatória.")
+        passageiro["cpf"] = normalized_cpf
+        passageiro["nome"] = nome
+        passageiro["passaporte"] = passaporte
+        passageiro["rg"] = (passageiro.get("rg") or "").strip()
+        passageiro["observacoes"] = (passageiro.get("observacoes") or "").strip()
+    return errors
+
+
+# --- EMISSÕES ---
+@login_required
+def admin_emissoes(request):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    management_context = build_operational_dashboard_context(user=request.user, request=request)
+    management_dashboard = management_context["management_dashboard"]
+    active_filters = _current_management_filters(request)
+    start_date = _management_filter_value(active_filters, "data_inicio")
+    end_date = _management_filter_value(active_filters, "data_fim")
+    selected_clientes = _management_filter_list(active_filters, "cliente")
+    selected_emissores = _management_filter_list(active_filters, "emissor")
+    selected_programas = _management_filter_list(active_filters, "programa")
+    selected_contas = _management_filter_list(active_filters, "conta")
+    selected_status = _management_filter_value(active_filters, "status")
+
+    emissoes = EmissaoPassagem.objects.filter(
+        Q(cliente__perfil="cliente", cliente__ativo=True) | Q(conta_administrada__isnull=False)
+    ).select_related(
+        "cliente",
+        "programa",
+        "aeroporto_partida",
+        "aeroporto_destino",
+        "conta_administrada",
+        "emissor_parceiro",
+        "companhia_aerea",
+    )
+    if start_date:
+        emissoes = emissoes.filter(criado_em__date__gte=start_date)
+    if end_date:
+        emissoes = emissoes.filter(criado_em__date__lte=end_date)
+    if selected_clientes:
+        emissoes = emissoes.filter(cliente_id__in=selected_clientes)
+    if selected_emissores:
+        emissoes = emissoes.filter(emissor_parceiro_id__in=selected_emissores)
+    if selected_programas:
+        emissoes = emissoes.filter(programa_id__in=selected_programas)
+    if selected_contas:
+        emissoes = emissoes.filter(conta_administrada_id__in=selected_contas)
+    if selected_status == "emitido":
+        emissoes = emissoes.exclude(localizador="").exclude(localizador__isnull=True)
+    elif selected_status == "pendente":
+        emissoes = emissoes.filter(Q(localizador="") | Q(localizador__isnull=True))
+    emissoes = emissoes.order_by("-criado_em")
+
+    if request.GET.get("export") == "excel":
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="emissoes.csv"'
+        writer = csv.writer(response)
+        writer.writerow(
+            [
+                "Cliente",
+                "Programa",
+                "Aeroporto Partida",
+                "Aeroporto Destino",
+                "Data Ida",
+                "Data Volta",
+                "Qtd Passageiros",
+                "Valor Referência",
+                "Taxas",
+                "Pontos Usados",
+                "Economia",
+                "Detalhes",
+            ]
+        )
+        for e in emissoes:
+            writer.writerow(
+                [
+                    str(e.cliente),
+                    str(e.programa),
+                    e.aeroporto_partida,
+                    e.aeroporto_destino,
+                    e.data_ida,
+                    e.data_volta,
+                    e.qtd_passageiros,
+                    e.valor_referencia,
+                    e.valor_taxas,
+                    e.pontos_utilizados,
+                    e.economia_obtida,
+                    e.detalhes,
+                ]
+            )
+        return response
+
+    total_emissoes = emissoes.count()
+    total_receita = sum(float(item.valor_total_final or item.valor_venda_final or 0) for item in emissoes)
+    total_custo = sum(float(item.custo_total or 0) for item in emissoes)
+    total_lucro = sum(float(item.lucro or 0) for item in emissoes)
+    return render(
+        request,
+        "admin_custom/emissoes.html",
+        {
+            "emissoes": emissoes,
+            "management_dashboard": management_dashboard,
+            "emissao_totais": {
+                "total": total_emissoes,
+                "receita": f"R$ {total_receita:,.2f}",
+                "custo": f"R$ {total_custo:,.2f}",
+                "lucro": f"R$ {total_lucro:,.2f}",
+            },
+            "menu_ativo": "emissoes",
+        },
+    )
+
+
+@login_required
+def nova_emissao(request):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    cliente_id = request.GET.get("cliente_id")
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    escalas_por_tipo = {"ida": [], "volta": []}
+    if request.method == "POST":
+        form = EmissaoPassagemForm(request.POST, empresa=empresa)
+        escalas_payload = _build_escalas_from_request(request)
+        escalas_por_tipo = _format_escalas(escalas_payload)
+        if form.is_valid():
+            emissao = form.save(commit=False)
+            if emissao.cliente and not emissao.cliente.ativo:
+                return HttpResponse("Cliente inativo", status=403)
+            tipo_emissao = form.cleaned_data.get("tipo_emissao") or "cliente"
+            emissao_parceiro = tipo_emissao == "parceiro"
+            conta = None
+            if tipo_emissao == "administrada":
+                conta = ContaFidelidade.objects.filter(
+                    conta_administrada=emissao.conta_administrada,
+                    programa=emissao.programa,
+                ).select_related("programa").first()
+            elif tipo_emissao == "cliente":
+                conta = ContaFidelidade.objects.filter(
+                    cliente=emissao.cliente, programa=emissao.programa
+                ).select_related("programa").first()
+            valor_medio_milheiro = None
+            if tipo_emissao in ("cliente", "administrada") and conta:
+                valor_medio_milheiro = conta.valor_medio_por_mil
+                if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
+                    valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
+            elif tipo_emissao == "parceiro":
+                valor_medio_milheiro = float(emissao.valor_milheiro_parceiro or 0)
+            if tipo_emissao in ("cliente", "administrada") and not conta:
+                form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
+                messages.error(
+                    request,
+                    "Não foi possível salvar a emissão: programa não vinculado ao titular selecionado.",
+                )
+            if form.errors:
+                form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
+            elif emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
+                form.add_error(
+                    "programa",
+                    "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
+                )
+                messages.error(
+                    request,
+                    "Não foi possível salvar a emissão: valor médio do milheiro ausente para o titular.",
+                )
+            else:
+                passageiros = _parse_passageiros(request.POST)
+                passageiros_errors = _validate_passageiros(passageiros)
+                for err in passageiros_errors:
+                    form.add_error(None, err)
+                cpfs = [p.get("cpf") for p in passageiros if p.get("cpf")]
+                try:
+                    validar_limite_cpfs(conta, cpfs)
+                except ValidationError as exc:
+                    form.add_error(None, exc.message)
+                if form.errors:
+                    form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
+                else:
+                    with transaction.atomic():
+                        criar_hotel_nome = (form.cleaned_data.get("criar_hotel_nome") or "").strip()
+                        if criar_hotel_nome:
+                            hotel = EmissaoHotel.objects.create(
+                                cliente=emissao.cliente,
+                                nome_hotel=criar_hotel_nome,
+                                check_in=form.cleaned_data.get("criar_hotel_check_in") or emissao.data_ida.date(),
+                                check_out=form.cleaned_data.get("criar_hotel_check_out") or emissao.data_ida.date(),
+                                valor_referencia=Decimal("0"),
+                                valor_pago=Decimal("0"),
+                                economia_obtida=Decimal("0"),
+                            )
+                            emissao.hotel_vinculado = hotel
+                        if tipo_emissao in ("cliente", "administrada") and valor_medio_milheiro is not None:
+                            emissao.valor_milheiro_parceiro = Decimal(str(valor_medio_milheiro))
+                        valor_milheiro = emissao.valor_milheiro_parceiro or 0
+                        valor_referencia_pontos = calcular_custo_milhas(
+                            emissao.pontos_utilizados or 0, valor_milheiro
+                        )
+                        emissao.valor_referencia_pontos = valor_referencia_pontos
+                        incluir_taxas = tipo_emissao == "cliente"
+                        custo_total = calcular_custo_total_emissao(
+                            emissao, valor_milheiro, incluir_taxas=incluir_taxas
+                        )
+                        emissao.custo_total = custo_total
+                        emissao.economia_obtida = calcular_economia(emissao, custo_total)
+                        emissao.lucro = calcular_lucro_emissao(emissao, custo_total)
+                        emissao.save()
+
+                        total_passageiros_esperado = (emissao.qtd_adultos or 0) + (emissao.qtd_criancas or 0) + (emissao.qtd_bebes or 0)
+                        total_passageiros_recebido = int(request.POST.get("total_passageiros", 0))
+
+                        if total_passageiros_recebido != total_passageiros_esperado:
+                            transaction.set_rollback(True)
+                            form.add_error(
+                                None,
+                                f"Inconsistência no número de passageiros. Esperado: {total_passageiros_esperado}, Recebido: {total_passageiros_recebido}. Verifique se todos os passageiros foram preenchidos corretamente.",
+                            )
+                            messages.error(
+                                request, "Não foi possível salvar a emissão. Inconsistência no número de passageiros."
+                            )
+                            emissoes = EmissaoPassagem.objects.all().order_by("-data_ida")
+                            return render(
+                                request,
+                                "admin_custom/form_emissao_passagem.html",
+                                _build_emissao_template_context(
+                                    form=form,
+                                    empresa=empresa,
+                                    cliente_id=cliente_id,
+                                    emissoes=emissoes,
+                                    passageiros_json="[]",
+                                    escalas_por_tipo=escalas_por_tipo,
+                                ),
+                            )
+
+                        registrar_uso_cpfs(conta, cpfs, emissao.data_ida.date())
+                        for passageiro in passageiros:
+                            Passageiro.objects.create(
+                                emissao=emissao,
+                                nome=passageiro.get("nome"),
+                                cpf=passageiro.get("cpf"),
+                                rg=passageiro.get("rg"),
+                                passaporte=passageiro.get("passaporte"),
+                                passaporte_validade=passageiro.get("passaporte_validade"),
+                                data_nascimento=passageiro.get("data_nascimento"),
+                                observacoes=passageiro.get("observacoes"),
+                                categoria=passageiro.get("categoria"),
+                            )
+                        for escala in escalas_payload:
+                            Escala.objects.create(emissao=emissao, **escala)
+                        if conta and not emissao_parceiro:
+                            registrar_movimentacao_pontos(
+                                conta,
+                                emissao,
+                                emissao.pontos_utilizados or 0,
+                                emissao.valor_referencia_pontos or Decimal("0"),
+                            )
+                        messages.success(request, "Emissão salva com sucesso.")
+                        return redirect("admin_emissoes")
+            messages.error(
+                request,
+                "Não foi possível salvar a emissão. Corrija os campos destacados e tente novamente.",
+            )
+        else:
+            messages.error(
+                request,
+                "Não foi possível salvar a emissão. Corrija os campos destacados e tente novamente.",
+            )
+    else:
+        initial = {"cliente": cliente_id} if cliente_id else {}
+        form = EmissaoPassagemForm(initial=initial, empresa=empresa)
+    emissoes = EmissaoPassagem.objects.all().order_by("-data_ida")
+    return render(
+        request,
+        "admin_custom/form_emissao_passagem.html",
+        _build_emissao_template_context(
+            form=form,
+            empresa=empresa,
+            cliente_id=cliente_id,
+            emissoes=emissoes,
+            passageiros_json="[]",
+            escalas_por_tipo=escalas_por_tipo,
+        ),
+    )
+
+
+@login_required
+def editar_emissao(request, emissao_id):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    emissao = EmissaoPassagem.objects.get(id=emissao_id)
+    empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    escalas_por_tipo = _format_escalas(
+        emissao.escalas.values("aeroporto_id", "duracao", "cidade", "tipo", "ordem")
+    )
+    if request.method == "POST":
+        form = EmissaoPassagemForm(request.POST, instance=emissao, empresa=empresa)
+        escalas_payload = _build_escalas_from_request(request)
+        escalas_por_tipo = _format_escalas(escalas_payload)
+        if form.is_valid():
+            with transaction.atomic():
+                emissao = form.save(commit=False)
+                tipo_emissao = form.cleaned_data.get("tipo_emissao") or "cliente"
+                emissao_parceiro = tipo_emissao == "parceiro"
+                conta = None
+                if tipo_emissao == "administrada":
+                    conta = ContaFidelidade.objects.filter(
+                        conta_administrada=emissao.conta_administrada,
+                        programa=emissao.programa,
+                    ).select_related("programa").first()
+                elif tipo_emissao == "cliente":
+                    conta = ContaFidelidade.objects.filter(
+                        cliente=emissao.cliente, programa=emissao.programa
+                    ).select_related("programa").first()
+                valor_medio_milheiro = None
+                if tipo_emissao in ("cliente", "administrada") and conta:
+                    valor_medio_milheiro = conta.valor_medio_por_mil
+                    if (not valor_medio_milheiro or valor_medio_milheiro <= 0) and getattr(conta.programa, "preco_medio_milheiro", None):
+                        valor_medio_milheiro = float(conta.programa.preco_medio_milheiro)
+                elif tipo_emissao == "parceiro":
+                    valor_medio_milheiro = float(emissao.valor_milheiro_parceiro or 0)
+                if tipo_emissao in ("cliente", "administrada") and not conta:
+                    form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
+                    messages.error(
+                        request,
+                        "Não foi possível salvar a emissão: programa não vinculado ao titular selecionado.",
+                    )
+                if form.errors:
+                    form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
+                elif emissao.pontos_utilizados and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
+                    form.add_error(
+                        "programa",
+                        "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
+                    )
+                    messages.error(
+                        request,
+                        "Não foi possível salvar a emissão: valor médio do milheiro ausente para o titular.",
+                    )
+                else:
+                    criar_hotel_nome = (form.cleaned_data.get("criar_hotel_nome") or "").strip()
+                    if criar_hotel_nome:
+                        hotel = EmissaoHotel.objects.create(
+                            cliente=emissao.cliente,
+                            nome_hotel=criar_hotel_nome,
+                            check_in=form.cleaned_data.get("criar_hotel_check_in") or emissao.data_ida.date(),
+                            check_out=form.cleaned_data.get("criar_hotel_check_out") or emissao.data_ida.date(),
+                            valor_referencia=Decimal("0"),
+                            valor_pago=Decimal("0"),
+                            economia_obtida=Decimal("0"),
+                        )
+                        emissao.hotel_vinculado = hotel
+                    passageiros = _parse_passageiros(request.POST)
+                    passageiros_errors = _validate_passageiros(passageiros)
+                    for err in passageiros_errors:
+                        form.add_error(None, err)
+                    cpfs = [p.get("cpf") for p in passageiros if p.get("cpf")]
+                    try:
+                        validar_limite_cpfs(conta, cpfs, emissao_id=emissao.id)
+                    except ValidationError as exc:
+                        form.add_error(None, exc.message)
+                    if form.errors:
+                        form.add_error(None, "Revise os campos destacados antes de salvar a emissão.")
+                        transaction.set_rollback(True)
+                        messages.error(
+                            request,
+                            "Não foi possível salvar a emissão. Corrija os campos destacados e tente novamente.",
+                        )
+                        passageiros = _serialize_passageiros_list(list(
+                            emissao.passageiros.filter(categoria="adulto").values(
+                                "nome",
+                                "cpf",
+                                "rg",
+                                "passaporte",
+                                "passaporte_validade",
+                                "data_nascimento",
+                                "observacoes",
+                                "categoria",
+                            )
+                        ))
+                        passageiros += _serialize_passageiros_list(list(
+                            emissao.passageiros.filter(categoria="crianca").values(
+                                "nome",
+                                "cpf",
+                                "rg",
+                                "passaporte",
+                                "passaporte_validade",
+                                "data_nascimento",
+                                "observacoes",
+                                "categoria",
+                            )
+                        ))
+                        passageiros += _serialize_passageiros_list(list(
+                            emissao.passageiros.filter(categoria="bebe").values(
+                                "nome",
+                                "cpf",
+                                "rg",
+                                "passaporte",
+                                "passaporte_validade",
+                                "data_nascimento",
+                                "observacoes",
+                                "categoria",
+                            )
+                        ))
+                        return render(
+                            request,
+                            "admin_custom/form_emissao_passagem.html",
+                            _build_emissao_template_context(
+                                form=form,
+                                empresa=empresa,
+                                emissoes=EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida"),
+                                passageiros_json=json.dumps(passageiros),
+                                escalas_por_tipo=escalas_por_tipo,
+                            ),
+                        )
+
+                    if tipo_emissao in ("cliente", "administrada") and valor_medio_milheiro is not None:
+                        emissao.valor_milheiro_parceiro = Decimal(str(valor_medio_milheiro))
+                    valor_milheiro = emissao.valor_milheiro_parceiro or 0
+                    valor_referencia_pontos = calcular_custo_milhas(
+                        emissao.pontos_utilizados or 0, valor_milheiro
+                    )
+                    emissao.valor_referencia_pontos = valor_referencia_pontos
+                    incluir_taxas = tipo_emissao == "cliente"
+                    custo_total = calcular_custo_total_emissao(
+                        emissao, valor_milheiro, incluir_taxas=incluir_taxas
+                    )
+                    emissao.custo_total = custo_total
+                    emissao.economia_obtida = calcular_economia(emissao, custo_total)
+                    emissao.lucro = calcular_lucro_emissao(emissao, custo_total)
+                    emissao.save()
+
+                    total_passageiros_esperado = (emissao.qtd_adultos or 0) + (emissao.qtd_criancas or 0) + (emissao.qtd_bebes or 0)
+                    total_passageiros_recebido = int(request.POST.get("total_passageiros", 0))
+
+                    if total_passageiros_recebido != total_passageiros_esperado:
+                        transaction.set_rollback(True)
+                        form.add_error(
+                            None,
+                            f"Inconsistência no número de passageiros. Esperado: {total_passageiros_esperado}, Recebido: {total_passageiros_recebido}. Verifique se todos os passageiros foram preenchidos corretamente.",
+                        )
+                        messages.error(
+                            request,
+                            "Não foi possível salvar a emissão. Inconsistência no número de passageiros.",
+                        )
+                        passageiros = _serialize_passageiros_list(list(
+                            emissao.passageiros.filter(categoria="adulto").values(
+                                "nome",
+                                "cpf",
+                                "rg",
+                                "passaporte",
+                                "passaporte_validade",
+                                "data_nascimento",
+                                "observacoes",
+                                "categoria",
+                            )
+                        ))
+                        passageiros += _serialize_passageiros_list(list(
+                            emissao.passageiros.filter(categoria="crianca").values(
+                                "nome",
+                                "cpf",
+                                "rg",
+                                "passaporte",
+                                "passaporte_validade",
+                                "data_nascimento",
+                                "observacoes",
+                                "categoria",
+                            )
+                        ))
+                        passageiros += _serialize_passageiros_list(list(
+                            emissao.passageiros.filter(categoria="bebe").values(
+                                "nome",
+                                "cpf",
+                                "rg",
+                                "passaporte",
+                                "passaporte_validade",
+                                "data_nascimento",
+                                "observacoes",
+                                "categoria",
+                            )
+                        ))
+                        return render(
+                            request,
+                            "admin_custom/form_emissao_passagem.html",
+                            _build_emissao_template_context(
+                                form=form,
+                                empresa=empresa,
+                                emissoes=EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida"),
+                                passageiros_json=json.dumps(passageiros),
+                                escalas_por_tipo=escalas_por_tipo,
+                            ),
+                        )
+
+                    registrar_uso_cpfs(conta, cpfs, emissao.data_ida.date())
+                    emissao.passageiros.all().delete()
+                    for passageiro in passageiros:
+                        Passageiro.objects.create(
+                            emissao=emissao,
+                            nome=passageiro.get("nome"),
+                            cpf=passageiro.get("cpf"),
+                            rg=passageiro.get("rg"),
+                            passaporte=passageiro.get("passaporte"),
+                            passaporte_validade=passageiro.get("passaporte_validade"),
+                            data_nascimento=passageiro.get("data_nascimento"),
+                            observacoes=passageiro.get("observacoes"),
+                            categoria=passageiro.get("categoria"),
+                        )
+                    emissao.escalas.all().delete()
+                    for escala in escalas_payload:
+                        Escala.objects.create(emissao=emissao, **escala)
+                    if conta and not emissao_parceiro:
+                        registrar_movimentacao_pontos(
+                            conta, emissao, emissao.pontos_utilizados or 0, emissao.valor_referencia_pontos or Decimal("0")
+                        )
+                    messages.success(request, "Emissão atualizada com sucesso.")
+                    return redirect("admin_emissoes")
+            messages.error(
+                request,
+                "Não foi possível salvar a emissão. Corrija os campos destacados e tente novamente.",
+            )
+        else:
+            messages.error(
+                request,
+                "Não foi possível salvar a emissão. Corrija os campos destacados e tente novamente.",
+            )
+    else:
+        form = EmissaoPassagemForm(instance=emissao, empresa=empresa)
+    emissoes = EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida")
+    passageiros = _serialize_passageiros_list(list(
+        emissao.passageiros.filter(categoria="adulto").values(
+            "nome",
+            "cpf",
+            "rg",
+            "passaporte",
+            "passaporte_validade",
+            "data_nascimento",
+            "observacoes",
+            "categoria",
+        )
+    ))
+    passageiros += _serialize_passageiros_list(list(
+        emissao.passageiros.filter(categoria="crianca").values(
+            "nome",
+            "cpf",
+            "rg",
+            "passaporte",
+            "passaporte_validade",
+            "data_nascimento",
+            "observacoes",
+            "categoria",
+        )
+    ))
+    passageiros += _serialize_passageiros_list(list(
+        emissao.passageiros.filter(categoria="bebe").values(
+            "nome",
+            "cpf",
+            "rg",
+            "passaporte",
+            "passaporte_validade",
+            "data_nascimento",
+            "observacoes",
+            "categoria",
+        )
+    ))
+    return render(
+        request,
+        "admin_custom/form_emissao_passagem.html",
+        _build_emissao_template_context(
+            form=form,
+            empresa=empresa,
+            emissoes=emissoes,
+            passageiros_json=json.dumps(passageiros),
+            escalas_por_tipo=escalas_por_tipo,
+        ),
+    )
+
+
+@login_required
+def emissao_pdf(request, emissao_id):
+    """Download da emissão em formato PDF para o painel administrativo."""
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
+    return emissao_pdf_response(emissao)
+
+
+@login_required
+def emissao_detalhe(request, emissao_id):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
+    passageiros = list(
+        emissao.passageiros.all().order_by("categoria", "nome")
+    )
+    cpfs_consumidos = len({normalize_cpf(p.cpf) for p in passageiros if p.cpf})
+    return render(
+        request,
+        "admin_custom/emissao_detalhe.html",
+        {
+            "emissao": emissao,
+            "passageiros": passageiros,
+            "cpfs_consumidos": cpfs_consumidos,
+            "menu_ativo": "emissoes",
+        },
+    )
+
+
+@login_required
+def deletar_emissao(request, emissao_id):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
+    EmissaoPassagem.objects.filter(id=emissao_id).delete()
+    messages.success(request, "Emissão deletada com sucesso.")
+    return redirect("admin_emissoes")
+
+
+@login_required
+def admin_hoteis(request):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    management_context = build_operational_dashboard_context(user=request.user, request=request)
+    management_dashboard = management_context["management_dashboard"]
+    active_filters = _current_management_filters(request)
+    start_date = _management_filter_value(active_filters, "data_inicio")
+    end_date = _management_filter_value(active_filters, "data_fim")
+    selected_clientes = _management_filter_list(active_filters, "cliente")
+
+    emissoes = EmissaoHotel.objects.all().select_related("cliente__usuario")
+    if start_date:
+        emissoes = emissoes.filter(check_in__gte=start_date)
+    if end_date:
+        emissoes = emissoes.filter(check_out__lte=end_date)
+    if selected_clientes:
+        emissoes = emissoes.filter(cliente_id__in=selected_clientes)
+
+    total = emissoes.count()
+    valor_referencia_total = sum((e.valor_referencia or 0) for e in emissoes)
+    valor_pago_total = sum((e.valor_pago or 0) for e in emissoes)
+    economia_total = sum((e.economia_obtida or 0) for e in emissoes)
+    return render(
+        request,
+        "admin_custom/hoteis.html",
+        {
+            "emissoes": emissoes.order_by("-check_in"),
+            "hotel_totais": {
+                "total": total,
+                "referencia": f"R$ {valor_referencia_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+                "pago": f"R$ {valor_pago_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+                "economia": f"R$ {economia_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+            },
+            "management_dashboard": management_dashboard,
+            "menu_ativo": "hoteis",
+        },
+    )
+
+
+@login_required
+def nova_emissao_hotel(request):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    if request.method == "POST":
+        form = EmissaoHotelForm(request.POST)
+        if form.is_valid():
+            emissao = form.save(commit=False)
+            if not emissao.cliente.ativo:
+                return HttpResponse("Cliente inativo", status=403)
+            if emissao.valor_referencia and emissao.valor_pago:
+                emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
+            emissao.save()
+            return redirect("admin_hoteis")
+    else:
+        form = EmissaoHotelForm()
+    return render(
+        request,
+        "admin_custom/form_hotel.html",
+        {"form": form, "menu_ativo": "hoteis"},
+    )
+
+
+@login_required
+def editar_emissao_hotel(request, emissao_id):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    emissao = EmissaoHotel.objects.get(id=emissao_id)
+    if request.method == "POST":
+        form = EmissaoHotelForm(request.POST, instance=emissao)
+        if form.is_valid():
+            emissao = form.save(commit=False)
+            if emissao.valor_referencia and emissao.valor_pago:
+                emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
+            emissao.save()
+            return redirect("admin_hoteis")
+    else:
+        form = EmissaoHotelForm(instance=emissao)
+    return render(
+        request,
+        "admin_custom/form_hotel.html",
+        {"form": form, "menu_ativo": "hoteis"},
+    )
+
+
+@login_required
+def deletar_emissao_hotel(request, emissao_id):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
+    EmissaoHotel.objects.filter(id=emissao_id).delete()
+    messages.success(request, "Emissão deletada com sucesso.")
+    return redirect("admin_hoteis")

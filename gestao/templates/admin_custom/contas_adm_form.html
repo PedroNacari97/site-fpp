@@ -1,0 +1,106 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}{% if form.instance.pk %}Editar Conta Administrada{% else %}Nova Conta Administrada{% endif %}{% endblock %}
+{% block header_title %}{% if form.instance.pk %}Editar Conta Administrada{% else %}Nova Conta Administrada{% endif %}{% endblock %}
+{% block header_subtitle %}<span>Cadastro de titular administrado</span>{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/contas_administradas_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-managed-form">
+  {% if form.errors %}
+  <div class="admin-managed-form__alert">
+    <p class="admin-managed-form__alert-title">Nao foi possivel salvar. Corrija os pontos abaixo:</p>
+    <ul class="admin-managed-form__alert-list">
+      {% for field in form %}
+        {% for error in field.errors %}
+        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <form method="post" class="admin-managed-form__layout" novalidate>
+    {% csrf_token %}
+
+    <div class="admin-managed-form__main">
+      <section class="admin-managed-form__card">
+        <header class="admin-managed-form__card-head">
+          <p class="admin-managed-form__eyebrow">Identificacao da Conta</p>
+          <h2 class="admin-managed-form__title">Nome do titular administrado</h2>
+        </header>
+        <div class="admin-managed-form__card-body">
+          <div class="admin-managed-form__field">
+            <label for="{{ form.nome.id_for_label }}">Nome identificador <span>*</span></label>
+            {{ form.nome }}
+            <p class="admin-managed-form__hint">Use um nome curto e descritivo para identificar facilmente nos filtros</p>
+            {% for error in form.nome.errors %}
+            <div class="admin-managed-form__field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <label class="admin-managed-form__toggle">
+            {{ form.ativo }}
+            <span>Conta ativa no sistema</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="admin-managed-form__card">
+        <header class="admin-managed-form__card-head">
+          <p class="admin-managed-form__eyebrow">Informacoes Adicionais</p>
+          <h2 class="admin-managed-form__title">Observacoes e notas</h2>
+        </header>
+        <div class="admin-managed-form__card-body">
+          <div class="admin-managed-form__field">
+            <label for="{{ form.observacoes.id_for_label }}">Observacoes</label>
+            {{ form.observacoes }}
+            {% for error in form.observacoes.errors %}
+            <div class="admin-managed-form__field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="admin-managed-form__side">
+      <section class="admin-managed-form__card admin-managed-form__card--compact">
+        <header class="admin-managed-form__card-head">
+          <p class="admin-managed-form__eyebrow">Status</p>
+        </header>
+        <div class="admin-managed-form__card-body">
+          <div class="admin-managed-form__status-row">
+            <span>Status atual:</span>
+            <span class="admin-managed-form__status {% if form.instance.pk and not form.instance.ativo %}admin-managed-form__status--inactive{% else %}admin-managed-form__status--active{% endif %}">
+              {% if form.instance.pk and not form.instance.ativo %}Inativa{% else %}Ativa{% endif %}
+            </span>
+          </div>
+          <p class="admin-managed-form__status-note">Contas inativas nao aparecem nas listagens de resgate</p>
+        </div>
+      </section>
+
+      <section class="admin-managed-form__card admin-managed-form__card--tips">
+        <div class="admin-managed-form__tips">
+          <h3>Dicas</h3>
+          <ul>
+            <li>O nome identificador sera usado nos filtros e listagens</li>
+            <li>Use nomes curtos e descritivos</li>
+            <li>Desative contas que nao estao mais em uso</li>
+            <li>Adicione observacoes relevantes para facilitar a gestao</li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="admin-managed-form__actions">
+        <button type="submit" class="admin-managed-form__submit">Salvar Conta</button>
+        <a href="{% url 'admin_contas_administradas' %}" class="admin-managed-form__cancel">Cancelar</a>
+      </div>
+    </aside>
+  </form>
+</div>
+{% endblock %}

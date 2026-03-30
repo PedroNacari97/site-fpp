@@ -1,0 +1,82 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Transferir pontos - {{ conta.programa.nome }}{% endblock %}
+{% block header_title %}Transferir pontos - {{ conta.programa.nome }}{% endblock %}
+{% block header_subtitle %}<span>Painel de gestao de milhas.</span>{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_movimentacoes' conta.id %}" class="transfer-page__back">Voltar</a>
+{% endblock %}
+{% block mobile_header_actions %}
+<a href="{% url 'admin_movimentacoes' conta.id %}" class="transfer-page__back">Voltar</a>
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/movimentacoes_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="transfer-page">
+  <section class="transfer-page__card">
+    <header class="transfer-page__head">
+      <h2 class="transfer-page__title">Cliente: {{ conta.cliente.usuario.get_full_name|default:conta.cliente.usuario.username }}</h2>
+      <p class="transfer-page__subtitle">Saldo atual: {{ conta.saldo_pontos }} pontos | Valor medio/minimo: R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</p>
+    </header>
+
+    <form method="post" class="transfer-page__form" novalidate>
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div class="transfer-page__errors">
+        {% for error in form.non_field_errors %}
+        <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="transfer-page__grid transfer-page__grid--double">
+        <div class="transfer-page__field">
+          <label for="{{ form.conta_origem.id_for_label }}">Conta de origem</label>
+          {{ form.conta_origem }}
+          {% for error in form.conta_origem.errors %}
+          <div class="transfer-page__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="transfer-page__field">
+          <label for="{{ form.conta_destino.id_for_label }}">Conta de destino</label>
+          {{ form.conta_destino }}
+          {% for error in form.conta_destino.errors %}
+          <div class="transfer-page__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="transfer-page__grid transfer-page__grid--triple">
+        <div class="transfer-page__field">
+          <label for="{{ form.data.id_for_label }}">Data</label>
+          {{ form.data }}
+          {% for error in form.data.errors %}
+          <div class="transfer-page__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="transfer-page__field">
+          <label for="{{ form.pontos.id_for_label }}">Pontos</label>
+          {{ form.pontos }}
+          {% for error in form.pontos.errors %}
+          <div class="transfer-page__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+        <div class="transfer-page__field">
+          <label for="{{ form.bonus_percentual.id_for_label }}">Bonus (%)</label>
+          {{ form.bonus_percentual }}
+          {% for error in form.bonus_percentual.errors %}
+          <div class="transfer-page__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="transfer-page__actions">
+        <button type="submit" class="transfer-page__submit">Transferir</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

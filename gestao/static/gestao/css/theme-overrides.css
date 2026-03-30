@@ -1,0 +1,543 @@
+:root {
+  --theme-outline-strong: hsl(221 39% 11% / 0.82);
+  --home-bg: var(--color-bg);
+  --home-surface: var(--color-surface);
+  --home-surface-2: var(--color-input-bg);
+  --home-border: var(--color-border);
+  --home-field-border: var(--color-input-border);
+  --home-text: var(--color-heading);
+  --home-text-soft: var(--color-heading);
+  --home-text-muted: var(--color-muted);
+  --home-text-dim: var(--color-muted);
+  --home-blue: hsl(var(--primary));
+  --home-green: hsl(var(--success));
+
+  --dashboard-bg: var(--color-bg);
+  --dashboard-surface: var(--color-surface);
+  --dashboard-surface-soft: var(--color-input-bg);
+  --dashboard-border: var(--color-border);
+  --dashboard-field-border: var(--color-input-border);
+  --dashboard-text: var(--color-heading);
+  --dashboard-text-soft: var(--color-heading);
+  --dashboard-text-muted: var(--color-muted);
+  --dashboard-blue: hsl(var(--primary));
+  --dashboard-cyan: #36cfc9;
+  --dashboard-green: hsl(var(--success));
+  --dashboard-purple: #8b5cf6;
+
+  --clients-bg: var(--color-bg);
+  --clients-surface: var(--color-surface);
+  --clients-surface-2: var(--color-input-bg);
+  --clients-border: var(--color-border);
+  --clients-border-soft: var(--color-input-border);
+  --clients-text: var(--color-heading);
+  --clients-text-soft: var(--color-heading);
+  --clients-text-muted: var(--color-muted);
+  --clients-text-dim: var(--color-muted);
+  --clients-blue: hsl(var(--primary));
+  --clients-blue-2: hsl(var(--primary));
+  --clients-green: hsl(var(--success));
+  --clients-green-bg: hsl(var(--success) / 0.1);
+  --clients-red: hsl(var(--destructive));
+  --clients-red-bg: hsl(var(--destructive) / 0.1);
+
+  --loyalty-bg: var(--color-bg);
+  --loyalty-surface: var(--color-surface);
+  --loyalty-surface-2: var(--color-input-bg);
+  --loyalty-border: var(--color-border);
+  --loyalty-border-soft: var(--color-input-border);
+  --loyalty-text: var(--color-heading);
+  --loyalty-text-soft: var(--color-heading);
+  --loyalty-text-muted: var(--color-muted);
+  --loyalty-blue: hsl(var(--primary));
+  --loyalty-green: hsl(var(--success));
+  --loyalty-yellow: hsl(var(--warning));
+  --loyalty-red: hsl(var(--destructive));
+
+  --managed-bg: var(--color-bg);
+  --managed-surface: var(--color-surface);
+  --managed-border: var(--color-border);
+  --managed-border-soft: var(--color-input-border);
+  --managed-text: var(--color-heading);
+  --managed-text-soft: var(--color-heading);
+  --managed-text-muted: var(--color-muted);
+  --managed-text-faint: var(--color-muted);
+  --managed-blue: hsl(var(--primary));
+  --managed-blue-strong: hsl(221 83% 53%);
+  --managed-green: hsl(var(--success));
+  --managed-green-bg: hsl(var(--success) / 0.1);
+  --managed-yellow: hsl(var(--warning));
+  --managed-yellow-bg: hsl(var(--warning) / 0.12);
+  --managed-red: hsl(var(--destructive));
+  --managed-red-bg: hsl(var(--destructive) / 0.1);
+  --managed-purple: #8b5cf6;
+  --managed-info: hsl(var(--primary));
+
+  --client-form-bg: var(--color-bg);
+  --client-form-surface: var(--color-surface);
+  --client-form-surface-2: var(--color-input-bg);
+  --client-form-border: var(--color-border);
+  --client-form-border-soft: var(--color-input-border);
+  --client-form-text: var(--color-heading);
+  --client-form-text-soft: var(--color-heading);
+  --client-form-text-muted: var(--color-muted);
+  --client-form-text-dim: var(--color-muted);
+  --client-form-blue: hsl(var(--primary));
+  --client-form-red: hsl(var(--destructive));
+
+  --detail-bg: var(--color-bg);
+  --detail-surface: var(--color-surface);
+  --detail-surface-2: var(--color-input-bg);
+  --detail-border: var(--color-border);
+  --detail-border-soft: var(--color-input-border);
+  --detail-text: var(--color-heading);
+  --detail-text-soft: var(--color-heading);
+  --detail-text-muted: var(--color-muted);
+  --detail-text-dim: var(--color-muted);
+  --detail-blue: hsl(var(--primary));
+  --detail-blue-2: hsl(var(--primary));
+  --detail-purple: #8b5cf6;
+  --detail-purple-2: #a855f7;
+  --detail-teal: #14b8a6;
+  --detail-teal-2: #2dd4bf;
+  --detail-amber: #d97706;
+  --detail-amber-2: #f59e0b;
+  --detail-red: hsl(var(--destructive));
+  --detail-red-border: hsl(var(--destructive) / 0.22);
+
+  --account-form-bg: var(--color-bg);
+  --account-form-surface: var(--color-surface);
+  --account-form-border: var(--color-border);
+  --account-form-border-soft: var(--color-input-border);
+  --account-form-text: var(--color-heading);
+  --account-form-text-muted: var(--color-muted);
+  --account-form-text-faint: var(--color-muted);
+
+  --wizard-bg: var(--color-bg);
+  --wizard-surface: var(--color-surface);
+  --wizard-surface-2: var(--color-input-bg);
+  --wizard-border: var(--color-border);
+  --wizard-border-2: var(--color-input-border);
+  --wizard-text: var(--color-heading);
+  --wizard-text-soft: var(--color-heading);
+  --wizard-text-muted: var(--color-muted);
+  --wizard-text-dim: var(--color-muted);
+}
+
+body.dark-mode {
+  --home-bg: #0f1419;
+  --home-surface: #1a2332;
+  --home-surface-2: #0f1419;
+  --home-border: #1e2939;
+  --home-field-border: #364153;
+  --home-text: #ffffff;
+  --home-text-soft: #d1d5dc;
+  --home-text-muted: #99a1af;
+  --home-text-dim: #717182;
+
+  --dashboard-bg: #0f1419;
+  --dashboard-surface: #1a2332;
+  --dashboard-surface-soft: #11171f;
+  --dashboard-border: #1e2939;
+  --dashboard-field-border: #364153;
+  --dashboard-text: #ffffff;
+  --dashboard-text-soft: #d1d5dc;
+  --dashboard-text-muted: #99a1af;
+
+  --clients-bg: #0f1419;
+  --clients-surface: #1a2332;
+  --clients-surface-2: #111924;
+  --clients-border: #1e2939;
+  --clients-border-soft: #364153;
+  --clients-text: #ffffff;
+  --clients-text-soft: #d7deea;
+  --clients-text-muted: #99a1af;
+  --clients-text-dim: #6a7282;
+
+  --loyalty-bg: #0f1419;
+  --loyalty-surface: #1a2332;
+  --loyalty-surface-2: #111924;
+  --loyalty-border: #1e2939;
+  --loyalty-border-soft: #364153;
+  --loyalty-text: #ffffff;
+  --loyalty-text-soft: #d1d5dc;
+  --loyalty-text-muted: #99a1af;
+
+  --managed-bg: #0f1419;
+  --managed-surface: #1a2332;
+  --managed-border: #1e2939;
+  --managed-border-soft: #364153;
+  --managed-text: #ffffff;
+  --managed-text-soft: #d1d5dc;
+  --managed-text-muted: #99a1af;
+  --managed-text-faint: #6a7282;
+
+  --client-form-bg: #0f1419;
+  --client-form-surface: #1a2332;
+  --client-form-surface-2: #111924;
+  --client-form-border: #1e2939;
+  --client-form-border-soft: #364153;
+  --client-form-text: #ffffff;
+  --client-form-text-soft: #d1d5dc;
+  --client-form-text-muted: #99a1af;
+  --client-form-text-dim: #717182;
+
+  --detail-bg: #0f1419;
+  --detail-surface: #1a2332;
+  --detail-surface-2: #111924;
+  --detail-border: #1e2939;
+  --detail-border-soft: #364153;
+  --detail-text: #ffffff;
+  --detail-text-soft: #d1d5dc;
+  --detail-text-muted: #99a1af;
+  --detail-text-dim: #6a7282;
+
+  --account-form-bg: #0f1419;
+  --account-form-surface: #1a2332;
+  --account-form-border: #1e2939;
+  --account-form-border-soft: #364153;
+  --account-form-text: #ffffff;
+  --account-form-text-muted: #99a1af;
+  --account-form-text-faint: #6a7282;
+
+  --wizard-bg: #0f1419;
+  --wizard-surface: #1a2332;
+  --wizard-surface-2: #111924;
+  --wizard-border: #1e2939;
+  --wizard-border-2: #364153;
+  --wizard-text: #ffffff;
+  --wizard-text-soft: #d1d5dc;
+  --wizard-text-muted: #99a1af;
+  --wizard-text-dim: #6a7282;
+}
+
+body:not(.dark-mode) .admin-sidebar {
+  background: var(--color-surface) !important;
+  color: var(--color-heading) !important;
+  border-right-color: var(--theme-outline-strong) !important;
+}
+
+body:not(.dark-mode) .admin-sidebar__brand-title,
+body:not(.dark-mode) .admin-sidebar__link,
+body:not(.dark-mode) .admin-sidebar__summary,
+body:not(.dark-mode) .admin-sidebar__logout,
+body:not(.dark-mode) .admin-sidebar__sublink,
+body:not(.dark-mode) .admin-sidebar__collapse-button {
+  color: var(--color-muted) !important;
+}
+
+body:not(.dark-mode) .admin-sidebar__link:hover,
+body:not(.dark-mode) .admin-sidebar__summary:hover,
+body:not(.dark-mode) .admin-sidebar__logout:hover,
+body:not(.dark-mode) .admin-sidebar__group[open] > .admin-sidebar__summary,
+body:not(.dark-mode) .admin-sidebar__sublink:hover,
+body:not(.dark-mode) .admin-sidebar__sublink.is-active,
+body:not(.dark-mode) .admin-sidebar__collapse-button:hover {
+  background: var(--color-surface-muted) !important;
+  color: var(--color-heading) !important;
+}
+
+body:not(.dark-mode) .emissions-page,
+body:not(.dark-mode) .miles-dashboard,
+body:not(.dark-mode) .home-ops,
+body:not(.dark-mode) .clients-page,
+body:not(.dark-mode) .loyalty-accounts,
+body:not(.dark-mode) .admin-managed,
+body:not(.dark-mode) .admin-managed-form,
+body:not(.dark-mode) .client-form,
+body:not(.dark-mode) .detail-client {
+  color: var(--color-heading) !important;
+}
+
+body:not(.dark-mode) .emissions-page__title,
+body:not(.dark-mode) .emissions-page__stat-value,
+body:not(.dark-mode) .emissions-page__table-head h3,
+body:not(.dark-mode) .emissions-page__table td,
+body:not(.dark-mode) .emissions-page__button--ghost,
+body:not(.dark-mode) .emissions-page__row-button {
+  color: var(--color-heading) !important;
+}
+
+body:not(.dark-mode) .emissions-page__subtitle,
+body:not(.dark-mode) .emissions-page__field label,
+body:not(.dark-mode) .emissions-page__stat-label,
+body:not(.dark-mode) .emissions-page__table th,
+body:not(.dark-mode) .emissions-page__empty {
+  color: var(--color-muted) !important;
+}
+
+body:not(.dark-mode) .emissions-page__panel,
+body:not(.dark-mode) .emissions-page__stat-card,
+body:not(.dark-mode) .emissions-page__table-panel {
+  background: var(--color-surface) !important;
+  border-color: var(--theme-outline-strong) !important;
+}
+
+body:not(.dark-mode) .emissions-page input,
+body:not(.dark-mode) .emissions-page select {
+  background: var(--color-input-bg) !important;
+  border-color: var(--color-input-border) !important;
+  color: var(--color-heading) !important;
+}
+
+body:not(.dark-mode) .emissions-page__table thead {
+  background: var(--color-surface-muted) !important;
+}
+
+body:not(.dark-mode) .emissions-page__table td {
+  border-top-color: var(--theme-outline-strong) !important;
+}
+
+body:not(.dark-mode) .emissions-page__row-button,
+body:not(.dark-mode) .emissions-page__button--ghost {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--theme-outline-strong) !important;
+}
+
+body:not(.dark-mode) .emissions-page__row-button:hover,
+body:not(.dark-mode) .emissions-page__button--ghost:hover {
+  background: var(--color-surface-muted) !important;
+}
+
+body:not(.dark-mode) :is(
+  .home-ops,
+  .miles-dashboard,
+  .clients-page,
+  .loyalty-accounts,
+  .admin-managed,
+  .admin-managed-form,
+  .client-form,
+  .detail-client,
+  .points-program,
+  .points-program-form,
+  .partner-page,
+  .partner-form,
+  .airport-page,
+  .airport-form,
+  .airlines-page,
+  .airlines-form,
+  .hotel-page,
+  .hotel-form,
+  .alerts-page,
+  .account-form,
+  .wizard-page
+) {
+  color: var(--color-heading) !important;
+}
+
+body:not(.dark-mode) :is(
+  .home-ops,
+  .miles-dashboard,
+  .clients-page,
+  .loyalty-accounts,
+  .admin-managed,
+  .admin-managed-form,
+  .client-form,
+  .detail-client,
+  .points-program,
+  .points-program-form,
+  .partner-page,
+  .partner-form,
+  .airport-page,
+  .airport-form,
+  .airlines-page,
+  .airlines-form,
+  .hotel-page,
+  .hotel-form,
+  .alerts-page,
+  .account-form,
+  .wizard-page
+) :is(
+  h1,
+  h2,
+  h3,
+  h4,
+  [class*="__title"],
+  [class*="__value"],
+  [class*="__name"],
+  [class*="__heading"]
+) {
+  color: var(--color-heading) !important;
+}
+
+body:not(.dark-mode) :is(
+  .home-ops,
+  .miles-dashboard,
+  .clients-page,
+  .loyalty-accounts,
+  .admin-managed,
+  .admin-managed-form,
+  .client-form,
+  .detail-client,
+  .points-program,
+  .points-program-form,
+  .partner-page,
+  .partner-form,
+  .airport-page,
+  .airport-form,
+  .airlines-page,
+  .airlines-form,
+  .hotel-page,
+  .hotel-form,
+  .alerts-page,
+  .account-form,
+  .wizard-page
+) :is(
+  p,
+  small,
+  label,
+  th,
+  [class*="__subtitle"],
+  [class*="__muted"],
+  [class*="__meta"],
+  [class*="__label"],
+  [class*="__eyebrow"],
+  [class*="__description"],
+  [class*="__hint"],
+  [class*="__caption"]
+) {
+  color: var(--color-muted) !important;
+}
+
+body:not(.dark-mode) :is(
+  .home-ops,
+  .miles-dashboard,
+  .clients-page,
+  .loyalty-accounts,
+  .admin-managed,
+  .admin-managed-form,
+  .client-form,
+  .detail-client,
+  .points-program,
+  .points-program-form,
+  .partner-page,
+  .partner-form,
+  .airport-page,
+  .airport-form,
+  .airlines-page,
+  .airlines-form,
+  .hotel-page,
+  .hotel-form,
+  .alerts-page,
+  .account-form,
+  .wizard-page
+) :is(
+  [class*="__card"],
+  [class*="__panel"],
+  [class*="__filters"],
+  [class*="__filter-box"],
+  [class*="__section-card"],
+  [class*="__table-panel"],
+  [class*="__table-wrap"],
+  [class*="__summary"],
+  [class*="__hero"],
+  [class*="__column"] > section,
+  .surface-card,
+  .section-card,
+  .table-wrapper
+) {
+  background: var(--color-surface) !important;
+  border-color: var(--theme-outline-strong) !important;
+}
+
+body:not(.dark-mode) :is(
+  .home-ops,
+  .miles-dashboard,
+  .clients-page,
+  .loyalty-accounts,
+  .admin-managed,
+  .admin-managed-form,
+  .client-form,
+  .detail-client,
+  .points-program,
+  .points-program-form,
+  .partner-page,
+  .partner-form,
+  .airport-page,
+  .airport-form,
+  .airlines-page,
+  .airlines-form,
+  .hotel-page,
+  .hotel-form,
+  .alerts-page,
+  .account-form,
+  .wizard-page
+) :is(input, select, textarea) {
+  background: var(--color-input-bg) !important;
+  border-color: var(--color-input-border) !important;
+  color: var(--color-heading) !important;
+}
+
+body:not(.dark-mode) :is(
+  .home-ops,
+  .miles-dashboard,
+  .clients-page,
+  .loyalty-accounts,
+  .admin-managed,
+  .admin-managed-form,
+  .client-form,
+  .detail-client,
+  .points-program,
+  .points-program-form,
+  .partner-page,
+  .partner-form,
+  .airport-page,
+  .airport-form,
+  .airlines-page,
+  .airlines-form,
+  .hotel-page,
+  .hotel-form,
+  .alerts-page,
+  .account-form,
+  .wizard-page
+) :is(table thead, [class*="__table"] thead) {
+  background: var(--color-surface-muted) !important;
+}
+
+body:not(.dark-mode) :is(
+  .home-ops,
+  .miles-dashboard,
+  .clients-page,
+  .loyalty-accounts,
+  .admin-managed,
+  .admin-managed-form,
+  .client-form,
+  .detail-client,
+  .points-program,
+  .points-program-form,
+  .partner-page,
+  .partner-form,
+  .airport-page,
+  .airport-form,
+  .airlines-page,
+  .airlines-form,
+  .hotel-page,
+  .hotel-form,
+  .alerts-page,
+  .account-form,
+  .wizard-page
+) :is(td, [class*="__table"] td, [class*="__row-button"], [class*="__button--ghost"]) {
+  color: var(--color-heading) !important;
+}
+
+body:not(.dark-mode) :is(
+  .home-ops__button,
+  .home-ops__button-secondary,
+  .filter-panel .btn-primary,
+  .filter-panel .btn-secondary
+) {
+  background: var(--color-surface) !important;
+  color: var(--color-heading) !important;
+  border: 1px solid var(--theme-outline-strong) !important;
+  box-shadow: none !important;
+}
+
+body:not(.dark-mode) :is(
+  .home-ops__button,
+  .home-ops__button-secondary,
+  .filter-panel .btn-primary,
+  .filter-panel .btn-secondary
+):hover {
+  background: var(--color-surface-muted) !important;
+  color: var(--color-heading) !important;
+}

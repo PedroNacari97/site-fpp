@@ -1,0 +1,57 @@
+{% extends 'painel_cliente/base_painel.html' %}
+
+{% block title %}Emissões Detalhadas{% endblock %}
+{% block page_title %}Emissões Detalhadas{% endblock %}
+
+{% block content %}
+        <div class="page-actions">
+            <a class="btn btn--ghost btn--sm" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data Ida</th>
+                    <th>Data Volta</th>
+                    <th>Aeroporto Ida</th>
+                    <th>Aeroporto Volta</th>
+                    <th>Passageiros</th>
+                    <th>Companhia</th>
+                    <th>Localizador</th>
+                    <th>Programa</th>
+                    <th>Valor Referência</th>
+                    <th>Valor Pago</th>
+                    <th>Pontos Utilizados</th>
+                    <th>Economia Obtida</th>
+                    <th>Detalhes</th>
+                    <th>PDF</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emissao in emissoes %}
+                <tr>
+                    <td>{{ emissao.data_ida|date:"d/m/Y" }}</td>
+                    <td>{% if emissao.data_volta %}{{ emissao.data_volta|date:"d/m/Y" }}{% endif %}</td>
+                    <td>{{ emissao.aeroporto_partida }}</td>
+                    <td>{{ emissao.aeroporto_destino }}</td>
+                    <td>{{ emissao.qtd_passageiros }}</td>
+                    <td>{{ emissao.companhia_aerea }}</td>
+                    <td>{{ emissao.localizador }}</td>
+                    <td>{{ emissao.programa.nome }}</td>
+                    <td>R$ {{ emissao.valor_referencia|floatformat:2 }}</td>
+                    <td>R$ {{ emissao.valor_pago|floatformat:2 }}</td>
+                    <td>{{ emissao.pontos_utilizados }}</td>
+                    <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
+                    <td>{{ emissao.detalhes|default:"—" }}</td>
+                    <td><a class="btn btn--ghost btn--sm" href="{% url 'emissao_pdf' emissao.id %}">PDF</a></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="14" class="table-empty">Nenhuma emissão encontrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+            </tfoot>
+        </table>
+{% endblock %}

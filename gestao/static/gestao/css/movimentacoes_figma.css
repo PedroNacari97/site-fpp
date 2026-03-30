@@ -1,0 +1,522 @@
+:root {
+  --movement-bg: #0f1724;
+  --movement-surface: #222c3b;
+  --movement-surface-soft: #131c2c;
+  --movement-border: #334155;
+  --movement-border-soft: #41516a;
+  --movement-text: #f8fafc;
+  --movement-text-soft: #cbd5e1;
+  --movement-text-muted: #8fa0b7;
+  --movement-blue: #2f6fed;
+  --movement-blue-strong: #1859da;
+  --movement-success: #00a63e;
+  --movement-success-strong: #008b34;
+  --movement-green: #22c55e;
+  --movement-red: #ef4444;
+  --movement-amber-bg: rgba(245, 158, 11, 0.14);
+  --movement-amber-border: rgba(245, 158, 11, 0.35);
+  --movement-amber-text: #fbbf24;
+}
+
+.movement-page,
+.movement-form-page {
+  color: var(--movement-text);
+}
+
+.movement-page *,
+.movement-form-page * {
+  box-sizing: border-box;
+}
+
+.movement-page__notice {
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border: 1px solid var(--movement-amber-border);
+  border-radius: 14px;
+  background: var(--movement-amber-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--movement-amber-text);
+}
+
+.movement-page__notice strong,
+.movement-page__notice span {
+  display: block;
+}
+
+.movement-page__notice span {
+  margin-top: 4px;
+  color: #fde68a;
+}
+
+.movement-page__notice-link {
+  color: var(--movement-text);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.movement-page__card,
+.movement-form-page__card {
+  border: 1px solid var(--movement-border);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
+    var(--movement-surface);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.movement-page__card-head {
+  padding: 28px 30px 22px;
+  border-bottom: 1px solid var(--movement-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.movement-page__eyebrow,
+.movement-form-page__eyebrow {
+  margin: 0 0 10px;
+  color: var(--movement-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.movement-page__title,
+.movement-form-page__title {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.02;
+  font-weight: 700;
+  color: var(--movement-text);
+}
+
+.movement-page__primary-action,
+.movement-page__secondary-action,
+.movement-form-page__submit {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.movement-page__primary-action,
+.movement-form-page__submit {
+  border: 0;
+  background: var(--movement-blue);
+  color: var(--movement-text);
+}
+
+.movement-page__primary-action:hover,
+.movement-form-page__submit:hover {
+  background: var(--movement-blue-strong);
+}
+
+.movement-page__secondary-action {
+  border: 1px solid var(--movement-border-soft);
+  background: rgba(15, 23, 36, 0.82);
+  color: var(--movement-text);
+}
+
+.movement-page__secondary-action:hover {
+  background: rgba(24, 35, 52, 0.92);
+}
+
+.movement-page__secondary-action--success {
+  border: 0;
+  background: var(--movement-success);
+}
+
+.movement-page__secondary-action--success:hover {
+  background: var(--movement-success-strong);
+}
+
+.movement-page__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.movement-page__table-wrap {
+  overflow-x: auto;
+}
+
+.movement-page__table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.movement-page__table thead th {
+  padding: 14px 18px;
+  background: var(--movement-bg);
+  border-bottom: 1px solid var(--movement-border);
+  color: var(--movement-text-muted);
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.movement-page__table tbody td {
+  padding: 18px;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.78);
+  color: var(--movement-text-soft);
+  font-size: 14px;
+  line-height: 1.5;
+  vertical-align: middle;
+}
+
+.movement-page__metric {
+  font-weight: 700;
+  color: var(--movement-text);
+}
+
+.movement-page__metric--positive {
+  color: var(--movement-green);
+}
+
+.movement-page__metric--negative {
+  color: var(--movement-red);
+}
+
+.movement-page__description {
+  max-width: 420px;
+  color: var(--movement-text);
+}
+
+.movement-page__description-link {
+  color: var(--movement-text);
+  text-decoration: none;
+}
+
+.movement-page__description-link:hover {
+  text-decoration: underline;
+}
+
+.movement-page__row-action,
+.movement-page__back-action,
+.movement-form-page__cancel {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--movement-border-soft);
+  border-radius: 10px;
+  background: rgba(15, 23, 36, 0.56);
+  color: var(--movement-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.movement-page__empty-action {
+  color: var(--movement-text-muted);
+}
+
+.movement-page__empty {
+  padding: 26px 18px;
+  color: var(--movement-text-muted);
+  text-align: center;
+}
+
+.movement-page__footer {
+  padding: 24px 30px 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.movement-form-page {
+  display: flex;
+  justify-content: center;
+}
+
+.movement-form-page__card {
+  width: 100%;
+  max-width: 520px;
+}
+
+.movement-form-page__head {
+  padding: 28px 30px 20px;
+  border-bottom: 1px solid var(--movement-border);
+}
+
+.movement-form-page__subtitle {
+  margin: 12px 0 0;
+  color: var(--movement-text-soft);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.movement-form-page__form {
+  padding: 28px 30px 30px;
+}
+
+.movement-form-page__errors {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 12px;
+  background: rgba(127, 29, 29, 0.24);
+  color: #fecaca;
+  font-size: 13px;
+}
+
+.movement-form-page__field + .movement-form-page__field {
+  margin-top: 18px;
+}
+
+.movement-form-page__field label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--movement-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.movement-form-page__field input,
+.movement-form-page__field select,
+.movement-form-page__field textarea {
+  min-height: 48px;
+  border: 1px solid var(--movement-border);
+  border-radius: 12px;
+  background: var(--movement-surface-soft);
+  color: var(--movement-text);
+  font-size: 14px;
+  padding: 12px 14px;
+}
+
+.movement-form-page__field textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.movement-form-page__field input:focus,
+.movement-form-page__field select:focus,
+.movement-form-page__field textarea:focus {
+  border-color: var(--movement-blue);
+  box-shadow: 0 0 0 1px var(--movement-blue);
+}
+
+.movement-form-page__field-error {
+  margin-top: 6px;
+  color: #fca5a5;
+  font-size: 12px;
+}
+
+.movement-form-page__actions {
+  margin-top: 26px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.transfer-page {
+  color: var(--movement-text);
+}
+
+.transfer-page * {
+  box-sizing: border-box;
+}
+
+.transfer-page__back {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--movement-border-soft);
+  border-radius: 8px;
+  background: rgba(15, 23, 36, 0.82);
+  color: var(--movement-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.transfer-page__card {
+  border: 1px solid var(--movement-border);
+  border-radius: 16px;
+  background: var(--movement-surface);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.transfer-page__head {
+  padding: 22px 22px 20px;
+  border-bottom: 1px solid var(--movement-border);
+}
+
+.transfer-page__title {
+  margin: 0;
+  color: var(--movement-text);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.transfer-page__subtitle {
+  margin: 8px 0 0;
+  color: var(--movement-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.transfer-page__form {
+  padding: 22px;
+}
+
+.transfer-page__errors {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 12px;
+  background: rgba(127, 29, 29, 0.24);
+  color: #fecaca;
+  font-size: 13px;
+}
+
+.transfer-page__grid {
+  display: grid;
+  gap: 16px;
+}
+
+.transfer-page__grid + .transfer-page__grid,
+.transfer-page__grid + .transfer-page__actions {
+  margin-top: 20px;
+}
+
+.transfer-page__grid--double {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.transfer-page__grid--triple {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.transfer-page__field label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--movement-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.transfer-page__field input,
+.transfer-page__field select,
+.transfer-page__field textarea {
+  min-height: 40px;
+  border: 1px solid var(--movement-border-soft);
+  border-radius: 8px;
+  background: var(--movement-bg);
+  color: var(--movement-text);
+  font-size: 14px;
+  padding: 8px 12px;
+}
+
+.transfer-page__field input::placeholder,
+.transfer-page__field textarea::placeholder {
+  color: #717182;
+}
+
+.transfer-page__field input:focus,
+.transfer-page__field select:focus,
+.transfer-page__field textarea:focus {
+  border-color: var(--movement-blue);
+  box-shadow: 0 0 0 1px var(--movement-blue);
+}
+
+.transfer-page__field-error {
+  margin-top: 6px;
+  color: #fca5a5;
+  font-size: 12px;
+}
+
+.transfer-page__actions {
+  padding-top: 16px;
+  border-top: 1px solid var(--movement-border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.transfer-page__submit {
+  min-height: 36px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--movement-blue);
+  color: var(--movement-text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.transfer-page__submit:hover {
+  background: var(--movement-blue-strong);
+}
+
+@media (max-width: 900px) {
+  .movement-page__card-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .movement-page__actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .movement-page__notice {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .transfer-page__grid--double,
+  .transfer-page__grid--triple {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .movement-page__card-head,
+  .movement-page__footer,
+  .movement-form-page__head,
+  .movement-form-page__form {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .movement-page__title,
+  .movement-form-page__title {
+    font-size: 26px;
+  }
+
+  .movement-page__primary-action,
+  .movement-page__secondary-action,
+  .movement-form-page__submit,
+  .movement-form-page__cancel {
+    width: 100%;
+  }
+
+  .movement-form-page__actions {
+    flex-direction: column;
+  }
+}

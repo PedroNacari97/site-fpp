@@ -1,0 +1,83 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Programas{% endblock %}
+{% block header_title %}Programas de Pontos{% endblock %}
+{% block header_subtitle %}<span>Catalogo padronizado de programas com valores de referencia claros.</span>{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'admin_novo_programa' %}" class="points-program__header-action">Novo Programa</a>
+{% endblock %}
+
+{% block mobile_header_actions %}
+<a href="{% url 'admin_novo_programa' %}" class="points-program__header-action">Novo Programa</a>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/programas_pontos_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="points-program">
+  <section class="points-program__filters-card">
+    <header class="points-program__filters-head">
+      <p class="points-program__eyebrow">Filtros</p>
+      <h2>Buscar programas</h2>
+    </header>
+    <form method="get" class="points-program__filters-body">
+      <div class="points-program__field">
+        <label for="busca">Nome ou base</label>
+        <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar...">
+      </div>
+      <div class="points-program__filter-actions">
+        <button type="submit" class="points-program__search-button">Buscar</button>
+        <a href="{% url 'admin_programas' %}" class="points-program__clear-button">Limpar</a>
+      </div>
+    </form>
+  </section>
+
+  <section class="points-program__table-card">
+    <header class="points-program__table-head">
+      <p class="points-program__eyebrow">Programas</p>
+      <h2>Catalogo de Pontos</h2>
+      <p class="points-program__subtext">Consistencia visual para valores, CPFs e descricoes.</p>
+    </header>
+
+    <div class="points-program__table-wrap">
+      <table class="points-program__table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Programa principal</th>
+            <th>Preco</th>
+            <th>CPFs</th>
+            <th>Base</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in programas %}
+          <tr>
+            <td class="points-program__name">{{ p.nome }}</td>
+            <td>{{ p.get_tipo_display }}</td>
+            <td>R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
+            <td>{{ p.quantidade_cpfs_disponiveis|default:"—" }}</td>
+            <td>{{ p.descricao|default:p.programa_base|default:"—" }}</td>
+            <td>
+              <div class="points-program__actions">
+                <a href="{% url 'admin_editar_programa' p.id %}" class="points-program__action">Editar</a>
+                <a href="{% url 'admin_deletar_programa' p.id %}" class="points-program__action">Deletar</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="points-program__empty">Nenhum programa cadastrado.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

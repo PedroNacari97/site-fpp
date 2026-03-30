@@ -1,0 +1,38 @@
+{% extends 'painel_cliente/base_painel.html' %}
+
+{% block title %}Emissões de Hotéis{% endblock %}
+{% block page_title %}Emissões de Hotéis{% endblock %}
+
+{% block content %}
+        <div class="page-actions">
+            <a class="btn btn--ghost btn--sm" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Hotel</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Valor Referência</th>
+                    <th>Valor Pago</th>
+                    <th>Economia</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emissao in emissoes %}
+                <tr>
+                    <td>{{ emissao.nome_hotel }}</td>
+                    <td>{{ emissao.check_in|date:"d/m/Y" }}</td>
+                    <td>{{ emissao.check_out|date:"d/m/Y" }}</td>
+                    <td>R$ {{ emissao.valor_referencia|floatformat:2 }}</td>
+                    <td>R$ {{ emissao.valor_pago|floatformat:2 }}</td>
+                    <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="table-empty">Nenhuma emissão encontrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+{% endblock %}

@@ -1,0 +1,233 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Editar Cliente{% else %}Novo Cliente{% endif %}{% endblock %}
+{% block header_title %}{% if form.instance.pk %}Editar Cliente{% else %}Novo Cliente{% endif %}{% endblock %}
+{% block header_subtitle %}<span>{% if form.instance.pk %}Atualizacao do cadastro do cliente na gestao.{% else %}Cadastro de gestao de cliente.{% endif %}</span>{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_clientes' %}" class="btn btn-secondary">Voltar</a>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/cliente_form_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="client-form">
+  <div class="client-form__shell">
+    <section class="client-form__card">
+      <form method="post" class="client-form__body">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="client-form__errors">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        {% if not form.instance.pk %}
+          <div class="client-form__layout">
+            <div class="client-form__main">
+              <section class="client-form__section-card">
+                <header class="client-form__section-head">
+                  <p class="client-form__section-eyebrow">Informacoes Pessoais</p>
+                  <h3 class="client-form__section-subtitle">Dados principais do cliente</h3>
+                </header>
+                <div class="client-form__section-body">
+                  <div class="client-form__field">
+                    <label for="id_full_name">Nome completo <span>*</span></label>
+                    <input type="text" id="id_full_name" placeholder="Digite o nome completo">
+                    {% if form.first_name.errors %}<div class="client-form__field-error">{{ form.first_name.errors }}</div>{% endif %}
+                    {% if form.last_name.errors %}<div class="client-form__field-error">{{ form.last_name.errors }}</div>{% endif %}
+                  </div>
+
+                  <div class="client-form__grid client-form__grid--two">
+                    <div class="client-form__field">
+                      <label for="{{ form.email.id_for_label }}">Email <span>*</span></label>
+                      {{ form.email }}
+                      {% if form.email.errors %}<div class="client-form__field-error">{{ form.email.errors }}</div>{% endif %}
+                    </div>
+                    <div class="client-form__field">
+                      <label for="{{ form.telefone.id_for_label }}">Telefone <span>*</span></label>
+                      {{ form.telefone }}
+                      {% if form.telefone.errors %}<div class="client-form__field-error">{{ form.telefone.errors }}</div>{% endif %}
+                    </div>
+                  </div>
+
+                  <div class="client-form__field">
+                    <label for="{{ form.data_nascimento.id_for_label }}">Data de nascimento</label>
+                    {{ form.data_nascimento }}
+                    {% if form.data_nascimento.errors %}<div class="client-form__field-error">{{ form.data_nascimento.errors }}</div>{% endif %}
+                  </div>
+                </div>
+              </section>
+
+              <section class="client-form__section-card">
+                <header class="client-form__section-head">
+                  <p class="client-form__section-eyebrow">Documentos</p>
+                  <h3 class="client-form__section-subtitle">CPF, RG e Passaporte</h3>
+                </header>
+                <div class="client-form__section-body">
+                  <div class="client-form__grid client-form__grid--two">
+                    <div class="client-form__field">
+                      <label for="{{ form.cpf.id_for_label }}">CPF <span>*</span></label>
+                      {{ form.cpf }}
+                      {% if form.cpf.errors %}<div class="client-form__field-error">{{ form.cpf.errors }}</div>{% endif %}
+                    </div>
+                    <div class="client-form__field">
+                      <label for="id_rg_proxy">RG</label>
+                      <input type="text" id="id_rg_proxy" placeholder="00.000.000-0" disabled>
+                    </div>
+                  </div>
+
+                  <div class="client-form__grid client-form__grid--two">
+                    <div class="client-form__field">
+                      <label for="id_passaporte_proxy">Passaporte</label>
+                      <input type="text" id="id_passaporte_proxy" placeholder="Numero do passaporte" disabled>
+                    </div>
+                    <div class="client-form__field">
+                      <label for="id_passaporte_validade_proxy">Validade do passaporte</label>
+                      <input type="text" id="id_passaporte_validade_proxy" placeholder="DD/MM/AAAA" disabled>
+                    </div>
+                  </div>
+                  <p class="client-form__note">RG, passaporte e endereco ainda nao existem no modelo de cliente deste projeto.</p>
+                </div>
+              </section>
+
+              <section class="client-form__section-card">
+                <header class="client-form__section-head">
+                  <p class="client-form__section-eyebrow">Endereco</p>
+                  <h3 class="client-form__section-subtitle">Localizacao completa</h3>
+                </header>
+                <div class="client-form__section-body">
+                  <div class="client-form__field">
+                    <label for="id_endereco_proxy">Endereco completo</label>
+                    <input type="text" id="id_endereco_proxy" placeholder="Rua, numero, complemento, bairro, cidade, estado, CEP" disabled>
+                  </div>
+                </div>
+              </section>
+
+              <section class="client-form__section-card">
+                <header class="client-form__section-head">
+                  <p class="client-form__section-eyebrow">Acesso ao Sistema</p>
+                  <h3 class="client-form__section-subtitle">Credenciais de login</h3>
+                </header>
+                <div class="client-form__section-body">
+                  <div class="client-form__grid client-form__grid--two">
+                    <div class="client-form__field">
+                      <label for="{{ form.password.id_for_label }}">Senha <span>*</span></label>
+                      {{ form.password }}
+                      {% if form.password.errors %}<div class="client-form__field-error">{{ form.password.errors }}</div>{% endif %}
+                    </div>
+                    <div class="client-form__field">
+                      <label for="{{ form.confirm_password.id_for_label }}">Confirmar senha <span>*</span></label>
+                      {{ form.confirm_password }}
+                      {% if form.confirm_password.errors %}<div class="client-form__field-error">{{ form.confirm_password.errors }}</div>{% endif %}
+                    </div>
+                  </div>
+
+                  <div class="client-form__toggle-box">
+                    <label class="client-form__checkbox">
+                      {{ form.ativo }}
+                      <span>Cliente ativo no sistema</span>
+                    </label>
+                  </div>
+                  {{ form.perfil }}
+                  <div class="client-form__hidden-fields">
+                    {{ form.first_name }}
+                    {{ form.last_name }}
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <aside class="client-form__side">
+              <section class="client-form__side-card">
+                <header class="client-form__side-head">
+                  <p class="client-form__section-eyebrow">Informacoes Adicionais</p>
+                </header>
+                <div class="client-form__section-body">
+                  <div class="client-form__field">
+                    <label for="{{ form.observacoes.id_for_label }}">Observacoes</label>
+                    {{ form.observacoes }}
+                    {% if form.observacoes.errors %}<div class="client-form__field-error">{{ form.observacoes.errors }}</div>{% endif %}
+                  </div>
+                </div>
+              </section>
+
+              <section class="client-form__side-card client-form__tips-card">
+                <div class="client-form__tips">
+                  <h3>Dicas</h3>
+                  <ul>
+                    <li>Campos marcados com <span>*</span> sao obrigatorios</li>
+                    <li>O email sera usado para login</li>
+                    <li>CPF deve ser unico no sistema</li>
+                    <li>Senha deve ter no minimo 6 caracteres</li>
+                  </ul>
+                </div>
+              </section>
+
+              <div class="client-form__actions client-form__actions--stacked">
+                <button type="submit" class="client-form__button">Salvar Cliente</button>
+                <a href="{% url 'admin_clientes' %}" class="client-form__button-secondary">Cancelar</a>
+              </div>
+            </aside>
+          </div>
+        {% else %}
+          <section class="client-form__section">
+            <h3 class="client-form__section-title">Informacoes do Cliente</h3>
+            <div class="client-form__grid client-form__grid--two">
+              {% for field in form %}
+                <div class="client-form__field {% if field.name == 'observacoes' %}client-form__field--full{% endif %}">
+                  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                  {{ field }}
+                  {% if field.errors %}<div class="client-form__field-error">{{ field.errors }}</div>{% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
+
+        {% if form.instance.pk %}
+          <div class="client-form__actions">
+            <button type="submit" class="client-form__button">Salvar Cliente</button>
+            <a href="{% url 'admin_clientes' %}" class="client-form__button-secondary">Cancelar</a>
+          </div>
+        {% endif %}
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+{% if not form.instance.pk %}
+<script>
+  (function () {
+    const fullName = document.getElementById("id_full_name");
+    const firstName = document.getElementById("id_first_name");
+    const lastName = document.getElementById("id_last_name");
+    if (!fullName || !firstName || !lastName) return;
+
+    const joinName = () => {
+      const current = [firstName.value, lastName.value].filter(Boolean).join(" ").trim();
+      fullName.value = current;
+    };
+
+    const splitName = () => {
+      const raw = (fullName.value || "").trim().replace(/\s+/g, " ");
+      if (!raw) {
+        firstName.value = "";
+        lastName.value = "";
+        return;
+      }
+      const parts = raw.split(" ");
+      firstName.value = parts.shift() || "";
+      lastName.value = parts.join(" ");
+    };
+
+    joinName();
+    fullName.addEventListener("input", splitName);
+  })();
+</script>
+{% endif %}
+{% endblock %}

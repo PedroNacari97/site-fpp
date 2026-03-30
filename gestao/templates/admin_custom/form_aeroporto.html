@@ -1,0 +1,67 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Editar Aeroporto{% else %}Novo Aeroporto{% endif %}{% endblock %}
+{% block header_title %}{% if form.instance.pk %}Editar Aeroporto{% else %}Novo Aeroporto{% endif %}{% endblock %}
+{% block header_subtitle %}<span>Painel de gestao de milhas.</span>{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/aeroporto_form_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="airport-form">
+  {% if form.errors %}
+  <div class="airport-form__alert">
+    <p class="airport-form__alert-title">Nao foi possivel salvar. Corrija os campos destacados.</p>
+    <ul class="airport-form__alert-list">
+      {% for field in form %}
+        {% for error in field.errors %}
+        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="airport-form__shell">
+    <header class="airport-form__intro">
+      <h2>{% if form.instance.pk %}Editar Aeroporto{% else %}Novo Aeroporto{% endif %}</h2>
+      <p>Painel de gestao de milhas.</p>
+    </header>
+
+    <section class="airport-form__card">
+      <header class="airport-form__card-head">
+        <h3>{% if form.instance.pk %}Editar Aeroporto{% else %}Novo Aeroporto{% endif %}</h3>
+      </header>
+
+      <form method="post" class="airport-form__body" novalidate>
+        {% csrf_token %}
+
+        <div class="airport-form__field">
+          <label for="{{ form.sigla.id_for_label }}">Sigla</label>
+          {{ form.sigla }}
+          {% for error in form.sigla.errors %}
+          <div class="airport-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="airport-form__field">
+          <label for="{{ form.nome.id_for_label }}">Nome</label>
+          {{ form.nome }}
+          {% for error in form.nome.errors %}
+          <div class="airport-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="airport-form__actions">
+          <button type="submit" class="airport-form__submit">Salvar</button>
+        </div>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}

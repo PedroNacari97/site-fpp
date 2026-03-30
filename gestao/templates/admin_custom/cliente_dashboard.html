@@ -1,0 +1,205 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Cliente {{ cliente_obj }}{% endblock %}
+{% block header_title %}Painel do Cliente: {{ cliente_obj }}{% endblock %}
+{% block header_subtitle %}<span>Estatisticas do dashboard de numeros uteis e painel visual global.</span>{% endblock %}
+{% block header_actions %}
+<a href="{{ cliente_back_url }}" class="btn btn-secondary">Voltar</a>
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/cliente_dashboard_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="detail-client">
+  <div class="detail-client__shell">
+    <section class="detail-client__filters">
+      <form method="get" class="detail-client__filter-grid">
+        <div class="detail-client__field">
+          <label for="data_inicio">Data inicial</label>
+          <input id="data_inicio" type="date" name="data_inicio" value="{{ management_dashboard.start_date }}">
+        </div>
+        <div class="detail-client__field">
+          <label for="data_fim">Data final</label>
+          <input id="data_fim" type="date" name="data_fim" value="{{ management_dashboard.end_date }}">
+        </div>
+        <div class="detail-client__field">
+          <label for="programa">Programa</label>
+          <select id="programa" name="programa">
+            <option value="">Todos</option>
+            {% for item in management_dashboard.filter_options.programas %}
+              <option value="{{ item.id }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="detail-client__field">
+          <label for="cliente_fixed">Cliente</label>
+          <input id="cliente_fixed" type="text" value="{{ cliente_obj }}" readonly>
+        </div>
+        <div class="detail-client__field">
+          <label for="conta">Conta</label>
+          <select id="conta" name="conta">
+            <option value="">Todas</option>
+            {% for item in management_dashboard.filter_options.contas %}
+              <option value="{{ item.id }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="detail-client__field">
+          <label for="status_detail">Status</label>
+          <select id="status_detail" name="status">
+            <option value="">Todos</option>
+            <option value="pendente" {% if management_dashboard.selected_status == 'pendente' %}selected{% endif %}>Pendente</option>
+            <option value="emitido" {% if management_dashboard.selected_status == 'emitido' %}selected{% endif %}>Emitido</option>
+          </select>
+        </div>
+        <div class="detail-client__field">
+          <label for="emissor">Emissor</label>
+          <select id="emissor" name="emissor">
+            <option value="">Todos</option>
+            {% for item in management_dashboard.filter_options.emissores %}
+              <option value="{{ item.id }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="detail-client__actions">
+          <button type="submit" class="detail-client__button">Filtrar</button>
+          <a href="?{{ management_dashboard.clear_filters_query }}" class="detail-client__button-secondary">Limpar</a>
+        </div>
+      </form>
+    </section>
+
+    <section class="detail-client__kpis">
+      {% for card in detail_kpis %}
+        <article class="detail-client__kpi">
+          <p class="detail-client__kpi-label">{{ card.titulo }}</p>
+          <p class="detail-client__kpi-value">{{ card.valor }}</p>
+          <p class="detail-client__kpi-note">{{ card.descricao }}</p>
+        </article>
+      {% endfor %}
+    </section>
+
+    <section class="detail-client__panel">
+      <header class="detail-client__panel-head">
+        <h2 class="detail-client__panel-title">Passageiros frequentes</h2>
+      </header>
+      <div class="detail-client__passengers-grid">
+        <article class="detail-client__passenger-column">
+          <h3 class="detail-client__section-label">Adicionar passageiro</h3>
+          <form method="post" class="detail-client__passenger-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_passageiro">
+            {% if passageiro_form.errors %}
+              <div class="detail-client__form-errors detail-client__form-span-full">
+                Corrija os campos destacados para salvar o passageiro.
+              </div>
+            {% endif %}
+            <div class="detail-client__form-span-full">
+              <label for="{{ passageiro_form.nome.id_for_label }}">Nome</label>
+              {{ passageiro_form.nome }}
+            </div>
+            <div>
+              <label for="{{ passageiro_form.tipo.id_for_label }}">Tipo</label>
+              {{ passageiro_form.tipo }}
+            </div>
+            <div>
+              <label for="{{ passageiro_form.cpf.id_for_label }}">CPF</label>
+              {{ passageiro_form.cpf }}
+            </div>
+            <div>
+              <label for="{{ passageiro_form.rg.id_for_label }}">RG</label>
+              {{ passageiro_form.rg }}
+            </div>
+            <div>
+              <label for="{{ passageiro_form.passaporte.id_for_label }}">Passaporte</label>
+              {{ passageiro_form.passaporte }}
+            </div>
+            <div>
+              <label for="{{ passageiro_form.passaporte_validade.id_for_label }}">Validade passaporte</label>
+              {{ passageiro_form.passaporte_validade }}
+            </div>
+            <div>
+              <label for="{{ passageiro_form.data_nascimento.id_for_label }}">Data nascimento</label>
+              {{ passageiro_form.data_nascimento }}
+            </div>
+            <div class="detail-client__form-span-full">
+              <label for="{{ passageiro_form.relacao.id_for_label }}">Relacao</label>
+              {{ passageiro_form.relacao }}
+            </div>
+            <div class="detail-client__form-span-full">
+              <button type="submit" class="detail-client__button detail-client__button--full">Adicionar</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="detail-client__passenger-column">
+          <h3 class="detail-client__section-label">Lista de passageiros</h3>
+          <div class="detail-client__passenger-list">
+            {% for item in passenger_cards %}
+              <article class="detail-client__passenger-card">
+                <div class="detail-client__passenger-card-head">
+                  <div class="detail-client__passenger-card-main">
+                    <div class="detail-client__passenger-avatar detail-client__passenger-avatar--{{ item.avatar_tone }}">{{ item.initials }}</div>
+                    <div class="detail-client__passenger-identity">
+                      <strong>{{ item.nome }}</strong>
+                      <span>{{ item.tipo_label }}</span>
+                    </div>
+                  </div>
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="passageiro_id" value="{{ item.id }}">
+                    <button type="submit" name="action" value="delete_passageiro" class="detail-client__remove-button" onclick="return confirm('Remover passageiro frequente?');">Remover</button>
+                  </form>
+                </div>
+                <div class="detail-client__passenger-meta">
+                  <div><span>CPF:</span><strong>{{ item.cpf }}</strong></div>
+                  <div><span>Nascimento:</span><strong>{{ item.data_nascimento }}</strong></div>
+                  <div><span>Relacao:</span><strong>{{ item.relacao }}</strong></div>
+                </div>
+              </article>
+            {% empty %}
+              <div class="detail-client__empty">Nenhum passageiro frequente cadastrado.</div>
+            {% endfor %}
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="detail-client__panel detail-client__panel--table">
+      <header class="detail-client__panel-head">
+        <h2 class="detail-client__panel-title">Emissoes do cliente</h2>
+      </header>
+      <div class="detail-client__table-wrap">
+        <table class="detail-client__table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Programa</th>
+              <th>Companhia</th>
+              <th>Conta</th>
+              <th>Receita</th>
+              <th>Lucro</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in management_dashboard.emissions_rows %}
+              <tr>
+                <td>{{ row.data }}</td>
+                <td>{{ row.programa }}</td>
+                <td>{{ row.companhia }}</td>
+                <td>{{ row.conta }}</td>
+                <td>{{ row.receita }}</td>
+                <td>{{ row.lucro }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="detail-client__table-empty">Nenhuma emissao encontrada.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

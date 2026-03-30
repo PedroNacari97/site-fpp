@@ -1,0 +1,253 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Administração{% endblock %} - Gestão de Pontos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { gray: { 750: '#2d3748' } }, fontFamily: { sans: ['Inter', 'sans-serif'] } } } }
+    </script>
+    <link rel="stylesheet" href="{% static 'gestao/css/base/variables.css' %}">
+    <link rel="stylesheet" href="{% static 'gestao/css/layout.css' %}">
+    <link rel="stylesheet" href="{% static 'gestao/css/admin_sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'painel_cliente/css/components/buttons.css' %}">
+    <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
+    <link rel="stylesheet" href="{% static 'gestao/css/admin-theme.css' %}">
+    <style>
+        .page-shell table, .page-shell .data-table, main table { width: 100%; }
+        .page-shell thead tr, main thead tr { background: var(--color-surface-muted); color: var(--color-muted); text-transform: uppercase; font-size: .75rem; }
+        .page-shell tbody tr, main tbody tr { border-bottom: 1px solid var(--color-border); }
+        .page-shell tbody tr:hover, main tbody tr:hover { background: var(--color-surface-muted); }
+        .page-shell td, .page-shell th, main td, main th { padding: .75rem 1rem; }
+        .page-shell td, main td { color: var(--color-heading); }
+        .page-shell input:not([type=checkbox]):not([type=radio]), .page-shell select, .page-shell textarea, main form input:not([type=checkbox]):not([type=radio]), main form select, main form textarea { background: var(--color-input-bg); border: 1px solid var(--color-input-border); padding: .75rem; color: var(--color-heading); border-radius: .75rem; width: 100%; }
+        .page-shell input:focus, .page-shell select:focus, .page-shell textarea:focus, main form input:focus, main form select:focus, main form textarea:focus { outline: none; border-color: hsl(var(--ring)); box-shadow: 0 0 0 3px hsl(var(--ring) / 0.12); }
+        .page-shell label, .form-label, main form label { display:block; margin-bottom:.25rem; font-size:.875rem; color: var(--color-muted); }
+        .form-wrapper, .surface-card, .card, .table-wrapper, .section-card, .page-shell section { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 1rem; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="admin-body h-full font-sans antialiased">
+<div class="admin-shell">
+    <div class="admin-sidebar-overlay" data-sidebar-overlay></div>
+
+    <aside class="admin-sidebar" data-sidebar aria-hidden="true">
+        <div class="admin-sidebar__head">
+            <a href="{% url 'admin_dashboard' %}" class="admin-sidebar__brand" aria-label="NC Fly">
+                <div class="admin-sidebar__logo"></div>
+                <div class="admin-sidebar__brand-copy">
+                    <span class="admin-sidebar__brand-title">NC Fly</span>
+                </div>
+            </a>
+            <button type="button" class="admin-sidebar__close inline-flex lg:hidden" aria-label="Fechar menu" data-sidebar-close>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6l-12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="admin-sidebar__collapse-row">
+            <button type="button" class="admin-sidebar__collapse-button" aria-label="Recolher menu" aria-pressed="false" data-sidebar-collapse>
+                <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                </svg>
+                <span class="admin-sidebar__collapse-label">Recolher</span>
+            </button>
+        </div>
+
+        <nav class="admin-sidebar__nav">
+            {% if request.user.is_superuser %}
+                <a href="{% url 'admin_empresas' %}" class="admin-sidebar__link {% if menu_ativo == 'empresas' %}is-active{% endif %}" data-sidebar-link title="Empresas">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 20V8h12v12M9 4h6v4H9zM10 12h.01M14 12h.01M10 16h.01M14 16h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Empresas</span>
+                </a>
+                <a href="{% url 'admin_alertas_passagens' %}" class="admin-sidebar__link {% if menu_ativo == 'alertas' %}is-active{% endif %}" data-sidebar-link title="Alertas de Passagens">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.29 3.86l-7.5 13A1 1 0 0 0 3.65 18h16.7a1 1 0 0 0 .86-1.5l-7.5-13a1 1 0 0 0-1.72 0Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Alertas de Passagens</span>
+                </a>
+            {% else %}
+                <a href="{% url 'admin_dashboard' %}" class="admin-sidebar__link {% if menu_ativo == 'home' %}is-active{% endif %}" data-sidebar-link title="Home">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12 12 4l9 8M5 10.5V20h14v-9.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Home</span>
+                </a>
+                <a href="{% url 'admin_dashboard_analytics' %}" class="admin-sidebar__link {% if menu_ativo == 'dashboard' %}is-active{% endif %}" data-sidebar-link title="Dashboard">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9M12 19V5M19 19v-8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><path d="M4 19h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Dashboard</span>
+                </a>
+                <a href="{% url 'admin_clientes' %}" class="admin-sidebar__link {% if menu_ativo == 'clientes' %}is-active{% endif %}" data-sidebar-link title="Clientes">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6M17 11h6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Clientes</span>
+                </a>
+                <a href="{% url 'admin_contas' %}" class="admin-sidebar__link {% if menu_ativo == 'contas' %}is-active{% endif %}" data-sidebar-link title="Contas Fidelidade">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4zM4 10h16M8 14h4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Contas Fidelidade</span>
+                </a>
+                <a href="{% url 'admin_contas_administradas' %}" class="admin-sidebar__link {% if menu_ativo == 'contas_adm' %}is-active{% endif %}" data-sidebar-link title="Contas Administrativas">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0M18.5 9.5h3M20 8v3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Contas Administrativas</span>
+                </a>
+                <a href="{% url 'admin_cotacoes_voo' %}" class="admin-sidebar__link {% if menu_ativo == 'cotacoes' %}is-active{% endif %}" data-sidebar-link title="Cotações">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10l3 5-8 11L4 9l3-5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Cotações</span>
+                </a>
+                <a href="{% url 'admin_emissoes' %}" class="admin-sidebar__link {% if menu_ativo == 'emissoes' %}is-active{% endif %}" data-sidebar-link title="Emissões">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Emissões</span>
+                </a>
+                <a href="{% url 'admin_alertas_passagens' %}" class="admin-sidebar__link {% if menu_ativo == 'alertas' %}is-active{% endif %}" data-sidebar-link title="Alertas de Passagens">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4M12 16h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Alertas de Passagens</span>
+                </a>
+                <a href="{% url 'admin_hoteis' %}" class="admin-sidebar__link {% if menu_ativo == 'hoteis' %}is-active{% endif %}" data-sidebar-link title="Hotéis">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Hotéis</span>
+                </a>
+                <a href="{% url 'admin_calculadora_cotacao' %}" class="admin-sidebar__link {% if menu_ativo == 'calculadora' %}is-active{% endif %}" data-sidebar-link title="Calculadora">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM8 8h8M8 12h3M13 12h3M8 16h3M13 16h3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Calculadora</span>
+                </a>
+                <a href="{% url 'admin_emissores_parceiros' %}" class="admin-sidebar__link {% if menu_ativo == 'emissores' %}is-active{% endif %}" data-sidebar-link title="Emissor parceiro">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM14 23v-6a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v6M18 23v-4a4 4 0 0 0-3-3.87" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Emissor parceiro</span>
+                </a>
+                <details class="admin-sidebar__group" {% if menu_ativo == 'aeroportos' or menu_ativo == 'companhias' or menu_ativo == 'programas' %}open{% endif %}>
+                    <summary class="admin-sidebar__summary" title="Operações">
+                        <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+                        <span class="admin-sidebar__label">Operações</span>
+                        <span class="admin-sidebar__summary-caret">
+                            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+                        </span>
+                    </summary>
+                    <div class="admin-sidebar__group-body">
+                        <a href="{% url 'admin_companhias' %}" class="admin-sidebar__sublink {% if menu_ativo == 'companhias' %}is-active{% endif %}" data-sidebar-link title="Companhia aerea">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Companhia aérea</span>
+                        </a>
+                        <a href="{% url 'admin_programas' %}" class="admin-sidebar__sublink {% if menu_ativo == 'programas' %}is-active{% endif %}" data-sidebar-link title="Programa">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Programa</span>
+                        </a>
+                        <a href="{% url 'admin_aeroportos' %}" class="admin-sidebar__sublink {% if menu_ativo == 'aeroportos' %}is-active{% endif %}" data-sidebar-link title="Aeroportos">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Aeroportos</span>
+                        </a>
+                    </div>
+                </details>
+                <a href="{% url 'admin_auditoria' %}" class="admin-sidebar__link {% if menu_ativo == 'auditoria' %}is-active{% endif %}" data-sidebar-link title="Auditorias">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V10M12 20V4M18 20v-7M4 20h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Auditorias</span>
+                </a>
+                {% with perfil=request.user.cliente_gestao.perfil %}
+                    {% if perfil == 'admin' or request.user.is_superuser %}
+                        <a href="{% url 'user_list' %}" class="admin-sidebar__link {% if menu_ativo == 'usuarios' %}is-active{% endif %}" data-sidebar-link title="Usuarios Administrativos">
+                            <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM21 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                            <span class="admin-sidebar__label">Usuários Administrativos</span>
+                        </a>
+                        <a href="{% url 'operator_list' %}" class="admin-sidebar__link {% if menu_ativo == 'operadores' %}is-active{% endif %}" data-sidebar-link title="Operadores">
+                            <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5 21a7 7 0 0 1 14 0M19 8h2M20 7v2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                            <span class="admin-sidebar__label">Operadores</span>
+                        </a>
+                    {% endif %}
+                {% endwith %}
+            {% endif %}
+        </nav>
+
+        <div class="admin-sidebar__footer">
+            <a href="{% url 'logout' %}" class="admin-sidebar__logout" data-sidebar-link title="Logout">
+                <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                <span class="admin-sidebar__label">Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <div class="admin-main flex min-w-0 flex-1 flex-col">
+        <header class="admin-topbar">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-start gap-3">
+                    <button type="button" class="admin-sidebar__menu inline-flex lg:hidden" aria-label="Abrir menu" aria-expanded="false" data-sidebar-open>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        </svg>
+                    </button>
+                    <div>
+                        <h1 class="admin-topbar__title">{% block page_title %}{% block header_title %}Gestão Admin{% endblock %}{% endblock %}</h1>
+                        <div class="admin-topbar__subtitle">{% block app_header_subtitle %}{% block header_subtitle %}<span>Painel de gestão de milhas.</span>{% endblock %}{% endblock %}</div>
+                    </div>
+                </div>
+                <div class="admin-topbar__actions">
+                    <div class="hidden flex-wrap items-center gap-2 lg:flex">{% block header_actions %}{% endblock %}</div>
+                    <div class="admin-topbar__notifications" data-notification-root>
+                        <button type="button" class="admin-topbar__icon-button admin-topbar__notification-button" aria-label="Notificações" aria-expanded="false" data-notification-toggle>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0a3 3 0 0 1-6 0m6 0H9" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" />
+                            </svg>
+                            {% if admin_notifications_unread_count %}
+                                <span class="admin-topbar__notification-badge">{{ admin_notifications_unread_count }}</span>
+                            {% endif %}
+                        </button>
+                        <section class="admin-notifications-panel" data-notification-panel hidden>
+                            <div class="admin-notifications-panel__header">
+                                <div>
+                                    <h2 class="admin-notifications-panel__title">Notificações</h2>
+                                    <p class="admin-notifications-panel__subtitle">{{ admin_notifications_unread_count }} não lida(s)</p>
+                                </div>
+                                <button type="button" class="admin-notifications-panel__close" aria-label="Fechar notificações" data-notification-close>
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M6 6l12 12M18 6l-12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="admin-notifications-panel__list">
+                                {% for item in admin_notifications %}
+                                    <a href="{{ item.url|default:'#' }}" class="admin-notifications-panel__item {% if item.unread %}is-unread{% endif %}">
+                                        <div class="admin-notifications-panel__item-head">
+                                            <div class="admin-notifications-panel__item-title-wrap">
+                                                <span class="admin-notifications-panel__dot"></span>
+                                                <h3 class="admin-notifications-panel__item-title">{{ item.title }}</h3>
+                                            </div>
+                                            <span class="admin-notifications-panel__badge admin-notifications-panel__badge--{{ item.badge_tone }}">{{ item.badge_label }}</span>
+                                        </div>
+                                        <p class="admin-notifications-panel__item-text">{{ item.description }}</p>
+                                        <p class="admin-notifications-panel__item-time">{{ item.time_label }}</p>
+                                    </a>
+                                {% empty %}
+                                    <div class="admin-notifications-panel__empty">Sem notificações operacionais no momento.</div>
+                                {% endfor %}
+                            </div>
+                            <a href="{% url 'admin_alertas_passagens' %}" class="admin-notifications-panel__footer">Abrir Alertas de Passagens</a>
+                        </section>
+                    </div>
+                    <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
+                    <div class="hidden text-sm md:block">
+                        <div class="admin-topbar__user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+                        <div class="admin-topbar__user-role">{% if request.user.is_superuser %}Superusuário{% else %}Operação{% endif %}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2 lg:hidden">{% block mobile_header_actions %}{% endblock %}</div>
+        </header>
+
+        <main class="admin-page-main min-h-0 flex-1 overflow-y-auto">
+            <div class="mx-auto w-full max-w-[1600px] px-6 py-8">
+                {% if messages %}
+                    <div class="mb-6 space-y-3">
+                        {% for message in messages %}
+                            <div class="admin-flash px-4 py-3 text-sm">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+</div>
+<script src="{% static 'gestao/js/forms.js' %}" defer></script>
+<script type="module" src="{% static 'painel_cliente/js/app.js' %}" defer></script>
+{% block extra_body %}{% endblock %}
+</body>
+</html>

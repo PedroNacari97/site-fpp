@@ -1,0 +1,235 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}{% if form.instance.pk %}Editar Conta Fidelidade{% else %}Nova Conta Fidelidade{% endif %}{% endblock %}
+{% block header_title %}{% if form.instance.pk %}Editar Conta Fidelidade{% else %}Nova Conta Fidelidade{% endif %}{% endblock %}
+{% block header_subtitle %}<span>Painel de gestao de milhas.</span>{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/conta_fidelidade_form_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="fidelity-account-form">
+  {% if form.errors %}
+  <div class="fidelity-account-form__alert">
+    <p class="fidelity-account-form__alert-title">Nao foi possivel salvar. Corrija os pontos abaixo:</p>
+    <ul class="fidelity-account-form__alert-list">
+      {% for field in form %}
+        {% for error in field.errors %}
+        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <form method="post" class="fidelity-account-form__grid" novalidate>
+    {% csrf_token %}
+
+    <div class="fidelity-account-form__main">
+      <section class="fidelity-account-form__card">
+        <header class="fidelity-account-form__card-head">
+          <p class="fidelity-account-form__eyebrow">Informacoes Basicas</p>
+          <h2 class="fidelity-account-form__card-title">Dados principais da conta</h2>
+        </header>
+        <div class="fidelity-account-form__card-body">
+          <div class="fidelity-account-form__row fidelity-account-form__row--double">
+            <div class="fidelity-account-form__field">
+              <label for="{{ form.cliente.id_for_label }}">Cliente <span>*</span></label>
+              {{ form.cliente }}
+              {% for error in form.cliente.errors %}
+              <div class="fidelity-account-form__field-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="fidelity-account-form__field">
+              <label for="{{ form.conta_administrada.id_for_label }}">Conta administrada <span>*</span></label>
+              {{ form.conta_administrada }}
+              {% for error in form.conta_administrada.errors %}
+              <div class="fidelity-account-form__field-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="fidelity-account-form__field">
+            <label for="{{ form.programa.id_for_label }}">Programa de Fidelidade <span>*</span></label>
+            {{ form.programa }}
+            {% for error in form.programa.errors %}
+            <div class="fidelity-account-form__field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="fidelity-account-form__field">
+            <label for="{{ form.quantidade_cpfs_disponiveis.id_for_label }}">Limite de CPFs</label>
+            {{ form.quantidade_cpfs_disponiveis }}
+            <p class="fidelity-account-form__hint">Deixe vazio para ilimitado. Usaremos os CPFs dos passageiros para controlar o uso.</p>
+            {% for error in form.quantidade_cpfs_disponiveis.errors %}
+            <div class="fidelity-account-form__field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section class="fidelity-account-form__card">
+        <header class="fidelity-account-form__card-head">
+          <p class="fidelity-account-form__eyebrow">Credenciais de Acesso</p>
+          <h2 class="fidelity-account-form__card-title">Login e senha do titular</h2>
+        </header>
+        <div class="fidelity-account-form__card-body">
+          <div class="fidelity-account-form__row fidelity-account-form__row--double">
+            <div class="fidelity-account-form__field">
+              <label for="{{ form.login_programa.id_for_label }}">Login do Titular <span>*</span></label>
+              {{ form.login_programa }}
+              {% for error in form.login_programa.errors %}
+              <div class="fidelity-account-form__field-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="fidelity-account-form__field">
+              <label for="{{ form.senha_programa.id_for_label }}">Senha do Titular <span>*</span></label>
+              {{ form.senha_programa }}
+              {% for error in form.senha_programa.errors %}
+              <div class="fidelity-account-form__field-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="fidelity-account-form__field">
+            <label for="{{ form.titular_programa_info.id_for_label }}">Dados Adicionais do Titular</label>
+            {{ form.titular_programa_info }}
+            {% for error in form.titular_programa_info.errors %}
+            <div class="fidelity-account-form__field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="fidelity-account-form__field">
+            <label for="{{ form.observacoes_programa.id_for_label }}">Observacoes do Programa</label>
+            {{ form.observacoes_programa }}
+            {% for error in form.observacoes_programa.errors %}
+            <div class="fidelity-account-form__field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section class="fidelity-account-form__card">
+        <header class="fidelity-account-form__card-head">
+          <p class="fidelity-account-form__eyebrow">Clube de Pontos</p>
+          <h2 class="fidelity-account-form__card-title">Assinatura e beneficios recorrentes</h2>
+        </header>
+        <div class="fidelity-account-form__card-body fidelity-account-form__club-body" data-club-body>
+          <label class="fidelity-account-form__toggle">
+            {{ form.clube_ativo }}
+            <span>Esta conta possui clube de periodicidade ativa</span>
+          </label>
+
+          <div class="fidelity-account-form__row fidelity-account-form__row--double">
+            <div class="fidelity-account-form__field">
+              <label for="{{ form.pontos_clube_mes.id_for_label }}">Pontos por Mes</label>
+              {{ form.pontos_clube_mes }}
+              {% for error in form.pontos_clube_mes.errors %}
+              <div class="fidelity-account-form__field-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="fidelity-account-form__field">
+              <label for="{{ form.valor_assinatura_clube.id_for_label }}">Valor da Assinatura</label>
+              {{ form.valor_assinatura_clube }}
+              {% for error in form.valor_assinatura_clube.errors %}
+              <div class="fidelity-account-form__field-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="fidelity-account-form__row fidelity-account-form__row--double">
+            <div class="fidelity-account-form__field">
+              <label for="{{ form.clube_periodicidade.id_for_label }}">Tipo de Assinatura</label>
+              {{ form.clube_periodicidade }}
+              {% for error in form.clube_periodicidade.errors %}
+              <div class="fidelity-account-form__field-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="fidelity-account-form__field">
+              <label for="id_validade_proxy">Data de Vencimento</label>
+              <input type="text" id="id_validade_proxy" placeholder="DD/MM/AAAA">
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="fidelity-account-form__side">
+      <section class="fidelity-account-form__card fidelity-account-form__card--compact">
+        <header class="fidelity-account-form__card-head">
+          <p class="fidelity-account-form__eyebrow">Datas Importantes</p>
+        </header>
+        <div class="fidelity-account-form__card-body">
+          <div class="fidelity-account-form__field">
+            <label for="{{ form.data_inicio_clube.id_for_label }}">Data Inicio Clube</label>
+            {{ form.data_inicio_clube }}
+            {% for error in form.data_inicio_clube.errors %}
+            <div class="fidelity-account-form__field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="fidelity-account-form__field">
+            <label for="{{ form.validade.id_for_label }}">Validade da Conta</label>
+            {{ form.validade }}
+            {% for error in form.validade.errors %}
+            <div class="fidelity-account-form__field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section class="fidelity-account-form__card fidelity-account-form__card--tips">
+        <div class="fidelity-account-form__tips">
+          <h3>Dicas</h3>
+          <ul>
+            <li>Campos marcados com <span>*</span> sao obrigatorios</li>
+            <li>Guarde as credenciais em local seguro</li>
+            <li>Atualize as observacoes conforme necessario</li>
+            <li>Configure o clube apenas se aplicavel</li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="fidelity-account-form__actions">
+        <button type="submit" class="fidelity-account-form__submit">Salvar Conta</button>
+        <a href="{% url 'admin_contas' %}" class="fidelity-account-form__cancel">Cancelar</a>
+      </div>
+    </aside>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+  (function () {
+    const checkbox = document.getElementById("id_clube_ativo");
+    const clubBody = document.querySelector("[data-club-body]");
+    const validade = document.getElementById("id_validade");
+    const validadeProxy = document.getElementById("id_validade_proxy");
+    if (!checkbox || !clubBody) return;
+
+    const syncClubState = () => {
+      clubBody.classList.toggle("is-disabled", !checkbox.checked);
+    };
+
+    const syncProxyFromReal = () => {
+      if (validade && validadeProxy) validadeProxy.value = validade.value || "";
+    };
+
+    const syncRealFromProxy = () => {
+      if (validade && validadeProxy) validade.value = validadeProxy.value || "";
+    };
+
+    checkbox.addEventListener("change", syncClubState);
+    if (validade && validadeProxy) {
+      validade.addEventListener("input", syncProxyFromReal);
+      validadeProxy.addEventListener("input", syncRealFromProxy);
+      syncProxyFromReal();
+    }
+    syncClubState();
+  })();
+</script>
+{% endblock %}

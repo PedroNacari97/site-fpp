@@ -1,0 +1,87 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Emissores Parceiros{% endblock %}
+{% block header_title %}Emissores Parceiros{% endblock %}
+{% block header_subtitle %}<span>Cadastro de parceiros que emitem e vendem milhas.</span>{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'admin_novo_emissor_parceiro' %}" class="partner-page__header-action">Novo Emissor</a>
+{% endblock %}
+
+{% block mobile_header_actions %}
+<a href="{% url 'admin_novo_emissor_parceiro' %}" class="partner-page__header-action">Novo Emissor</a>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/emissores_parceiros_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="partner-page">
+  <section class="partner-page__filters-card">
+    <form method="get" class="partner-page__filters">
+      <div class="partner-page__search">
+        <input type="text" name="q" value="{{ search }}" placeholder="Buscar por nome...">
+      </div>
+
+      <div class="partner-page__select">
+        <select name="status">
+          <option value="" {% if not status_filter %}selected{% endif %}>Todos os status</option>
+          <option value="ativo" {% if status_filter == "ativo" %}selected{% endif %}>Ativo</option>
+          <option value="inativo" {% if status_filter == "inativo" %}selected{% endif %}>Inativo</option>
+        </select>
+      </div>
+
+      <a href="{% url 'admin_emissores_parceiros' %}" class="partner-page__filter-clear">Limpar</a>
+    </form>
+  </section>
+
+  <section class="partner-page__table-card">
+    <header class="partner-page__table-head">
+      <p class="partner-page__eyebrow">Parceiros</p>
+      <h2>Lista de emissores cadastrados</h2>
+    </header>
+
+    <div class="partner-page__table-wrap">
+      <table class="partner-page__table">
+        <thead>
+          <tr>
+            <th>Nome do Emissor</th>
+            <th>Status</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for emissor in emissores %}
+          <tr>
+            <td>
+              <div class="partner-page__name">
+                <span class="partner-page__name-badge">{{ emissor.nome|first|upper }}</span>
+                <span class="partner-page__name-text">{{ emissor.nome }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="partner-page__status {% if emissor.ativo %}is-active{% else %}is-inactive{% endif %}">
+                {% if emissor.ativo %}Ativo{% else %}Inativo{% endif %}
+              </span>
+            </td>
+            <td>
+              <div class="partner-page__actions">
+                <a href="{% url 'admin_emissoes' %}?emissor_parceiro_id={{ emissor.id }}" class="partner-page__action">Emissoes</a>
+                <a href="{% url 'admin_editar_emissor_parceiro' emissor.id %}" class="partner-page__action">Editar</a>
+                <a href="{% url 'admin_deletar_emissor_parceiro' emissor.id %}" class="partner-page__action">Deletar</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="partner-page__empty">Nenhum emissor parceiro cadastrado.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

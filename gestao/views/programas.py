@@ -1,0 +1,110 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.contrib import messages
+from django.db.models.deletion import ProtectedError
+
+from ..forms import (
+    ContaFidelidadeForm,
+    ProgramaFidelidadeForm,
+    ClienteForm,
+    NovoClienteForm,
+    AeroportoForm,
+    EmissaoPassagemForm,
+    EmissaoHotelForm,
+    CotacaoVooForm,
+)
+from django.contrib.auth.models import User
+from ..models import (
+    Cliente,
+    ContaFidelidade,
+    ProgramaFidelidade,
+    EmissaoPassagem,
+    Aeroporto,
+    ValorMilheiro,
+    EmissaoHotel,
+    CotacaoVoo,
+    Passageiro,
+    Escala,
+    CompanhiaAerea,
+)
+import csv
+import json
+from datetime import timedelta
+
+from .permissions import require_admin_or_operator
+
+
+# --- PROGRAMAS ---
+@login_required
+def admin_programas(request):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    busca = request.GET.get("busca", "")
+    programas = ProgramaFidelidade.objects.select_related("programa_base").all().order_by("nome")
+    if busca:
+        programas = programas.filter(
+            Q(nome__icontains=busca)
+            | Q(descricao__icontains=busca)
+            | Q(programa_base__nome__icontains=busca)
+        )
+    return render(
+        request,
+        "admin_custom/programas.html",
+        {"programas": programas, "busca": busca, "menu_ativo": "programas"},
+    )
+
+
+@login_required
+def criar_programa(request):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    if request.method == "POST":
+        form = ProgramaFidelidadeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("admin_programas")
+    else:
+        form = ProgramaFidelidadeForm()
+    return render(
+        request,
+        "admin_custom/form_programa.html",
+        {"form": form, "menu_ativo": "programas"},
+    )
+
+
+@login_required
+def editar_programa(request, programa_id):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    programa = ProgramaFidelidade.objects.get(id=programa_id)
+    if request.method == "POST":
+        form = ProgramaFidelidadeForm(request.POST, instance=programa)
+        if form.is_valid():
+            form.save()
+            return redirect("admin_programas")
+    else:
+        form = ProgramaFidelidadeForm(instance=programa)
+    return render(
+        request,
+        "admin_custom/form_programa.html",
+        {"form": form, "menu_ativo": "programas"},
+    )
+
+
+@login_required
+def deletar_programa(request, programa_id):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
+    if perfil != "admin":
+        return render(request, "sem_permissao.html")
+    try:
+        ProgramaFidelidade.objects.filter(id=programa_id).delete()
+        messages.success(request, "Programa deletado com sucesso.")
+    except ProtectedError:
+        messages.error(
+            request,
+            "Não é possível deletar um programa principal com vínculos ativos.",
+        )
+    return redirect("admin_programas")

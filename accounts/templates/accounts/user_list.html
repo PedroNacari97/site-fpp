@@ -1,0 +1,103 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Usuarios{% endblock %}
+{% block header_title %}Gerenciar Usuarios{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Administradores com visual unico e tabela responsiva.</p>{% endblock %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'gestao/css/admin_users_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-users">
+  <div class="admin-users__header">
+    <div class="admin-users__title-block">
+      <h2 class="admin-users__title">Gerenciar Usuarios</h2>
+      <p class="admin-users__subtitle">Administradores com visual unico e tabela responsiva.</p>
+    </div>
+    <a href="{% url 'user_create' %}" class="admin-users__cta">
+      <span>+</span>
+      <span>Novo Usuario</span>
+    </a>
+  </div>
+
+  <section class="admin-users__card">
+    <div class="admin-users__card-head admin-users__card-head--stacked">
+      <p class="admin-users__eyebrow">Filtros</p>
+      <h3 class="admin-users__card-title">Buscar usuarios</h3>
+    </div>
+    <form method="get" class="admin-users__filter-form">
+      <div class="admin-users__field">
+        <label class="admin-users__label" for="id_q">Nome, CPF ou empresa</label>
+        <input id="id_q" type="text" name="q" value="{{ search_query }}" placeholder="Buscar..." class="admin-users__input">
+      </div>
+      <div class="admin-users__filter-actions">
+        <button type="submit" class="admin-users__primary">Buscar</button>
+        <a href="{% url 'user_list' %}" class="admin-users__secondary">Limpar</a>
+      </div>
+    </form>
+  </section>
+
+  <section class="admin-users__card">
+    <div class="admin-users__card-head">
+      <div>
+        <p class="admin-users__eyebrow">Usuarios</p>
+        <div class="admin-users__card-title-row">
+          <span class="admin-users__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="8.5" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M20 8v6M23 11h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <h3 class="admin-users__card-title">Lista de usuarios cadastrados</h3>
+        </div>
+      </div>
+    </div>
+
+    {% if usuarios %}
+      <div class="admin-users__table-wrap">
+        <table class="admin-users__table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>CPF</th>
+              <th>Empresa</th>
+              <th>Perfil</th>
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in usuarios %}
+              <tr>
+                <td><span class="admin-users__name">{{ row.display_name }}</span></td>
+                <td>{{ row.usuario.cpf|default:"-" }}</td>
+                <td>{{ row.usuario.empresa.nome|default:"-" }}</td>
+                <td>
+                  <span class="admin-users__tag {{ row.badge_class }}">{{ row.usuario.get_perfil_display }}</span>
+                </td>
+                <td>
+                  <div class="admin-users__actions">
+                    {% if row.edit_url %}
+                      <a href="{{ row.edit_url }}" class="admin-users__table-action">Editar</a>
+                    {% endif %}
+                    {% if row.delete_url %}
+                      <a href="{{ row.delete_url }}" class="admin-users__table-action">Deletar</a>
+                    {% endif %}
+                    {% if not row.edit_url and not row.delete_url %}
+                      <span class="admin-users__helper">Sem acoes</span>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="admin-users__empty">Nenhum usuario cadastrado com os filtros atuais.</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

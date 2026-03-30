@@ -1,0 +1,165 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Editar Programa{% else %}Novo Programa{% endif %}{% endblock %}
+{% block header_title %}{% if form.instance.pk %}Editar Programa{% else %}Novo Programa{% endif %}{% endblock %}
+{% block header_subtitle %}<span>Painel de gestao de milhas.</span>{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/programas_pontos_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="points-program-form">
+  {% if form.errors %}
+  <div class="points-program-form__alert">
+    <p class="points-program-form__alert-title">Nao foi possivel salvar. Corrija os campos destacados.</p>
+    <ul class="points-program-form__alert-list">
+      {% for field in form %}
+        {% for error in field.errors %}
+        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <form method="post" class="points-program-form__layout" novalidate>
+    {% csrf_token %}
+
+    <div class="points-program-form__column">
+      <section class="points-program-form__card">
+        <header class="points-program-form__card-head">
+          <p class="points-program-form__eyebrow">Informacoes Basicas</p>
+          <h2>Dados do programa</h2>
+        </header>
+        <div class="points-program-form__card-body">
+          <div class="points-program-form__field">
+            <label for="{{ form.nome.id_for_label }}">Nome</label>
+            {{ form.nome }}
+            {% for error in form.nome.errors %}<div class="points-program-form__field-error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="points-program-form__field">
+            <label for="{{ form.descricao.id_for_label }}">Descricao</label>
+            {{ form.descricao }}
+            {% for error in form.descricao.errors %}<div class="points-program-form__field-error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section class="points-program-form__card">
+        <header class="points-program-form__card-head">
+          <p class="points-program-form__eyebrow">Valores</p>
+          <h2>Precos de referencia</h2>
+        </header>
+        <div class="points-program-form__card-body">
+          <div class="points-program-form__field">
+            <label for="{{ form.preco_medio_milheiro.id_for_label }}">Preco medio do milheiro (R$)</label>
+            {{ form.preco_medio_milheiro }}
+            {% for error in form.preco_medio_milheiro.errors %}<div class="points-program-form__field-error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section class="points-program-form__card">
+        <header class="points-program-form__card-head">
+          <p class="points-program-form__eyebrow">Gestao de CPFs</p>
+          <h2>Limites e disponibilidade</h2>
+        </header>
+        <div class="points-program-form__card-body">
+          <div class="points-program-form__field">
+            <label for="{{ form.quantidade_cpfs_disponiveis.id_for_label }}">Quantidade de CPFs disponiveis por programa</label>
+            {{ form.quantidade_cpfs_disponiveis }}
+            {% for error in form.quantidade_cpfs_disponiveis.errors %}<div class="points-program-form__field-error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="points-program-form__field">
+            <label for="{{ form.limite_cpfs.id_for_label }}">Limite de CPFs por conta</label>
+            {{ form.limite_cpfs }}
+            {% for error in form.limite_cpfs.errors %}<div class="points-program-form__field-error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="points-program-form__column">
+      <section class="points-program-form__card">
+        <header class="points-program-form__card-head">
+          <p class="points-program-form__eyebrow">Regras de Liberacao</p>
+          <h2>Regras de liberacao</h2>
+        </header>
+        <div class="points-program-form__card-body">
+          <div class="points-program-form__field">
+            <label for="{{ form.tipo_regra_reset.id_for_label }}">Regra de liberacao de CPF</label>
+            {{ form.tipo_regra_reset }}
+            {% for error in form.tipo_regra_reset.errors %}<div class="points-program-form__field-error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="points-program-form__field">
+            <label for="{{ form.dias_reset.id_for_label }}">Dias para nova liberacao</label>
+            {{ form.dias_reset }}
+            {% for error in form.dias_reset.errors %}<div class="points-program-form__field-error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section class="points-program-form__card">
+        <header class="points-program-form__card-head">
+          <p class="points-program-form__eyebrow">Configuracoes</p>
+          <h2>Tipo e vinculacao</h2>
+        </header>
+        <div class="points-program-form__card-body">
+          <div class="points-program-form__field">
+            <label for="{{ form.tipo.id_for_label }}">Tipo</label>
+            {{ form.tipo }}
+            {% for error in form.tipo.errors %}<div class="points-program-form__field-error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="points-program-form__field">
+            <label for="{{ form.programa_base.id_for_label }}">Programa base</label>
+            {{ form.programa_base }}
+            {% for error in form.programa_base.errors %}<div class="points-program-form__field-error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="points-program-form__actions">
+      <button type="submit" class="points-program-form__submit">Salvar Programa</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+  (function () {
+    const tipo = document.getElementById("id_tipo");
+    const programaBase = document.getElementById("id_programa_base");
+    const regraReset = document.getElementById("id_tipo_regra_reset");
+    const diasReset = document.getElementById("id_dias_reset");
+    if (!tipo || !programaBase || !regraReset || !diasReset) return;
+
+    const syncProgramaBase = () => {
+      const isPrincipal = tipo.value === "principal";
+      programaBase.disabled = isPrincipal;
+      if (isPrincipal) programaBase.value = "";
+    };
+
+    const syncDiasReset = () => {
+      const usesDays = regraReset.value === "dias";
+      diasReset.disabled = !usesDays;
+      if (!usesDays) diasReset.value = "";
+    };
+
+    tipo.addEventListener("change", syncProgramaBase);
+    regraReset.addEventListener("change", syncDiasReset);
+    syncProgramaBase();
+    syncDiasReset();
+  })();
+</script>
+{% endblock %}

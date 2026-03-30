@@ -1,0 +1,33 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Remover Usuario{% endblock %}
+{% block header_title %}Gerenciar Usuarios{% endblock %}
+{% block header_subtitle %}<p class="page-subtitle">Confirme a remocao do acesso administrativo.</p>{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'gestao/css/admin_users_figma.css' %}">{% endblock %}
+{% block content %}
+<div class="admin-users">
+  <section class="admin-users__card" style="max-width: 720px; margin: 0 auto; width: 100%;">
+    <div class="admin-users__card-head">
+      <div class="admin-users__card-title-row">
+        <span class="admin-users__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
+            <path d="M3 6h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M6 6l1 14a1 1 0 0 0 1 .92h8a1 1 0 0 0 1-.92L18 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <h3 class="admin-users__card-title">Deletar usuario</h3>
+      </div>
+    </div>
+    <form method="post" class="admin-users__form admin-users__confirm">
+      {% csrf_token %}
+      <p>Voce esta prestes a remover o acesso de <strong>{{ usuario.usuario.get_full_name|default:usuario.usuario.first_name|default:usuario.usuario.username }}</strong>.</p>
+      <p>O usuario sera desativado e deixara de aparecer na listagem administrativa.</p>
+      <div class="admin-users__form-actions">
+        <a href="{{ list_url }}" class="admin-users__secondary">Cancelar</a>
+        <button type="submit" class="admin-users__danger">Confirmar exclusao</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

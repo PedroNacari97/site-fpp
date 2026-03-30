@@ -1,0 +1,103 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Home da Gest&atilde;o{% endblock %}
+{% block header_title %}Home da Gest&atilde;o{% endblock %}
+{% block header_subtitle %}<span>Vis&atilde;o operacional do dia com alertas, movimentos e atalhos da gest&atilde;o.</span>{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_dashboard_analytics' %}" class="btn btn-secondary">Abrir Dashboard</a>
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/home_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="home-ops">
+  <div class="home-ops__shell">
+    <div class="home-ops__filters">
+      {% include "admin_custom/partials/home_management_filters.html" %}
+    </div>
+
+    <div class="home-ops__welcome">
+      <h2 class="home-ops__title">Bem-vindo &agrave; opera&ccedil;&atilde;o</h2>
+      <p class="home-ops__subtitle">Per&iacute;odo atual: {{ home_period_label }}</p>
+    </div>
+
+    <div class="home-ops__kpi-grid">
+      {% for item in home_kpis %}
+        <article class="home-ops__kpi">
+          <p class="home-ops__kpi-label">{{ item.label }}</p>
+          <div class="home-ops__kpi-value {% if 'Lucro' in item.label %}is-profit{% endif %}">{{ item.value }}</div>
+        </article>
+      {% endfor %}
+    </div>
+
+    <section class="home-ops__actions-section">
+      <h3 class="home-ops__section-title">Atalhos rápidos</h3>
+      <div class="home-ops__actions-grid">
+        {% for item in home_actions %}
+          <a href="{{ item.url }}" class="home-ops__action-card">
+            <span class="home-ops__action-icon home-ops__action-icon--{{ item.tone }}"></span>
+            <span class="home-ops__action-label">{{ item.label }}</span>
+            <span class="home-ops__action-arrow">→</span>
+          </a>
+        {% endfor %}
+      </div>
+    </section>
+
+    <div class="home-ops__columns">
+      <section class="home-ops__stack">
+        <h3 class="home-ops__section-title">Últimas movimentações</h3>
+        <div class="home-ops__list{% if home_latest_movements|length > 5 %} home-ops__list--scrollable{% endif %}">
+          {% for item in home_latest_movements %}
+            <article class="home-ops__movement">
+              <div class="home-ops__row-head">
+                <span class="home-ops__tag">{{ item.tipo }}</span>
+                <span class="home-ops__meta">{{ item.meta }}</span>
+              </div>
+              <div class="home-ops__row-body">{{ item.titulo }}</div>
+            </article>
+          {% empty %}
+            <div class="home-ops__movement home-ops__empty">Sem movimentações recentes.</div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="home-ops__stack">
+        <h3 class="home-ops__section-title">Alertas</h3>
+        <div class="home-ops__list{% if home_alerts|length > 5 %} home-ops__list--scrollable{% endif %}">
+          {% for item in home_alerts %}
+            <a href="{{ item.url|default:'#' }}" class="home-ops__alert home-ops__alert--{{ item.tone }}">
+              <div class="home-ops__row-head">
+                <span class="home-ops__alert-title"><i class="home-ops__alert-dot"></i>{{ item.titulo }}</span>
+                <span class="home-ops__meta"></span>
+              </div>
+              <div class="home-ops__row-body">{{ item.descricao }}</div>
+            </a>
+          {% empty %}
+            <div class="home-ops__alert home-ops__empty">Sem alertas no momento.</div>
+          {% endfor %}
+        </div>
+      </section>
+    </div>
+
+    <section class="home-ops__embark-section">
+      <h3 class="home-ops__section-title">Próximos embarques</h3>
+      {% if home_upcoming_boardings %}
+        <div class="home-ops__list{% if home_upcoming_boardings|length > 5 %} home-ops__list--scrollable{% endif %}">
+          {% for item in home_upcoming_boardings %}
+            <a href="{{ item.url|default:'#' }}" class="home-ops__boarding">
+              <div class="home-ops__row-head">
+                <span class="home-ops__tag">{{ item.cliente }}</span>
+                <span class="home-ops__meta">{{ item.status }}</span>
+              </div>
+              <div class="home-ops__row-body">{{ item.rota }} &bull; {{ item.data }} &bull; {{ item.companhia }} &bull; {{ item.localizador }}</div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="home-ops__boarding home-ops__empty home-ops__empty--wide">Sem embarques próximos.</div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,516 @@
+:root {
+  --dashboard-bg: #0f1419;
+  --dashboard-surface: #1a2332;
+  --dashboard-surface-soft: #11171f;
+  --dashboard-border: #1e2939;
+  --dashboard-field-border: #364153;
+  --dashboard-text: #ffffff;
+  --dashboard-text-soft: #d1d5dc;
+  --dashboard-text-muted: #99a1af;
+  --dashboard-blue: #155dfc;
+  --dashboard-cyan: #36cfc9;
+  --dashboard-green: #22c55e;
+  --dashboard-purple: #8b5cf6;
+}
+
+.miles-dashboard {
+  color: var(--dashboard-text);
+}
+
+.miles-dashboard * {
+  box-sizing: border-box;
+}
+
+.miles-dashboard__shell {
+  display: grid;
+  gap: 24px;
+}
+
+.miles-dashboard__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.miles-dashboard__page-title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 700;
+  color: var(--dashboard-text);
+}
+
+.miles-dashboard__page-subtitle {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--dashboard-text-muted);
+}
+
+.miles-dashboard__top-cards {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.miles-dashboard__summary-card,
+.miles-dashboard__panel,
+.miles-dashboard__card,
+.miles-dashboard__table {
+  background: var(--dashboard-surface);
+  border: 1px solid var(--dashboard-border);
+  border-radius: 14px;
+}
+
+.miles-dashboard__summary-card {
+  min-width: 183px;
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.miles-dashboard__summary-label,
+.miles-dashboard__metric-label {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dashboard-text-muted);
+  font-weight: 600;
+}
+
+.miles-dashboard__summary-value {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--dashboard-text);
+}
+
+.miles-dashboard__filters {
+  padding: 16px;
+}
+
+.miles-dashboard__filters-grid {
+  display: grid;
+  grid-template-columns: 144px 144px 176px 160px 160px 128px;
+  gap: 12px;
+  align-items: end;
+}
+
+.miles-dashboard__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.miles-dashboard__field label {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--dashboard-text-muted);
+}
+
+.miles-dashboard__field input,
+.miles-dashboard__field select {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--dashboard-field-border);
+  background: var(--dashboard-surface-soft);
+  color: var(--dashboard-text-soft);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.miles-dashboard__field input:focus,
+.miles-dashboard__field select:focus {
+  outline: none;
+  border-color: var(--dashboard-blue);
+  box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.12);
+}
+
+.miles-dashboard__actions {
+  grid-column: 5 / span 2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.miles-dashboard__button,
+.miles-dashboard__button-secondary {
+  min-height: 36px;
+  padding: 0 24px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.miles-dashboard__button {
+  background: var(--dashboard-blue);
+  color: #fff;
+}
+
+.miles-dashboard__button-secondary {
+  background: transparent;
+  color: var(--dashboard-text);
+  border-color: var(--dashboard-field-border);
+}
+
+.miles-dashboard__metrics-4,
+.miles-dashboard__metrics-3,
+.miles-dashboard__grid-2 {
+  display: grid;
+  gap: 20px;
+}
+
+.miles-dashboard__metrics-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.miles-dashboard__metrics-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.miles-dashboard__grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.miles-dashboard__card {
+  padding: 20px;
+  min-width: 0;
+}
+
+.miles-dashboard__metric-value {
+  margin-top: 28px;
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 700;
+  color: var(--dashboard-text);
+}
+
+.miles-dashboard__metric-note {
+  margin: 28px 0 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--dashboard-text-muted);
+}
+
+.miles-dashboard__card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.miles-dashboard__card-title,
+.miles-dashboard__table-title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  color: var(--dashboard-text);
+}
+
+.miles-dashboard__card-caption,
+.miles-dashboard__card-chip,
+.miles-dashboard__table-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--dashboard-text-muted);
+}
+
+.miles-dashboard__bars,
+.miles-dashboard__list,
+.miles-dashboard__cost-list,
+.miles-dashboard__donut-legend {
+  display: grid;
+  gap: 14px;
+}
+
+.miles-dashboard__bar-row,
+.miles-dashboard__list-row,
+.miles-dashboard__cost-item {
+  display: grid;
+  gap: 8px;
+}
+
+.miles-dashboard__row-head,
+.miles-dashboard__cost-head,
+.miles-dashboard__legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.miles-dashboard__row-head strong,
+.miles-dashboard__cost-head strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dashboard-text-soft);
+}
+
+.miles-dashboard__row-head span,
+.miles-dashboard__cost-head span,
+.miles-dashboard__legend-item span {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--dashboard-text-muted);
+}
+
+.miles-dashboard__bar-track,
+.miles-dashboard__mini-track {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(153, 161, 175, 0.14);
+}
+
+.miles-dashboard__bar-track {
+  height: 10px;
+}
+
+.miles-dashboard__mini-track {
+  height: 8px;
+}
+
+.miles-dashboard__bar-fill,
+.miles-dashboard__mini-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.miles-dashboard__bar-fill {
+  background: linear-gradient(90deg, var(--dashboard-blue) 0%, var(--dashboard-purple) 100%);
+}
+
+.miles-dashboard__mini-fill--cyan {
+  background: linear-gradient(90deg, var(--dashboard-cyan) 0%, var(--dashboard-blue) 100%);
+}
+
+.miles-dashboard__mini-fill--green {
+  background: linear-gradient(90deg, var(--dashboard-green) 0%, var(--dashboard-cyan) 100%);
+}
+
+.miles-dashboard__line-card {
+  min-height: 280px;
+}
+
+.miles-dashboard__line-chart {
+  height: 180px;
+  border-radius: 14px;
+  border: 1px solid rgba(54, 65, 83, 0.5);
+  background: rgba(15, 20, 25, 0.48);
+  padding: 16px;
+}
+
+.miles-dashboard__line-chart svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.miles-dashboard__line-grid {
+  stroke: rgba(153, 161, 175, 0.16);
+  stroke-width: 0.7;
+}
+
+.miles-dashboard__line-path--receita {
+  fill: none;
+  stroke: var(--dashboard-blue);
+  stroke-width: 2.6;
+}
+
+.miles-dashboard__line-path--lucro {
+  fill: none;
+  stroke: var(--dashboard-cyan);
+  stroke-width: 2.6;
+}
+
+.miles-dashboard__line-dot--receita {
+  fill: var(--dashboard-blue);
+}
+
+.miles-dashboard__line-dot--lucro {
+  fill: var(--dashboard-cyan);
+}
+
+.miles-dashboard__line-labels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(54px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--dashboard-text-muted);
+}
+
+.miles-dashboard__donut-layout {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+}
+
+.miles-dashboard__donut {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: conic-gradient(var(--donut));
+  position: relative;
+}
+
+.miles-dashboard__donut::after {
+  content: "";
+  position: absolute;
+  inset: 20px;
+  border-radius: 50%;
+  background: var(--dashboard-surface);
+}
+
+.miles-dashboard__donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.miles-dashboard__donut-center strong {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.miles-dashboard__donut-center span {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--dashboard-text-muted);
+}
+
+.miles-dashboard__legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.miles-dashboard__legend-label {
+  display: inline-flex;
+  align-items: center;
+  color: var(--dashboard-text-soft);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.miles-dashboard__empty-state {
+  min-height: 146px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dashboard-text-muted);
+  font-size: 14px;
+  line-height: 20px;
+  background: rgba(15, 20, 25, 0.28);
+  border: 1px solid rgba(54, 65, 83, 0.35);
+}
+
+.miles-dashboard__table {
+  overflow: hidden;
+}
+
+.miles-dashboard__table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--dashboard-border);
+}
+
+.miles-dashboard__table-wrap {
+  overflow-x: auto;
+}
+
+.miles-dashboard__table table {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
+}
+
+.miles-dashboard__table th {
+  padding: 12px 24px;
+  background: var(--dashboard-surface-soft);
+  color: var(--dashboard-text-muted);
+  text-align: left;
+  font-size: 12px;
+  line-height: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.miles-dashboard__table td {
+  padding: 20px 24px;
+  border-top: 1px solid var(--dashboard-border);
+  color: var(--dashboard-text-soft);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.miles-dashboard__metrics-3--bottom .miles-dashboard__card {
+  min-height: 289px;
+}
+
+@media (max-width: 1280px) {
+  .miles-dashboard__filters-grid,
+  .miles-dashboard__metrics-4,
+  .miles-dashboard__metrics-3,
+  .miles-dashboard__grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .miles-dashboard__actions {
+    grid-column: auto;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 900px) {
+  .miles-dashboard__top-cards,
+  .miles-dashboard__metrics-4,
+  .miles-dashboard__metrics-3,
+  .miles-dashboard__grid-2,
+  .miles-dashboard__filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .miles-dashboard__actions {
+    flex-wrap: wrap;
+  }
+
+  .miles-dashboard__donut-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .miles-dashboard__table-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

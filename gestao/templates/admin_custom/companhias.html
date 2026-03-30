@@ -1,0 +1,82 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Companhias Aereas{% endblock %}
+{% block header_title %}Companhias Aereas{% endblock %}
+{% block header_subtitle %}<span>Catalogo organizado de companhias com filtros e acoes consistentes.</span>{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'admin_nova_companhia' %}" class="airlines-page__header-action">Nova Companhia</a>
+{% endblock %}
+
+{% block mobile_header_actions %}
+<a href="{% url 'admin_nova_companhia' %}" class="airlines-page__header-action">Nova Companhia</a>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/companhias_aereas_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="airlines-page">
+  <section class="airlines-page__filters-card">
+    <header class="airlines-page__filters-head">
+      <p class="airlines-page__eyebrow">Filtros</p>
+      <h2>Buscar companhias</h2>
+    </header>
+    <form method="get" class="airlines-page__filters-body">
+      <div class="airlines-page__field">
+        <label for="busca">Nome ou site</label>
+        <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar...">
+      </div>
+      <div class="airlines-page__filter-actions">
+        <button type="submit" class="airlines-page__search-button">Buscar</button>
+        <a href="{% url 'admin_companhias' %}" class="airlines-page__clear-button">Limpar</a>
+      </div>
+    </form>
+  </section>
+
+  <section class="airlines-page__table-card">
+    <header class="airlines-page__table-head">
+      <p class="airlines-page__eyebrow">Companhias</p>
+      <h2>Lista de companhias</h2>
+    </header>
+
+    <div class="airlines-page__table-wrap">
+      <table class="airlines-page__table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Site</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for companhia in companhias %}
+          <tr>
+            <td class="airlines-page__name">{{ companhia.nome }}</td>
+            <td>
+              {% if companhia.site_url %}
+              <a href="{{ companhia.site_url }}" target="_blank" rel="noopener noreferrer" class="airlines-page__link">{{ companhia.site_url }}</a>
+              {% else %}
+              —
+              {% endif %}
+            </td>
+            <td>
+              <div class="airlines-page__actions">
+                <a href="{% url 'admin_editar_companhia' companhia.id %}" class="airlines-page__action">Editar</a>
+                <a href="{% url 'admin_deletar_companhia' companhia.id %}" class="airlines-page__action">Deletar</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="airlines-page__empty">Nenhuma companhia cadastrada.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

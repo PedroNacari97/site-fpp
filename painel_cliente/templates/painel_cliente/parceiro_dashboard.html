@@ -1,0 +1,96 @@
+{% extends "painel_cliente/base_painel.html" %}
+{% load static %}
+
+{% block title %}Painel do Parceiro{% endblock %}
+{% block page_title %}Painel do Parceiro{% endblock %}
+{% block header_subtitle %}
+  <p class="page-subtitle">Acompanhe as emissões realizadas pelo seu emissor parceiro.</p>
+{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'painel_cliente/css/pages/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+  <div class="dashboard">
+    <section class="dashboard-section">
+      <div class="dashboard-heading">
+        <div>
+          <p class="dashboard-eyebrow">Resumo rápido</p>
+          <h2 class="dashboard-title">Visão geral</h2>
+        </div>
+      </div>
+      {% if total_emissoes %}
+        <div class="dashboard-summary-grid">
+          <div class="card dashboard-summary-card">
+            <div class="dashboard-card__header">
+              <span class="dashboard-card__title">Total de emissões</span>
+            </div>
+            <div class="dashboard-card__value">{{ total_emissoes }}</div>
+            <p class="dashboard-card__meta">Emissões realizadas por {{ emissor.nome }}</p>
+          </div>
+          <div class="card dashboard-summary-card">
+            <div class="dashboard-card__header">
+              <span class="dashboard-card__title">Total de milhas</span>
+            </div>
+            <div class="dashboard-card__value">{{ total_milhas }}</div>
+            <p class="dashboard-card__meta">Milhas emitidas pelo parceiro</p>
+          </div>
+          <div class="card dashboard-summary-card">
+            <div class="dashboard-card__header">
+              <span class="dashboard-card__title">Valor pago ao parceiro</span>
+            </div>
+            <div class="dashboard-card__value">R$ {{ total_pago|floatformat:2 }}</div>
+            <p class="dashboard-card__meta">Somatório pago nas emissões</p>
+          </div>
+          <div class="card dashboard-summary-card">
+            <div class="dashboard-card__header">
+              <span class="dashboard-card__title">Valor médio do milheiro</span>
+            </div>
+            <div class="dashboard-card__value">R$ {{ valor_medio_milheiro|floatformat:2 }}</div>
+            <p class="dashboard-card__meta">Baseado apenas nas emissões do parceiro</p>
+          </div>
+        </div>
+      {% else %}
+        <p class="dashboard-empty">Nenhuma emissão registrada para este emissor.</p>
+      {% endif %}
+    </section>
+
+    <section class="dashboard-section">
+      <div class="dashboard-heading">
+        <div>
+          <p class="dashboard-eyebrow">Últimas emissões</p>
+          <h2 class="dashboard-title">Emissões recentes</h2>
+        </div>
+      </div>
+      <div class="dashboard-table-wrapper">
+        <table class="dashboard-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Origem</th>
+              <th>Destino</th>
+              <th>Programa</th>
+              <th>Milhas</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for emissao in emissoes_recentes %}
+              <tr>
+                <td>{{ emissao.criado_em|date:"d/m/Y" }}</td>
+                <td>{{ emissao.aeroporto_partida }}</td>
+                <td>{{ emissao.aeroporto_destino }}</td>
+                <td>{{ emissao.programa }}</td>
+                <td>{{ emissao.pontos_utilizados|default:0 }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td class="table-empty" colspan="5">Nenhuma emissão encontrada.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+{% endblock %}

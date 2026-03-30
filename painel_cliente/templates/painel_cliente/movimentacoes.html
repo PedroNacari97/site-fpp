@@ -1,0 +1,45 @@
+{% extends 'painel_cliente/base_painel.html' %}
+
+{% block title %}Movimentações de Pontos{% endblock %}
+{% block page_title %}Movimentações de Pontos{% endblock %}
+
+{% block content %}
+        <div class="page-actions">
+            <a class="btn btn--ghost btn--sm" href="{% url 'painel_dashboard' %}">&larr; Voltar ao painel</a>
+        </div>
+        <h1>Extrato - {{ conta.programa.nome }}</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Pontos</th>
+                    <th>Valor Pago</th>
+                    <th>CPFs consumidos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mov in movimentacoes %}
+                <tr>
+                    <td>{{ mov.data|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if mov.emissao_id %}
+                            <a href="{% url 'emissao_pdf' mov.emissao_id %}" class="underline">{{ mov.descricao|default:"—" }}</a>
+                        {% else %}
+                            {{ mov.descricao|default:"—" }}
+                        {% endif %}
+                    </td>
+                    <td class="{% if mov.pontos >= 0 %}entrada{% else %}saida{% endif %}">
+                        {{ mov.pontos }}
+                    </td>
+                    <td>R$ {{ mov.valor_pago|floatformat:2 }}</td>
+                    <td>{% if mov.emissao_id %}{{ mov.cpfs_consumidos }}{% else %}—{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="table-empty">Nenhuma movimentação encontrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+{% endblock %}

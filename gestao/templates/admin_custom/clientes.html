@@ -1,0 +1,125 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Clientes{% endblock %}
+{% block header_title %}Gestao de Clientes{% endblock %}
+{% block header_subtitle %}<span>Seus registros de clientes com filtros, acoes e paginacao nesta.</span>{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_novo_cliente' %}" class="btn btn-primary">+ Novo Cliente</a>
+{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/clientes_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="clients-page">
+  <div class="clients-page__shell">
+    <section class="clients-page__filters">
+      <form method="get" class="clients-page__filter-grid">
+        {% if empresa_id %}<input type="hidden" name="empresa_id" value="{{ empresa_id }}">{% endif %}
+        <div class="clients-page__field clients-page__field--search">
+          <label for="busca">Buscar cliente</label>
+          <input id="busca" type="text" name="busca" value="{{ busca }}" placeholder="Nome do cliente ou ID do usuario...">
+        </div>
+        <div class="clients-page__field">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="">Todos</option>
+            <option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativo</option>
+            <option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativo</option>
+          </select>
+        </div>
+        <div class="clients-page__field">
+          <label for="data_inicio">Data inicial</label>
+          <input id="data_inicio" type="date" name="data_inicio" value="{{ data_inicio }}">
+        </div>
+        <div class="clients-page__field">
+          <label for="data_fim">Data final</label>
+          <input id="data_fim" type="date" name="data_fim" value="{{ data_fim }}">
+        </div>
+        <div class="clients-page__field">
+          <label for="conta">Conta</label>
+          <select id="conta" name="conta">
+            <option value="">Todas</option>
+            {% for item in account_options %}
+              <option value="{{ item.id }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="clients-page__actions">
+          <button type="submit" class="clients-page__button">Filtrar</button>
+          <a href="{{ clear_filters_url }}" class="clients-page__button-secondary">Limpar</a>
+        </div>
+      </form>
+    </section>
+
+    <section class="clients-page__metrics">
+      <article class="clients-page__metric">
+        <p class="clients-page__metric-label">Total de clientes</p>
+        <p class="clients-page__metric-value">{{ total_clientes }}</p>
+      </article>
+      <article class="clients-page__metric">
+        <p class="clients-page__metric-label">Clientes ativos</p>
+        <p class="clients-page__metric-value">{{ clientes_ativos }}</p>
+      </article>
+      <article class="clients-page__metric">
+        <p class="clients-page__metric-label">Novos este mes</p>
+        <p class="clients-page__metric-value">{{ novos_mes }}</p>
+      </article>
+      <article class="clients-page__metric">
+        <p class="clients-page__metric-label">Registros exibidos</p>
+        <p class="clients-page__metric-value">{{ displayed_count }}</p>
+      </article>
+    </section>
+
+    <section class="clients-page__list-card">
+      <header class="clients-page__list-head">
+        <h2 class="clients-page__list-title">Clientes cadastrados</h2>
+        <p class="clients-page__list-note">{{ total_clientes }} registro(s) encontrado(s)</p>
+      </header>
+
+      <div class="clients-page__list-body">
+        {% for cliente in cliente_cards %}
+          <article class="clients-page__client-row">
+            <div class="clients-page__client-main">
+              <div class="clients-page__avatar">{{ cliente.initials }}</div>
+              <div class="clients-page__identity">
+                <strong>{{ cliente.display_name }}</strong>
+                <span>{{ cliente.username }}</span>
+              </div>
+              <div class="clients-page__status-block">
+                <span class="clients-page__status-label">Status</span>
+                <span class="clients-page__status-badge clients-page__status-badge--{{ cliente.status_tone }}">{{ cliente.status_label }}</span>
+              </div>
+            </div>
+            <div class="clients-page__row-actions">
+              <a href="{{ cliente.view_url }}" class="clients-page__row-button clients-page__row-button--secondary">Visualizar</a>
+              <a href="{{ cliente.edit_url }}" class="clients-page__row-button">Editar</a>
+            </div>
+          </article>
+        {% empty %}
+          <div class="clients-page__empty">Nenhum cliente encontrado com os filtros atuais.</div>
+        {% endfor %}
+      </div>
+
+      <footer class="clients-page__list-footer">
+        <span class="clients-page__footer-note">Exibindo {{ displayed_count }} de {{ total_clientes }} registros</span>
+        <div class="clients-page__pagination">
+          {% if page_obj.has_previous %}
+            <a href="{{ previous_page_url }}" class="clients-page__page-link">← Anterior</a>
+          {% else %}
+            <span class="clients-page__page-link is-disabled">← Anterior</span>
+          {% endif %}
+
+          <span class="clients-page__page-current">{{ page_obj.number }}</span>
+
+          {% if page_obj.has_next %}
+            <a href="{{ next_page_url }}" class="clients-page__page-link">Proxima →</a>
+          {% else %}
+            <span class="clients-page__page-link is-disabled">Proxima →</span>
+          {% endif %}
+        </div>
+      </footer>
+    </section>
+  </div>
+</div>
+{% endblock %}

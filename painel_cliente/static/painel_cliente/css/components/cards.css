@@ -1,0 +1,40 @@
+.card {
+  background: var(--color-surface);
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  transition: background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover {
+  background: var(--color-surface);
+  box-shadow: 0 16px 32px -24px hsl(220 20% 20% / 0.22);
+}
+
+.card-header {
+  padding: 18px 20px 10px;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.card-content {
+  padding: 0 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-actions {
+  padding: 0 20px 20px;
+}
+
+.card a {
+  text-decoration: none;
+}

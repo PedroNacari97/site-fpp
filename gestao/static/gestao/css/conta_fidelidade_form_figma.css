@@ -1,0 +1,258 @@
+:root {
+  --account-form-bg: #0f1419;
+  --account-form-surface: #1a2332;
+  --account-form-border: #1e2939;
+  --account-form-border-soft: #364153;
+  --account-form-text: #ffffff;
+  --account-form-text-muted: #99a1af;
+  --account-form-text-faint: #6a7282;
+  --account-form-blue: #155dfc;
+  --account-form-blue-strong: #0f4de0;
+  --account-form-danger: #ff6467;
+}
+
+.fidelity-account-form {
+  color: var(--account-form-text);
+}
+
+.fidelity-account-form * {
+  box-sizing: border-box;
+}
+
+.fidelity-account-form__alert {
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border: 1px solid rgba(255, 100, 103, 0.35);
+  border-radius: 14px;
+  background: rgba(127, 29, 29, 0.24);
+  color: #fecaca;
+}
+
+.fidelity-account-form__alert-title {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.fidelity-account-form__alert-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.fidelity-account-form__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 0.96fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.fidelity-account-form__main,
+.fidelity-account-form__side {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.fidelity-account-form__card {
+  border: 1px solid var(--account-form-border);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)),
+    var(--account-form-surface);
+  overflow: hidden;
+}
+
+.fidelity-account-form__card-head {
+  padding: 20px;
+  border-bottom: 1px solid var(--account-form-border);
+}
+
+.fidelity-account-form__eyebrow {
+  margin: 0;
+  color: var(--account-form-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fidelity-account-form__card-title {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--account-form-text);
+}
+
+.fidelity-account-form__card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fidelity-account-form__row {
+  display: grid;
+  gap: 16px;
+}
+
+.fidelity-account-form__row--double {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fidelity-account-form__field label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--account-form-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.fidelity-account-form__field label span,
+.fidelity-account-form__tips span {
+  color: var(--account-form-danger);
+}
+
+.fidelity-account-form__field input:not([type="checkbox"]),
+.fidelity-account-form__field select,
+.fidelity-account-form__field textarea {
+  min-height: 40px;
+  width: 100%;
+  border: 1px solid var(--account-form-border-soft);
+  border-radius: 8px;
+  background: var(--account-form-bg);
+  color: var(--account-form-text);
+  font-size: 14px;
+  padding: 8px 12px;
+}
+
+.fidelity-account-form__field textarea {
+  min-height: 90px;
+  resize: vertical;
+  padding-top: 10px;
+}
+
+.fidelity-account-form__field input::placeholder,
+.fidelity-account-form__field textarea::placeholder {
+  color: #717182;
+}
+
+.fidelity-account-form__field input:focus,
+.fidelity-account-form__field select:focus,
+.fidelity-account-form__field textarea:focus {
+  border-color: var(--account-form-blue);
+  box-shadow: 0 0 0 1px var(--account-form-blue);
+}
+
+.fidelity-account-form__field-error {
+  margin-top: 6px;
+  color: #fca5a5;
+  font-size: 12px;
+}
+
+.fidelity-account-form__hint {
+  margin: 6px 0 0;
+  color: var(--account-form-text-faint);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.fidelity-account-form__toggle {
+  min-height: 46px;
+  padding: 12px;
+  border: 1px solid var(--account-form-border-soft);
+  border-radius: 10px;
+  background: var(--account-form-bg);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--account-form-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.fidelity-account-form__toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--account-form-blue);
+}
+
+.fidelity-account-form__club-body.is-disabled .fidelity-account-form__row,
+.fidelity-account-form__club-body.is-disabled .fidelity-account-form__field,
+.fidelity-account-form__club-body.is-disabled .fidelity-account-form__toggle {
+  opacity: 0.72;
+}
+
+.fidelity-account-form__tips {
+  padding: 20px;
+}
+
+.fidelity-account-form__tips h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--account-form-text);
+}
+
+.fidelity-account-form__tips ul {
+  margin: 0;
+  padding-left: 16px;
+  color: var(--account-form-text-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.fidelity-account-form__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fidelity-account-form__submit,
+.fidelity-account-form__cancel {
+  min-height: 44px;
+  width: 100%;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fidelity-account-form__submit {
+  border: 0;
+  background: var(--account-form-blue);
+  color: var(--account-form-text);
+  cursor: pointer;
+}
+
+.fidelity-account-form__submit:hover {
+  background: var(--account-form-blue-strong);
+}
+
+.fidelity-account-form__cancel {
+  border: 1px solid var(--account-form-border-soft);
+  background: transparent;
+  color: var(--account-form-text);
+}
+
+@media (max-width: 1080px) {
+  .fidelity-account-form__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .fidelity-account-form__row--double {
+    grid-template-columns: 1fr;
+  }
+
+  .fidelity-account-form__card-head,
+  .fidelity-account-form__card-body,
+  .fidelity-account-form__tips {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

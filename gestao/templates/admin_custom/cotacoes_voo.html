@@ -1,0 +1,82 @@
+{% extends "admin_custom/base_admin.html" %}
+{% block title %}Cotacoes de Voo{% endblock %}
+{% block header_title %}Cotacoes de Voo{% endblock %}
+{% block header_subtitle %}<span>Padrao global com filtros, KPIs e tabela operacional de cotacoes.</span>{% endblock %}
+{% block header_actions %}
+<a href="{% url 'admin_nova_cotacao_voo' %}" class="btn btn-primary">+ Nova Cotacao</a>
+{% endblock %}
+
+{% block content %}
+<div class="stacked py-2">
+    {% include "admin_custom/partials/management_filters.html" %}
+
+    <section class="stat-grid">
+        <article class="stat-card">
+            <p class="eyebrow">Cotacoes filtradas</p>
+            <p class="stat-value">{{ cotacao_totais.total }}</p>
+        </article>
+        <article class="stat-card">
+            <p class="eyebrow">Valor referencia</p>
+            <p class="stat-value">{{ cotacao_totais.referencia }}</p>
+        </article>
+        <article class="stat-card">
+            <p class="eyebrow">Valor a vista</p>
+            <p class="stat-value">{{ cotacao_totais.venda }}</p>
+        </article>
+        <article class="stat-card">
+            <p class="eyebrow">Economia estimada</p>
+            <p class="stat-value">{{ cotacao_totais.economia }}</p>
+        </article>
+    </section>
+
+    <section class="surface-card">
+        <div class="section-heading">
+            <div>
+                <h2 class="section-title">Lista de cotacoes</h2>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Conta</th>
+                        <th>Programa</th>
+                        <th>Origem</th>
+                        <th>Destino</th>
+                        <th>Data ida</th>
+                        <th>Status</th>
+                        <th>Economia</th>
+                        <th>Acoes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in cotacoes %}
+                    <tr>
+                        <td>{{ c.cliente.usuario.get_full_name|default:c.cliente.usuario.username|default:'-' }}</td>
+                        <td>{{ c.conta_administrada|default:'-' }}</td>
+                        <td>{{ c.programa|default:'-' }}</td>
+                        <td>{{ c.origem }}</td>
+                        <td>{{ c.destino }}</td>
+                        <td>{{ c.data_ida|date:"d/m/Y H:i" }}</td>
+                        <td>{{ c.get_status_display }}</td>
+                        <td>R$ {{ c.economia|floatformat:2 }}</td>
+                        <td>
+                            <div class="filter-actions">
+                                <a href="{% url 'admin_cotacao_voo_pdf' c.id %}" class="btn btn-secondary">PDF</a>
+                                <a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="btn btn-secondary">Editar</a>
+                                <a href="{% url 'admin_deletar_cotacao_voo' c.id %}" class="btn btn-ghost">Deletar</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="muted">Nenhuma cotacao encontrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

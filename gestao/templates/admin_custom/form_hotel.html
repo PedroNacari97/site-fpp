@@ -1,0 +1,137 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Editar Emissao de Hotel{% else %}Nova Emissao de Hotel{% endif %}{% endblock %}
+{% block header_title %}{% if form.instance.pk %}Editar Emissao de Hotel{% else %}Nova Emissao de Hotel{% endif %}{% endblock %}
+{% block header_subtitle %}<span>Painel de gestao de milhas.</span>{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/hotel_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="hotel-form">
+  {% if form.errors %}
+  <div class="hotel-form__alert">
+    <p class="hotel-form__alert-title">Nao foi possivel salvar. Corrija os campos destacados.</p>
+    <ul class="hotel-form__alert-list">
+      {% for field in form %}
+        {% for error in field.errors %}
+        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <form method="post" class="hotel-form__layout" novalidate>
+    {% csrf_token %}
+
+    <section class="hotel-form__card">
+      <header class="hotel-form__card-head">
+        <h2 class="hotel-form__card-title">Dados da Reserva</h2>
+      </header>
+      <div class="hotel-form__card-body">
+        <div class="hotel-form__field">
+          <label for="{{ form.cliente.id_for_label }}">Cliente <span>*</span></label>
+          {{ form.cliente }}
+          {% for error in form.cliente.errors %}
+          <div class="hotel-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="hotel-form__field">
+          <label for="{{ form.nome_hotel.id_for_label }}">Nome hotel <span>*</span></label>
+          {{ form.nome_hotel }}
+          {% for error in form.nome_hotel.errors %}
+          <div class="hotel-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="hotel-form__grid">
+          <div class="hotel-form__field">
+            <label for="{{ form.check_in.id_for_label }}">Check-in <span>*</span></label>
+            {{ form.check_in }}
+            {% for error in form.check_in.errors %}
+            <div class="hotel-form__field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="hotel-form__field">
+            <label for="{{ form.check_out.id_for_label }}">Check-out <span>*</span></label>
+            {{ form.check_out }}
+            {% for error in form.check_out.errors %}
+            <div class="hotel-form__field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="hotel-form__card">
+      <header class="hotel-form__card-head">
+        <h2 class="hotel-form__card-title">Valores</h2>
+      </header>
+      <div class="hotel-form__card-body">
+        <div class="hotel-form__field">
+          <label for="{{ form.valor_referencia.id_for_label }}">Valor referencia <span>*</span></label>
+          {{ form.valor_referencia }}
+          {% for error in form.valor_referencia.errors %}
+          <div class="hotel-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="hotel-form__field">
+          <label for="{{ form.valor_pago.id_for_label }}">Valor pago <span>*</span></label>
+          {{ form.valor_pago }}
+          {% for error in form.valor_pago.errors %}
+          <div class="hotel-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="hotel-form__field hotel-form__field--readonly">
+          <label for="{{ form.economia_obtida.id_for_label }}">Economia obtida</label>
+          {{ form.economia_obtida }}
+          <p class="hotel-form__hint">Calculado automaticamente</p>
+          {% for error in form.economia_obtida.errors %}
+          <div class="hotel-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <div class="hotel-form__actions">
+      <a href="{% url 'admin_hoteis' %}" class="hotel-form__cancel">Cancelar</a>
+      <button type="submit" class="hotel-form__submit">Salvar Emissao</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+  (function () {
+    const referencia = document.getElementById("id_valor_referencia");
+    const pago = document.getElementById("id_valor_pago");
+    const economia = document.getElementById("id_economia_obtida");
+    if (!referencia || !pago || !economia) return;
+
+    const parseValue = (value) => {
+      if (!value) return 0;
+      return Number(String(value).replace(",", ".")) || 0;
+    };
+
+    const updateEconomia = () => {
+      const total = parseValue(referencia.value) - parseValue(pago.value);
+      economia.value = Number.isFinite(total) ? total.toFixed(2) : "";
+    };
+
+    referencia.addEventListener("input", updateEconomia);
+    pago.addEventListener("input", updateEconomia);
+    updateEconomia();
+  })();
+</script>
+{% endblock %}

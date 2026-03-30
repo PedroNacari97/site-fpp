@@ -1,0 +1,37 @@
+from django.contrib.auth import get_user_model
+from django.db import models
+from django.utils import timezone
+
+from .empresa import Empresa
+from .programa_fidelidade import ProgramaFidelidade
+
+User = get_user_model()
+
+
+class EmissorParceiro(models.Model):
+    usuario = models.OneToOneField(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="emissor_parceiro",
+    )
+    empresa = models.ForeignKey(
+        Empresa, on_delete=models.CASCADE, related_name="emissores_parceiros"
+    )
+    nome = models.CharField(max_length=150)
+    telefone = models.CharField(max_length=20, blank=True)
+    programas = models.ManyToManyField(
+        ProgramaFidelidade, related_name="emissores_parceiros", blank=True
+    )
+    ativo = models.BooleanField(default=True)
+    observacoes = models.TextField(blank=True)
+    criado_em = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = "Emissor Parceiro"
+        verbose_name_plural = "Emissores Parceiros"
+        ordering = ["nome"]
+
+    def __str__(self):
+        return self.nome

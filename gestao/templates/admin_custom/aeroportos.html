@@ -1,0 +1,77 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Aeroportos{% endblock %}
+{% block header_title %}Aeroportos{% endblock %}
+{% block header_subtitle %}<span>Base limpa de aeroportos com pesquisa rapida e acoes padronizadas.</span>{% endblock %}
+
+{% block header_actions %}
+<a href="{% url 'admin_novo_aeroporto' %}" class="airport-page__header-action">Novo Aeroporto</a>
+{% endblock %}
+
+{% block mobile_header_actions %}
+<a href="{% url 'admin_novo_aeroporto' %}" class="airport-page__header-action">Novo Aeroporto</a>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/aeroporto_form_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="airport-page">
+  <section class="airport-page__filters-card">
+    <header class="airport-page__filters-head">
+      <p class="airport-page__eyebrow">Filtros</p>
+      <h2>Buscar aeroportos</h2>
+    </header>
+
+    <form method="get" class="airport-page__filters-body">
+      <div class="airport-page__field">
+        <label for="busca">Sigla ou nome</label>
+        <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar...">
+      </div>
+      <div class="airport-page__filter-actions">
+        <button type="submit" class="airport-page__search-button">Buscar</button>
+        <a href="{% url 'admin_aeroportos' %}" class="airport-page__clear-button">Limpar</a>
+      </div>
+    </form>
+  </section>
+
+  <section class="airport-page__table-card">
+    <header class="airport-page__table-head">
+      <p class="airport-page__eyebrow">Aeroportos</p>
+      <h2>Lista de aeroportos cadastrados</h2>
+    </header>
+
+    <div class="airport-page__table-wrap">
+      <table class="airport-page__table">
+        <thead>
+          <tr>
+            <th>Sigla</th>
+            <th>Nome</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in aeroportos %}
+          <tr>
+            <td class="airport-page__sigla">{{ a.sigla }}</td>
+            <td>{{ a.nome }}</td>
+            <td>
+              <div class="airport-page__actions">
+                <a href="{% url 'admin_editar_aeroporto' a.id %}" class="airport-page__action">Editar</a>
+                <a href="{% url 'admin_deletar_aeroporto' a.id %}" class="airport-page__action">Deletar</a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="3" class="airport-page__empty">Nenhum aeroporto cadastrado.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}
