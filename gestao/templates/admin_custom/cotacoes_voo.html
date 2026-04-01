@@ -63,8 +63,13 @@
                         <td>R$ {{ c.economia|floatformat:2 }}</td>
                         <td>
                             <div class="filter-actions">
-                                <a href="{% url 'admin_cotacao_voo_pdf' c.id %}" class="btn btn-secondary">PDF</a>
+                                <a href="{% url 'admin_visualizar_cotacao_voo' c.id %}" class="btn btn-secondary">Visualizar Cotacao</a>
                                 <a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="btn btn-secondary">Editar</a>
+                                {% if c.status == "emissao" and not c.emissao_id %}
+                                <a href="{% url 'admin_nova_emissao' %}?cotacao_id={{ c.id }}" class="btn btn-secondary">Completar Emissao</a>
+                                {% elif c.emissao_id %}
+                                <a href="{% url 'admin_editar_emissao' c.emissao_id %}" class="btn btn-secondary">Ver Emissao</a>
+                                {% endif %}
                                 <a href="{% url 'admin_deletar_cotacao_voo' c.id %}" class="btn btn-ghost">Deletar</a>
                             </div>
                         </td>

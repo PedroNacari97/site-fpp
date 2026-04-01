@@ -135,10 +135,61 @@ const initAdminNotifications = () => {
   });
 };
 
+const initAutoSubmitFilters = () => {
+  const forms = document.querySelectorAll("form[data-auto-submit-filters]");
+
+  if (!forms.length) {
+    return;
+  }
+
+  const isSupportedField = (field) => {
+    if (!(field instanceof HTMLElement)) {
+      return false;
+    }
+
+    if (!field.closest("form[data-auto-submit-filters]")) {
+      return false;
+    }
+
+    if (field.hasAttribute("data-auto-submit-ignore") || field.closest("[data-auto-submit-ignore]")) {
+      return false;
+    }
+
+    if (field instanceof HTMLSelectElement || field instanceof HTMLTextAreaElement) {
+      return !field.disabled;
+    }
+
+    if (!(field instanceof HTMLInputElement) || field.disabled) {
+      return false;
+    }
+
+    const ignoredTypes = new Set(["button", "submit", "reset", "hidden", "file"]);
+    return !ignoredTypes.has((field.type || "").toLowerCase());
+  };
+
+  forms.forEach((form) => {
+    form.addEventListener("change", (event) => {
+      const field = event.target;
+
+      if (!isSupportedField(field)) {
+        return;
+      }
+
+      if (typeof form.requestSubmit === "function") {
+        form.requestSubmit();
+        return;
+      }
+
+      form.submit();
+    });
+  });
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   initLoginExperience();
   initTableEnhancements();
   initSidebarToggle();
   initAdminNotifications();
+  initAutoSubmitFilters();
   initThemeToggle();
 });

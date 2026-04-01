@@ -1,9 +1,7 @@
 from django.urls import path
-from accounts.views import custom_login  # importar a view de login compartilhada
 from . import views
 
 urlpatterns = [
-    path("login/", custom_login, name="login_custom"),
     path("", views.dashboard, name="painel_dashboard"),  
     path("logout/", views.sair, name="logout"),
     path("parceiro/", views.parceiro_dashboard, name="painel_parceiro_dashboard"),

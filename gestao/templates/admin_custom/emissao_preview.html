@@ -1,0 +1,39 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Visualizacao de Emissao{% endblock %}
+{% block header_title %}Visualizacao de Emissao{% endblock %}
+{% block header_subtitle %}<span>Revise os detalhes da emissao antes de imprimir ou compartilhar.</span>{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/cotacao_preview.css' %}">
+<link rel="stylesheet" href="{% static 'gestao/css/emissao_preview.css' %}">
+{% endblock %}
+
+{% block header_actions %}
+<button type="button" class="quote-preview__toolbar-link quote-preview__toolbar-link--ghost" title="Envio por e-mail em breve">Enviar por E-mail</button>
+<a href="{% url 'admin_emissao_pdf' emissao.id %}" class="quote-preview__toolbar-link quote-preview__toolbar-link--primary" target="_blank" rel="noopener">Imprimir / Salvar PDF</a>
+{% endblock %}
+
+{% block mobile_header_actions %}
+<button type="button" class="quote-preview__toolbar-link quote-preview__toolbar-link--ghost" title="Envio por e-mail em breve">Enviar por E-mail</button>
+<a href="{% url 'admin_emissao_pdf' emissao.id %}" class="quote-preview__toolbar-link quote-preview__toolbar-link--primary" target="_blank" rel="noopener">Imprimir / Salvar PDF</a>
+{% endblock %}
+
+{% block content %}
+<div class="quote-preview-page emission-preview-page{% if print_mode %} quote-preview-page--print-mode{% endif %}">
+    <a href="{% url 'admin_emissoes' %}" class="quote-preview__back-link">Voltar para emissoes</a>
+    {% include "admin_custom/partials/emissao_preview_sheet.html" %}
+</div>
+{% endblock %}
+
+{% block extra_body %}
+{% if print_mode %}
+<script>
+window.addEventListener("load", function () {
+    window.setTimeout(function () {
+        window.print();
+    }, 450);
+});
+</script>
+{% endif %}
+{% endblock %}

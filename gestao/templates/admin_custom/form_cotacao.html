@@ -2,32 +2,34 @@
 {% load static %}
 {% block title %}{% if form.instance.pk %}Editar Cotacao{% else %}Nova Cotacao{% endif %}{% endblock %}
 {% block header_title %}{% if form.instance.pk %}Editar Cotacao{% else %}Nova Cotacao{% endif %}{% endblock %}
-{% block header_subtitle %}<span>Monte a proposta com titular, trechos, escalas e valores em um unico fluxo.</span>{% endblock %}
+{% block header_subtitle %}<span>Monte a proposta com titular, roteiro, escalas e condicoes comerciais.</span>{% endblock %}
 {% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/wizard.css' %}">
 <link rel="stylesheet" href="{% static 'gestao/css/cotacao_figma.css' %}">
 <script src="{% static 'gestao/js/form_save_handler.js' %}"></script>
 {% endblock %}
 {% block content %}
-<div class="quote-page">
-    <form method="post" class="quote-form-shell" novalidate>
+<div class="emission-page quote-page">
+    <form method="post" class="emission-form-shell quote-form-shell" novalidate data-is-new="{% if form.instance.pk %}0{% else %}1{% endif %}">
         {% csrf_token %}
 
-        <header class="quote-hero">
-            <div>
-                <p class="quote-hero__eyebrow">Cotacoes de voo</p>
-                <h1 class="quote-hero__title">{% if form.instance.pk %}Editar cotacao de voo{% else %}Nova cotacao de voo{% endif %}</h1>
-                <p class="quote-hero__subtitle">Preencha titular, roteiro, passageiros e condicoes comerciais antes de salvar.</p>
-            </div>
-            <div class="quote-hero__chips">
-                <span class="quote-chip">Fluxo comercial</span>
-                <span class="quote-chip">Preview em tempo real</span>
+        <header class="quote-page-hero">
+            <div class="quote-page-hero__copy">
+                <div class="quote-page-hero__eyebrow">
+                    <span>Nova Cotacao de Voo</span>
+                    <span class="quote-status-pill quote-status-pill--hero" id="quote-hero-status">
+                        {% if form.instance.pk %}{{ form.instance.get_status_display }}{% else %}Rascunho{% endif %}
+                    </span>
+                </div>
+                <h1 class="quote-page-hero__title">{% if form.instance.pk %}Editar cotacao de voo{% else %}Nova cotacao de voo{% endif %}</h1>
+                <p class="quote-page-hero__subtitle">Preencha todos os dados para gerar a cotacao completa e acompanhar o resumo em tempo real.</p>
             </div>
         </header>
 
         {% if form.errors %}
-        <div class="quote-alert">
-            <p class="quote-alert__title">Nao foi possivel salvar. Corrija os campos abaixo:</p>
-            <ul class="quote-alert__list">
+        <div class="wizard-alert quote-alert">
+            <p class="wizard-alert__title quote-alert__title">Nao foi possivel salvar. Corrija os campos abaixo:</p>
+            <ul class="wizard-alert__list quote-alert__list">
                 {% for field in form %}
                     {% for error in field.errors %}
                         <li><strong>{{ field.label }}:</strong> {{ error }}</li>
@@ -42,273 +44,363 @@
 
         <div class="quote-layout">
             <div class="quote-main">
-                <section class="quote-card">
-                    <div class="quote-card__header">
+                <section class="quote-section-card quote-section-card--client">
+                    <header class="quote-section-head quote-section-head--client">
+                        <div class="quote-section-head__badge">CL</div>
                         <div>
-                            <p class="quote-card__eyebrow">Titular e programa</p>
-                            <h2 class="quote-card__title">Dados do cliente</h2>
-                            <p class="quote-card__description">Escolha quem vai viajar e de onde saem os pontos da proposta.</p>
+                            <h2 class="quote-section-head__title">Dados do Cliente</h2>
+                            <p class="quote-section-head__subtitle">Identifique quem sera o titular da cotacao.</p>
                         </div>
-                    </div>
+                    </header>
 
-                    <div class="quote-grid quote-grid--four">
-                        <div>
-                            <label class="quote-label" for="{{ form.tipo_titular.id_for_label }}">Tipo de titular <span class="required-asterisk">*</span></label>
-                            {{ form.tipo_titular }}
+                    <div class="quote-section-card__body">
+                        <div class="quote-grid quote-grid--three">
+                            <div>
+                                <label class="quote-label" for="{{ form.tipo_titular.id_for_label }}">Tipo de titular <span class="required-asterisk">*</span></label>
+                                {{ form.tipo_titular }}
+                                <p class="quote-helper">Defina a origem da conta de milhas.</p>
+                            </div>
+                            <div id="cliente-wrapper">
+                                <label class="quote-label" for="{{ form.cliente.id_for_label }}">Cliente <span class="required-asterisk">*</span></label>
+                                {{ form.cliente }}
+                                <p class="quote-helper">Habilitado apos selecionar o tipo.</p>
+                            </div>
+                            <div>
+                                <label class="quote-label" for="{{ form.programa.id_for_label }}">Programa de milhas <span class="required-asterisk">*</span></label>
+                                {{ form.programa }}
+                                <p class="quote-helper">Programa vinculado ao cliente ou a conta.</p>
+                            </div>
                         </div>
-                        <div id="cliente-wrapper">
-                            <label class="quote-label" for="{{ form.cliente.id_for_label }}">Cliente <span class="required-asterisk">*</span></label>
-                            {{ form.cliente }}
-                        </div>
-                        <div id="conta-adm-wrapper">
-                            <label class="quote-label" for="{{ form.conta_administrada.id_for_label }}">Conta administrada</label>
-                            {{ form.conta_administrada }}
-                        </div>
-                        <div>
-                            <label class="quote-label" for="{{ form.programa.id_for_label }}">Programa <span class="required-asterisk">*</span></label>
-                            {{ form.programa }}
-                        </div>
-                    </div>
 
-                    <div class="quote-inline-note" id="programa-info"></div>
+                        <div id="conta-adm-wrapper" class="quote-grid quote-grid--single" style="display:none;">
+                            <div>
+                                <label class="quote-label" for="{{ form.conta_administrada.id_for_label }}">Conta administrada</label>
+                                {{ form.conta_administrada }}
+                                <p class="quote-helper">Use somente quando a cotacao sair de uma conta da operacao.</p>
+                            </div>
+                        </div>
+
+                        <div id="programa-info" class="quote-inline-note"></div>
+                    </div>
                 </section>
 
-                <section class="quote-card">
-                    <div class="quote-card__header">
+                <section class="quote-section-card quote-section-card--flight">
+                    <header class="quote-section-head quote-section-head--flight">
+                        <div class="quote-section-head__badge">VO</div>
                         <div>
-                            <p class="quote-card__eyebrow">Roteiro</p>
-                            <h2 class="quote-card__title">Trechos da viagem</h2>
-                            <p class="quote-card__description">Origem, destino, companhia e agenda da proposta.</p>
+                            <h2 class="quote-section-head__title">Detalhes do Voo</h2>
+                            <p class="quote-section-head__subtitle">Configure os trechos de ida e volta.</p>
+                        </div>
+                    </header>
+
+                    <div class="quote-section-card__body">
+                        {% if aeroportos_count == 0 or companhias_count == 0 %}
+                        <div class="wizard-note quote-warning-note">
+                            <p class="wizard-note__title">Cadastros necessarios para montar a cotacao</p>
+                            <ul class="wizard-note__list">
+                                {% if aeroportos_count == 0 %}
+                                <li>Nenhum aeroporto cadastrado. Adicione pelo menos um aeroporto para liberar origem e destino.</li>
+                                {% endif %}
+                                {% if companhias_count == 0 %}
+                                <li>Nenhuma companhia aerea cadastrada. Adicione ao menos uma companhia para liberar a selecao.</li>
+                                {% endif %}
+                            </ul>
+                            <div class="quote-warning-note__actions">
+                                {% if aeroportos_count == 0 %}
+                                <a href="{% url 'admin_novo_aeroporto' %}" class="btn btn--outline">Cadastrar aeroporto</a>
+                                {% endif %}
+                                {% if companhias_count == 0 %}
+                                <a href="{% url 'admin_nova_companhia' %}" class="btn btn--outline">Cadastrar companhia</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="quote-flight-card quote-flight-card--ida">
+                            <div class="quote-flight-card__head">
+                                <div>
+                                    <h3 class="quote-flight-card__title">Voo de ida</h3>
+                                    <p class="quote-flight-card__subtitle">Trecho principal da proposta.</p>
+                                </div>
+                                <span class="quote-flight-card__tag">Obrigatorio</span>
+                            </div>
+
+                            <div class="quote-grid quote-grid--three">
+                                <div>
+                                    <label class="quote-label" for="{{ form.origem.id_for_label }}">Origem <span class="required-asterisk">*</span></label>
+                                    {{ form.origem }}
+                                </div>
+                                <div>
+                                    <label class="quote-label" for="{{ form.destino.id_for_label }}">Destino <span class="required-asterisk">*</span></label>
+                                    {{ form.destino }}
+                                </div>
+                                <div>
+                                    <label class="quote-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia <span class="required-asterisk">*</span></label>
+                                    {{ form.companhia_aerea }}
+                                </div>
+                            </div>
+
+                            <div class="quote-route-preview">
+                                <div class="quote-route-preview__point">
+                                    <span class="quote-route-preview__label">Origem</span>
+                                    <strong id="route-preview-origin">---</strong>
+                                </div>
+                                <div class="quote-route-preview__arrow">&rarr;</div>
+                                <div class="quote-route-preview__point">
+                                    <span class="quote-route-preview__label">Destino</span>
+                                    <strong id="route-preview-destination">---</strong>
+                                </div>
+                            </div>
+                            <p class="quote-inline-note">Companhia selecionada: <strong id="route-preview-companhia">---</strong></p>
+
+                            <div class="quote-grid quote-grid--two">
+                                <div>
+                                    <label class="quote-label" for="{{ form.data_ida.id_for_label }}">Data e horario da partida <span class="required-asterisk">*</span></label>
+                                    {{ form.data_ida }}
+                                    <p class="quote-helper">Use a data e o horario exatos do trecho de ida.</p>
+                                </div>
+                                <div class="quote-toggle-panel">
+                                    <label class="quote-toggle" for="ida-tem-escala">
+                                        <input type="checkbox" id="ida-tem-escala" name="ida_tem_escala">
+                                        <span>Possui escala na ida?</span>
+                                    </label>
+                                    <label class="quote-toggle" for="possui-volta">
+                                        <input type="checkbox" id="possui-volta">
+                                        <span>Possui voo de volta?</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="escala-ida-wrapper" class="quote-scale-card quote-collapsible">
+                                <div class="quote-scale-card__head">
+                                    <div>
+                                        <h3 class="quote-scale-card__title">Escalas da ida</h3>
+                                        <p class="quote-helper">Inclua apenas aeroportos intermediarios do trecho principal.</p>
+                                    </div>
+                                    <button type="button" class="btn btn--outline btn--sm" data-add-escala="ida">Adicionar escala</button>
+                                </div>
+                                <input type="hidden" name="qtd_escalas_ida" id="id_qtd_escalas_ida" value="0">
+                                <input type="hidden" name="total_escalas_ida" id="id_total_escalas_ida" value="0">
+                                <div id="escalas-ida-container" class="quote-scale-list"></div>
+                            </div>
+                        </div>
+
+                        <div id="horario-volta" class="quote-flight-card quote-flight-card--volta quote-collapsible">
+                            <div class="quote-flight-card__head">
+                                <div>
+                                    <h3 class="quote-flight-card__title">Voo de volta</h3>
+                                    <p class="quote-flight-card__subtitle">Ative apenas quando a proposta incluir retorno.</p>
+                                </div>
+                            </div>
+
+                            <div class="quote-grid quote-grid--two">
+                                <div>
+                                    <label class="quote-label" for="{{ form.data_volta.id_for_label }}">Data e horario da volta</label>
+                                    {{ form.data_volta }}
+                                    <p class="quote-helper">Deixe vazio quando for somente ida.</p>
+                                </div>
+                                <div class="quote-toggle-panel">
+                                    <label class="quote-toggle" for="volta-tem-escala">
+                                        <input type="checkbox" id="volta-tem-escala" name="volta_tem_escala">
+                                        <span>Possui escala na volta?</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="escala-volta-wrapper" class="quote-scale-card quote-collapsible">
+                                <div class="quote-scale-card__head">
+                                    <div>
+                                        <h3 class="quote-scale-card__title">Escalas da volta</h3>
+                                        <p class="quote-helper">Use apenas quando o retorno tiver conexoes.</p>
+                                    </div>
+                                    <button type="button" class="btn btn--outline btn--sm" data-add-escala="volta">Adicionar escala</button>
+                                </div>
+                                <input type="hidden" name="qtd_escalas_volta" id="id_qtd_escalas_volta" value="0">
+                                <input type="hidden" name="total_escalas_volta" id="id_total_escalas_volta" value="0">
+                                <div id="escalas-volta-container" class="quote-scale-list"></div>
+                            </div>
                         </div>
                     </div>
+                </section>
 
-                    <div class="quote-grid quote-grid--three">
+                <section class="quote-section-card quote-section-card--passengers">
+                    <header class="quote-section-head quote-section-head--passengers">
+                        <div class="quote-section-head__badge">PA</div>
                         <div>
-                            <label class="quote-label" for="{{ form.origem.id_for_label }}">IATA origem <span class="required-asterisk">*</span></label>
-                            {{ form.origem }}
+                            <h2 class="quote-section-head__title">Passageiros e Classe</h2>
+                            <p class="quote-section-head__subtitle">Quantidade de viajantes e categoria da tarifa.</p>
                         </div>
-                        <div>
-                            <label class="quote-label" for="{{ form.destino.id_for_label }}">IATA destino <span class="required-asterisk">*</span></label>
-                            {{ form.destino }}
-                        </div>
-                        <div>
-                            <label class="quote-label" for="{{ form.companhia_aerea.id_for_label }}">Companhia aerea <span class="required-asterisk">*</span></label>
-                            {{ form.companhia_aerea }}
-                        </div>
-                    </div>
+                    </header>
 
-                    <div class="quote-route-preview">
-                        <div class="quote-route-preview__point">
-                            <span class="quote-route-preview__label">Origem</span>
-                            <strong id="route-preview-origin">---</strong>
-                        </div>
-                        <div class="quote-route-preview__arrow">-></div>
-                        <div class="quote-route-preview__point">
-                            <span class="quote-route-preview__label">Destino</span>
-                            <strong id="route-preview-destination">---</strong>
-                        </div>
-                    </div>
-
-                    <div class="quote-grid quote-grid--two">
-                        <div>
-                            <label class="quote-label" for="{{ form.data_ida.id_for_label }}">Data e horario da ida <span class="required-asterisk">*</span></label>
-                            {{ form.data_ida }}
-                        </div>
-                        <div class="quote-toggle-stack">
-                            <label class="quote-toggle" for="possui-volta">
-                                <input type="checkbox" id="possui-volta">
-                                <span>Possui voo de volta?</span>
-                            </label>
-                            <p class="quote-helper">Ative apenas quando a proposta incluir retorno.</p>
-                            <label class="quote-toggle" for="ida-tem-escala">
-                                <input type="checkbox" id="ida-tem-escala" name="ida_tem_escala">
-                                <span>Possui escala na ida?</span>
-                            </label>
-                            <p class="quote-helper">As escalas da ida aparecem somente quando este item estiver ligado.</p>
-                        </div>
-                    </div>
-
-                    <div id="horario-volta" class="quote-collapsible">
+                    <div class="quote-section-card__body">
                         <div class="quote-grid quote-grid--two">
                             <div>
-                                <label class="quote-label" for="{{ form.data_volta.id_for_label }}">Data e horario da volta</label>
-                                {{ form.data_volta }}
-                                <p class="quote-helper">Deixe vazio quando for somente ida.</p>
+                                <label class="quote-label" for="{{ form.qtd_passageiros.id_for_label }}">Quantidade de passageiros <span class="required-asterisk">*</span></label>
+                                {{ form.qtd_passageiros }}
                             </div>
-                            <div class="quote-toggle-stack">
-                                <label class="quote-toggle" for="volta-tem-escala">
-                                    <input type="checkbox" id="volta-tem-escala" name="volta_tem_escala">
-                                    <span>Possui escala na volta?</span>
-                                </label>
-                                <p class="quote-helper">As conexoes do retorno so aparecem se a volta estiver ativa.</p>
+                            <div>
+                                <label class="quote-label" for="{{ form.classe.id_for_label }}">Classe de servico <span class="required-asterisk">*</span></label>
+                                {{ form.classe }}
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <section class="quote-card">
-                    <div class="quote-card__header">
+                <section class="quote-section-card quote-section-card--values">
+                    <header class="quote-section-head quote-section-head--values">
+                        <div class="quote-section-head__badge">$</div>
                         <div>
-                            <p class="quote-card__eyebrow">Passageiros e conexoes</p>
-                            <h2 class="quote-card__title">Passageiros e escalas</h2>
-                            <p class="quote-card__description">Controle quantidade, classe e os aeroportos intermediarios.</p>
+                            <h2 class="quote-section-head__title">Valores e Condicoes Comerciais</h2>
+                            <p class="quote-section-head__subtitle">Precificacao completa da cotacao.</p>
                         </div>
-                    </div>
+                    </header>
 
-                    <div class="quote-grid quote-grid--three">
-                        <div>
-                            <label class="quote-label" for="{{ form.qtd_passageiros.id_for_label }}">Quantidade de passageiros <span class="required-asterisk">*</span></label>
-                            {{ form.qtd_passageiros }}
-                        </div>
-                        <div>
-                            <label class="quote-label" for="{{ form.classe.id_for_label }}">Classe <span class="required-asterisk">*</span></label>
-                            {{ form.classe }}
-                        </div>
-                    </div>
-
-                    <div class="quote-scale-grid">
-                        <div id="escala-ida-wrapper" class="quote-scale-card quote-collapsible">
-                            <div class="quote-scale-card__head">
+                    <div class="quote-section-card__body quote-section-card__body--stacked">
+                        <div class="quote-value-group">
+                            <h3 class="quote-value-group__title">Valores base</h3>
+                            <div class="quote-grid quote-grid--three">
                                 <div>
-                                    <h3 class="quote-scale-card__title">Escalas da ida</h3>
-                                    <p class="quote-helper">Inclua apenas os aeroportos intermediarios do trecho principal.</p>
+                                    <label class="quote-label" for="{{ form.valor_passagem.id_for_label }}">Valor da passagem (R$) <span class="required-asterisk">*</span></label>
+                                    {{ form.valor_passagem }}
                                 </div>
-                                <button type="button" class="btn btn--outline btn--sm" data-add-escala="ida">Adicionar escala</button>
-                            </div>
-                            <input type="hidden" name="qtd_escalas_ida" id="id_qtd_escalas_ida" value="0">
-                            <input type="hidden" name="total_escalas_ida" id="id_total_escalas_ida" value="0">
-                            <div id="escalas-ida-container" class="quote-scale-list"></div>
-                        </div>
-
-                        <div id="escala-volta-wrapper" class="quote-scale-card quote-collapsible">
-                            <div class="quote-scale-card__head">
                                 <div>
-                                    <h3 class="quote-scale-card__title">Escalas da volta</h3>
-                                    <p class="quote-helper">So aparece quando a volta estiver ativa e marcada com escala.</p>
+                                    <label class="quote-label" for="{{ form.milhas.id_for_label }}">Pontos / milhas</label>
+                                    {{ form.milhas }}
                                 </div>
-                                <button type="button" class="btn btn--outline btn--sm" data-add-escala="volta">Adicionar escala</button>
+                                <div>
+                                    <label class="quote-label" for="{{ form.valor_milheiro.id_for_label }}">Valor do milheiro (R$)</label>
+                                    {{ form.valor_milheiro }}
+                                </div>
                             </div>
-                            <input type="hidden" name="qtd_escalas_volta" id="id_qtd_escalas_volta" value="0">
-                            <input type="hidden" name="total_escalas_volta" id="id_total_escalas_volta" value="0">
-                            <div id="escalas-volta-container" class="quote-scale-list"></div>
+                        </div>
+
+                        <div class="quote-value-group">
+                            <h3 class="quote-value-group__title">Taxas e encargos</h3>
+                            <div class="quote-grid quote-grid--four">
+                                <div>
+                                    <label class="quote-label" for="{{ form.taxas.id_for_label }}">Taxas (R$) <span class="required-asterisk">*</span></label>
+                                    {{ form.taxas }}
+                                </div>
+                                <div>
+                                    <label class="quote-label" for="{{ form.parcelas.id_for_label }}">Parcelas s/ juros</label>
+                                    {{ form.parcelas }}
+                                </div>
+                                <div>
+                                    <label class="quote-label" for="{{ form.juros.id_for_label }}">Juros (%)</label>
+                                    {{ form.juros }}
+                                </div>
+                                <div>
+                                    <label class="quote-label" for="{{ form.desconto.id_for_label }}">Desconto (%)</label>
+                                    {{ form.desconto }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="quote-finance-grid">
+                            <div class="quote-finance-card">
+                                <span>Base estimada</span>
+                                <strong id="preview-base">R$ 0,00</strong>
+                            </div>
+                            <div class="quote-finance-card">
+                                <span>Parcelado estimado</span>
+                                <strong id="preview-parcelado">R$ 0,00</strong>
+                            </div>
+                            <div class="quote-finance-card">
+                                <span>A vista estimado</span>
+                                <strong id="preview-vista">R$ 0,00</strong>
+                            </div>
+                            <div class="quote-finance-card">
+                                <span>Economia estimada</span>
+                                <strong id="preview-economia">R$ 0,00</strong>
+                            </div>
+                        </div>
+
+                        <div class="quote-value-group">
+                            <h3 class="quote-value-group__title">Status e validade</h3>
+                            <div class="quote-grid quote-grid--two">
+                                <div>
+                                    <label class="quote-label" for="{{ form.validade.id_for_label }}">Validade da cotacao</label>
+                                    {{ form.validade }}
+                                </div>
+                                <div>
+                                    <label class="quote-label" for="{{ form.status.id_for_label }}">Status <span class="required-asterisk">*</span></label>
+                                    {{ form.status }}
+                                </div>
+                            </div>
+                            <div class="quote-grid quote-grid--single">
+                                <div>
+                                    <label class="quote-label" for="{{ form.observacoes.id_for_label }}">Observacoes internas</label>
+                                    {{ form.observacoes }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
-
-                <section class="quote-card">
-                    <div class="quote-card__header">
-                        <div>
-                            <p class="quote-card__eyebrow">Comercial</p>
-                            <h2 class="quote-card__title">Valores e condicoes</h2>
-                            <p class="quote-card__description">Feche referencia, taxas, milhas, prazo e condicoes de pagamento.</p>
-                        </div>
-                    </div>
-
-                    <div class="quote-grid quote-grid--four">
-                        <div>
-                            <label class="quote-label" for="{{ form.valor_passagem.id_for_label }}">Valor da passagem (R$) <span class="required-asterisk">*</span></label>
-                            {{ form.valor_passagem }}
-                        </div>
-                        <div>
-                            <label class="quote-label" for="{{ form.taxas.id_for_label }}">Taxas (R$) <span class="required-asterisk">*</span></label>
-                            {{ form.taxas }}
-                        </div>
-                        <div>
-                            <label class="quote-label" for="{{ form.milhas.id_for_label }}">Pontos / milhas</label>
-                            {{ form.milhas }}
-                        </div>
-                        <div>
-                            <label class="quote-label" for="{{ form.valor_milheiro.id_for_label }}">Valor do milheiro (R$)</label>
-                            {{ form.valor_milheiro }}
-                        </div>
-                    </div>
-
-                    <div class="quote-finance-grid">
-                        <div class="quote-finance-card">
-                            <span>Base estimada</span>
-                            <strong id="preview-base">R$ 0,00</strong>
-                        </div>
-                        <div class="quote-finance-card">
-                            <span>Parcelado estimado</span>
-                            <strong id="preview-parcelado">R$ 0,00</strong>
-                        </div>
-                        <div class="quote-finance-card">
-                            <span>A vista estimado</span>
-                            <strong id="preview-vista">R$ 0,00</strong>
-                        </div>
-                        <div class="quote-finance-card">
-                            <span>Economia estimada</span>
-                            <strong id="preview-economia">R$ 0,00</strong>
-                        </div>
-                    </div>
-
-                    <div class="quote-grid quote-grid--four">
-                        <div>
-                            <label class="quote-label" for="{{ form.parcelas.id_for_label }}">Parcelas</label>
-                            {{ form.parcelas }}
-                        </div>
-                        <div>
-                            <label class="quote-label" for="{{ form.juros.id_for_label }}">Juros</label>
-                            {{ form.juros }}
-                        </div>
-                        <div>
-                            <label class="quote-label" for="{{ form.desconto.id_for_label }}">Desconto</label>
-                            {{ form.desconto }}
-                        </div>
-                        <div>
-                            <label class="quote-label" for="{{ form.validade.id_for_label }}">Validade da cotacao</label>
-                            {{ form.validade }}
-                        </div>
-                    </div>
-
-                    <div class="quote-grid quote-grid--two">
-                        <div>
-                            <label class="quote-label" for="{{ form.status.id_for_label }}">Status <span class="required-asterisk">*</span></label>
-                            {{ form.status }}
-                        </div>
-                        <div>
-                            <label class="quote-label" for="{{ form.observacoes.id_for_label }}">Observacoes</label>
-                            {{ form.observacoes }}
-                        </div>
-                    </div>
-                </section>
-
-                <footer class="quote-actions">
-                    <a href="{% url 'admin_cotacoes_voo' %}" class="btn btn--outline">Cancelar</a>
-                    <button class="btn" type="submit">Salvar cotacao</button>
-                </footer>
             </div>
 
             <aside class="quote-sidebar">
-                <div class="quote-summary">
-                    <div class="quote-summary__header">
-                        <h2 class="quote-summary__title">Resumo da cotacao</h2>
-                        <p class="quote-summary__subtitle">Acompanhe a proposta enquanto preenche.</p>
-                    </div>
+                <div class="quote-summary-card">
+                    <header class="quote-summary-card__head">
+                        <div class="quote-summary-card__badge">RS</div>
+                        <div>
+                            <h2 class="quote-summary-card__title">Resumo da Cotacao</h2>
+                            <p class="quote-summary-card__subtitle">Acompanhe tudo enquanto preenche.</p>
+                        </div>
+                    </header>
 
-                    <div class="quote-summary__section">
-                        <span class="quote-summary__label">Trecho</span>
-                        <strong id="resumo-trechos" class="quote-summary__value">Preencha origem e destino.</strong>
-                    </div>
+                    <div class="quote-summary-card__body">
+                        <section class="quote-summary-block">
+                            <span class="quote-summary-block__label">Cliente</span>
+                            <strong id="summary-client-name" class="quote-summary-block__value">---</strong>
+                            <p id="summary-program-name" class="quote-summary-block__muted">Nenhum programa selecionado</p>
+                        </section>
 
-                    <div class="quote-summary__section">
-                        <span class="quote-summary__label">Datas</span>
-                        <strong id="resumo-datas" class="quote-summary__value">Ida pendente | Somente ida</strong>
-                    </div>
+                        <section class="quote-summary-block">
+                            <span class="quote-summary-block__label">Rota</span>
+                            <div class="quote-summary-route">
+                                <div class="quote-summary-route__point">
+                                    <strong id="summary-origin-code">---</strong>
+                                    <small id="summary-origin-city">Origem</small>
+                                </div>
+                                <div class="quote-summary-route__arrow">&rarr;</div>
+                                <div class="quote-summary-route__point">
+                                    <strong id="summary-destination-code">---</strong>
+                                    <small id="summary-destination-city">Destino</small>
+                                </div>
+                            </div>
+                            <p id="resumo-datas" class="quote-summary-block__muted">Ida pendente | Somente ida</p>
+                        </section>
 
-                    <div class="quote-summary__section">
-                        <span class="quote-summary__label">Passageiros</span>
-                        <strong id="resumo-passageiros" class="quote-summary__value">0 passageiro(s)</strong>
-                    </div>
+                        <section class="quote-summary-block">
+                            <span class="quote-summary-block__label">Valores</span>
+                            <div class="quote-summary-values">
+                                <div><span>Passagem:</span><strong id="summary-valor-passagem">R$ 0,00</strong></div>
+                                <div><span>Taxas:</span><strong id="summary-valor-taxas">R$ 0,00</strong></div>
+                                <div><span>Milhas:</span><strong id="summary-valor-milhas">0</strong></div>
+                                <div><span>Total:</span><strong id="summary-valor-total" class="quote-summary-values__total">R$ 0,00</strong></div>
+                            </div>
+                            <p id="resumo-passageiros" class="quote-summary-block__muted">0 passageiro(s)</p>
+                        </section>
 
-                    <div class="quote-summary__section">
-                        <span class="quote-summary__label">Valores</span>
-                        <strong id="resumo-valores" class="quote-summary__value">Valor da passagem nao informado | Taxas nao informadas | Pontos nao informados</strong>
-                    </div>
+                        <section class="quote-summary-block">
+                            <span class="quote-summary-block__label">Status atual</span>
+                            <span id="summary-status-badge" class="quote-status-pill">
+                                {% if form.instance.pk %}{{ form.instance.get_status_display }}{% else %}Rascunho{% endif %}
+                            </span>
+                        </section>
 
-                    <div class="quote-summary__section">
-                        <span class="quote-summary__label">Previsao comercial</span>
-                        <strong id="resumo-financeiro" class="quote-summary__value">A vista estimado: R$ 0,00</strong>
+                        <section class="quote-summary-block">
+                            <span class="quote-summary-block__label">Campos obrigatorios</span>
+                            <ul id="summary-missing-list" class="quote-summary-missing">
+                                <li>Preencha os campos principais para liberar a cotacao.</li>
+                            </ul>
+                            <p id="resumo-financeiro" class="quote-summary-block__muted">A vista estimado: R$ 0,00</p>
+                        </section>
+
+                        <div class="quote-summary-actions">
+                            <button class="btn quote-summary-actions__submit" type="submit">{% if form.instance.pk %}Salvar alteracoes{% else %}Salvar cotacao{% endif %}</button>
+                            <a href="{% url 'admin_cotacoes_voo' %}" class="quote-summary-actions__cancel">Cancelar</a>
+                        </div>
                     </div>
                 </div>
             </aside>

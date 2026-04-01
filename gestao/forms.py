@@ -467,12 +467,24 @@ class EmissaoPassagemForm(forms.ModelForm):
             contas_adm_qs = contas_adm_qs | ContaAdministrada.objects.filter(pk=self.instance.conta_administrada_id)
         self.fields["cliente"].queryset = clientes_qs
         self.fields["conta_administrada"].queryset = contas_adm_qs
+        self.fields["bagagem_mao"].required = False
+        self.fields["bagagem_despachada"].required = False
+        self.fields["bagagem_mao"].choices = [
+            ("", "Sob consulta"),
+            *self.fields["bagagem_mao"].choices,
+        ]
+        self.fields["bagagem_despachada"].choices = [
+            ("", "Sob consulta"),
+            *self.fields["bagagem_despachada"].choices,
+        ]
         hoteis_qs = EmissaoHotel.objects.select_related("cliente")
         if empresa:
             hoteis_qs = hoteis_qs.filter(cliente__empresa=empresa)
         self.fields["hotel_vinculado"].queryset = hoteis_qs.order_by("-check_in")
 
         selected_tipo = self.data.get("tipo_emissao")
+        if not selected_tipo:
+            selected_tipo = self.initial.get("tipo_emissao")
         if not selected_tipo:
             if getattr(self.instance, "emissor_parceiro_id", None):
                 selected_tipo = "parceiro"
@@ -489,14 +501,22 @@ class EmissaoPassagemForm(forms.ModelForm):
             self.instance, "emissor_parceiro_id", None
         )
         if selected_tipo == "administrada":
-            titular_id = self.data.get("conta_administrada") or getattr(self.instance, "conta_administrada_id", None)
+            titular_id = (
+                self.data.get("conta_administrada")
+                or self.initial.get("conta_administrada")
+                or getattr(self.instance, "conta_administrada_id", None)
+            )
             programas_qs = ProgramaFidelidade.objects.filter(
                 contafidelidade__conta_administrada_id=titular_id
             ) if titular_id else ProgramaFidelidade.objects.none()
         elif selected_tipo == "parceiro":
             programas_qs = ProgramaFidelidade.objects.all()
         else:
-            titular_id = self.data.get("cliente") or getattr(self.instance, "cliente_id", None)
+            titular_id = (
+                self.data.get("cliente")
+                or self.initial.get("cliente")
+                or getattr(self.instance, "cliente_id", None)
+            )
             programas_qs = ProgramaFidelidade.objects.filter(
                 contafidelidade__cliente_id=titular_id
             ) if titular_id else ProgramaFidelidade.objects.none()
@@ -550,6 +570,8 @@ class EmissaoPassagemForm(forms.ModelForm):
             'aeroporto_destino',
             'data_ida',
             'data_volta',
+            'bagagem_mao',
+            'bagagem_despachada',
             'qtd_adultos',
             'qtd_criancas',
             'qtd_bebes',
@@ -717,7 +739,16 @@ class EmissorParceiroForm(forms.ModelForm):
 
 
 class CotacaoVooForm(forms.ModelForm):
+    CLASSE_CHOICES = (
+        ("", "Selecione a classe"),
+        ("Economica", "Econômica"),
+        ("Premium Economy", "Premium Economy"),
+        ("Executiva", "Executiva"),
+        ("Primeira Classe", "Primeira Classe"),
+    )
+
     companhia_aerea = forms.ChoiceField(choices=[], required=False)
+    classe = forms.ChoiceField(choices=CLASSE_CHOICES, required=False)
     tipo_titular = forms.ChoiceField(
         choices=(("cliente", "Conta de Cliente"), ("administrada", "Conta Administrada")),
         initial="cliente",
@@ -730,8 +761,8 @@ class CotacaoVooForm(forms.ModelForm):
         empresa = kwargs.pop("empresa", None)
         super().__init__(*args, **kwargs)
         self.fields['companhia_aerea'].choices = [
-            (c.nome, c.nome) for c in CompanhiaAerea.objects.all()
-        ]
+            ("", "Selecione a companhia")
+        ] + [(c.nome, c.nome) for c in CompanhiaAerea.objects.all()]
         clientes_qs = Cliente.objects.filter(perfil="cliente", ativo=True).select_related("usuario")
         contas_adm_qs = ContaAdministrada.objects.filter(ativo=True)
         if empresa:
@@ -742,20 +773,32 @@ class CotacaoVooForm(forms.ModelForm):
             contas_adm_qs = contas_adm_qs | ContaAdministrada.objects.filter(pk=self.instance.conta_administrada_id)
         self.fields["cliente"].queryset = clientes_qs
         self.fields["conta_administrada"].queryset = contas_adm_qs
+        self.fields["cliente"].empty_label = "Selecione o cliente"
+        self.fields["conta_administrada"].empty_label = "Selecione a conta"
+        self.fields["origem"].empty_label = "Selecione o aeroporto de origem"
+        self.fields["destino"].empty_label = "Selecione o aeroporto de destino"
 
-        selected_tipo = self.data.get("tipo_titular") or ("administrada" if getattr(self.instance, "conta_administrada_id", None) else "cliente")
+        selected_tipo = self.data.get("tipo_titular") or self.initial.get("tipo_titular") or ("administrada" if getattr(self.instance, "conta_administrada_id", None) else "cliente")
         self.initial.setdefault("tipo_titular", selected_tipo)
         self.fields["cliente"].required = True
         self.fields["conta_administrada"].required = selected_tipo == "administrada"
 
         titular_id = None
         if selected_tipo == "administrada":
-            titular_id = self.data.get("conta_administrada") or getattr(self.instance, "conta_administrada_id", None)
+            titular_id = (
+                self.data.get("conta_administrada")
+                or self.initial.get("conta_administrada")
+                or getattr(self.instance, "conta_administrada_id", None)
+            )
             programas_qs = ProgramaFidelidade.objects.filter(
                 contafidelidade__conta_administrada_id=titular_id
             ) if titular_id else ProgramaFidelidade.objects.none()
         else:
-            titular_id = self.data.get("cliente") or getattr(self.instance, "cliente_id", None)
+            titular_id = (
+                self.data.get("cliente")
+                or self.initial.get("cliente")
+                or getattr(self.instance, "cliente_id", None)
+            )
             programas_qs = ProgramaFidelidade.objects.filter(
                 contafidelidade__cliente_id=titular_id
             ) if titular_id else ProgramaFidelidade.objects.none()
@@ -763,6 +806,23 @@ class CotacaoVooForm(forms.ModelForm):
         if self.instance and self.instance.programa_id and not programas_qs.filter(id=self.instance.programa_id).exists():
             programas_qs = programas_qs | ProgramaFidelidade.objects.filter(id=self.instance.programa_id)
         self.fields["programa"].queryset = programas_qs.distinct()
+        self.fields["programa"].empty_label = "Selecione o programa"
+
+        self.fields["companhia_aerea"].widget.attrs.update({"data-role": "companhia-select"})
+        self.fields["data_ida"].widget.attrs.update({"placeholder": "Selecione data e horário"})
+        self.fields["data_volta"].widget.attrs.update({"placeholder": "Selecione data e horário"})
+        self.fields["qtd_passageiros"].widget.attrs.update({"min": "1", "placeholder": "Ex: 2"})
+        self.fields["valor_passagem"].widget.attrs.update({"step": "0.01", "placeholder": "Ex: 2500.00"})
+        self.fields["taxas"].widget.attrs.update({"step": "0.01", "placeholder": "Ex: 150.00"})
+        self.fields["milhas"].widget.attrs.update({"placeholder": "Ex: 20000"})
+        self.fields["valor_milheiro"].widget.attrs.update({"step": "0.01", "placeholder": "Ex: 35.00"})
+        self.fields["parcelas"].widget.attrs.update({"min": "1"})
+        self.fields["juros"].widget.attrs.update({"step": "0.01"})
+        self.fields["desconto"].widget.attrs.update({"step": "0.01"})
+        self.fields["observacoes"].widget.attrs.update({
+            "rows": 4,
+            "placeholder": "Observações comerciais ou regras do resgate",
+        })
 
     def clean(self):
         cleaned = super().clean()
@@ -923,11 +983,47 @@ class EmpresaForm(forms.ModelForm):
 
     class Meta:
         model = Empresa
-        fields = ["nome", "limite_colaboradores", "ativo"]
+        fields = [
+            "nome",
+            "responsavel_nome",
+            "email_contato",
+            "telefone_contato",
+            "whatsapp",
+            "website",
+            "cidade",
+            "estado",
+            "endereco",
+            "descricao_rodape",
+            "limite_colaboradores",
+            "ativo",
+        ]
+        labels = {
+            "nome": "Nome da empresa",
+            "responsavel_nome": "Responsavel pelo atendimento",
+            "email_contato": "E-mail principal",
+            "telefone_contato": "Telefone principal",
+            "whatsapp": "WhatsApp",
+            "website": "Website",
+            "cidade": "Cidade",
+            "estado": "Estado",
+            "endereco": "Endereco",
+            "descricao_rodape": "Mensagem institucional",
+            "limite_colaboradores": "Limite de colaboradores",
+            "ativo": "Empresa ativa",
+        }
         widgets = {
             "nome": forms.TextInput(
                 attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2"}
             ),
+            "responsavel_nome": forms.TextInput(),
+            "email_contato": forms.EmailInput(),
+            "telefone_contato": forms.TextInput(),
+            "whatsapp": forms.TextInput(),
+            "website": forms.URLInput(),
+            "cidade": forms.TextInput(),
+            "estado": forms.TextInput(),
+            "endereco": forms.TextInput(),
+            "descricao_rodape": forms.Textarea(attrs={"rows": 3}),
             "limite_colaboradores": forms.NumberInput(
                 attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2", "min": 0}
             ),
@@ -937,6 +1033,15 @@ class EmpresaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         placeholders = {
             "nome": "Nome da empresa",
+            "responsavel_nome": "Responsavel principal pela empresa",
+            "email_contato": "contato@empresa.com",
+            "telefone_contato": "(11) 99999-9999",
+            "whatsapp": "(11) 99999-9999",
+            "website": "https://www.empresa.com.br",
+            "cidade": "Cidade base da operacao",
+            "estado": "Estado",
+            "endereco": "Rua, numero e complemento",
+            "descricao_rodape": "Texto institucional para PDFs e visualizacoes.",
             "limite_colaboradores": "Ex: 10",
             "admin_nome": "Nome completo do administrador",
             "admin_cpf": "000.000.000-00",
@@ -961,6 +1066,8 @@ class EmpresaForm(forms.ModelForm):
         data = self.cleaned_data
         with transaction.atomic():
             empresa = super().save(commit=False)
+            empresa.responsavel_nome = data.get("responsavel_nome") or data["admin_nome"]
+            empresa.email_contato = data.get("email_contato") or data.get("admin_email", "")
             empresa.save()
             user = User.objects.create_user(
                 username=generate_unique_username(),
@@ -980,3 +1087,64 @@ class EmpresaForm(forms.ModelForm):
             empresa.admin = admin_cliente
             empresa.save()
         return empresa
+
+
+class EmpresaProfileForm(forms.ModelForm):
+    class Meta:
+        model = Empresa
+        fields = [
+            "nome",
+            "responsavel_nome",
+            "email_contato",
+            "telefone_contato",
+            "whatsapp",
+            "website",
+            "cidade",
+            "estado",
+            "endereco",
+            "descricao_rodape",
+        ]
+        labels = {
+            "nome": "Nome da empresa",
+            "responsavel_nome": "Responsavel pelo atendimento",
+            "email_contato": "E-mail principal",
+            "telefone_contato": "Telefone principal",
+            "whatsapp": "WhatsApp",
+            "website": "Website",
+            "cidade": "Cidade",
+            "estado": "Estado",
+            "endereco": "Endereco",
+            "descricao_rodape": "Mensagem institucional",
+        }
+        widgets = {
+            "nome": forms.TextInput(),
+            "responsavel_nome": forms.TextInput(),
+            "email_contato": forms.EmailInput(),
+            "telefone_contato": forms.TextInput(),
+            "whatsapp": forms.TextInput(),
+            "website": forms.URLInput(),
+            "cidade": forms.TextInput(),
+            "estado": forms.TextInput(),
+            "endereco": forms.TextInput(),
+            "descricao_rodape": forms.Textarea(attrs={"rows": 4}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        placeholders = {
+            "nome": "Nome de exibicao da empresa",
+            "responsavel_nome": "Responsavel principal pelo atendimento",
+            "email_contato": "contato@empresa.com",
+            "telefone_contato": "(11) 99999-9999",
+            "whatsapp": "(11) 99999-9999",
+            "website": "https://www.empresa.com.br",
+            "cidade": "Cidade base da operacao",
+            "estado": "Estado",
+            "endereco": "Rua, numero e complemento",
+            "descricao_rodape": "Texto institucional usado nas visualizacoes e PDFs.",
+        }
+        for field_name, field in self.fields.items():
+            field.widget.attrs.pop("class", None)
+            field.widget.attrs["autocomplete"] = "off"
+            if field_name in placeholders:
+                field.widget.attrs["placeholder"] = placeholders[field_name]

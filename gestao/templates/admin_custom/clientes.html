@@ -14,7 +14,7 @@
 <div class="clients-page">
   <div class="clients-page__shell">
     <section class="clients-page__filters">
-      <form method="get" class="clients-page__filter-grid">
+<form method="get" class="clients-page__filter-grid" data-auto-submit-filters>
         {% if empresa_id %}<input type="hidden" name="empresa_id" value="{{ empresa_id }}">{% endif %}
         <div class="clients-page__field clients-page__field--search">
           <label for="busca">Buscar cliente</label>

@@ -1,0 +1,214 @@
+<section class="quote-preview-sheet">
+    <header class="quote-preview-hero">
+        <div class="quote-preview-hero__brand">
+            <div class="quote-preview-hero__mark">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                </svg>
+            </div>
+            <div>
+                <h2>NC Fly</h2>
+                <p>Consultoria em Milhas e Viagens</p>
+            </div>
+        </div>
+        <div class="quote-preview-hero__badge">
+            <span>Cotacao n°</span>
+            <strong>{{ cotacao_numero }}</strong>
+        </div>
+    </header>
+
+    <div class="quote-preview-meta">
+        <div class="quote-preview-meta__item">
+            <span>Data de emissao</span>
+            <strong>{{ cotacao.criado_em|date:"d/m/Y" }}</strong>
+        </div>
+        <div class="quote-preview-meta__item">
+            <span>Validade</span>
+            <strong>{% if cotacao.validade %}{{ cotacao.validade|date:"d/m/Y" }}{% else %}A confirmar{% endif %}</strong>
+        </div>
+    </div>
+
+    <section class="quote-preview-section">
+        <div class="quote-preview-section__heading">
+            <span class="quote-preview-section__icon quote-preview-section__icon--blue">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6M17 11h6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                </svg>
+            </span>
+            <h3>Dados do Cliente</h3>
+        </div>
+        <div class="quote-preview-grid quote-preview-grid--two">
+            <article class="quote-preview-info-card">
+                <span>Nome completo</span>
+                <strong>{{ titular_info.nome }}</strong>
+            </article>
+            <article class="quote-preview-info-card">
+                <span>CPF</span>
+                <strong>{{ titular_info.cpf }}</strong>
+            </article>
+            <article class="quote-preview-info-card">
+                <span>E-mail</span>
+                <strong>{{ titular_info.email }}</strong>
+            </article>
+            <article class="quote-preview-info-card">
+                <span>Telefone</span>
+                <strong>{{ titular_info.telefone }}</strong>
+            </article>
+        </div>
+    </section>
+
+    <section class="quote-preview-section">
+        <div class="quote-preview-section__heading">
+            <span class="quote-preview-section__icon quote-preview-section__icon--violet">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                </svg>
+            </span>
+            <h3>Detalhes do Voo</h3>
+        </div>
+        <div class="quote-preview-route">
+            <div class="quote-preview-route__stop">
+                <span>Origem</span>
+                <strong>{{ origem_nome }}</strong>
+                <small>{{ cotacao.data_ida|date:"d/m/Y" }}</small>
+            </div>
+            <div class="quote-preview-route__divider">
+                <span>{{ origem_sigla }}</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                </svg>
+                <span>{{ destino_sigla }}</span>
+            </div>
+            <div class="quote-preview-route__stop quote-preview-route__stop--right">
+                <span>Destino</span>
+                <strong>{{ destino_nome }}</strong>
+                {% if cotacao.data_volta %}
+                <small>{{ cotacao.data_volta|date:"d/m/Y" }}</small>
+                {% else %}
+                <small>Somente ida</small>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="quote-preview-grid quote-preview-grid--four">
+            <article class="quote-preview-info-card">
+                <span>Classe</span>
+                <strong>{{ classe_label }}</strong>
+            </article>
+            <article class="quote-preview-info-card">
+                <span>Companhia</span>
+                <strong>{{ companhia_label }}</strong>
+            </article>
+            <article class="quote-preview-info-card">
+                <span>Passageiros</span>
+                <strong>{{ qtd_passageiros_label }}</strong>
+            </article>
+            <article class="quote-preview-info-card">
+                <span>Programa</span>
+                <strong>{{ programa_label }}</strong>
+            </article>
+        </div>
+
+        {% if tem_volta or escalas_ida or escalas_volta %}
+        <div class="quote-preview-notes-grid">
+            {% if tem_volta %}
+            <article class="quote-preview-note-card">
+                <span>Horario da volta</span>
+                <strong>{{ cotacao.data_volta|date:"d/m/Y H:i" }}</strong>
+            </article>
+            {% endif %}
+            {% if escalas_ida %}
+            <article class="quote-preview-note-card">
+                <span>Escalas na ida</span>
+                <strong>{% for escala in escalas_ida %}{{ escala.aeroporto.sigla }}{% if not forloop.last %} • {% endif %}{% endfor %}</strong>
+            </article>
+            {% endif %}
+            {% if escalas_volta %}
+            <article class="quote-preview-note-card">
+                <span>Escalas na volta</span>
+                <strong>{% for escala in escalas_volta %}{{ escala.aeroporto.sigla }}{% if not forloop.last %} • {% endif %}{% endfor %}</strong>
+            </article>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+
+    <section class="quote-preview-section">
+        <div class="quote-preview-section__heading">
+            <span class="quote-preview-section__icon quote-preview-section__icon--green">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                </svg>
+            </span>
+            <h3>Valores</h3>
+        </div>
+
+        <div class="quote-preview-values">
+            {% for item in valor_items %}
+            <article class="quote-preview-value-row">
+                <div>
+                    <strong>{{ item.label }}</strong>
+                    <p>{{ item.hint }}</p>
+                </div>
+                <span>{{ item.value }}</span>
+            </article>
+            {% endfor %}
+        </div>
+
+        <div class="quote-preview-price-stack">
+            <article class="quote-preview-price-highlight quote-preview-price-highlight--success">
+                <div>
+                    <span>Valor a Vista</span>
+                    <p>Pagamento integral</p>
+                </div>
+                <strong>{{ valor_vista_total }}</strong>
+            </article>
+            <article class="quote-preview-price-highlight quote-preview-price-highlight--primary">
+                <div>
+                    <span>Valor Parcelado</span>
+                    <p>{{ valor_parcelado_hint }}</p>
+                </div>
+                <strong>{{ valor_parcelado_total }}</strong>
+            </article>
+        </div>
+    </section>
+
+    <section class="quote-preview-section">
+        <div class="quote-preview-section__heading">
+            <span class="quote-preview-section__icon quote-preview-section__icon--orange">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 8v4M12 16h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+            </span>
+            <h3>Observacoes Importantes</h3>
+        </div>
+        <div class="quote-preview-alert">
+            {{ observacao_importante }}
+        </div>
+    </section>
+
+    <section class="quote-preview-section quote-preview-section--soft">
+        <h3 class="quote-preview-section__title-only">Condicoes Gerais</h3>
+        <ul class="quote-preview-list">
+            {% for item in condicoes_gerais %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <footer class="quote-preview-contact">
+        <article>
+            <span>Telefone</span>
+            <strong>{{ empresa_contato.telefone }}</strong>
+        </article>
+        <article>
+            <span>E-mail</span>
+            <strong>{{ empresa_contato.email }}</strong>
+        </article>
+        <article>
+            <span>Website</span>
+            <strong>{{ empresa_contato.website }}</strong>
+        </article>
+    </footer>
+</section>

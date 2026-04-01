@@ -1,0 +1,123 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}NC Fly News | Home{% endblock %}
+{% block content %}
+<div class="news-home-frame">
+    <section class="news-home-shell">
+        {% if destaque %}
+        <section class="news-featured">
+            <article class="news-featured__main news-featured__main--horizontal">
+                {% if destaque.imagem_exibicao %}
+                <a href="{{ destaque.get_absolute_url }}" class="news-featured__image">
+                    <img src="{{ destaque.imagem_exibicao }}" alt="{{ destaque.titulo }}">
+                </a>
+                {% endif %}
+                <div class="news-featured__body">
+                    <span class="news-pill news-pill--primary">{{ destaque.categoria|default:"Milhas e Pontos"|portal_text }}</span>
+                    {% if destaque.topico %}
+                    <span class="news-pill news-pill--topic">{{ destaque.topico|portal_text }}</span>
+                    {% endif %}
+                    <h2><a href="{{ destaque.get_absolute_url }}">{{ destaque.titulo|portal_text }}</a></h2>
+                    <p>{{ destaque.resumo|portal_text }}</p>
+                    <div class="news-meta">
+                        <span>Redação NC Fly</span>
+                        <span>{{ destaque.publicada_em|br_date_long }}</span>
+                    </div>
+                </div>
+            </article>
+        </section>
+        {% else %}
+        <section class="news-empty">
+            <div class="news-empty__card">
+                <h2>Nenhuma notícia publicada ainda</h2>
+                <p>Assim que a primeira sincronização terminar, esta home pública vai preencher os blocos automaticamente.</p>
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="news-categories-strip">
+            <header class="news-section-bar">
+                <h2>Explore por Categoria</h2>
+            </header>
+            <div class="news-categories-grid">
+                {% for item in explore_categories %}
+                <a href="{% url 'portal_categoria' item.slug %}" class="news-category-card">
+                    <div class="news-category-card__icon {{ item.css_class }}">
+                        {% if item.icon_variant == "miles" %}
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                        {% elif item.icon_variant == "cards" %}
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="4" y="6" width="16" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"></rect>
+                            <path d="M4 10h16" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+                        </svg>
+                        {% elif item.icon_variant == "hotels" %}
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                        {% else %}
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m5 15 4-4 3 3 7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                            <path d="M19 7h-5v5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                        {% endif %}
+                    </div>
+                    <strong>{{ item.label }}</strong>
+                </a>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="news-latest-block">
+            <header class="news-section-bar">
+                <h2>Últimas Notícias</h2>
+            </header>
+            {% if noticias_grade %}
+            <div class="news-quick-grid">
+                {% for noticia in noticias_grade %}
+                <article class="news-card">
+                    {% if noticia.imagem_exibicao %}
+                    <a href="{{ noticia.get_absolute_url }}" class="news-card__image">
+                        <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
+                    </a>
+                    {% endif %}
+                    <div class="news-card__body">
+                        <span class="news-pill news-pill--muted">{{ noticia.categoria|default:"Notícias"|portal_text }}</span>
+                        {% if noticia.topico %}
+                        <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
+                        {% endif %}
+                        <h3><a href="{{ noticia.get_absolute_url }}">{{ noticia.titulo|portal_text }}</a></h3>
+                        <p>{{ noticia.resumo|portal_text|truncatechars:100 }}</p>
+                        <div class="news-meta">
+                            <span>Redação NC Fly</span>
+                            <span>{{ noticia.publicada_em|br_date_long }}</span>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="news-empty__card">
+                <p>Sem notícias publicadas no momento.</p>
+            </div>
+            {% endif %}
+        </section>
+
+        <section class="news-newsletter-banner">
+            <div>
+                <h2>Receba as melhores ofertas de milhas</h2>
+                <p>Cadastre-se e fique por dentro das promoções e novidades do mundo das milhas.</p>
+            </div>
+            <div class="news-newsletter-banner__actions">
+                <span>Seu melhor e-mail</span>
+                <a href="{% url 'login_custom' %}" class="portal-button portal-button--light">Assinar grátis</a>
+            </div>
+        </section>
+    </section>
+</div>
+{% endblock %}
+
+{% block footer %}
+{% include "portal/partials/home_footer.html" %}
+{% endblock %}

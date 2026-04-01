@@ -1,0 +1,38 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Visualizacao de Cotacao{% endblock %}
+{% block header_title %}Visualizacao de Cotacao{% endblock %}
+{% block header_subtitle %}<span>Revise a proposta antes de gerar o PDF ou compartilhar.</span>{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/cotacao_preview.css' %}">
+{% endblock %}
+
+{% block header_actions %}
+<button type="button" class="quote-preview__toolbar-link quote-preview__toolbar-link--ghost" title="Envio por e-mail em breve">Enviar por E-mail</button>
+<a href="{% url 'admin_cotacao_voo_pdf' cotacao.id %}" class="quote-preview__toolbar-link quote-preview__toolbar-link--primary" target="_blank" rel="noopener">Imprimir / Salvar PDF</a>
+{% endblock %}
+
+{% block mobile_header_actions %}
+<button type="button" class="quote-preview__toolbar-link quote-preview__toolbar-link--ghost" title="Envio por e-mail em breve">Enviar por E-mail</button>
+<a href="{% url 'admin_cotacao_voo_pdf' cotacao.id %}" class="quote-preview__toolbar-link quote-preview__toolbar-link--primary" target="_blank" rel="noopener">Imprimir / Salvar PDF</a>
+{% endblock %}
+
+{% block content %}
+<div class="quote-preview-page{% if print_mode %} quote-preview-page--print-mode{% endif %}">
+    <a href="{% url 'admin_cotacoes_voo' %}" class="quote-preview__back-link">Voltar para cotacoes</a>
+    {% include "admin_custom/partials/cotacao_voo_preview_sheet.html" %}
+</div>
+{% endblock %}
+
+{% block extra_body %}
+{% if print_mode %}
+<script>
+window.addEventListener("load", function () {
+    window.setTimeout(function () {
+        window.print();
+    }, 450);
+});
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,457 @@
+.emission-preview-hero {
+    background: linear-gradient(90deg, #00a63e 0%, #009966 100%);
+}
+
+.emission-preview-hero__mark {
+    display: grid;
+    width: 3rem;
+    height: 3rem;
+    place-items: center;
+    border-radius: 1rem;
+    background: #ffffff;
+    color: #00a63e;
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.15);
+}
+
+.emission-preview-hero__mark svg {
+    width: 1.35rem;
+    height: 1.35rem;
+}
+
+.emission-preview-hero__summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 185px;
+}
+
+.emission-preview-hero__badge,
+.emission-preview-hero__status {
+    padding: 0.85rem 1rem;
+    border-radius: 0.9rem;
+    text-align: center;
+}
+
+.emission-preview-hero__badge {
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.emission-preview-hero__badge span,
+.emission-preview-hero__status span {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.emission-preview-hero__badge span {
+    opacity: 0.82;
+}
+
+.emission-preview-hero__badge strong {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.emission-preview-hero__status {
+    background: #ffffff;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+}
+
+.emission-preview-hero__status--success span,
+.emission-preview-hero__status--success strong {
+    color: #00a63e;
+}
+
+.emission-preview-hero__status--warning span,
+.emission-preview-hero__status--warning strong {
+    color: #f97316;
+}
+
+.emission-preview-meta {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.emission-preview-meta__item {
+    min-width: 0;
+}
+
+.emission-preview-passengers,
+.emission-preview-flights {
+    display: grid;
+    gap: 1rem;
+}
+
+.emission-preview-passenger-card {
+    padding: 1.35rem 1.4rem;
+    border-radius: 1.1rem;
+    border-left: 4px solid #2b7fff;
+    background: linear-gradient(90deg, #eff6ff 0%, #eef2ff 100%);
+}
+
+.emission-preview-passenger-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.emission-preview-passenger-card__header h4 {
+    margin: 0;
+    color: #101828;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.emission-preview-passenger-card__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.emission-preview-passenger-card__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.emission-preview-passenger-field span,
+.emission-preview-baggage-card span {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #6a7282;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.emission-preview-passenger-field strong,
+.emission-preview-baggage-card strong {
+    display: block;
+    color: #101828;
+    font-size: 1rem;
+    line-height: 1.45;
+}
+
+.emission-preview-empty {
+    padding: 1.2rem 1.25rem;
+    border-radius: 1rem;
+    border: 1px dashed #cbd5e1;
+    color: #64748b;
+    background: #f8fafc;
+}
+
+.emission-preview-flight-card {
+    border: 1px solid #f5c07c;
+    border-radius: 1rem;
+    overflow: hidden;
+    background: #fffaf2;
+}
+
+.emission-preview-flight-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    background: linear-gradient(90deg, #ff8a00 0%, #ff6a00 100%);
+    color: #ffffff;
+}
+
+.emission-preview-flight-card__title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.emission-preview-flight-card__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.emission-preview-flight-card__company {
+    text-align: right;
+}
+
+.emission-preview-flight-card__company strong,
+.emission-preview-flight-card__company small {
+    display: block;
+}
+
+.emission-preview-flight-card__company strong {
+    font-size: 0.95rem;
+}
+
+.emission-preview-flight-card__company small {
+    margin-top: 0.2rem;
+    font-size: 0.76rem;
+    opacity: 0.82;
+}
+
+.emission-preview-flight-card__route {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
+    padding: 1.2rem 1.2rem 1rem;
+}
+
+.emission-preview-flight-stop span {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #6a7282;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.emission-preview-flight-stop strong {
+    display: block;
+    color: #101828;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.emission-preview-flight-stop small,
+.emission-preview-flight-stop b {
+    display: block;
+}
+
+.emission-preview-flight-stop small {
+    margin-top: 0.35rem;
+    color: #6a7282;
+    font-size: 0.82rem;
+}
+
+.emission-preview-flight-stop b {
+    margin-top: 0.15rem;
+    color: #ff6a00;
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.emission-preview-flight-stop--right {
+    text-align: right;
+}
+
+.emission-preview-flight-divider {
+    position: relative;
+    min-width: 180px;
+    text-align: center;
+    color: #f97316;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.emission-preview-flight-divider::before,
+.emission-preview-flight-divider::after {
+    content: "";
+    position: absolute;
+    top: 0.55rem;
+    width: 64px;
+    height: 2px;
+    background: rgba(249, 115, 22, 0.3);
+}
+
+.emission-preview-flight-divider::before {
+    left: 0;
+}
+
+.emission-preview-flight-divider::after {
+    right: 0;
+}
+
+.emission-preview-flight-card__cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 1.2rem 1rem;
+    min-height: 48px;
+    border-radius: 0.8rem;
+    background: linear-gradient(90deg, #2563eb 0%, #4338ca 100%);
+    color: #ffffff;
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.emission-preview-flight-card__scales {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.85rem;
+    padding: 0 1.2rem 1.2rem;
+}
+
+.emission-preview-flight-card__scale {
+    padding: 0.9rem 1rem;
+    border-radius: 0.9rem;
+    background: #ffffff;
+    border: 1px solid #fed7aa;
+}
+
+.emission-preview-flight-card__scale span {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #6a7282;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.emission-preview-flight-card__scale strong {
+    color: #101828;
+    font-size: 0.94rem;
+    font-weight: 700;
+}
+
+.emission-preview-baggage-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.emission-preview-baggage-card {
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+    background: #eef2ff;
+    border: 1px solid #dbeafe;
+}
+
+.emission-preview-baggage-card small {
+    display: block;
+    margin-top: 0.35rem;
+    color: #4b5563;
+    font-size: 0.84rem;
+    line-height: 1.45;
+}
+
+.emission-preview-total-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1.25rem 1.35rem;
+    border-radius: 0.95rem;
+    border: 1.6px solid rgba(0, 201, 80, 0.45);
+    background: linear-gradient(90deg, #f0fdf4 0%, #ecfdf5 100%);
+}
+
+.emission-preview-total-card span {
+    display: block;
+    color: #101828;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.emission-preview-total-card p {
+    margin: 0.2rem 0 0;
+    color: #4b5563;
+    font-size: 0.82rem;
+}
+
+.emission-preview-total-card strong {
+    color: #00a63e;
+    font-size: 2rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.emission-preview-alert {
+    border-left-color: #2b7fff;
+    background: #eff6ff;
+    color: #364153;
+}
+
+@media (max-width: 960px) {
+    .emission-preview-passenger-card__grid,
+    .emission-preview-baggage-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .emission-preview-flight-card__route,
+    .emission-preview-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .emission-preview-flight-stop--right {
+        text-align: left;
+    }
+
+    .emission-preview-flight-divider {
+        min-width: 0;
+        text-align: left;
+    }
+
+    .emission-preview-flight-divider::before,
+    .emission-preview-flight-divider::after {
+        display: none;
+    }
+}
+
+@media (max-width: 720px) {
+    .emission-preview-hero {
+        align-items: flex-start;
+    }
+
+    .emission-preview-hero__summary,
+    .emission-preview-passenger-card__grid,
+    .emission-preview-baggage-grid {
+        width: 100%;
+        grid-template-columns: 1fr;
+    }
+
+    .emission-preview-passenger-card__header,
+    .emission-preview-total-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .emission-preview-total-card strong {
+        white-space: normal;
+    }
+}
+
+@media print {
+    .emission-preview-sheet {
+        overflow: hidden !important;
+        border: 1px solid rgba(148, 163, 184, 0.18) !important;
+        border-radius: 1.5rem !important;
+        box-shadow: none !important;
+    }
+
+    .emission-preview-page,
+    .emission-preview-sheet,
+    .emission-preview-sheet * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .emission-preview-meta,
+    .emission-preview-passenger-card,
+    .emission-preview-flight-card,
+    .emission-preview-baggage-card,
+    .emission-preview-total-card,
+    .quote-preview-contact {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}

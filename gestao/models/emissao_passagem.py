@@ -12,6 +12,26 @@ from .emissao_hotel import EmissaoHotel
 
 
 class EmissaoPassagem(models.Model):
+    BAGAGEM_MAO_ITEM_PESSOAL = "item_pessoal"
+    BAGAGEM_MAO_10KG = "mao_10kg"
+    BAGAGEM_MAO_12KG = "mao_12kg"
+    BAGAGEM_MAO_CHOICES = (
+        (BAGAGEM_MAO_ITEM_PESSOAL, "Item pessoal"),
+        (BAGAGEM_MAO_10KG, "Item pessoal + bagagem de mao ate 10kg"),
+        (BAGAGEM_MAO_12KG, "Item pessoal + bagagem de mao ate 12kg"),
+    )
+
+    BAGAGEM_DESPACHADA_NAO_INCLUSA = "nao_inclusa"
+    BAGAGEM_DESPACHADA_1X23 = "1x23"
+    BAGAGEM_DESPACHADA_2X23 = "2x23"
+    BAGAGEM_DESPACHADA_1X32 = "1x32"
+    BAGAGEM_DESPACHADA_CHOICES = (
+        (BAGAGEM_DESPACHADA_NAO_INCLUSA, "Nao inclusa"),
+        (BAGAGEM_DESPACHADA_1X23, "1 bagagem despachada ate 23kg"),
+        (BAGAGEM_DESPACHADA_2X23, "2 bagagens despachadas ate 23kg"),
+        (BAGAGEM_DESPACHADA_1X32, "1 bagagem despachada ate 32kg"),
+    )
+
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True, blank=True)
     conta_administrada = models.ForeignKey(
         ContaAdministrada,
@@ -82,6 +102,8 @@ class EmissaoPassagem(models.Model):
     )
     data_ida = models.DateTimeField()
     data_volta = models.DateTimeField(null=True, blank=True)
+    bagagem_mao = models.CharField(max_length=32, blank=True, default="", choices=BAGAGEM_MAO_CHOICES)
+    bagagem_despachada = models.CharField(max_length=32, blank=True, default="", choices=BAGAGEM_DESPACHADA_CHOICES)
     qtd_passageiros = models.PositiveIntegerField(default=0)
     qtd_adultos = models.PositiveIntegerField(default=0)
     qtd_criancas = models.PositiveIntegerField(default=0)

@@ -9,6 +9,11 @@ from reportlab.lib.units import mm
 from reportlab.platypus import PageBreak
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 
+from gestao.services.empresa_contact import (
+    build_empresa_contact_context,
+    get_empresa_from_operational_record,
+)
+
 def gerar_pdf_emissao(emissao):
     """
     Gera PDF da emissão com design premium refinado e robusto.
@@ -98,6 +103,7 @@ def gerar_pdf_emissao(emissao):
     )
 
     elements = []
+    empresa_contato = build_empresa_contact_context(get_empresa_from_operational_record(emissao))
 
     # CABEÇALHO
     header_data = [
@@ -436,6 +442,13 @@ def gerar_pdf_emissao(emissao):
 
     # Rodapé premium, com data/hora no padrão BR
     elements.append(Spacer(1, 30))
+    rodape_contact = Paragraph(
+        f"Contato: {empresa_contato['telefone']} | {empresa_contato['email']} | {empresa_contato['website']}",
+        ParagraphStyle(
+            'RodapeContato', parent=estilo_valor, alignment=TA_CENTER,
+            fontSize=8.5, textColor=cor_texto_secundario
+        )
+    )
     rodape_data = [
         [Paragraph(
             "Este documento confirma a emissão do bilhete. Guarde-o para referência.",
@@ -452,6 +465,7 @@ def gerar_pdf_emissao(emissao):
             )
         )]
     ]
+    rodape_data.insert(1, [rodape_contact])
     rodape_table = Table(rodape_data, colWidths=[160*mm])
     rodape_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), cor_fundo_claro),

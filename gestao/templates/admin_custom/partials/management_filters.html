@@ -1,5 +1,5 @@
 <section class="surface-card filter-panel">
-  <form method="get" class="filter-grid">
+  <form method="get" class="filter-grid" data-auto-submit-filters>
     {% if empresa_id %}<input type="hidden" name="empresa_id" value="{{ empresa_id }}">{% endif %}
     <div class="form-field">
       <label for="data_inicio" class="form-label">Data inicial</label>

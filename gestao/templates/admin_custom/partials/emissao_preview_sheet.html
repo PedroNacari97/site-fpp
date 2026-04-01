@@ -1,0 +1,222 @@
+<section class="quote-preview-sheet emission-preview-sheet">
+    <header class="quote-preview-hero emission-preview-hero">
+        <div class="quote-preview-hero__brand">
+            <div class="emission-preview-hero__mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                    <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                </svg>
+            </div>
+            <div>
+                <h2>NC Fly</h2>
+                <p>Consultoria em Milhas e Viagens</p>
+            </div>
+        </div>
+        <div class="emission-preview-hero__summary">
+            <div class="emission-preview-hero__badge">
+                <span>Emissao n&deg;</span>
+                <strong>{{ preview.emissao_numero }}</strong>
+            </div>
+            <div class="emission-preview-hero__status emission-preview-hero__status--{{ preview.status.tone }}">
+                <span>Status</span>
+                <strong>{{ preview.status.label }}</strong>
+            </div>
+        </div>
+    </header>
+
+    <section class="quote-preview-meta emission-preview-meta">
+        <div class="quote-preview-meta__item emission-preview-meta__item">
+            <span>Data de Emissao</span>
+            <strong>{{ preview.created_display }}</strong>
+        </div>
+        <div class="quote-preview-meta__item emission-preview-meta__item">
+            <span>Localizador</span>
+            <strong>{{ preview.localizador_display }}</strong>
+        </div>
+        <div class="quote-preview-meta__item emission-preview-meta__item">
+            <span>PNR</span>
+            <strong>{{ preview.pnr_display }}</strong>
+        </div>
+    </section>
+
+    <section class="quote-preview-section">
+        <div class="quote-preview-section__heading">
+            <span class="quote-preview-section__icon quote-preview-section__icon--blue">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6M17 11h6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                </svg>
+            </span>
+            <h3>Passageiros</h3>
+        </div>
+        <div class="emission-preview-passengers">
+            {% for passageiro in preview.passageiros %}
+            <article class="emission-preview-passenger-card">
+                <div class="emission-preview-passenger-card__header">
+                    <h4>{{ passageiro.nome }}</h4>
+                    <span class="emission-preview-passenger-card__badge">{{ passageiro.categoria }}</span>
+                </div>
+                <div class="emission-preview-passenger-card__grid">
+                    {% for field in passageiro.fields %}
+                    <div class="emission-preview-passenger-field">
+                        <span>{{ field.label }}</span>
+                        <strong>{{ field.value }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+            </article>
+            {% empty %}
+            <article class="emission-preview-empty">
+                Nenhum passageiro registrado para esta emissao.
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="quote-preview-section">
+        <div class="quote-preview-section__heading">
+            <span class="quote-preview-section__icon quote-preview-section__icon--orange">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                </svg>
+            </span>
+            <h3>Detalhes dos Voos</h3>
+        </div>
+        <div class="emission-preview-flights">
+            {% for voo in preview.voos %}
+            <article class="emission-preview-flight-card emission-preview-flight-card--{{ voo.tone }}">
+                <div class="emission-preview-flight-card__header">
+                    <div class="emission-preview-flight-card__title">
+                        <span class="emission-preview-flight-card__tag">{{ voo.label }}</span>
+                    </div>
+                    <div class="emission-preview-flight-card__company">
+                        <strong>{{ voo.companhia_nome }}</strong>
+                        <small>{{ voo.companhia_aux }}</small>
+                    </div>
+                </div>
+
+                <div class="emission-preview-flight-card__route">
+                    <div class="emission-preview-flight-stop">
+                        <span>Origem</span>
+                        <strong>{{ voo.origem_label }}</strong>
+                        <small>{{ voo.origem_data }}</small>
+                        <b>{{ voo.origem_hora }}</b>
+                    </div>
+                    <div class="emission-preview-flight-divider">
+                        <span>{{ voo.trajeto_hint }}</span>
+                    </div>
+                    <div class="emission-preview-flight-stop emission-preview-flight-stop--right">
+                        <span>Destino</span>
+                        <strong>{{ voo.destino_label }}</strong>
+                        <small>{{ voo.destino_data }}</small>
+                        <b>{{ voo.destino_hora }}</b>
+                    </div>
+                </div>
+
+                {% if voo.cta_url %}
+                <a href="{{ voo.cta_url }}" class="emission-preview-flight-card__cta" target="_blank" rel="noopener">
+                    {{ voo.cta_label }}
+                </a>
+                {% endif %}
+
+                {% if voo.escalas %}
+                <div class="emission-preview-flight-card__scales">
+                    {% for escala in voo.escalas %}
+                    <div class="emission-preview-flight-card__scale">
+                        <span>{{ escala.label }}</span>
+                        <strong>{{ escala.hint }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="quote-preview-section">
+        <div class="quote-preview-section__heading">
+            <span class="quote-preview-section__icon quote-preview-section__icon--violet">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M7 7h10v10H7zM4 10h3M17 10h3M10 4v3M10 17v3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                </svg>
+            </span>
+            <h3>Bagagem Incluida</h3>
+        </div>
+        <div class="emission-preview-baggage-grid">
+            {% for item in preview.bagagem_items %}
+            <article class="emission-preview-baggage-card">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value }}</strong>
+                <small>{{ item.hint }}</small>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="quote-preview-section">
+        <div class="quote-preview-section__heading">
+            <span class="quote-preview-section__icon quote-preview-section__icon--green">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                </svg>
+            </span>
+            <h3>Valores</h3>
+        </div>
+        <div class="quote-preview-values">
+            {% for item in preview.valores.items %}
+            <article class="quote-preview-value-row">
+                <div>
+                    <strong>{{ item.label }}</strong>
+                    <p>{{ item.hint }}</p>
+                </div>
+                <span>{{ item.value }}</span>
+            </article>
+            {% endfor %}
+        </div>
+        <article class="emission-preview-total-card">
+            <div>
+                <span>Valor Total</span>
+                <p>{{ preview.valores.total_hint }}</p>
+            </div>
+            <strong>{{ preview.valores.total_value }}</strong>
+        </article>
+    </section>
+
+    <section class="quote-preview-section">
+        <div class="quote-preview-section__heading">
+            <span class="quote-preview-section__icon quote-preview-section__icon--blue">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 8v4M12 16h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+            </span>
+            <h3>Observacoes Importantes</h3>
+        </div>
+        <div class="quote-preview-alert emission-preview-alert">
+            {{ preview.observacao_importante }}
+        </div>
+    </section>
+
+    <section class="quote-preview-section quote-preview-section--soft">
+        <h3 class="quote-preview-section__title-only">Orientacoes para a Viagem</h3>
+        <ul class="quote-preview-list">
+            {% for item in preview.orientacoes %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <footer class="quote-preview-contact">
+        <article>
+            <span>Telefone</span>
+            <strong>{{ preview.empresa_contato.telefone }}</strong>
+        </article>
+        <article>
+            <span>E-mail</span>
+            <strong>{{ preview.empresa_contato.email }}</strong>
+        </article>
+        <article>
+            <span>Website</span>
+            <strong>{{ preview.empresa_contato.website }}</strong>
+        </article>
+    </footer>
+</section>

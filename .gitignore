@@ -4,6 +4,9 @@ db.sqlite3
 dump.json
 .env
 staticfiles/
+.tmp/
+tmp_*.html
+tmp_*.pdf
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*

@@ -10,11 +10,26 @@
 <div class="emission-page">
     <form method="post" class="emission-form-shell" novalidate>
         {% csrf_token %}
+        {% if cotacao_conversion %}
+        <input type="hidden" name="cotacao_id" value="{{ cotacao_conversion.id }}">
+        {% endif %}
 
         <header class="emission-hero">
             <h1 class="emission-hero__title">{% if form.instance.pk %}Editar Emissão{% else %}Nova Emissão{% endif %}</h1>
             <p class="emission-hero__subtitle">Preencha os dados para criar uma nova emissão de passagem.</p>
         </header>
+
+        {% if cotacao_conversion %}
+        <div class="wizard-note">
+            <p class="wizard-note__title">Complementar emissao da cotacao #{{ cotacao_conversion.id }}</p>
+            <p class="wizard-note__text">A cotacao de {{ cotacao_conversion.cliente_nome }} para {{ cotacao_conversion.trecho }} ja foi marcada como emitida. Complete abaixo os dados operacionais que ainda faltam:</p>
+            <ul class="wizard-note__list">
+                {% for item in cotacao_conversion.faltantes %}
+                <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
 
         {% if form.errors %}
         <div class="wizard-alert">
@@ -103,6 +118,7 @@
                         <div id="cpf-status-badge" class="wizard-status-badge"></div>
                         <p id="cpf-limite-error" class="wizard-error-text"></p>
                     </div>
+
                 </section>
 
                 <section class="wizard-card wizard-step" data-step="2">
@@ -154,6 +170,19 @@
                                 Possui voo de volta?
                             </label>
                             <p class="wizard-helper">Ative para informar o trecho de retorno.</p>
+                        </div>
+                    </div>
+
+                    <div class="wizard-grid wizard-grid--double">
+                        <div>
+                            <label class="wizard-label" for="{{ form.bagagem_mao.id_for_label }}">Bagagem de mao</label>
+                            {{ form.bagagem_mao }}
+                            <p class="wizard-helper">Defina a franquia prevista para o embarque desta emissao.</p>
+                        </div>
+                        <div>
+                            <label class="wizard-label" for="{{ form.bagagem_despachada.id_for_label }}">Bagagem despachada</label>
+                            {{ form.bagagem_despachada }}
+                            <p class="wizard-helper">Use &quot;Sob consulta&quot; quando a regra ainda depender da tarifa ou companhia.</p>
                         </div>
                     </div>
                 </section>
@@ -368,7 +397,7 @@
                     </div>
                     <div class="wizard-sidebar__footer">
                         <span class="wizard-sidebar__status-dot"></span>
-                        <span id="wizard-autosave" class="wizard-sidebar__status-text">Autossalvo ativo</span>
+                        <span id="wizard-autosave" class="wizard-sidebar__status-text">Rascunho apenas nesta pagina</span>
                     </div>
                 </div>
             </aside>
@@ -387,7 +416,8 @@ window.emissionWizardContext = {
     empresaProgramas: {{ empresa_programas_json|safe }},
     passageirosFrequentes: {{ passageiros_frequentes_json|safe }},
     clientesData: {{ clientes_data_json|safe }},
-    cpfControleInicial: {{ cpf_controle_json|safe }}
+    cpfControleInicial: {{ cpf_controle_json|safe }},
+    cotacaoConversionId: {% if cotacao_conversion_id %}{{ cotacao_conversion_id }}{% else %}null{% endif %}
 };
 </script>
 <script src="{% static 'gestao/js/emission_figma.js' %}" defer></script>

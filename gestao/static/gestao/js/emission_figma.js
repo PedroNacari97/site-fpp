@@ -3,7 +3,6 @@
   const form = document.querySelector(".emission-form-shell");
   if (!form) return;
 
-  const DRAFT_KEY = "emission_figma_draft_v2";
   const TOTAL_STEPS = 6;
   const loadedDraft = loadDraft();
   let currentStep = 1;
@@ -46,6 +45,8 @@
     destinoField: qs("#id_aeroporto_destino"),
     companhiaField: qs("#id_companhia_aerea"),
     dataIda: qs("#id_data_ida"),
+    bagagemMao: qs("#id_bagagem_mao"),
+    bagagemDespachada: qs("#id_bagagem_despachada"),
     pontos: qs("#id_pontos_utilizados"),
     valorRefPontos: qs("#id_valor_referencia_pontos"),
     valorTaxas: qs("#id_valor_taxas"),
@@ -93,23 +94,11 @@
   ];
 
   function loadDraft() {
-    try {
-      const raw = window.localStorage.getItem(DRAFT_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
+    return null;
   }
 
   function saveDraft() {
-    const payload = {};
-    form.querySelectorAll("input, select, textarea").forEach((field) => {
-      if (!field.name || field.name === "csrfmiddlewaretoken") return;
-      payload[field.name] = field.type === "checkbox" ? field.checked : field.value;
-    });
-    payload.__step = currentStep;
-    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
-    if (refs.autosaveLabel) refs.autosaveLabel.textContent = "Autossalvo agora";
+    if (refs.autosaveLabel) refs.autosaveLabel.textContent = "Rascunho atualizado nesta pagina";
   }
 
   function applyFieldValues(values) {
@@ -341,6 +330,10 @@
       if (refs.escalaVoltaToggle) refs.escalaVoltaToggle.checked = false;
       if (refs.escalaVoltaWrapper) refs.escalaVoltaWrapper.classList.remove("is-visible");
       if (refs.qtdEscalasVolta) refs.qtdEscalasVolta.value = "0";
+      const totalEscalasVolta = qs("#id_total_escalas_volta");
+      const voltaContainer = qs("#escalas-volta-container");
+      if (totalEscalasVolta) totalEscalasVolta.value = "0";
+      if (voltaContainer) voltaContainer.innerHTML = "";
     }
   }
 
@@ -455,25 +448,32 @@
       cidade: row.querySelector(`[name="escala-${tipo}-${index}-cidade"]`)?.value || "",
       duracao: row.querySelector(`[name="escala-${tipo}-${index}-duracao"]`)?.value || "",
     }));
+    const buildScaleRow = (row, index) => {
+      const options = ['<option value=""></option>', ...(context.aeroportos || []).map((airport) => `<option value="${airport.id}">${airport.sigla} - ${airport.nome}</option>`)].join("");
+      const item = document.createElement("div");
+      item.className = "scale-row escala-fields";
+      item.innerHTML = `<div class="scale-grid"><div><label class="wizard-label">IATA da escala</label><select name="escala-${tipo}-${index}-aeroporto">${options}</select></div><div><label class="wizard-label">Cidade / observacao</label><input type="text" name="escala-${tipo}-${index}-cidade" value="${row.cidade || ""}"></div><div><label class="wizard-label">Duracao da escala</label><input type="time" name="escala-${tipo}-${index}-duracao" value="${row.duracao || ""}"></div><div class="scale-actions"><button type="button" class="scale-remove" data-remove-escala="${tipo}" data-remove-index="${index}">Remover</button></div></div>`;
+      const select = item.querySelector(`[name="escala-${tipo}-${index}-aeroporto"]`);
+      if (select) select.value = row.aeroporto_id || row.aeroporto || "";
+      return item;
+    };
     const renderRows = (rows) => {
-      wrapper.classList.toggle("is-visible", checkbox.checked);
-      if (!checkbox.checked) {
+      const visible = tipo === "volta" ? hasVolta() && checkbox.checked : checkbox.checked;
+      wrapper.classList.toggle("is-visible", visible);
+      if (!visible) {
+        if (!checkbox.checked) {
+          container.innerHTML = "";
+        }
         qtdInput.value = "0";
         totalInput.value = "0";
-        container.innerHTML = "";
         updateResumo();
         return;
       }
-      const finalRows = (rows?.length ? rows : scaleSeed(tipo, initialData)).length ? (rows?.length ? rows : scaleSeed(tipo, initialData)) : [{}];
+      const seededRows = scaleSeed(tipo, initialData);
+      const finalRows = rows?.length ? rows : (seededRows.length ? seededRows : [{}]);
       container.innerHTML = "";
       finalRows.forEach((row, index) => {
-        const options = ['<option value=""></option>', ...(context.aeroportos || []).map((airport) => `<option value="${airport.id}">${airport.sigla} - ${airport.nome}</option>`)].join("");
-        const item = document.createElement("div");
-        item.className = "scale-row escala-fields";
-        item.innerHTML = `<div class="scale-grid"><div><label class="wizard-label">IATA da escala</label><select name="escala-${tipo}-${index}-aeroporto">${options}</select></div><div><label class="wizard-label">Companhia / cidade</label><input type="text" name="escala-${tipo}-${index}-cidade" value="${row.cidade || ""}"></div><div><label class="wizard-label">Horario</label><input type="time" name="escala-${tipo}-${index}-duracao" value="${row.duracao || ""}"></div><div class="scale-actions"><button type="button" class="scale-remove" data-remove-escala="${tipo}" data-remove-index="${index}">Remover</button></div></div>`;
-        container.appendChild(item);
-        const select = item.querySelector(`[name="escala-${tipo}-${index}-aeroporto"]`);
-        if (select) select.value = row.aeroporto_id || row.aeroporto || "";
+        container.appendChild(buildScaleRow(row, index));
       });
       qtdInput.value = String(finalRows.length);
       totalInput.value = String(finalRows.length);
@@ -484,6 +484,16 @@
         renderRows(remaining);
         saveDraft();
       }));
+      container.querySelectorAll("select, input").forEach((field) => {
+        field.addEventListener("input", () => {
+          updateResumo();
+          saveDraft();
+        });
+        field.addEventListener("change", () => {
+          updateResumo();
+          saveDraft();
+        });
+      });
       updateResumo();
     };
     checkbox.addEventListener("change", () => { renderRows(); saveDraft(); });
@@ -504,7 +514,7 @@
     const total = passengerKinds.reduce((sum, item) => sum + Number(item.field?.value || 0), 0);
     refs.reviewGrid.innerHTML = [
       { title: "Cliente & Programa", step: 1, stats: [{ label: "Tipo de Emissao", value: tipoMeta[getTipoEmissao()]?.title || "-" }, { label: "Cliente", value: getSelectedText(refs.cliente) }, { label: "Programa", value: getSelectedText(refs.programa) }] },
-      { title: "Voos", step: 2, stats: [{ label: "Origem", value: getSelectedText(qs("#id_aeroporto_partida")) }, { label: "Destino", value: getSelectedText(qs("#id_aeroporto_destino")) }, { label: "Ida", value: qs("#id_data_ida")?.value || "-" }, { label: "Volta", value: refs.dataVolta?.value || "Sem volta" }] },
+      { title: "Voos", step: 2, stats: [{ label: "Origem", value: getSelectedText(qs("#id_aeroporto_partida")) }, { label: "Destino", value: getSelectedText(qs("#id_aeroporto_destino")) }, { label: "Ida", value: qs("#id_data_ida")?.value || "-" }, { label: "Volta", value: refs.dataVolta?.value || "Sem volta" }, { label: "Bagagem de mao", value: getSelectedText(refs.bagagemMao) || "Sob consulta" }, { label: "Bagagem despachada", value: getSelectedText(refs.bagagemDespachada) || "Sob consulta" }] },
       { title: "Passageiros", step: 4, stats: [{ label: "Adultos", value: String(Number(refs.countAdultos?.value || 0)) }, { label: "Criancas", value: String(Number(refs.countCriancas?.value || 0)) }, { label: "Bebes", value: String(Number(refs.countBebes?.value || 0)) }, { label: "Total", value: `${total} viajante(s)` }] },
       { title: "Valores", step: 5, stats: [{ label: "Milhas", value: refs.pontos?.value || "0" }, { label: "Taxas", value: formatCurrency(refs.valorTaxas?.value || 0) }, { label: "Total", value: formatCurrency(refs.valorTotalFinal?.value || refs.vendaFinal?.value || 0) }, { label: "Lucro", value: formatCurrency(refs.lucro?.value || 0) }] },
     ].map((panel) => `<div class="review-panel"><div class="review-panel__head"><div class="review-panel__title">${panel.title}</div><button type="button" class="review-edit" data-edit-step="${panel.step}">Editar</button></div><div class="review-grid__stats">${panel.stats.map((stat) => `<div class="review-stat"><span>${stat.label}</span><strong>${stat.value}</strong></div>`).join("")}</div></div>`).join("");
@@ -580,9 +590,16 @@
       renderPassengers();
       saveDraft();
     }));
-    [refs.origemField, refs.destinoField, refs.companhiaField, refs.dataIda, refs.escalaIdaToggle, refs.escalaVoltaToggle].filter(Boolean).forEach((field) => field.addEventListener("change", updateResumo));
+    [refs.origemField, refs.destinoField, refs.companhiaField, refs.dataIda, refs.escalaIdaToggle, refs.escalaVoltaToggle, refs.bagagemMao, refs.bagagemDespachada].filter(Boolean).forEach((field) => field.addEventListener("change", updateResumo));
     refs.possuiVolta?.addEventListener("change", () => {
       if (!refs.possuiVolta.checked && refs.dataVolta) refs.dataVolta.value = "";
+      const voltaContainer = qs("#escalas-volta-container");
+      const totalEscalasVolta = qs("#id_total_escalas_volta");
+      if (!refs.possuiVolta.checked) {
+        if (voltaContainer) voltaContainer.innerHTML = "";
+        if (refs.qtdEscalasVolta) refs.qtdEscalasVolta.value = "0";
+        if (totalEscalasVolta) totalEscalasVolta.value = "0";
+      }
       syncReturnStep();
       updateResumo();
       saveDraft();
@@ -601,7 +618,6 @@
       saveDraft();
     });
     form.addEventListener("submit", () => {
-      window.localStorage.removeItem(DRAFT_KEY);
       if (refs.finishButton) refs.finishButton.disabled = true;
     });
   }

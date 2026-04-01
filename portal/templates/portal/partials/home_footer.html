@@ -1,0 +1,36 @@
+<footer class="portal-footer portal-footer--home">
+    <div class="portal-footer__panel">
+        <div class="portal-footer__panel-inner">
+            <div class="portal-footer__brand-block">
+                <a href="{% url 'portal_home' %}" class="portal-brand portal-brand--footer">
+                    <span class="portal-brand__logo">N</span>
+                    <span class="portal-brand__copy">
+                        <strong>NC Fly News</strong>
+                    </span>
+                </a>
+                <p>Seu portal completo sobre milhas, pontos, cartões de crédito e viagens. Informações atualizadas para você viajar mais gastando menos.</p>
+            </div>
+
+            <div class="portal-footer__column">
+                <h3>Categorias</h3>
+                <a href="{% url 'portal_categoria' 'milhas-e-pontos' %}">Milhas e Pontos</a>
+                <a href="{% url 'portal_categoria' 'cartoes-credito' %}">Cartões de Crédito</a>
+                <a href="{% url 'portal_categoria' 'hoteis-resorts' %}">Hotéis e Resorts</a>
+                <a href="{% url 'portal_categoria' 'promocoes' %}">Promoções</a>
+            </div>
+
+            <div class="portal-footer__column">
+                <h3>Institucional</h3>
+                <a href="{% url 'portal_home' %}">Sobre nós</a>
+                <a href="{% url 'login_custom' %}">Contato</a>
+                <a href="{% url 'login_custom' %}">Política de Privacidade</a>
+                <a href="{% url 'login_custom' %}">Termos de Uso</a>
+            </div>
+        </div>
+    </div>
+    <div class="portal-footer__bar">
+        <div class="portal-footer__bar-inner">
+            <span>&copy; {% now "Y" %} NC Fly News. Todos os direitos reservados.</span>
+        </div>
+    </div>
+</footer>

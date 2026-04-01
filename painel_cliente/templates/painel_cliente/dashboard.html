@@ -37,7 +37,7 @@
           <a class="btn btn--outline btn--sm" href="?{{ management_dashboard.previous_period_query }}">Período anterior</a>
         </div>
       </div>
-      <form method="get" class="dashboard-global-form">
+      <form method="get" class="dashboard-global-form" data-auto-submit-filters>
         {% if empresa_id %}<input type="hidden" name="empresa_id" value="{{ empresa_id }}">{% endif %}
         <div class="dashboard-date-grid">
           <div class="form-field">

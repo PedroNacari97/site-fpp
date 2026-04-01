@@ -1,0 +1,184 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ categoria_config.label }} | NC Fly News{% endblock %}
+{% block content %}
+<div class="portal-category-page">
+    <section class="portal-category-hero {{ categoria_config.hero_class }}">
+        <div class="portal-category-hero__icon">
+            {% if categoria_config.icon_variant == "miles" %}
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+            </svg>
+            {% elif categoria_config.icon_variant == "cards" %}
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="4" y="6" width="16" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"></rect>
+                <path d="M4 10h16" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+            </svg>
+            {% elif categoria_config.icon_variant == "hotels" %}
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+            </svg>
+            {% else %}
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m5 15 4-4 3 3 7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                <path d="M19 7h-5v5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+            </svg>
+            {% endif %}
+        </div>
+        <div>
+            <h1>{{ categoria_config.hero_title }}</h1>
+            <p>{{ categoria_config.hero_description }}</p>
+        </div>
+    </section>
+
+    {% if topicos_disponiveis %}
+    <section class="portal-category-topics">
+        <div class="portal-category-topics__header">
+            <h2>Temas desta categoria</h2>
+            {% if topico_ativo %}
+            <a href="{% url 'portal_categoria' categoria_slug %}" class="portal-category-topics__clear">Limpar filtro</a>
+            {% endif %}
+        </div>
+        <div class="portal-category-topics__chips">
+            {% for item in topicos_disponiveis %}
+            <a href="{% url 'portal_categoria' categoria_slug %}?topico={{ item.slug }}" class="news-pill news-pill--topic{% if topico_ativo and topico_ativo.slug == item.slug %} news-pill--topic-active{% endif %}">
+                {{ item.label }}
+                <span>{{ item.count }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if featured %}
+    <section class="portal-category-featured">
+        <article class="portal-category-featured__main">
+            {% if featured.imagem_exibicao %}
+            <a href="{{ featured.get_absolute_url }}" class="portal-category-featured__image">
+                <img src="{{ featured.imagem_exibicao }}" alt="{{ featured.titulo }}">
+            </a>
+            {% endif %}
+            <div class="portal-category-featured__body">
+                <span class="news-pill news-pill--primary">{% if categoria_slug == "promocoes" %}Super Oferta{% else %}Destaque{% endif %}</span>
+                {% if featured.topico %}
+                <span class="news-pill news-pill--topic">{{ featured.topico|portal_text }}</span>
+                {% endif %}
+                <h2><a href="{{ featured.get_absolute_url }}">{{ featured.titulo|portal_text }}</a></h2>
+                <p>{{ featured.resumo|portal_text }}</p>
+                <div class="news-meta">
+                    <span>Redação NC Fly</span>
+                    <span>{{ featured.publicada_em|br_date_long }}</span>
+                </div>
+            </div>
+        </article>
+
+        <aside class="portal-category-featured__sidebar">
+            {% for noticia in sidebar_cards %}
+            <article class="news-card news-card--compact">
+                {% if noticia.imagem_exibicao %}
+                <a href="{{ noticia.get_absolute_url }}" class="news-card__image">
+                    <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
+                </a>
+                {% endif %}
+                <div class="news-card__body">
+                    {% if noticia.topico %}
+                    <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
+                    {% endif %}
+                    <h3><a href="{{ noticia.get_absolute_url }}">{{ noticia.titulo|portal_text }}</a></h3>
+                    <p>{{ noticia.resumo|portal_text|truncatechars:88 }}</p>
+                    <div class="news-meta">
+                        <span>Redação NC Fly</span>
+                        <span>{{ noticia.publicada_em|br_date_long }}</span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </aside>
+    </section>
+    {% endif %}
+
+    {% if grid_cards or hidden_cards %}
+    <section
+        class="portal-category-grid"
+        id="portal-category-grid"
+        data-load-more-grid
+    >
+        {% for noticia in grid_cards %}
+        <article class="news-card">
+            {% if noticia.imagem_exibicao %}
+            <a href="{{ noticia.get_absolute_url }}" class="news-card__image">
+                <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
+            </a>
+            {% endif %}
+            <div class="news-card__body">
+                {% if noticia.topico %}
+                <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
+                {% endif %}
+                <h3><a href="{{ noticia.get_absolute_url }}">{{ noticia.titulo|portal_text }}</a></h3>
+                <p>{{ noticia.resumo|portal_text|truncatechars:100 }}</p>
+                <div class="news-meta">
+                    <span>Redação NC Fly</span>
+                    <span>{{ noticia.publicada_em|br_date_long }}</span>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+        {% for noticia in hidden_cards %}
+        <article class="news-card is-hidden" data-load-more-item>
+            {% if noticia.imagem_exibicao %}
+            <a href="{{ noticia.get_absolute_url }}" class="news-card__image">
+                <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
+            </a>
+            {% endif %}
+            <div class="news-card__body">
+                {% if noticia.topico %}
+                <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
+                {% endif %}
+                <h3><a href="{{ noticia.get_absolute_url }}">{{ noticia.titulo|portal_text }}</a></h3>
+                <p>{{ noticia.resumo|portal_text|truncatechars:100 }}</p>
+                <div class="news-meta">
+                    <span>Redação NC Fly</span>
+                    <span>{{ noticia.publicada_em|br_date_long }}</span>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if topico_ativo %}
+    <div class="portal-category-filter-note">
+        Exibindo notícias do tema <strong>{{ topico_ativo.label|portal_text }}</strong> dentro de {{ categoria_config.label|portal_text }}.
+    </div>
+    {% endif %}
+
+    {% if show_load_more %}
+    <div class="portal-category-loadmore">
+        <button
+            type="button"
+            class="portal-button portal-button--ghost"
+            data-load-more-button
+            data-load-more-target="portal-category-grid"
+            data-batch-size="6"
+            data-label-default="{{ categoria_config.load_more_label }}"
+        >
+            {{ categoria_config.load_more_label }}
+        </button>
+    </div>
+    {% endif %}
+
+    {% if categoria_config.cta_title %}
+    <section class="portal-category-cta">
+        <div>
+            <h2>{{ categoria_config.cta_title }}</h2>
+            <p>{{ categoria_config.cta_description }}</p>
+        </div>
+        <a href="{% url 'login_custom' %}" class="portal-button portal-button--light">{{ categoria_config.cta_button }}</a>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block footer %}
+{% include "portal/partials/home_footer.html" %}
+{% endblock %}

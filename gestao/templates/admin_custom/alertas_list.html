@@ -86,7 +86,7 @@
     </div>
 
     <div class="alerts-page__filter-box">
-      <form method="get">
+<form method="get" data-auto-submit-filters>
         <input type="hidden" name="status_alerta" value="{{ selected_status }}">
         <input type="hidden" name="continente" value="{{ request.GET.continente|default:'' }}">
         <input type="hidden" name="pais" value="{{ request.GET.pais|default:'' }}">

@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib import messages
+from django.urls import reverse
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from django import forms
 from django.db import models, transaction
@@ -17,6 +18,10 @@ from gestao.services.emissao_financeiro import (
     calcular_economia,
     registrar_movimentacao_pontos,
 )
+from gestao.services.cotacao_preview import (
+    build_cotacao_preview_context as compose_cotacao_preview_context,
+)
+from services.pdf_service import cotacao_pdf_response
 from ..forms import (
     ContaFidelidadeForm,
     ProgramaFidelidadeForm,
@@ -42,7 +47,6 @@ from ..models import (
     Escala,
     CompanhiaAerea,
 )
-from services.pdf_service import cotacao_pdf_response
 import csv
 import json
 from datetime import timedelta
@@ -128,6 +132,20 @@ def _resolve_cotacao_conta(form):
     return conta, valor_medio_milheiro
 
 
+def _cotacao_precisa_complementar_emissao(cotacao):
+    return cotacao.status == "emissao" and not cotacao.emissao_id
+
+
+def _persist_cotacao_escalas(cotacao, escalas_payload):
+    cotacao.escalas.all().delete()
+    for escala in escalas_payload:
+        Escala.objects.create(cotacao=cotacao, **escala)
+
+
+def _redirect_to_cotacao_emissao(cotacao):
+    return redirect(f"{reverse('admin_nova_emissao')}?cotacao_id={cotacao.id}")
+
+
 def _render_cotacao_form(
     request,
     *,
@@ -138,7 +156,8 @@ def _render_cotacao_form(
     cliente_programas_source=None,
     conta_programas_instance=None,
 ):
-    aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla"))
+    aeroportos = list(Aeroporto.objects.values("id", "nome", "sigla", "cidade", "estado"))
+    companhias_count = CompanhiaAerea.objects.count()
     return render(
         request,
         "admin_custom/form_cotacao.html",
@@ -155,18 +174,49 @@ def _render_cotacao_form(
                 if cliente_programas_source is not None
                 else build_clientes_programas_map(empresa_id=getattr(empresa, "id", None))
             ),
-            "contas_adm_programas_json": json.dumps(
-                build_contas_administradas_programas_map(
-                    empresa_id=getattr(empresa, "id", None),
-                    instance=conta_programas_instance,
-                )
-            ),
-            "menu_ativo": menu_ativo,
+              "contas_adm_programas_json": json.dumps(
+                  build_contas_administradas_programas_map(
+                      empresa_id=getattr(empresa, "id", None),
+                      instance=conta_programas_instance,
+                  )
+              ),
+              "aeroportos_count": len(aeroportos),
+              "companhias_count": companhias_count,
+              "menu_ativo": menu_ativo,
         },
     )
 
 
 # --- COTAÇÕES ---
+def _format_currency_brl(value):
+    try:
+        amount = Decimal(value or 0)
+    except Exception:
+        amount = Decimal("0")
+    return f"R$ {amount:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def _get_cotacao_titular_info(cotacao):
+    titular = cotacao.cliente or cotacao.conta_administrada
+    if hasattr(titular, "usuario"):
+        return {
+            "nome": titular.usuario.get_full_name() or titular.usuario.username,
+            "cpf": getattr(titular, "cpf", "") or "-",
+            "email": titular.usuario.email or "-",
+            "telefone": getattr(titular, "telefone", "") or "-",
+        }
+    return {
+        "nome": getattr(titular, "nome", str(titular)) if titular else "-",
+        "cpf": "-",
+        "email": "-",
+        "telefone": "-",
+    }
+
+
+def _build_cotacao_preview_context(cotacao):
+    return compose_cotacao_preview_context(cotacao)
+
+
 @login_required
 def admin_cotacoes(request):
     if permission_denied := require_admin_or_operator(request):
@@ -315,10 +365,14 @@ def nova_cotacao_voo(request):
                 )
             else:
                 cot = form.save()
-                cot.escalas.all().delete()
-                for escala in escalas_payload:
-                    Escala.objects.create(cotacao=cot, **escala)
-                if cot.status == "emissao" and cot.emissao is None:
+                _persist_cotacao_escalas(cot, escalas_payload)
+                if _cotacao_precisa_complementar_emissao(cot):
+                    messages.info(
+                        request,
+                        "Cotação salva. Complete agora os dados faltantes para gerar a emissão real.",
+                    )
+                    return _redirect_to_cotacao_emissao(cot)
+                if False and cot.status == "emissao" and cot.emissao is None:
                     try:
                         emissao = EmissaoPassagem(
                             cliente=cot.cliente,
@@ -400,6 +454,11 @@ def editar_cotacao_voo(request, cotacao_id):
         if form.is_valid():
             with transaction.atomic():
                 conta, valor_medio_milheiro = _resolve_cotacao_conta(form)
+                if cotacao.emissao_id and form.cleaned_data.get("status") != "emissao":
+                    form.add_error(
+                        "status",
+                        "Esta cotação já possui emissão vinculada. Mantenha o status emitido.",
+                    )
                 if not conta:
                     form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
                 if form.errors:
@@ -419,10 +478,14 @@ def editar_cotacao_voo(request, cotacao_id):
                     )
                 else:
                     cot = form.save()
-                    cot.escalas.all().delete()
-                    for escala in escalas_payload:
-                        Escala.objects.create(cotacao=cot, **escala)
-                    if cot.status == "emissao" and cot.emissao is None:
+                    _persist_cotacao_escalas(cot, escalas_payload)
+                    if _cotacao_precisa_complementar_emissao(cot):
+                        messages.info(
+                            request,
+                            "Cotação atualizada. Complete agora os dados faltantes para gerar a emissão real.",
+                        )
+                        return _redirect_to_cotacao_emissao(cot)
+                    if False and cot.status == "emissao" and cot.emissao is None:
                         try:
                             emissao = EmissaoPassagem(
                                 cliente=cot.cliente,
@@ -514,8 +577,46 @@ def cotacao_voo_pdf(request, cotacao_id):
     """Download da cotação de voo em PDF."""
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
-    cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
-    return cotacao_pdf_response(cotacao)
+    cotacao = get_object_or_404(
+        CotacaoVoo.objects.select_related(
+            "cliente__usuario",
+            "conta_administrada",
+            "origem",
+            "destino",
+            "programa",
+        ),
+        id=cotacao_id,
+    )
+    return cotacao_pdf_response(
+        cotacao,
+        filename_prefix="cotacao_preview",
+        as_attachment=False,
+    )
+
+
+@login_required
+def visualizar_cotacao_voo(request, cotacao_id):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    cotacao = get_object_or_404(
+        CotacaoVoo.objects.select_related(
+            "cliente__usuario",
+            "conta_administrada",
+            "origem",
+            "destino",
+            "programa",
+        ),
+        id=cotacao_id,
+    )
+    return render(
+        request,
+        "admin_custom/cotacao_voo_preview.html",
+        {
+            "cotacao": cotacao,
+            "menu_ativo": "cotacoes",
+            **_build_cotacao_preview_context(cotacao),
+        },
+    )
 
 
 @login_required

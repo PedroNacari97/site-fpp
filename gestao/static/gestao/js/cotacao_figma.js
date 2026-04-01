@@ -19,6 +19,7 @@
   const aeroportos = parseScriptJson("cotacao-aeroportos", []);
   const clienteProgramas = parseScriptJson("cotacao-cliente-programas", {});
   const contasAdmProgramas = parseScriptJson("cotacao-contas-programas", {});
+  const aeroportosMap = Object.fromEntries(aeroportos.map((airport) => [String(airport.id), airport]));
 
   const qs = (selector) => document.querySelector(selector);
   const qsa = (selector) => Array.from(document.querySelectorAll(selector));
@@ -34,6 +35,7 @@
     origem: qs("#id_origem"),
     destino: qs("#id_destino"),
     companhia: qs("#id_companhia_aerea"),
+    routeCompanhia: qs("#route-preview-companhia"),
     dataIda: qs("#id_data_ida"),
     dataVolta: qs("#id_data_volta"),
     possuiVolta: qs("#possui-volta"),
@@ -51,13 +53,27 @@
     parcelas: qs("#id_parcelas"),
     juros: qs("#id_juros"),
     desconto: qs("#id_desconto"),
+    status: qs("#id_status"),
+    validade: qs("#id_validade"),
+    observacoes: qs("#id_observacoes"),
     routeOrigin: qs("#route-preview-origin"),
     routeDestination: qs("#route-preview-destination"),
-    resumoTrechos: qs("#resumo-trechos"),
+    heroStatus: qs("#quote-hero-status"),
+    summaryClientName: qs("#summary-client-name"),
+    summaryProgramName: qs("#summary-program-name"),
+    summaryOriginCode: qs("#summary-origin-code"),
+    summaryOriginCity: qs("#summary-origin-city"),
+    summaryDestinationCode: qs("#summary-destination-code"),
+    summaryDestinationCity: qs("#summary-destination-city"),
     resumoDatas: qs("#resumo-datas"),
     resumoPassageiros: qs("#resumo-passageiros"),
-    resumoValores: qs("#resumo-valores"),
     resumoFinanceiro: qs("#resumo-financeiro"),
+    summaryValorPassagem: qs("#summary-valor-passagem"),
+    summaryValorTaxas: qs("#summary-valor-taxas"),
+    summaryValorMilhas: qs("#summary-valor-milhas"),
+    summaryValorTotal: qs("#summary-valor-total"),
+    summaryStatusBadge: qs("#summary-status-badge"),
+    summaryMissingList: qs("#summary-missing-list"),
     previewBase: qs("#preview-base"),
     previewParcelado: qs("#preview-parcelado"),
     previewVista: qs("#preview-vista"),
@@ -72,7 +88,36 @@
   const formatCurrency = (value) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(toNumber(value));
 
-  const getSelectedText = (select) => select?.selectedOptions?.[0]?.textContent?.trim() || "-";
+  const getSelectedText = (select, fallback = "-") => {
+    const text = select?.selectedOptions?.[0]?.textContent?.trim() || "";
+    return text || fallback;
+  };
+
+  const formatDateTime = (value) => {
+    if (!value) return "";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return new Intl.DateTimeFormat("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(parsed);
+  };
+
+  const getAirportMeta = (select) => {
+    const id = select?.value ? String(select.value) : "";
+    if (!id) return { code: "---", city: select === refs.origem ? "Origem" : "Destino", label: "---" };
+    const airport = aeroportosMap[id];
+    if (!airport) {
+      const text = getSelectedText(select, "---");
+      const parts = text.split(" - ");
+      return { code: parts[0] || "---", city: parts.slice(1).join(" - ") || text, label: text };
+    }
+    return {
+      code: airport.sigla || "---",
+      city: airport.cidade || airport.nome || "---",
+      label: `${airport.sigla || "---"} - ${airport.nome || airport.cidade || "---"}`,
+    };
+  };
 
   function getProgramasDisponiveis() {
     if (refs.tipoTitular?.value === "administrada") {
@@ -92,7 +137,10 @@
       refs.programaInfo.textContent = "";
       return;
     }
-    const saldo = selected.saldo === null || selected.saldo === undefined ? "Saldo nao informado" : `Saldo: ${selected.saldo} pontos`;
+    const saldo =
+      selected.saldo === null || selected.saldo === undefined
+        ? "Saldo nao informado"
+        : `Saldo: ${selected.saldo} pontos`;
     const custo = `Custo medio: ${formatCurrency(selected.valor_medio || 0)}`;
     refs.programaInfo.textContent = `${saldo} | ${custo}`;
     if (refs.valorMilheiro && !refs.valorMilheiro.value) {
@@ -103,7 +151,7 @@
   function updateProgramaOptions() {
     if (!refs.programa) return;
     const previous = refs.programa.value;
-    refs.programa.innerHTML = '<option value=""></option>';
+    refs.programa.innerHTML = '<option value="">Selecione o programa</option>';
     getProgramasDisponiveis().forEach((programa) => {
       const option = document.createElement("option");
       option.value = programa.id;
@@ -119,7 +167,7 @@
   function toggleTitularFields() {
     const tipo = refs.tipoTitular?.value || "cliente";
     if (refs.clienteWrapper) refs.clienteWrapper.style.display = "block";
-    if (refs.contaAdmWrapper) refs.contaAdmWrapper.style.display = tipo === "administrada" ? "block" : "none";
+    if (refs.contaAdmWrapper) refs.contaAdmWrapper.style.display = tipo === "administrada" ? "grid" : "none";
     if (tipo !== "administrada" && refs.contaAdm) refs.contaAdm.value = "";
     updateProgramaOptions();
   }
@@ -149,7 +197,7 @@
     const row = document.createElement("div");
     row.className = "quote-scale-row";
     row.dataset.index = String(index);
-    const options = ['<option value=""></option>']
+    const options = ['<option value="">Selecione o aeroporto</option>']
       .concat(aeroportos.map((airport) => `<option value="${airport.id}">${airport.sigla} - ${airport.nome}</option>`))
       .join("");
     row.innerHTML = `
@@ -231,49 +279,126 @@
     renderRows(initialData);
   }
 
+  function getStatusLabel() {
+    const selected = getSelectedText(refs.status, "");
+    const isNew = form.dataset.isNew === "1";
+    if (isNew && (!refs.status?.value || refs.status.value === "pendente")) {
+      return "Rascunho";
+    }
+    return selected || "Rascunho";
+  }
+
+  function applyStatusVisual(label) {
+    const normalized = String(label || "").toLowerCase();
+    const targets = [refs.heroStatus, refs.summaryStatusBadge].filter(Boolean);
+    targets.forEach((node) => {
+      node.textContent = label || "Rascunho";
+      node.classList.remove("is-success", "is-danger", "is-info");
+      if (normalized.includes("aceita") || normalized.includes("emissao")) {
+        node.classList.add("is-success");
+      } else if (normalized.includes("rejeitada")) {
+        node.classList.add("is-danger");
+      } else if (normalized.includes("pendente") || normalized.includes("rascunho")) {
+        node.classList.add("is-info");
+      }
+    });
+  }
+
   function updateResumoVisual() {
-    const origem = getSelectedText(refs.origem);
-    const destino = getSelectedText(refs.destino);
+    const origem = getAirportMeta(refs.origem);
+    const destino = getAirportMeta(refs.destino);
+    const companhia = getSelectedText(refs.companhia);
     const dataIda = refs.dataIda?.value || "";
     const dataVolta = refs.dataVolta?.value || "";
     const idaEscalas = Number(qs("#id_qtd_escalas_ida")?.value || 0);
     const voltaEscalas = Number(qs("#id_qtd_escalas_volta")?.value || 0);
     const qtdPassageiros = refs.qtdPassageiros?.value || "0";
-    const classe = getSelectedText(refs.classe);
+    const classe = getSelectedText(refs.classe, "Classe nao informada");
     const valorPassagem = toNumber(refs.valorPassagem?.value);
     const taxas = toNumber(refs.taxas?.value);
     const milhas = toNumber(refs.milhas?.value);
     const valorMilheiro = toNumber(refs.valorMilheiro?.value);
     const juros = toNumber(refs.juros?.value || 1);
     const desconto = toNumber(refs.desconto?.value || 1);
+    const clienteLabel =
+      refs.tipoTitular?.value === "administrada"
+        ? getSelectedText(refs.contaAdm, "---")
+        : getSelectedText(refs.cliente, "---");
+    const programaLabel = getSelectedText(refs.programa, "Nenhum programa selecionado");
 
     const base = (milhas / 1000) * valorMilheiro + taxas;
     const parcelado = base * (juros || 1);
     const vista = parcelado * (desconto || 1);
     const economia = valorPassagem - vista;
 
-    if (refs.routeOrigin) refs.routeOrigin.textContent = origem;
-    if (refs.routeDestination) refs.routeDestination.textContent = destino;
-    if (refs.resumoTrechos) {
-      refs.resumoTrechos.textContent =
-        origem !== "-" && destino !== "-"
-          ? `${origem} -> ${destino}${idaEscalas ? ` | Ida com ${idaEscalas} escala(s)` : ""}${voltaEscalas ? ` | Volta com ${voltaEscalas} escala(s)` : ""}`
-          : "Preencha origem e destino.";
-    }
+    if (refs.routeOrigin) refs.routeOrigin.textContent = origem.label;
+    if (refs.routeDestination) refs.routeDestination.textContent = destino.label;
+    if (refs.routeCompanhia) refs.routeCompanhia.textContent = companhia;
+    if (refs.summaryClientName) refs.summaryClientName.textContent = clienteLabel;
+    if (refs.summaryProgramName) refs.summaryProgramName.textContent = programaLabel;
+    if (refs.summaryOriginCode) refs.summaryOriginCode.textContent = origem.code;
+    if (refs.summaryOriginCity) refs.summaryOriginCity.textContent = origem.city;
+    if (refs.summaryDestinationCode) refs.summaryDestinationCode.textContent = destino.code;
+    if (refs.summaryDestinationCity) refs.summaryDestinationCity.textContent = destino.city;
     if (refs.resumoDatas) {
-      refs.resumoDatas.textContent = `${dataIda ? `Ida: ${dataIda}` : "Ida pendente"} | ${hasVolta() ? (dataVolta ? `Volta: ${dataVolta}` : "Volta pendente") : "Somente ida"}`;
+      refs.resumoDatas.textContent = `${dataIda ? `Ida: ${formatDateTime(dataIda)}` : "Ida pendente"} | ${
+        hasVolta() ? (dataVolta ? `Volta: ${formatDateTime(dataVolta)}` : "Volta pendente") : "Somente ida"
+      }`;
     }
     if (refs.resumoPassageiros) {
-      refs.resumoPassageiros.textContent = `${qtdPassageiros} passageiro(s) | ${classe !== "-" ? classe : "Classe nao informada"}`;
+      refs.resumoPassageiros.textContent = `${qtdPassageiros} passageiro(s) | ${classe}`;
     }
-    if (refs.resumoValores) {
-      refs.resumoValores.textContent = `${valorPassagem ? `Passagem ${formatCurrency(valorPassagem)}` : "Valor da passagem nao informado"} | ${taxas ? `Taxas ${formatCurrency(taxas)}` : "Taxas nao informadas"} | ${milhas ? `${milhas} pontos` : "Pontos nao informados"}`;
+    if (refs.summaryValorPassagem) refs.summaryValorPassagem.textContent = formatCurrency(valorPassagem);
+    if (refs.summaryValorTaxas) refs.summaryValorTaxas.textContent = formatCurrency(taxas);
+    if (refs.summaryValorMilhas) refs.summaryValorMilhas.textContent = milhas ? `${milhas}` : "0";
+    if (refs.summaryValorTotal) refs.summaryValorTotal.textContent = formatCurrency(vista);
+    if (refs.resumoFinanceiro) {
+      refs.resumoFinanceiro.textContent = `A vista estimado: ${formatCurrency(vista)} | Economia estimada: ${formatCurrency(economia)}`;
     }
-    if (refs.resumoFinanceiro) refs.resumoFinanceiro.textContent = `A vista estimado: ${formatCurrency(vista)}`;
     if (refs.previewBase) refs.previewBase.textContent = formatCurrency(base);
     if (refs.previewParcelado) refs.previewParcelado.textContent = formatCurrency(parcelado);
     if (refs.previewVista) refs.previewVista.textContent = formatCurrency(vista);
     if (refs.previewEconomia) refs.previewEconomia.textContent = formatCurrency(economia);
+
+    const statusLabel = getStatusLabel();
+    applyStatusVisual(statusLabel);
+
+    const missing = [];
+    if (!refs.tipoTitular?.value) missing.push("Tipo de titular");
+    if (refs.tipoTitular?.value === "administrada") {
+      if (!refs.contaAdm?.value) missing.push("Conta administrada");
+    } else if (!refs.cliente?.value) {
+      missing.push("Cliente");
+    }
+    if (!refs.programa?.value) missing.push("Programa de milhas");
+    if (!refs.origem?.value) missing.push("Origem");
+    if (!refs.destino?.value) missing.push("Destino");
+    if (!refs.companhia?.value) missing.push("Companhia");
+    if (!refs.dataIda?.value) missing.push("Data da ida");
+    if (hasVolta() && !refs.dataVolta?.value) missing.push("Data da volta");
+    if (!refs.qtdPassageiros?.value) missing.push("Quantidade de passageiros");
+    if (!refs.classe?.value) missing.push("Classe");
+    if (!refs.valorPassagem?.value) missing.push("Valor da passagem");
+    if (!refs.taxas?.value) missing.push("Taxas");
+    if (!refs.status?.value) missing.push("Status");
+    if (refs.idaTemEscala?.checked && idaEscalas === 0) missing.push("Escalas da ida");
+    if (hasVolta() && refs.voltaTemEscala?.checked && voltaEscalas === 0) missing.push("Escalas da volta");
+
+    if (refs.summaryMissingList) {
+      refs.summaryMissingList.innerHTML = "";
+      if (!missing.length) {
+        const item = document.createElement("li");
+        item.textContent = "Tudo pronto para salvar a cotacao.";
+        item.className = "is-ok";
+        refs.summaryMissingList.appendChild(item);
+      } else {
+        missing.forEach((label) => {
+          const item = document.createElement("li");
+          item.textContent = label;
+          refs.summaryMissingList.appendChild(item);
+        });
+      }
+    }
   }
 
   refs.tipoTitular?.addEventListener("change", () => {
@@ -301,10 +426,12 @@
     updateResumoVisual();
   });
 
-  qsa("#id_origem, #id_destino, #id_companhia_aerea, #id_data_ida, #id_qtd_passageiros, #id_classe, #id_valor_passagem, #id_taxas, #id_milhas, #id_valor_milheiro, #id_parcelas, #id_juros, #id_desconto")
-    .forEach((field) => field.addEventListener("input", updateResumoVisual));
-  qsa("#id_origem, #id_destino, #id_companhia_aerea, #id_data_ida, #id_qtd_passageiros, #id_classe, #id_status, #id_validade")
-    .forEach((field) => field.addEventListener("change", updateResumoVisual));
+  qsa(
+    "#id_origem, #id_destino, #id_companhia_aerea, #id_data_ida, #id_data_volta, #id_qtd_passageiros, #id_classe, #id_valor_passagem, #id_taxas, #id_milhas, #id_valor_milheiro, #id_parcelas, #id_juros, #id_desconto, #id_status, #id_validade, #id_observacoes",
+  ).forEach((field) => {
+    field.addEventListener("input", updateResumoVisual);
+    field.addEventListener("change", updateResumoVisual);
+  });
 
   toggleTitularFields();
   setVoltaVisibility();

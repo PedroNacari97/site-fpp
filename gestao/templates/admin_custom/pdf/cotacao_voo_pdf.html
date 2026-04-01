@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cotacao {{ cotacao.id }}</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 210mm;
+            min-height: 297mm;
+            background: #ffffff;
+        }
+
+        html {
+            font-size: 12px;
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .pdf-preview-document {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 8mm;
+            background: #ffffff;
+            overflow: visible;
+        }
+
+        .pdf-preview-document .quote-preview-page {
+            max-width: none;
+            margin: 0;
+            transform: scale(0.89);
+            transform-origin: top left;
+            width: calc(100% / 0.89);
+        }
+
+        .pdf-preview-document .quote-preview__back-link {
+            display: none !important;
+        }
+
+{{ inline_css|safe }}
+
+        @page {
+            size: A4 portrait;
+            margin: 0 !important;
+        }
+
+        .pdf-preview-document a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .pdf-preview-document a[href]::after {
+            content: none !important;
+        }
+
+        .pdf-preview-document .quote-preview-sheet {
+            border-radius: 18px !important;
+            overflow: visible !important;
+            box-shadow: none !important;
+        }
+
+        .pdf-preview-document .quote-preview-hero {
+            gap: 1rem;
+            padding: 1.15rem 1.2rem;
+        }
+
+        .pdf-preview-document .quote-preview-hero__mark {
+            width: 2.6rem;
+            height: 2.6rem;
+            border-radius: 0.85rem;
+        }
+
+        .pdf-preview-document .quote-preview-hero__brand h2 {
+            font-size: 1.3rem;
+        }
+
+        .pdf-preview-document .quote-preview-hero__badge {
+            min-width: 126px;
+            padding: 0.75rem 0.8rem;
+            border-radius: 0.85rem;
+        }
+
+        .pdf-preview-document .quote-preview-hero__badge strong {
+            font-size: 1.3rem;
+        }
+
+        .pdf-preview-document .quote-preview-meta {
+            gap: 0.75rem;
+            padding: 0.9rem 1.2rem 0;
+        }
+
+        .pdf-preview-document .quote-preview-section {
+            padding: 1rem 1.2rem;
+        }
+
+        .pdf-preview-document .quote-preview-section__heading {
+            gap: 0.55rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .pdf-preview-document .quote-preview-section__heading h3,
+        .pdf-preview-document .quote-preview-section__title-only {
+            font-size: 0.95rem;
+        }
+
+        .pdf-preview-document .quote-preview-section__icon {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+
+        .pdf-preview-document .quote-preview-grid,
+        .pdf-preview-document .quote-preview-notes-grid,
+        .pdf-preview-document .quote-preview-values,
+        .pdf-preview-document .quote-preview-price-stack,
+        .pdf-preview-document .quote-preview-list {
+            gap: 0.7rem;
+        }
+
+        .pdf-preview-document .quote-preview-route {
+            gap: 0.95rem;
+            padding: 0.95rem;
+            margin-bottom: 0.8rem;
+            border-radius: 1rem;
+        }
+
+        .pdf-preview-document .quote-preview-route__divider::before,
+        .pdf-preview-document .quote-preview-route__divider::after {
+            width: 28px;
+        }
+
+        .pdf-preview-document .quote-preview-info-card,
+        .pdf-preview-document .quote-preview-note-card,
+        .pdf-preview-document .quote-preview-value-row,
+        .pdf-preview-document .quote-preview-alert {
+            padding: 0.8rem 0.9rem;
+            border-radius: 0.85rem;
+        }
+
+        .pdf-preview-document .quote-preview-price-highlight {
+            padding: 0.95rem 1rem;
+            border-radius: 0.9rem;
+        }
+
+        .pdf-preview-document .quote-preview-price-highlight strong {
+            font-size: 1.6rem;
+        }
+
+        .pdf-preview-document .quote-preview-contact {
+            gap: 0.75rem;
+            padding: 0.9rem 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="pdf-preview-document">
+        <div class="quote-preview-page quote-preview-page--print-mode">
+            {% include "admin_custom/partials/cotacao_voo_preview_sheet.html" %}
+        </div>
+    </div>
+</body>
+</html>

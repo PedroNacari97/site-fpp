@@ -47,10 +47,78 @@
           </div>
 
           <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.responsavel_nome.id_for_label }}">{{ form.responsavel_nome.label }}</label>
+            {{ form.responsavel_nome }}
+            <p class="superadmin-helper">Se vazio, usaremos o nome do admin inicial como referencia.</p>
+            {% for error in form.responsavel_nome.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
             <label class="superadmin-label" for="{{ form.limite_colaboradores.id_for_label }}">{{ form.limite_colaboradores.label }}</label>
             {{ form.limite_colaboradores }}
             <p class="superadmin-helper">Limite maximo de operadores que essa empresa podera criar.</p>
             {% for error in form.limite_colaboradores.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="superadmin-card__head" style="margin-top: 26px;">
+          <div>
+            <p class="superadmin-card__eyebrow">Contato</p>
+            <h3 class="superadmin-card__title" style="font-size: 24px;">Dados institucionais</h3>
+          </div>
+        </div>
+
+        <div class="superadmin-form__grid">
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.email_contato.id_for_label }}">{{ form.email_contato.label }}</label>
+            {{ form.email_contato }}
+            <p class="superadmin-helper">Se vazio, usaremos o e-mail do admin inicial.</p>
+            {% for error in form.email_contato.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.telefone_contato.id_for_label }}">{{ form.telefone_contato.label }}</label>
+            {{ form.telefone_contato }}
+            {% for error in form.telefone_contato.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.whatsapp.id_for_label }}">{{ form.whatsapp.label }}</label>
+            {{ form.whatsapp }}
+            {% for error in form.whatsapp.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.website.id_for_label }}">{{ form.website.label }}</label>
+            {{ form.website }}
+            {% for error in form.website.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.cidade.id_for_label }}">{{ form.cidade.label }}</label>
+            {{ form.cidade }}
+            {% for error in form.cidade.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.estado.id_for_label }}">{{ form.estado.label }}</label>
+            {{ form.estado }}
+            {% for error in form.estado.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="superadmin-form__stack" style="margin-top: 18px;">
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.endereco.id_for_label }}">{{ form.endereco.label }}</label>
+            {{ form.endereco }}
+            {% for error in form.endereco.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.descricao_rodape.id_for_label }}">{{ form.descricao_rodape.label }}</label>
+            {{ form.descricao_rodape }}
+            <p class="superadmin-helper">Esse texto podera ser usado em visualizacoes, PDFs e comunicacoes da empresa.</p>
+            {% for error in form.descricao_rodape.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
           </div>
         </div>
 

@@ -1,8 +1,8 @@
 from django.urls import path
+from django.views.generic import RedirectView
 
 from .views import (
     cliente_create,
-    custom_login,
     operator_list,
     password_help,
     user_create,
@@ -12,7 +12,7 @@ from .views import (
 )
 
 urlpatterns = [
-    path("login/", custom_login, name="login_custom"),
+    path("login/", RedirectView.as_view(pattern_name="login_custom", permanent=False), name="login_legacy"),
     path("login/ajuda-senha/", password_help, name="password_help"),
     path("usuarios/", user_list, name="user_list"),
     path("usuarios/operadores/", operator_list, name="operator_list"),

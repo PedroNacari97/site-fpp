@@ -87,7 +87,7 @@
               <td>R$ {{ e.lucro|default:0|floatformat:2 }}</td>
               <td>
                 <div class="emissions-page__row-actions">
-                  <a href="{% url 'admin_emissao_pdf' e.id %}" class="emissions-page__row-button">PDF</a>
+                  <a href="{% url 'admin_emissao_detalhe' e.id %}" class="emissions-page__row-button">Visualizar Emissao</a>
                   <a href="{% url 'admin_editar_emissao' e.id %}" class="emissions-page__row-button">Editar</a>
                 </div>
               </td>

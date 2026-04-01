@@ -33,7 +33,6 @@ from ..models import (
     Escala,
     CompanhiaAerea,
 )
-from services.pdf_service import emissao_pdf_response
 import csv
 import json
 from datetime import timedelta
@@ -52,18 +51,35 @@ from gestao.services.clientes_programas import (
     build_empresa_programas_map,
 )
 from gestao.services.cpf_limite import get_cpf_control_data, registrar_uso_cpfs, validar_limite_cpfs
-from gestao.utils import normalize_cpf, parse_br_date, validate_cpf_digits
+from gestao.utils import parse_br_date, validate_cpf_digits
 from gestao.services.dashboard import (
     _current_management_filters,
     _management_filter_list,
     _management_filter_value,
     build_operational_dashboard_context,
 )
+from gestao.services.emissao_preview import build_emissao_preview_context
+from services.pdf_service import emissao_pdf_response
 
 
 
 
-def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=None, passageiros_json="[]", escalas_por_tipo=None, aeroportos=None, menu_ativo="emissoes"):
+def _get_emissao_for_preview(emissao_id):
+    return get_object_or_404(
+        EmissaoPassagem.objects.select_related(
+            "cliente__usuario",
+            "conta_administrada",
+            "programa",
+            "emissor_parceiro",
+            "companhia_aerea",
+            "aeroporto_partida",
+            "aeroporto_destino",
+        ).prefetch_related("passageiros", "escalas__aeroporto"),
+        id=emissao_id,
+    )
+
+
+def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=None, passageiros_json="[]", escalas_por_tipo=None, aeroportos=None, menu_ativo="emissoes", cotacao_conversion=None):
     escalas_por_tipo = escalas_por_tipo or {"ida": [], "volta": []}
     aeroportos = aeroportos or list(Aeroporto.objects.values("id", "nome", "sigla"))
     cliente_programas = build_clientes_programas_map(empresa_id=getattr(empresa, "id", None))
@@ -132,6 +148,8 @@ def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=
         'passageiros_frequentes_json': json.dumps(passageiros_frequentes),
         'clientes_data_json': json.dumps(clientes_data),
         'cpf_controle_json': json.dumps(controle or {}),
+        'cotacao_conversion': cotacao_conversion,
+        'cotacao_conversion_id': cotacao_conversion["id"] if cotacao_conversion else None,
         'menu_ativo': menu_ativo,
     }
 
@@ -190,7 +208,7 @@ def _format_escalas(escalas_queryset):
 def _serialize_passageiros_list(passageiros):
     for row in passageiros:
         for field in ("passaporte_validade", "data_nascimento"):
-            if row.get(field):
+            if row.get(field) and hasattr(row[field], "isoformat"):
                 row[field] = row[field].isoformat()
     return passageiros
 
@@ -283,6 +301,127 @@ def _validate_passageiros(passageiros):
         passageiro["rg"] = (passageiro.get("rg") or "").strip()
         passageiro["observacoes"] = (passageiro.get("observacoes") or "").strip()
     return errors
+
+
+def _build_passageiros_json_for_context(post_data):
+    return json.dumps(_serialize_passageiros_list(_parse_passageiros(post_data)))
+
+
+def _resolve_cotacao_for_conversion(request):
+    cotacao_id = request.GET.get("cotacao_id") or request.POST.get("cotacao_id")
+    if not cotacao_id:
+        return None
+    return get_object_or_404(
+        CotacaoVoo.objects.select_related(
+            "cliente__usuario",
+            "conta_administrada",
+            "programa",
+            "origem",
+            "destino",
+            "emissao",
+        ),
+        id=cotacao_id,
+    )
+
+
+def _build_emissao_initial_from_cotacao(cotacao):
+    companhia = None
+    companhia_nome = (cotacao.companhia_aerea or "").strip()
+    if companhia_nome:
+        companhia = CompanhiaAerea.objects.filter(nome__iexact=companhia_nome).first()
+
+    detalhes_parts = []
+    observacoes = (cotacao.observacoes or "").strip()
+    if observacoes:
+        detalhes_parts.append(observacoes)
+    classe = (cotacao.classe or "").strip()
+    if classe:
+        detalhes_parts.append(f"Classe cotada: {classe}")
+
+    valor_referencia_pontos = None
+    if cotacao.milhas and cotacao.valor_milheiro not in (None, ""):
+        valor_referencia_pontos = calcular_custo_milhas(
+            cotacao.milhas,
+            cotacao.valor_milheiro,
+        )
+
+    return {
+        "tipo_emissao": "administrada" if cotacao.conta_administrada_id else "cliente",
+        "cliente": cotacao.cliente_id,
+        "conta_administrada": cotacao.conta_administrada_id,
+        "programa": cotacao.programa_id,
+        "companhia_aerea": companhia.id if companhia else "",
+        "aeroporto_partida": cotacao.origem_id,
+        "aeroporto_destino": cotacao.destino_id,
+        "data_ida": cotacao.data_ida.strftime("%Y-%m-%dT%H:%M") if cotacao.data_ida else "",
+        "data_volta": cotacao.data_volta.strftime("%Y-%m-%dT%H:%M") if cotacao.data_volta else "",
+        "qtd_adultos": cotacao.qtd_passageiros or 1,
+        "qtd_criancas": 0,
+        "qtd_bebes": 0,
+        "valor_referencia": cotacao.valor_passagem,
+        "valor_taxas": cotacao.taxas,
+        "pontos_utilizados": cotacao.milhas,
+        "valor_referencia_pontos": valor_referencia_pontos,
+        "economia_obtida": cotacao.economia,
+        "detalhes": "\n\n".join(detalhes_parts),
+        "valor_milheiro_parceiro": cotacao.valor_milheiro,
+        "valor_venda_final": cotacao.valor_vista,
+        "valor_total_final": cotacao.valor_parcelado,
+        "milhas_do_cliente": not bool(cotacao.conta_administrada_id),
+    }
+
+
+def _build_cotacao_conversion_context(cotacao):
+    companhia_nome = (cotacao.companhia_aerea or "").strip()
+    companhia_resolvida = False
+    if companhia_nome:
+        companhia_resolvida = CompanhiaAerea.objects.filter(nome__iexact=companhia_nome).exists()
+
+    faltantes = [
+        "Localizador da reserva.",
+        f"Distribuicao dos {cotacao.qtd_passageiros or 0} passageiro(s) entre adultos, criancas e bebes.",
+        "Dados completos dos passageiros que vao viajar.",
+    ]
+    if companhia_nome and not companhia_resolvida:
+        faltantes.insert(0, f'Selecionar a companhia aerea cadastrada correspondente a "{companhia_nome}".')
+    elif not companhia_nome:
+        faltantes.insert(0, "Selecionar a companhia aerea da emissao.")
+
+    return {
+        "id": cotacao.id,
+        "cliente_nome": (
+            cotacao.cliente.usuario.get_full_name()
+            or cotacao.cliente.usuario.username
+            or str(cotacao.cliente)
+        ),
+        "trecho": f"{cotacao.origem or '-'} -> {cotacao.destino or '-'}",
+        "faltantes": faltantes,
+    }
+
+
+def _render_nova_emissao_form(
+    request,
+    *,
+    form,
+    empresa,
+    cliente_id=None,
+    passageiros_json="[]",
+    escalas_por_tipo=None,
+    cotacao_conversion=None,
+):
+    return render(
+        request,
+        "admin_custom/form_emissao_passagem.html",
+        _build_emissao_template_context(
+            form=form,
+            empresa=empresa,
+            cliente_id=cliente_id,
+            emissoes=EmissaoPassagem.objects.all().order_by("-data_ida"),
+            passageiros_json=passageiros_json,
+            escalas_por_tipo=escalas_por_tipo,
+            cotacao_conversion=cotacao_conversion,
+        ),
+    )
 
 
 # --- EMISSÕES ---
@@ -396,11 +535,26 @@ def nova_emissao(request):
         return permission_denied
     cliente_id = request.GET.get("cliente_id")
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
+    cotacao = _resolve_cotacao_for_conversion(request)
+    cotacao_conversion = _build_cotacao_conversion_context(cotacao) if cotacao else None
+    if cotacao and cotacao.status != "emissao":
+        messages.error(
+            request,
+            "Mude a cotacao para Emitido antes de concluir a emissao operada.",
+        )
+        return redirect("admin_editar_cotacao_voo", cotacao.id)
+    if cotacao and cotacao.emissao_id:
+        messages.info(
+            request,
+            "Esta cotacao ja possui uma emissao vinculada. Abra a emissao para editar os dados finais.",
+        )
+        return redirect("admin_editar_emissao", cotacao.emissao_id)
     escalas_por_tipo = {"ida": [], "volta": []}
     if request.method == "POST":
         form = EmissaoPassagemForm(request.POST, empresa=empresa)
         escalas_payload = _build_escalas_from_request(request)
         escalas_por_tipo = _format_escalas(escalas_payload)
+        passageiros_json = _build_passageiros_json_for_context(request.POST)
         if form.is_valid():
             emissao = form.save(commit=False)
             if emissao.cliente and not emissao.cliente.ativo:
@@ -495,18 +649,14 @@ def nova_emissao(request):
                             messages.error(
                                 request, "Não foi possível salvar a emissão. Inconsistência no número de passageiros."
                             )
-                            emissoes = EmissaoPassagem.objects.all().order_by("-data_ida")
-                            return render(
+                            return _render_nova_emissao_form(
                                 request,
-                                "admin_custom/form_emissao_passagem.html",
-                                _build_emissao_template_context(
-                                    form=form,
-                                    empresa=empresa,
-                                    cliente_id=cliente_id,
-                                    emissoes=emissoes,
-                                    passageiros_json="[]",
-                                    escalas_por_tipo=escalas_por_tipo,
-                                ),
+                                form=form,
+                                empresa=empresa,
+                                cliente_id=cliente_id,
+                                passageiros_json=passageiros_json,
+                                escalas_por_tipo=escalas_por_tipo,
+                                cotacao_conversion=cotacao_conversion,
                             )
 
                         registrar_uso_cpfs(conta, cpfs, emissao.data_ida.date())
@@ -531,6 +681,10 @@ def nova_emissao(request):
                                 emissao.pontos_utilizados or 0,
                                 emissao.valor_referencia_pontos or Decimal("0"),
                             )
+                        if cotacao:
+                            cotacao.status = "emissao"
+                            cotacao.emissao = emissao
+                            cotacao.save(update_fields=["status", "emissao"])
                         messages.success(request, "Emissão salva com sucesso.")
                         return redirect("admin_emissoes")
             messages.error(
@@ -542,21 +696,32 @@ def nova_emissao(request):
                 request,
                 "Não foi possível salvar a emissão. Corrija os campos destacados e tente novamente.",
             )
-    else:
-        initial = {"cliente": cliente_id} if cliente_id else {}
-        form = EmissaoPassagemForm(initial=initial, empresa=empresa)
-    emissoes = EmissaoPassagem.objects.all().order_by("-data_ida")
-    return render(
-        request,
-        "admin_custom/form_emissao_passagem.html",
-        _build_emissao_template_context(
+        return _render_nova_emissao_form(
+            request,
             form=form,
             empresa=empresa,
             cliente_id=cliente_id,
-            emissoes=emissoes,
-            passageiros_json="[]",
+            passageiros_json=passageiros_json,
             escalas_por_tipo=escalas_por_tipo,
-        ),
+            cotacao_conversion=cotacao_conversion,
+        )
+    else:
+        if cotacao:
+            initial = _build_emissao_initial_from_cotacao(cotacao)
+            escalas_por_tipo = _format_escalas(
+                cotacao.escalas.values("aeroporto_id", "duracao", "cidade", "tipo", "ordem")
+            )
+        else:
+            initial = {"cliente": cliente_id} if cliente_id else {}
+        form = EmissaoPassagemForm(initial=initial, empresa=empresa)
+    return _render_nova_emissao_form(
+        request,
+        form=form,
+        empresa=empresa,
+        cliente_id=cliente_id,
+        passageiros_json="[]",
+        escalas_por_tipo=escalas_por_tipo,
+        cotacao_conversion=cotacao_conversion,
     )
 
 
@@ -855,26 +1020,25 @@ def emissao_pdf(request, emissao_id):
     """Download da emissão em formato PDF para o painel administrativo."""
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
-    emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
-    return emissao_pdf_response(emissao)
+    emissao = _get_emissao_for_preview(emissao_id)
+    return emissao_pdf_response(
+        emissao,
+        filename_prefix="emissao_preview",
+        as_attachment=False,
+    )
 
 
 @login_required
 def emissao_detalhe(request, emissao_id):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
-    emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
-    passageiros = list(
-        emissao.passageiros.all().order_by("categoria", "nome")
-    )
-    cpfs_consumidos = len({normalize_cpf(p.cpf) for p in passageiros if p.cpf})
+    emissao = _get_emissao_for_preview(emissao_id)
     return render(
         request,
-        "admin_custom/emissao_detalhe.html",
+        "admin_custom/emissao_preview.html",
         {
             "emissao": emissao,
-            "passageiros": passageiros,
-            "cpfs_consumidos": cpfs_consumidos,
+            "preview": build_emissao_preview_context(emissao),
             "menu_ativo": "emissoes",
         },
     )

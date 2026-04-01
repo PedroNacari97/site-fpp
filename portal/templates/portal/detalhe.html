@@ -1,0 +1,138 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ noticia.titulo }} | NC Fly News{% endblock %}
+{% block content %}
+<div class="news-detail-frame">
+    <section class="news-backbar">
+        <a href="{% url 'portal_home' %}" class="news-backbar__link">&larr; Voltar para notícias</a>
+    </section>
+
+    <article class="news-detail-shell">
+        <nav class="news-breadcrumbs">
+            <a href="{% url 'portal_home' %}">Home</a>
+            <span>/</span>
+            {% if categoria_url %}
+            <a href="{{ categoria_url }}">{{ breadcrumbs_categoria|portal_text }}</a>
+            <span>/</span>
+            {% endif %}
+            {% if noticia.topico and topico_url %}
+            <a href="{{ topico_url }}">{{ noticia.topico|portal_text }}</a>
+            <span>/</span>
+            {% endif %}
+            <span>Área da notícia</span>
+        </nav>
+
+        <header class="news-detail-header">
+            <div class="news-detail-header__chips">
+                <span class="news-pill">{{ breadcrumbs_categoria|portal_text }}</span>
+                {% if noticia.topico %}
+                <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
+                {% endif %}
+                <span class="news-read-time">{{ tempo_leitura_minutos }} min de leitura</span>
+            </div>
+            {% if noticia.tags_exibicao %}
+            <div class="news-detail-tags">
+                {% for tag in noticia.tags_exibicao %}
+                <span class="news-pill news-pill--muted">{{ tag|portal_text }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <h1>{{ noticia.titulo|portal_text }}</h1>
+            <div class="news-detail-header__meta">
+                <div class="news-detail-author">
+                    <span class="news-detail-author__avatar">N</span>
+                    <div>
+                        <strong>Redação NC Fly</strong>
+                        <small>{{ noticia.publicada_em|br_datetime_short }}</small>
+                    </div>
+                </div>
+                <div class="news-detail-stats">
+                    <span>{{ visualizacoes_total }}</span>
+                    <span>{{ tempo_leitura_minutos }} min</span>
+                </div>
+            </div>
+        </header>
+
+        {% if noticia.imagem_exibicao %}
+        <figure class="news-detail-cover">
+            <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
+        </figure>
+        {% endif %}
+
+        <div class="news-detail-layout">
+            <div class="news-detail-main">
+                <section class="news-detail-summary">
+                    <h2>Resumo da promoção</h2>
+                    <p>{{ noticia.resumo|portal_text }}</p>
+                </section>
+
+                <section class="news-detail-content">
+                    {{ noticia.conteudo|portal_text|linebreaks }}
+                </section>
+
+                <section class="news-detail-tip">
+                    <h3>Dica de ouro</h3>
+                    <p>Se a oferta fizer sentido para o seu perfil, verifique as regras, a origem da promoção e o prazo final antes de emitir. Em promoções de milhas, estoque e conversão podem mudar rápido.</p>
+                </section>
+
+                {% if offer_cta.url %}
+                <section class="news-detail-offer">
+                    <div>
+                        <h3>Link útil da oferta</h3>
+                        <p>Encontramos um link relevante dentro do artigo de referência e o destacamos aqui para facilitar o acesso direto.</p>
+                    </div>
+                    <a href="{{ offer_cta.url }}" target="_blank" rel="noopener noreferrer" class="portal-button portal-button--primary">
+                        {{ offer_cta.label|default:"Ir para a oferta"|portal_text }}
+                    </a>
+                </section>
+                {% endif %}
+
+                <section class="news-detail-share">
+                    <span>Compartilhe esta notícia:</span>
+                    <div class="news-detail-share__actions">
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" rel="noopener noreferrer">f</a>
+                        <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ noticia.titulo|urlencode }}" target="_blank" rel="noopener noreferrer">x</a>
+                        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri }}" target="_blank" rel="noopener noreferrer">in</a>
+                    </div>
+                </section>
+
+                <section class="news-detail-comments">
+                    <div class="news-detail-comments__header">
+                        <span>Comentários ({{ comentarios_total }})</span>
+                    </div>
+                    <div class="news-detail-comments__box">
+                        <p>Faça login para comentar e participar da discussão.</p>
+                        <a href="{% url 'login_custom' %}" class="portal-button portal-button--primary portal-button--sm">Fazer login</a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </article>
+
+    {% if relacionadas %}
+    <section class="news-related">
+        <header class="news-related__header">
+            <h2>Notícias relacionadas</h2>
+        </header>
+        <div class="news-related__grid">
+            {% for item in relacionadas %}
+            <article class="news-card news-card--related">
+                {% if item.imagem_exibicao %}
+                <a href="{{ item.get_absolute_url }}" class="news-card__image">
+                    <img src="{{ item.imagem_exibicao }}" alt="{{ item.titulo }}">
+                </a>
+                {% endif %}
+                <div class="news-card__body">
+                    <span class="news-pill news-pill--muted">{{ item.categoria|default:"Milhas e Pontos"|portal_text }}</span>
+                    {% if item.topico %}
+                    <span class="news-pill news-pill--topic">{{ item.topico|portal_text }}</span>
+                    {% endif %}
+                    <h3><a href="{{ item.get_absolute_url }}">{{ item.titulo|portal_text }}</a></h3>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

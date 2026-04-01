@@ -18,16 +18,20 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
+from django.views.generic import RedirectView
 from core.views import healthcheck
-from accounts.views import superadmin_login
+from accounts.views import custom_login, superadmin_login
 
 urlpatterns = [
     path("health/", healthcheck, name="healthcheck"),
+    path("login/", custom_login, name="login_custom"),
     path("superadmin/login/", superadmin_login, name="superadmin_login"),
-    path("", include("painel_cliente.urls")),
+    path("painel/", include("painel_cliente.urls")),
     path("django/admin/", admin.site.urls),
     path("adm/", include("gestao.urls_admin")),
     path("accounts/", include("accounts.urls")),
+    path("home/", include("portal.urls")),
+    path("", RedirectView.as_view(pattern_name="portal_home", permanent=False)),
 ]
 
 if settings.DEBUG:

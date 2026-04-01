@@ -1,0 +1,30 @@
+.company-profile-page .superadmin-card__title {
+  font-size: 28px;
+}
+
+.company-profile-chip {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-surface-muted) 8%);
+}
+
+.company-profile-chip strong {
+  color: var(--color-heading);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.company-profile-chip small {
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .company-profile-page .superadmin-card__title {
+    font-size: 24px;
+  }
+}
