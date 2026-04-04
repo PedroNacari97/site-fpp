@@ -563,6 +563,31 @@ def _extract_chat_id(payload):
     return (msg.get("chat") or {}).get("id")
 
 
+@login_required
+def admin_configurar_telegram_webhook(request):
+    if not request.user.is_superuser:
+        return render(request, "sem_permissao.html", status=403)
+
+    from django.conf import settings
+    from ..services.telegram_alertas import telegram_set_webhook
+
+    base_url = (getattr(settings, "SITE_BASE_URL", "") or request.build_absolute_uri("/").rstrip("/"))
+    webhook_url = f"{base_url}/integracoes/telegram/alertas/webhook/"
+
+    if request.method == "POST":
+        try:
+            telegram_set_webhook(webhook_url)
+            messages.success(request, f"Webhook configurado com sucesso: {webhook_url}")
+        except Exception as exc:
+            messages.error(request, f"Erro ao configurar webhook: {exc}")
+        return redirect("admin_configurar_telegram_webhook")
+
+    return render(request, "admin_custom/telegram_webhook.html", {
+        "webhook_url": webhook_url,
+        "menu_ativo": "alertas",
+    })
+
+
 @csrf_exempt
 def telegram_alertas_webhook(request):
     if request.method != "POST":

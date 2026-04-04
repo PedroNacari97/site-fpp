@@ -1,0 +1,43 @@
+{% extends "admin_custom/base_admin.html" %}
+
+{% block title %}Configurar Webhook Telegram{% endblock %}
+{% block header_title %}Telegram — Configurar Webhook{% endblock %}
+{% block header_subtitle %}<span>Registra o endpoint do bot no Telegram para receber alertas e comandos.</span>{% endblock %}
+
+{% block content %}
+<div style="max-width:600px; margin: 2rem auto; padding: 0 1rem;">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding: 1rem; border-radius: 8px; margin-bottom: 1rem;
+                background: {% if message.tags == 'error' %}#fee2e2{% else %}#dcfce7{% endif %};
+                color: {% if message.tags == 'error' %}#991b1b{% else %}#166534{% endif %};">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div style="background: #1e1e2e; border-radius: 12px; padding: 2rem; color: #cdd6f4;">
+        <h2 style="margin: 0 0 0.5rem; font-size: 1.2rem;">Endpoint atual</h2>
+        <code style="display:block; background:#181825; padding: 0.75rem 1rem; border-radius:6px;
+            margin: 0.75rem 0 1.5rem; word-break: break-all; color: #a6e3a1; font-size: 0.9rem;">
+            {{ webhook_url }}
+        </code>
+
+        <p style="color: #bac2de; margin-bottom: 1.5rem; font-size: 0.95rem;">
+            Clique no botão abaixo para registrar este endpoint no Telegram.
+            Após configurado, o bot vai receber alertas de passagem e o comando
+            <strong>atualizar N</strong> para sincronizar notícias.
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit"
+                style="background: #89b4fa; color: #1e1e2e; border: none; padding: 0.75rem 2rem;
+                    border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer;">
+                Configurar Webhook
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
