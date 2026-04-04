@@ -1,7 +1,5 @@
 import hashlib
 import json
-
-import requests
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
@@ -145,6 +143,8 @@ def process_telegram_alert_update(update):
 
 
 def telegram_get_updates(limit=20, timeout=0):
+    import requests
+
     response = requests.get(
         build_telegram_api_url("getUpdates"),
         params={
@@ -163,6 +163,8 @@ def telegram_get_updates(limit=20, timeout=0):
 
 
 def telegram_set_webhook(webhook_url):
+    import requests
+
     config = get_telegram_alertas_config()
     data = {
         "url": webhook_url,

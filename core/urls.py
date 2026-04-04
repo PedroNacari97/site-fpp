@@ -22,7 +22,7 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from core.views import healthcheck
 from accounts.views import custom_login, superadmin_login
-from gestao.views import telegram_alertas_webhook
+from gestao.views.alertas import telegram_alertas_webhook
 from portal import views as portal_views
 from portal.sitemaps import AlertSitemap, CategorySitemap, HomeSitemap, NewsSitemap, StaticPageSitemap
 
