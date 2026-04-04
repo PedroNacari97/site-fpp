@@ -921,7 +921,7 @@ def home_publica(request):
     if is_searching:
         grade = limited_noticias[:12]
     else:
-        grade = limited_noticias[4:10] if len(limited_noticias) > 4 else limited_noticias[1:7]
+        grade = limited_noticias[1:7]
 
     # Agrupar noticias por categoria para a home
     noticias_por_categoria = defaultdict(list)

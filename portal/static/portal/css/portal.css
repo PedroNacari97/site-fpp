@@ -29,6 +29,7 @@ html,
 body {
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
 }
 
 body.portal-body {
@@ -3555,6 +3556,10 @@ img {
   .portal-footer__newsletter p {
     max-width: none;
     font-size: 12px;
+  }
+
+  .portal-footer__brand-block--home {
+    display: none;
   }
 
   .portal-footer__newsletter-form,
