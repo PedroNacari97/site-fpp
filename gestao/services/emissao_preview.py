@@ -6,6 +6,7 @@ from gestao.services.empresa_contact import (
     build_empresa_contact_context,
     get_empresa_from_operational_record,
 )
+from gestao.services.acompanhamento_passagem import build_acompanhamento_summary
 
 
 def format_currency_brl(value):
@@ -48,6 +49,27 @@ def _format_airport_label(aeroporto, *, fallback):
     return f"{cidade} ({sigla})"
 
 
+def _resolve_company_text(empresa, field_name, fallback):
+    value = getattr(empresa, field_name, "") if empresa else ""
+    value = (value or "").strip()
+    return value or fallback
+
+
+def _resolve_company_text_list(empresa, field_name, fallback):
+    items = empresa.get_text_list(field_name) if empresa else []
+    return items or fallback
+
+
+def _resolve_cta_label(empresa, companhia_nome):
+    value = _resolve_company_text(empresa, "emissao_cta_companhia", "")
+    if not value:
+        return f"Acessar Minhas Viagens - {companhia_nome}"
+    try:
+        return value.format(companhia=companhia_nome, companhia_nome=companhia_nome)
+    except Exception:
+        return value
+
+
 def _get_status_context(emissao):
     if emissao.localizador:
         return {
@@ -86,7 +108,7 @@ def _build_passageiros_context(emissao):
     return passageiros
 
 
-def _build_flight_context(emissao):
+def _build_flight_context(emissao, empresa):
     companhia = getattr(emissao, "companhia_aerea", None)
     companhia_nome = getattr(companhia, "nome", None) or "Companhia a confirmar"
     companhia_url = getattr(companhia, "site_url", None) or ""
@@ -108,7 +130,7 @@ def _build_flight_context(emissao):
             "destino_hora": "--:--",
             "trajeto_hint": "Voo direto" if not ida_escalas else f"{len(ida_escalas)} escala(s)",
             "cta_url": companhia_url,
-            "cta_label": f"Acessar Minhas Viagens - {companhia_nome}",
+            "cta_label": _resolve_cta_label(empresa, companhia_nome),
             "escalas": [
                 {
                     "label": _format_airport_label(escala.aeroporto, fallback="Escala"),
@@ -135,7 +157,7 @@ def _build_flight_context(emissao):
                 "destino_hora": "--:--",
                 "trajeto_hint": "Voo direto" if not volta_escalas else f"{len(volta_escalas)} escala(s)",
                 "cta_url": companhia_url,
-                "cta_label": f"Acessar Minhas Viagens - {companhia_nome}",
+                "cta_label": _resolve_cta_label(empresa, companhia_nome),
                 "escalas": [
                     {
                         "label": _format_airport_label(escala.aeroporto, fallback="Escala"),
@@ -149,7 +171,7 @@ def _build_flight_context(emissao):
     return voos
 
 
-def _build_valores_context(emissao):
+def _build_valores_context(emissao, empresa):
     total = (
         emissao.valor_total_final
         or emissao.valor_venda_final
@@ -170,25 +192,33 @@ def _build_valores_context(emissao):
         "items": [
             {
                 "label": "Taxas de embarque",
-                "hint": "Impostos e taxas aeroportuarias",
+                "hint": _resolve_company_text(
+                    empresa,
+                    "emissao_hint_taxa_embarque",
+                    "Impostos e taxas aeroportuarias",
+                ),
                 "value": format_currency_brl(taxas),
             },
             {
                 "label": "Taxa de servico",
-                "hint": "Consultoria e emissao",
+                "hint": _resolve_company_text(
+                    empresa,
+                    "emissao_hint_taxa_servico",
+                    "Consultoria e emissao",
+                ),
                 "value": format_currency_brl(taxa_servico),
             },
         ],
         "total_value": format_currency_brl(total),
-        "total_hint": (
-            format_currency_brl(emissao.valor_venda_final)
-            if emissao.valor_venda_final not in (None, "")
-            else "Valor final consolidado da emissao"
+        "total_hint": _resolve_company_text(
+            empresa,
+            "emissao_hint_valor_total",
+            "Valor final consolidado da emissao",
         ),
     }
 
 
-def _build_bagagem_context(emissao):
+def _build_bagagem_context(emissao, empresa):
     bagagem_mao = getattr(emissao, "get_bagagem_mao_display", lambda: "")() or "Sob consulta"
     bagagem_despachada = getattr(emissao, "get_bagagem_despachada_display", lambda: "")() or "Sob consulta"
 
@@ -196,19 +226,23 @@ def _build_bagagem_context(emissao):
         {
             "label": "Bagagem de Mao",
             "value": bagagem_mao,
-            "hint": (
+            "hint": _resolve_company_text(
+                empresa,
+                "emissao_bagagem_mao_hint",
                 "Franquia definida na emissao."
                 if getattr(emissao, "bagagem_mao", "")
-                else "Confirmar regra da tarifa emitida."
+                else "Confirmar regra da tarifa emitida.",
             ),
         },
         {
             "label": "Bagagem Despachada",
             "value": bagagem_despachada,
-            "hint": (
+            "hint": _resolve_company_text(
+                empresa,
+                "emissao_bagagem_despachada_hint",
                 "Franquia validada para a tarifa emitida."
                 if getattr(emissao, "bagagem_despachada", "")
-                else "Validar regra da tarifa emitida."
+                else "Validar regra da tarifa emitida.",
             ),
         },
     ]
@@ -218,14 +252,33 @@ def build_emissao_preview_context(emissao):
     status = _get_status_context(emissao)
     empresa = get_empresa_from_operational_record(emissao)
     localizador = emissao.localizador or "A confirmar"
+    acompanhamento = build_acompanhamento_summary(getattr(emissao, "acompanhamento", None))
+    observacao_confirmada = _resolve_company_text(
+        empresa,
+        "emissao_observacao_confirmada",
+        "Emissao confirmada. Bilhetes enviados por e-mail. Recomendamos check-in online 24h antes do voo.",
+    )
+    observacao_pendente = _resolve_company_text(
+        empresa,
+        "emissao_observacao_pendente",
+        "Emissao em analise. Assim que o bilhete for confirmado, os detalhes finais serao enviados.",
+    )
     observacao = (
         emissao.detalhes.strip()
         if emissao.detalhes and emissao.detalhes.strip()
-        else (
-            "Emissao confirmada. Bilhetes enviados por e-mail. Recomendamos check-in online 24h antes do voo."
-            if emissao.localizador
-            else "Emissao em analise. Assim que o bilhete for confirmado, os detalhes finais serao enviados."
-        )
+        else (observacao_confirmada if emissao.localizador else observacao_pendente)
+    )
+    orientacoes = _resolve_company_text_list(
+        empresa,
+        "emissao_orientacoes",
+        [
+            "Chegue ao aeroporto com 3 horas de antecedencia para voos internacionais.",
+            "Faca o check-in online entre 48h e 1h antes do horario do voo.",
+            "Apresente documento original com foto e passaporte valido, quando aplicavel.",
+            "Verifique as restricoes de bagagem e itens proibidos antes do embarque.",
+            "Em caso de duvidas ou necessidade de alteracao, entre em contato com nossa equipe.",
+            f"Guarde o localizador ({localizador}) para consultas e alteracoes.",
+        ],
     )
 
     return {
@@ -235,17 +288,11 @@ def build_emissao_preview_context(emissao):
         "localizador_display": localizador,
         "pnr_display": localizador,
         "passageiros": _build_passageiros_context(emissao),
-        "voos": _build_flight_context(emissao),
-        "bagagem_items": _build_bagagem_context(emissao),
-        "valores": _build_valores_context(emissao),
+        "voos": _build_flight_context(emissao, empresa),
+        "bagagem_items": _build_bagagem_context(emissao, empresa),
+        "valores": _build_valores_context(emissao, empresa),
+        "acompanhamento": acompanhamento,
         "empresa_contato": build_empresa_contact_context(empresa),
         "observacao_importante": observacao,
-        "orientacoes": [
-            "Chegue ao aeroporto com 3 horas de antecedencia para voos internacionais.",
-            "Faca o check-in online entre 48h e 1h antes do horario do voo.",
-            "Apresente documento original com foto e passaporte valido, quando aplicavel.",
-            "Verifique as restricoes de bagagem e itens proibidos antes do embarque.",
-            "Em caso de duvidas ou necessidade de alteracao, entre em contato com nossa equipe.",
-            f"Guarde o localizador ({localizador}) para consultas e alteracoes.",
-        ],
+        "orientacoes": orientacoes,
     }

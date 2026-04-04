@@ -12,7 +12,7 @@ input[type="submit"] {
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary) 0%, hsl(var(--accent)) 100%);
   color: var(--color-surface);
   text-decoration: none;
 }
@@ -51,10 +51,10 @@ input[type="submit"] {
   padding: 0;
 }
 
-.btn:hover,
-button:hover,
+.btn:not(.btn--outline):not(.btn--ghost):not(.btn--destructive):hover,
+button:not(.btn--outline):not(.btn--ghost):not(.btn--destructive):hover,
 input[type="submit"]:hover {
-  background: hsl(221 83% 53%);
+  background: linear-gradient(135deg, var(--color-primary-dark) 0%, hsl(var(--accent)) 100%);
   color: var(--color-surface);
 }
 

@@ -8,6 +8,7 @@ from django.utils import timezone
 from .access import get_session_idle_timeout_seconds, user_has_admin_panel_access
 from .models import ActiveUserSession
 from .security import log_security_event
+from gestao.services.documentos_plataforma import empresa_tem_pendencia_aceite
 
 
 class SingleSessionMiddleware:
@@ -97,5 +98,32 @@ class AdminAreaAccessMiddleware:
                 details={"path": request.path},
             )
             return render(request, "sem_permissao.html", status=403)
+
+        return self.get_response(request)
+
+
+class PlatformDocumentAcceptanceMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        user = getattr(request, "user", None)
+        if not user or not user.is_authenticated:
+            return self.get_response(request)
+
+        path = request.path
+        if not (path.startswith("/adm/") or path.startswith("/painel/")):
+            return self.get_response(request)
+
+        allowed_paths = {
+            reverse("portal_aceite_plataforma"),
+            reverse("logout"),
+        }
+        if path in allowed_paths:
+            return self.get_response(request)
+
+        if empresa_tem_pendencia_aceite(user):
+            acceptance_url = reverse("portal_aceite_plataforma")
+            return redirect(f"{acceptance_url}?next={request.get_full_path()}")
 
         return self.get_response(request)

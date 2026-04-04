@@ -1,10 +1,9 @@
 .quote-page {
-  color: #f8fafc;
+  color: var(--wizard-text);
 }
 
 .quote-form-shell {
-  display: grid;
-  gap: 24px;
+  gap: 32px;
 }
 
 .quote-page-hero {
@@ -18,7 +17,7 @@
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  color: #cbd5e1;
+  color: var(--wizard-text-soft);
   font-size: 13px;
   font-weight: 600;
 }
@@ -27,14 +26,14 @@
   margin: 8px 0 0;
   font-size: clamp(30px, 3.2vw, 38px);
   line-height: 1.05;
-  color: #ffffff;
+  color: var(--wizard-text);
 }
 
 .quote-page-hero__subtitle {
   margin: 10px 0 0;
   max-width: 720px;
-  color: #94a3b8;
-  font-size: 14px;
+  color: var(--wizard-text-muted);
+  font-size: 15px;
 }
 
 .quote-alert {
@@ -43,29 +42,28 @@
 }
 
 .quote-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.82fr);
+  grid-template-columns: minmax(0, 1fr) 341px;
   gap: 24px;
   align-items: start;
 }
 
 .quote-main {
   display: grid;
-  gap: 18px;
+  gap: 24px;
 }
 
 .quote-sidebar {
   position: sticky;
-  top: 88px;
+  top: 24px;
 }
 
 .quote-section-card,
 .quote-summary-card {
   overflow: hidden;
-  border-radius: 16px;
-  border: 1px solid rgba(71, 85, 105, 0.88);
-  background: #1e293b;
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.26);
+  border-radius: 14px;
+  border: 1px solid var(--wizard-border);
+  background: var(--wizard-surface);
+  box-shadow: 0 0 0 1px rgba(16, 24, 40, 0.14);
 }
 
 .quote-section-head,
@@ -73,16 +71,16 @@
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(71, 85, 105, 0.38);
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(71, 85, 105, 0.3);
 }
 
 .quote-section-head--client {
-  background: linear-gradient(135deg, rgba(88, 28, 135, 0.52), rgba(67, 56, 202, 0.24));
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(245, 166, 35, 0.12));
 }
 
 .quote-section-head--flight {
-  background: linear-gradient(135deg, rgba(30, 64, 175, 0.58), rgba(30, 41, 59, 0.22));
+  background: linear-gradient(135deg, rgba(15, 27, 45, 0.12), rgba(255, 107, 107, 0.1));
 }
 
 .quote-section-head--passengers {
@@ -94,7 +92,7 @@
 }
 
 .quote-summary-card__head {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.48), rgba(126, 34, 206, 0.5));
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.18), rgba(245, 166, 35, 0.16));
 }
 
 .quote-section-head__badge,
@@ -106,7 +104,7 @@
   height: 28px;
   border-radius: 10px;
   background: rgba(15, 23, 42, 0.35);
-  color: #e2e8f0;
+  color: var(--wizard-text-soft);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -115,7 +113,7 @@
 .quote-section-head__title,
 .quote-summary-card__title {
   margin: 0;
-  color: #f8fafc;
+  color: var(--wizard-text);
   font-size: 17px;
   font-weight: 700;
 }
@@ -123,13 +121,13 @@
 .quote-section-head__subtitle,
 .quote-summary-card__subtitle {
   margin: 4px 0 0;
-  color: #94a3b8;
+  color: var(--wizard-text-muted);
   font-size: 12px;
 }
 
 .quote-section-card__body,
 .quote-summary-card__body {
-  padding: 18px 20px 20px;
+  padding: 20px;
 }
 
 .quote-section-card__body--stacked {
@@ -171,13 +169,13 @@
 .quote-page input,
 .quote-page textarea {
   width: 100%;
-  min-height: 44px;
-  border: 1px solid rgba(71, 85, 105, 0.95);
+  min-height: 48px;
+  border: 1px solid var(--wizard-border);
   border-radius: 10px;
-  background: #0f172a;
-  color: #f8fafc;
+  background: var(--wizard-surface-2);
+  color: var(--wizard-text);
   box-sizing: border-box;
-  padding: 10px 14px;
+  padding: 12px 14px;
   font-size: 14px;
 }
 
@@ -185,8 +183,8 @@
 .quote-page input:focus,
 .quote-page textarea:focus {
   outline: none;
-  border-color: rgba(96, 165, 250, 0.85);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22);
+  border-color: var(--wizard-primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.18);
 }
 
 .quote-page textarea {
@@ -195,20 +193,29 @@
 }
 
 .quote-page select option {
-  background: #0f172a;
-  color: #f8fafc;
+  background: var(--wizard-surface-2);
+  color: var(--wizard-text);
 }
 
 .quote-helper,
 .quote-inline-note {
   margin: 8px 0 0;
-  color: #64748b;
+  color: var(--wizard-text-dim);
   font-size: 12px;
   line-height: 1.5;
 }
 
+.quote-inline-note--highlight {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  background: rgba(255, 107, 107, 0.1);
+  color: #b35353;
+}
+
 .quote-inline-note strong {
-  color: #e2e8f0;
+  color: var(--wizard-text-soft);
 }
 
 .quote-warning-note {
@@ -226,9 +233,9 @@
 .quote-value-group,
 .quote-scale-card,
 .quote-summary-block {
-  border: 1px solid rgba(51, 65, 85, 0.95);
+  border: 1px solid var(--wizard-border);
   border-radius: 14px;
-  background: #111827;
+  background: var(--wizard-surface-2);
 }
 
 .quote-flight-card + .quote-flight-card {
@@ -254,14 +261,14 @@
   margin: 0;
   font-size: 14px;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--wizard-text);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .quote-flight-card__subtitle {
   margin: 4px 0 0;
-  color: #64748b;
+  color: var(--wizard-text-dim);
   font-size: 12px;
 }
 
@@ -272,7 +279,7 @@
   min-height: 26px;
   padding: 0 10px;
   border-radius: 999px;
-  background: rgba(37, 99, 235, 0.18);
+  background: rgba(255, 107, 107, 0.12);
   color: #93c5fd;
   font-size: 11px;
   font-weight: 700;
@@ -286,7 +293,7 @@
   margin: 16px 0;
   padding: 16px;
   border-radius: 14px;
-  border: 1px solid rgba(51, 65, 85, 0.95);
+  border: 1px solid var(--wizard-border);
   background: rgba(15, 23, 42, 0.55);
 }
 
@@ -297,7 +304,7 @@
 .quote-route-preview__label {
   display: block;
   margin-bottom: 6px;
-  color: #64748b;
+  color: var(--wizard-text-dim);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -306,7 +313,7 @@
 
 .quote-route-preview__point strong {
   display: block;
-  color: #f8fafc;
+  color: var(--wizard-text);
   font-size: 18px;
   line-height: 1.35;
 }
@@ -327,7 +334,17 @@
   align-content: start;
   padding: 14px 16px;
   border-radius: 14px;
-  border: 1px solid rgba(51, 65, 85, 0.95);
+  border: 1px solid var(--wizard-border);
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.quote-choice-panel {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--wizard-border);
   background: rgba(15, 23, 42, 0.55);
 }
 
@@ -335,7 +352,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  color: #e2e8f0;
+  color: var(--wizard-text-soft);
   font-size: 13px;
   font-weight: 600;
 }
@@ -348,12 +365,46 @@
   margin: 0;
 }
 
+.quote-field-collapsible {
+  display: none;
+}
+
+.quote-field-collapsible.is-visible {
+  display: block;
+}
+
+.quote-arrival-card {
+  display: grid;
+  gap: 6px;
+  min-height: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--wizard-border);
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.quote-arrival-card strong {
+  color: var(--wizard-text);
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.quote-arrival-card small {
+  color: var(--wizard-text-dim);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .quote-collapsible {
   display: none;
 }
 
 .quote-collapsible.is-visible {
   display: block;
+}
+
+.quote-hidden {
+  display: none !important;
 }
 
 .quote-scale-card {
@@ -371,8 +422,8 @@
   gap: 14px;
   padding: 16px;
   border-radius: 12px;
-  border: 1px solid rgba(51, 65, 85, 0.95);
-  background: #0f172a;
+  border: 1px solid var(--wizard-border);
+  background: rgba(15, 23, 42, 0.82);
 }
 
 .quote-scale-row__head {
@@ -383,7 +434,7 @@
 }
 
 .quote-scale-row__title {
-  color: #f8fafc;
+  color: var(--wizard-text);
   font-size: 13px;
   font-weight: 700;
 }
@@ -401,9 +452,9 @@
   min-height: 34px;
   padding: 0 12px;
   border-radius: 999px;
-  border: 1px solid rgba(71, 85, 105, 0.95);
+  border: 1px solid var(--wizard-border);
   background: transparent;
-  color: #cbd5e1;
+  color: var(--wizard-text-soft);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -422,13 +473,13 @@
 .quote-finance-card {
   padding: 14px 16px;
   border-radius: 14px;
-  border: 1px solid rgba(51, 65, 85, 0.95);
-  background: #111827;
+  border: 1px solid var(--wizard-border);
+  background: rgba(15, 23, 42, 0.82);
 }
 
 .quote-finance-card span {
   display: block;
-  color: #94a3b8;
+  color: var(--wizard-text-muted);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -438,9 +489,17 @@
 .quote-finance-card strong {
   display: block;
   margin-top: 10px;
-  color: #f8fafc;
+  color: var(--wizard-text);
   font-size: 26px;
   line-height: 1;
+}
+
+.quote-finance-card small {
+  display: block;
+  margin-top: 10px;
+  color: var(--wizard-text-dim);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .quote-summary-card__body {
@@ -455,7 +514,7 @@
 .quote-summary-block__label {
   display: block;
   margin-bottom: 10px;
-  color: #94a3b8;
+  color: var(--wizard-text-muted);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -464,14 +523,14 @@
 
 .quote-summary-block__value {
   display: block;
-  color: #f8fafc;
+  color: var(--wizard-text);
   font-size: 18px;
   line-height: 1.35;
 }
 
 .quote-summary-block__muted {
   margin: 8px 0 0;
-  color: #64748b;
+  color: var(--wizard-text-dim);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -493,7 +552,7 @@
 .quote-summary-route__point small {
   display: block;
   margin-top: 6px;
-  color: #64748b;
+  color: var(--wizard-text-dim);
   font-size: 11px;
 }
 
@@ -507,12 +566,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  color: #cbd5e1;
+  color: var(--wizard-text-soft);
   font-size: 13px;
 }
 
 .quote-summary-values strong {
-  color: #f8fafc;
+  color: var(--wizard-text);
   font-size: 13px;
 }
 
@@ -550,7 +609,7 @@
 }
 
 .quote-status-pill.is-info {
-  background: rgba(96, 165, 250, 0.18);
+  background: rgba(255, 107, 107, 0.12);
   color: #93c5fd;
 }
 
@@ -576,17 +635,27 @@
   width: 100%;
   justify-content: center;
   min-height: 46px;
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 14px 28px rgba(255, 107, 107, 0.18);
+}
+
+.quote-summary-actions__submit:hover {
+  background: linear-gradient(135deg, var(--primary-strong) 0%, hsl(var(--accent)) 100%);
+  border-color: transparent;
+  color: #fff;
 }
 
 .quote-summary-actions__cancel {
   text-align: center;
-  color: #64748b;
+  color: var(--wizard-text-dim);
   font-size: 13px;
   text-decoration: none;
 }
 
 .quote-summary-actions__cancel:hover {
-  color: #cbd5e1;
+  color: var(--wizard-text-soft);
 }
 
 @media (max-width: 1240px) {
@@ -621,13 +690,17 @@
     flex-direction: column;
     align-items: stretch;
   }
+
+  .quote-summary-card {
+    order: 2;
+  }
+
+  .quote-toggle-panel {
+    padding: 14px;
+  }
 }
 
 @media (max-width: 640px) {
-  .quote-form-shell {
-    gap: 18px;
-  }
-
   .quote-page-hero__title {
     font-size: 28px;
     line-height: 1.08;
@@ -703,4 +776,142 @@
   .quote-summary-actions {
     gap: 12px;
   }
+
+  .quote-summary-block,
+  .quote-flight-card,
+  .quote-value-group,
+  .quote-scale-card {
+    padding: 14px;
+  }
+}
+
+/* Light alignment with the emission wizard */
+.quote-alert {
+  border-color: rgba(239, 68, 68, 0.22);
+  background: rgba(254, 242, 242, 0.94);
+  color: #b91c1c;
+}
+
+.quote-section-card,
+.quote-summary-card {
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-card);
+}
+
+.quote-section-head,
+.quote-summary-card__head {
+  border-bottom: 1px solid var(--wizard-border);
+}
+
+.quote-section-head--client {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.14), rgba(245, 166, 35, 0.12));
+}
+
+.quote-section-head--flight {
+  background: linear-gradient(135deg, rgba(15, 27, 45, 0.05), rgba(255, 107, 107, 0.08));
+}
+
+.quote-section-head--passengers {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.08), rgba(245, 166, 35, 0.08));
+}
+
+.quote-section-head--values,
+.quote-summary-card__head {
+  background: linear-gradient(135deg, rgba(245, 166, 35, 0.12), rgba(255, 107, 107, 0.08));
+}
+
+.quote-section-head__badge,
+.quote-summary-card__badge {
+  background: rgba(15, 27, 45, 0.06);
+  color: var(--wizard-text-soft);
+}
+
+.quote-label {
+  color: var(--wizard-text-soft);
+}
+
+.quote-inline-note--highlight {
+  border-color: rgba(255, 107, 107, 0.22);
+  background: rgba(255, 107, 107, 0.08);
+  color: #925151;
+}
+
+.quote-inline-note strong {
+  color: var(--wizard-text);
+}
+
+.quote-flight-card__tag {
+  background: rgba(255, 107, 107, 0.1);
+  color: var(--wizard-primary);
+}
+
+.quote-route-preview,
+.quote-toggle-panel,
+.quote-choice-panel,
+.quote-arrival-card,
+.quote-scale-row,
+.quote-finance-card {
+  border-color: var(--wizard-border);
+  background: linear-gradient(180deg, #fffdfb 0%, #f8fafc 100%);
+}
+
+.quote-route-preview__label,
+.quote-finance-card span {
+  color: var(--wizard-text-dim);
+}
+
+.quote-route-preview__arrow,
+.quote-summary-route__arrow,
+.quote-summary-route__point strong {
+  color: var(--wizard-primary);
+}
+
+.quote-toggle,
+.quote-scale-row__title,
+.quote-summary-values div,
+.quote-summary-values strong {
+  color: var(--wizard-text-soft);
+}
+
+.quote-arrival-card strong,
+.quote-finance-card strong {
+  color: var(--wizard-text);
+}
+
+.quote-arrival-card small,
+.quote-finance-card small,
+.quote-summary-block__muted {
+  color: var(--wizard-text-muted);
+}
+
+.quote-scale-row__remove {
+  background: #ffffff;
+  color: var(--wizard-text-soft);
+}
+
+.quote-status-pill.is-success {
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+}
+
+.quote-status-pill.is-danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.quote-status-pill.is-info {
+  background: rgba(255, 107, 107, 0.12);
+  color: var(--wizard-primary);
+}
+
+.quote-summary-missing {
+  color: #c2410c;
+}
+
+.quote-summary-actions__cancel {
+  color: var(--wizard-text-muted);
+}
+
+.quote-summary-actions__cancel:hover {
+  color: var(--wizard-text);
 }

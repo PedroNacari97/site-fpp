@@ -19,6 +19,7 @@ from ..forms import (
     EmissaoHotelForm,
     CotacaoVooForm,
     PassageiroFrequenteForm,
+    InteresseViagemClienteForm,
 )
 from ..models import (
     Cliente,
@@ -34,13 +35,14 @@ from ..models import (
     CompanhiaAerea,
     AcessoClienteLog,
     PassageiroFrequente,
+    InteresseViagemCliente,
 )
 from gestao.utils import generate_unique_username, sync_cliente_activation
 from gestao.services.dashboard import (
     build_operational_dashboard_context,
 )
 from gestao.services.cpf_limite import get_cpf_control_data
-from .permissions import require_admin_or_operator
+from .permissions import ensure_company_access, require_admin_or_operator, scope_queryset_to_company
 
 import csv
 import json
@@ -49,6 +51,38 @@ from urllib.parse import urlencode
 
 
 User = get_user_model()
+
+MONTH_LABELS = {
+    1: "Jan",
+    2: "Fev",
+    3: "Mar",
+    4: "Abr",
+    5: "Mai",
+    6: "Jun",
+    7: "Jul",
+    8: "Ago",
+    9: "Set",
+    10: "Out",
+    11: "Nov",
+    12: "Dez",
+}
+
+SEMESTER_LABELS = {
+    1: "1o semestre",
+    2: "2o semestre",
+}
+
+
+def _format_interest_months(values):
+    return [MONTH_LABELS.get(int(value), str(value)) for value in (values or [])]
+
+
+def _format_interest_days(values):
+    return [f"Dia {int(value):02d}" for value in (values or [])]
+
+
+def _format_interest_semesters(values):
+    return [SEMESTER_LABELS.get(int(value), str(value)) for value in (values or [])]
 
 
 # --- CLIENTES ---
@@ -66,11 +100,12 @@ def criar_cliente(request):
                     cpf = form.cleaned_data.get("cpf")
                     user = User.objects.create_user(
                         username=username,
-                        password=form.cleaned_data["password"],
+                        password=None,
                         first_name=form.cleaned_data.get("first_name", ""),
                         last_name=form.cleaned_data.get("last_name", ""),
                         email=form.cleaned_data.get("email", ""),
                     )
+                    user.set_unusable_password()
 
                     user.is_active = form.cleaned_data.get("ativo", True)
                     perfil = form.cleaned_data["perfil"]
@@ -111,6 +146,8 @@ def editar_cliente(request, cliente_id):
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
     cliente = get_object_or_404(Cliente, id=cliente_id)
+    if (permission_denied := ensure_company_access(request, cliente)):
+        return permission_denied
     if request.method == "POST":
         form = ClienteForm(request.POST, instance=cliente)
         if form.is_valid():
@@ -151,7 +188,11 @@ def admin_clientes(request):
     management_context = build_operational_dashboard_context(user=request.user, request=request)
     management_dashboard = management_context["management_dashboard"]
 
-    clientes = Cliente.objects.filter(perfil="cliente").select_related("usuario")
+    clientes = scope_queryset_to_company(
+        Cliente.objects.filter(perfil="cliente").select_related("usuario"),
+        request,
+        "empresa",
+    )
     if busca:
         clientes = clientes.filter(
             Q(usuario__username__icontains=busca)
@@ -221,8 +262,12 @@ def admin_clientes(request):
             "label": f"{conta.programa.nome} - {(conta.cliente.usuario.get_full_name() or conta.cliente.usuario.username)}",
             "selected": str(conta.id) == conta_id,
         }
-        for conta in ContaFidelidade.objects.filter(cliente__perfil="cliente")
-        .select_related("cliente__usuario", "programa")
+        for conta in scope_queryset_to_company(
+            ContaFidelidade.objects.filter(cliente__perfil="cliente")
+            .select_related("cliente__usuario", "programa"),
+            request,
+            "cliente__empresa",
+        )
         .order_by("programa__nome", "cliente__usuario__username")
     ]
 
@@ -267,8 +312,14 @@ def admin_clientes(request):
     )
 
 
+@login_required
 def programas_do_cliente(request, cliente_id):
-    cliente = get_object_or_404(Cliente, pk=cliente_id, perfil="cliente")
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
+    cliente = get_object_or_404(
+        scope_queryset_to_company(Cliente.objects.filter(perfil="cliente"), request, "empresa"),
+        pk=cliente_id,
+    )
     contas = ContaFidelidade.objects.filter(cliente=cliente)
 
     lista_contas = []
@@ -307,8 +358,16 @@ def programas_do_cliente(request, cliente_id):
 def visualizar_cliente(request, cliente_id):
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
-    cliente = get_object_or_404(Cliente, id=cliente_id)
+    cliente = get_object_or_404(
+        scope_queryset_to_company(Cliente.objects.all(), request, "empresa"),
+        id=cliente_id,
+    )
     AcessoClienteLog.objects.create(admin=request.user, cliente=cliente)
+    active_client_tab = request.GET.get("tab", "passageiros")
+    if active_client_tab == "programas":
+        active_client_tab = "contas"
+    if active_client_tab not in {"passageiros", "interesses", "cotacoes", "contas", "emissoes"}:
+        active_client_tab = "passageiros"
     context = build_operational_dashboard_context(
         user=request.user,
         request=request,
@@ -318,6 +377,17 @@ def visualizar_cliente(request, cliente_id):
         selected_cidade=request.GET.get("cidade"),
     )
     passageiros = cliente.passageiros_frequentes.all().order_by("nome")
+    interesses_viagem = cliente.interesses_viagem.all().order_by("-criado_em")
+    cotacoes_cliente = (
+        CotacaoVoo.objects.filter(cliente=cliente)
+        .select_related("origem", "destino", "programa")
+        .order_by("-criado_em")
+    )
+    contas_cliente = (
+        ContaFidelidade.objects.filter(cliente=cliente)
+        .select_related("programa")
+        .order_by("programa__nome")
+    )
     passenger_cards = []
     type_labels = dict(PassageiroFrequente.TIPO_CHOICES)
     avatar_gradients = (
@@ -347,6 +417,121 @@ def visualizar_cliente(request, cliente_id):
             }
         )
 
+    interest_cards = []
+    for interesse in interesses_viagem:
+        criteria = []
+        if interesse.continente:
+            criteria.append(interesse.continente)
+        if interesse.pais:
+            criteria.append(interesse.pais)
+        if interesse.cidade_destino:
+            criteria.append(interesse.cidade_destino)
+        if interesse.origem:
+            criteria.append(f"Saida {interesse.origem}")
+        if interesse.destino:
+            criteria.append(f"Chegada {interesse.destino}")
+
+        preferences = []
+        if interesse.programa_fidelidade:
+            preferences.append(interesse.programa_fidelidade)
+        if interesse.companhia_aerea:
+            preferences.append(interesse.companhia_aerea)
+        if interesse.classe:
+            preferences.append(interesse.get_classe_display())
+
+        time_windows = []
+        if interesse.meses_ida:
+            time_windows.append(
+                {
+                    "label": "Meses de ida",
+                    "items": _format_interest_months(interesse.meses_ida),
+                }
+            )
+        if interesse.meses_volta:
+            time_windows.append(
+                {
+                    "label": "Meses de volta",
+                    "items": _format_interest_months(interesse.meses_volta),
+                }
+            )
+        if interesse.dias_ida:
+            time_windows.append(
+                {
+                    "label": "Dias de ida",
+                    "items": _format_interest_days(interesse.dias_ida),
+                }
+            )
+        if interesse.dias_volta:
+            time_windows.append(
+                {
+                    "label": "Dias de volta",
+                    "items": _format_interest_days(interesse.dias_volta),
+                }
+            )
+        if interesse.semestres_ida:
+            time_windows.append(
+                {
+                    "label": "Semestres de ida",
+                    "items": _format_interest_semesters(interesse.semestres_ida),
+                }
+            )
+        if interesse.semestres_volta:
+            time_windows.append(
+                {
+                    "label": "Semestres de volta",
+                    "items": _format_interest_semesters(interesse.semestres_volta),
+                }
+            )
+
+        interest_cards.append(
+            {
+                "id": interesse.id,
+                "nome": interesse.nome or "Interesse sem titulo",
+                "criterios": criteria or ["Qualquer destino e rota"],
+                "preferencias": preferences or ["Qualquer programa, companhia e classe"],
+                "janelas": time_windows or [{"label": "Janela", "items": ["Sem restricao de datas"]}],
+                "status_label": "Ativo" if interesse.ativo else "Inativo",
+                "status_tone": "active" if interesse.ativo else "inactive",
+            }
+        )
+
+    cotacao_rows = []
+    status_labels = dict(CotacaoVoo.STATUS_CHOICES)
+    for cotacao in cotacoes_cliente:
+        cotacao_rows.append(
+            {
+                "id": cotacao.id,
+                "data": timezone.localtime(cotacao.criado_em).strftime("%d/%m/%Y"),
+                "programa": cotacao.programa.nome if cotacao.programa else "--",
+                "trecho": f"{cotacao.origem.sigla if cotacao.origem else '--'} -> {cotacao.destino.sigla if cotacao.destino else '--'}",
+                "classe": cotacao.classe or "--",
+                "valor": f"R$ {float(cotacao.valor_vista or 0):,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+                "status": status_labels.get(cotacao.status, cotacao.status),
+                "view_url": reverse("admin_visualizar_cotacao_voo", args=[cotacao.id]),
+                "edit_url": reverse("admin_editar_cotacao_voo", args=[cotacao.id]),
+            }
+        )
+
+    conta_rows = []
+    for conta in contas_cliente:
+        saldo_pontos = conta.saldo_pontos
+        valor_pago = conta.valor_total_pago
+        valor_medio_milheiro = conta.valor_medio_por_mil
+        cpfs_total = conta.quantidade_cpfs_disponiveis
+        cpfs_disponiveis = conta.cpfs_disponiveis
+        conta_rows.append(
+            {
+                "id": conta.id,
+                "programa": conta.programa.nome,
+                "saldo": saldo_pontos,
+                "valor_pago": f"R$ {valor_pago:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+                "valor_medio": f"R$ {valor_medio_milheiro:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+                "cpfs_total": "Ilimitado" if cpfs_total is None else cpfs_total,
+                "cpfs_disponiveis": "Ilimitado" if cpfs_disponiveis is None else cpfs_disponiveis,
+                "movimentacoes_url": reverse("admin_movimentacoes", args=[conta.id]),
+            }
+        )
+
     total_preco_cheio = sum(float(e.valor_referencia or 0) for e in EmissaoPassagem.objects.filter(cliente=cliente))
     total_pago_cliente = sum(
         float((e.valor_total_final if e.valor_total_final not in (None, "") else (e.valor_venda_final or 0)) or 0)
@@ -361,7 +546,18 @@ def visualizar_cliente(request, cliente_id):
             "descricao": "Preco cheio menos valor pago nas emissoes.",
         }
     )
+
+    def _tab_url(tab_name):
+        params = request.GET.copy()
+        params["tab"] = tab_name
+        query = params.urlencode()
+        return f"{request.path}?{query}" if query else request.path
+
+    def _redirect_tab(tab_name):
+        return redirect(f"{reverse('admin_visualizar_cliente', args=[cliente.id])}?tab={tab_name}")
+
     passageiro_form = PassageiroFrequenteForm()
+    interesse_viagem_form = InteresseViagemClienteForm()
     if request.method == "POST":
         action = request.POST.get("action")
         if action in {"add_passageiro", "edit_passageiro"}:
@@ -374,12 +570,29 @@ def visualizar_cliente(request, cliente_id):
                 passageiro.cliente = cliente
                 passageiro.save()
                 messages.success(request, "Passageiro frequente salvo com sucesso.")
-                return redirect("admin_visualizar_cliente", cliente_id=cliente.id)
+                return _redirect_tab("passageiros")
+        elif action == "add_interesse_viagem":
+            interesse_viagem_form = InteresseViagemClienteForm(request.POST)
+            if interesse_viagem_form.is_valid():
+                interesse = interesse_viagem_form.save(commit=False)
+                interesse.cliente = cliente
+                interesse.save()
+                messages.success(request, "Interesse de viagem salvo com sucesso.")
+                return _redirect_tab("interesses")
         elif action == "delete_passageiro":
             passageiro = get_object_or_404(PassageiroFrequente, id=request.POST.get("passageiro_id"), cliente=cliente)
             passageiro.delete()
             messages.success(request, "Passageiro frequente removido com sucesso.")
-            return redirect("admin_visualizar_cliente", cliente_id=cliente.id)
+            return _redirect_tab("passageiros")
+        elif action == "delete_interesse_viagem":
+            interesse = get_object_or_404(
+                InteresseViagemCliente,
+                id=request.POST.get("interesse_id"),
+                cliente=cliente,
+            )
+            interesse.delete()
+            messages.success(request, "Interesse de viagem removido com sucesso.")
+            return _redirect_tab("interesses")
 
     context.update(
         {
@@ -388,9 +601,22 @@ def visualizar_cliente(request, cliente_id):
             "passenger_cards": passenger_cards,
             "passageiro_form": passageiro_form,
             "passageiro_form_prefix": "passageiro-frequente",
+            "interesses_viagem": interesses_viagem,
+            "interest_cards": interest_cards,
+            "interesse_viagem_form": interesse_viagem_form,
             "economia_cliente": economia_cliente,
             "detail_kpis": detail_kpis,
             "cliente_back_url": reverse("admin_clientes"),
+            "active_client_tab": active_client_tab,
+            "client_tab_urls": {
+                "passageiros": _tab_url("passageiros"),
+                "interesses": _tab_url("interesses"),
+                "cotacoes": _tab_url("cotacoes"),
+                "contas": _tab_url("contas"),
+                "emissoes": _tab_url("emissoes"),
+            },
+            "cotacao_rows": cotacao_rows,
+            "conta_rows": conta_rows,
             "menu_ativo": "clientes",
         }
     )

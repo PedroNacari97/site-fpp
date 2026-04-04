@@ -85,6 +85,10 @@ class ContaFidelidade(models.Model):
 
     @property
     def valor_medio_por_mil(self):
+        conta_base = self.conta_saldo()
+        from gestao.services.conta_clube import sync_club_movements_for_account
+
+        sync_club_movements_for_account(conta_base)
         saldo = self.saldo_pontos
         if self.programa.is_vinculado and saldo > 0 and getattr(self.programa, "preco_medio_milheiro", None):
             return float(self.programa.preco_medio_milheiro)
@@ -95,12 +99,18 @@ class ContaFidelidade(models.Model):
     @property
     def saldo_pontos(self):
         conta_base = self.conta_saldo()
+        from gestao.services.conta_clube import sync_club_movements_for_account
+
+        sync_club_movements_for_account(conta_base)
         movs = conta_base.movimentacoes.all()
         return sum(m.pontos for m in movs) if movs.exists() else 0
 
     @property
     def valor_total_pago(self):
         conta_base = self.conta_saldo()
+        from gestao.services.conta_clube import sync_club_movements_for_account
+
+        sync_club_movements_for_account(conta_base)
         movs = conta_base.movimentacoes.all()
         return sum(float(m.valor_pago) for m in movs) if movs.exists() else 0
 
@@ -145,7 +155,11 @@ class ContaFidelidade(models.Model):
 
     @property
     def movimentacoes_compartilhadas(self):
-        return self.conta_saldo().movimentacoes.all()
+        conta_base = self.conta_saldo()
+        from gestao.services.conta_clube import sync_club_movements_for_account
+
+        sync_club_movements_for_account(conta_base)
+        return conta_base.movimentacoes.all()
 
     def cpf_ja_utilizado(self, cpf):
         cpf = normalize_cpf(cpf)

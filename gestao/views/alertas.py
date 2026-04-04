@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import date, timedelta
 from urllib.parse import urlencode
@@ -5,12 +6,22 @@ from urllib.parse import urlencode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.http import Http404, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
 from ..forms import AlertaViagemForm
-from ..models import AlertaViagem
+from ..models import Aeroporto, AlertaViagem
+from ..services.aeroporto_localizacao import serialize_airport_for_alerts
+from ..services.alerta_parser import backfill_alerta_post_data, parse_alerta_bruto
+from ..services.interesses_viagem import sync_alerta_interest_matches
+from ..services.alerta_upsert import create_or_update_alerta
+from ..services.telegram_alertas import (
+    get_telegram_alertas_config,
+    process_telegram_alert_update,
+)
 from .permissions import require_admin_or_operator
 
 
@@ -35,6 +46,22 @@ def _query_with(params, **updates):
         else:
             base[key] = value
     return urlencode(base)
+
+
+def _resolve_alert_back_url(request):
+    requested = (request.GET.get("next") or "").strip()
+    allowed_prefixes = (
+        reverse("admin_alertas_passagens"),
+        reverse("alertas_passagens"),
+    )
+    if requested and requested.startswith(allowed_prefixes):
+        return requested
+    referer = request.META.get("HTTP_REFERER", "")
+    if referer:
+        for prefix in allowed_prefixes:
+            if prefix in referer:
+                return referer.split(request.get_host(), 1)[-1] if request.get_host() in referer else prefix
+    return reverse("admin_alertas_passagens")
 
 
 def _alerta_time_ago(alerta):
@@ -123,10 +150,27 @@ def _alerta_meta(alerta):
     }
 
 
+def _alertas_vitrine_queryset():
+    alertas_ativos = list(AlertaViagem.objects.filter(ativo=True).order_by("-criado_em"))
+    visible_ids = [alerta.id for alerta in alertas_ativos if alerta.deve_aparecer_na_vitrine()]
+    return AlertaViagem.objects.filter(id__in=visible_ids, ativo=True).order_by("-criado_em")
+
+
 @login_required
 def admin_alertas_passagens(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
+
+    if request.method == "POST":
+        alerta = get_object_or_404(AlertaViagem, id=request.POST.get("alerta_id"))
+        alerta.manter_apos_cinco_dias = request.POST.get("manter_apos_cinco_dias") == "on"
+        alerta.ocultar_apos_datas = request.POST.get("ocultar_apos_datas") == "on"
+        alerta.save(update_fields=["manter_apos_cinco_dias", "ocultar_apos_datas"])
+        messages.success(request, "Regras de exibicao do alerta atualizadas.")
+        redirect_to = (request.POST.get("next") or "").strip()
+        if redirect_to.startswith(reverse("admin_alertas_passagens")):
+            return redirect(redirect_to)
+        return redirect("admin_alertas_passagens")
 
     all_alerts = AlertaViagem.objects.all().order_by("-criado_em")
 
@@ -179,6 +223,7 @@ def admin_alertas_passagens(request):
         )
 
     alert_cards = []
+    detail_back_target = request.get_full_path()
     improving_count = 0
     favorites_count = 0
     resolved_count = 0
@@ -218,7 +263,11 @@ def admin_alertas_passagens(request):
                 "meta": meta,
                 "periodo": meta["periodo"],
                 "time_ago": meta["time_ago"],
-                "detail_url": reverse("alerta_passagem_detalhe", args=[alerta.id]) if alerta.ativo else (reverse("admin_alerta_passagem_editar", args=[alerta.id]) if request.user.is_superuser else "#"),
+                "detail_url": (
+                    f"{reverse('alerta_passagem_detalhe', args=[alerta.id])}?{urlencode({'next': detail_back_target})}"
+                    if alerta.ativo
+                    else (reverse("admin_alerta_passagem_editar", args=[alerta.id]) if request.user.is_superuser else "#")
+                ),
                 "edit_url": reverse("admin_alerta_passagem_editar", args=[alerta.id]) if request.user.is_superuser else None,
                 "delete_url": reverse("admin_alerta_passagem_deletar", args=[alerta.id]) if request.user.is_superuser else None,
                 "classe_label": alerta.get_classe_display(),
@@ -312,18 +361,48 @@ def admin_alertas_passagens(request):
 def criar_alerta_passagem(request):
     if permission_denied := _require_superuser(request):
         return permission_denied
+    aeroportos_json = [
+        serialize_airport_for_alerts(airport)
+        for airport in Aeroporto.objects.order_by("id")
+    ]
     if request.method == "POST":
-        form = AlertaViagemForm(request.POST)
+        parsed = parse_alerta_bruto(request.POST.get("alerta_bruto", ""))
+        post_data = backfill_alerta_post_data(request.POST, parsed)
+        form = AlertaViagemForm(post_data)
+        if "autopreencher" in request.POST:
+            if parsed:
+                messages.success(request, "Campos preenchidos a partir do alerta bruto. Revise e salve.")
+            else:
+                messages.warning(request, "Nao foi possivel interpretar o alerta bruto nesse formato.")
+            return render(
+                request,
+                "admin_custom/alertas_form.html",
+                {
+                    "form": form,
+                    "titulo_pagina": "Novo alerta",
+                    "menu_ativo": "alertas",
+                    "aeroportos_json": aeroportos_json,
+                },
+            )
         if form.is_valid():
-            form.save()
-            messages.success(request, "Alerta criado com sucesso.")
+            alerta, created = create_or_update_alerta(form.cleaned_data)
+            sync_alerta_interest_matches(alerta)
+            messages.success(
+                request,
+                "Alerta criado com sucesso." if created else "Alerta existente atualizado com novas datas e valores.",
+            )
             return redirect("admin_alertas_passagens")
     else:
         form = AlertaViagemForm()
     return render(
         request,
         "admin_custom/alertas_form.html",
-        {"form": form, "titulo_pagina": "Novo alerta", "menu_ativo": "alertas"},
+        {
+            "form": form,
+            "titulo_pagina": "Novo alerta",
+            "menu_ativo": "alertas",
+            "aeroportos_json": aeroportos_json,
+        },
     )
 
 
@@ -332,10 +411,32 @@ def editar_alerta_passagem(request, alerta_id):
     if permission_denied := _require_superuser(request):
         return permission_denied
     alerta = get_object_or_404(AlertaViagem, id=alerta_id)
+    aeroportos_json = [
+        serialize_airport_for_alerts(airport)
+        for airport in Aeroporto.objects.order_by("id")
+    ]
     if request.method == "POST":
-        form = AlertaViagemForm(request.POST, instance=alerta)
+        parsed = parse_alerta_bruto(request.POST.get("alerta_bruto", ""))
+        post_data = backfill_alerta_post_data(request.POST, parsed)
+        form = AlertaViagemForm(post_data, instance=alerta)
+        if "autopreencher" in request.POST:
+            if parsed:
+                messages.success(request, "Campos preenchidos a partir do alerta bruto. Revise e salve.")
+            else:
+                messages.warning(request, "Nao foi possivel interpretar o alerta bruto nesse formato.")
+            return render(
+                request,
+                "admin_custom/alertas_form.html",
+                {
+                    "form": form,
+                    "titulo_pagina": "Editar alerta",
+                    "menu_ativo": "alertas",
+                    "aeroportos_json": aeroportos_json,
+                },
+            )
         if form.is_valid():
-            form.save()
+            alerta = form.save()
+            sync_alerta_interest_matches(alerta)
             messages.success(request, "Alerta atualizado com sucesso.")
             return redirect("admin_alertas_passagens")
     else:
@@ -343,7 +444,12 @@ def editar_alerta_passagem(request, alerta_id):
     return render(
         request,
         "admin_custom/alertas_form.html",
-        {"form": form, "titulo_pagina": "Editar alerta", "menu_ativo": "alertas"},
+        {
+            "form": form,
+            "titulo_pagina": "Editar alerta",
+            "menu_ativo": "alertas",
+            "aeroportos_json": aeroportos_json,
+        },
     )
 
 
@@ -367,7 +473,7 @@ def deletar_alerta_passagem(request, alerta_id):
 def alertas_passagens(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
-    base_qs = AlertaViagem.objects.filter(ativo=True)
+    base_qs = _alertas_vitrine_queryset()
     continentes = list(base_qs.values_list("continente", flat=True).distinct().order_by("continente"))
     selected_continente = request.GET.get("continente") or None
     if selected_continente not in continentes:
@@ -424,6 +530,8 @@ def alerta_passagem_detalhe(request, alerta_id):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     alerta = get_object_or_404(AlertaViagem, id=alerta_id, ativo=True)
+    if not alerta.deve_aparecer_na_vitrine():
+        raise Http404("Alerta nao disponivel.")
     return render(
         request,
         "admin_custom/alertas_detail.html",
@@ -432,6 +540,39 @@ def alerta_passagem_detalhe(request, alerta_id):
             "datas_ida": alerta.datas_ida or [],
             "datas_volta": alerta.datas_volta or [],
             "link_externo": _extract_link(alerta.conteudo),
+            "back_url": _resolve_alert_back_url(request),
             "menu_ativo": "alertas",
         },
+    )
+
+
+@csrf_exempt
+def telegram_alertas_webhook(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    config = get_telegram_alertas_config()
+    expected_secret = config["secret"]
+    if expected_secret:
+        received_secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+        if received_secret != expected_secret:
+            return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8") or "{}")
+    except Exception:
+        return JsonResponse({"ok": False, "error": "invalid_json"}, status=400)
+
+    try:
+        event, outcome = process_telegram_alert_update(payload)
+    except Exception as exc:
+        return JsonResponse({"ok": False, "error": str(exc)}, status=400)
+
+    return JsonResponse(
+        {
+            "ok": True,
+            "outcome": outcome,
+            "event_id": event.id,
+            "alerta_id": event.alerta_id,
+        }
     )

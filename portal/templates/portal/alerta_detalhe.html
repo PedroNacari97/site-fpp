@@ -1,0 +1,207 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ seo_title|default:alert_context.hero_title }}{% endblock %}
+{% block content %}
+<div class="portal-alert-detail">
+    <section class="portal-alert-detail__hero">
+        <div class="portal-alert-detail__hero-copy">
+            <a href="{{ back_url }}" class="portal-alert-detail__back-link">&larr; Voltar</a>
+            <h1>{{ alert_context.hero_title|portal_text }}</h1>
+            <p>{{ alert_context.hero_subtitle|portal_text }}</p>
+
+            <div class="portal-alert-detail__route-card">
+                <div>
+                    <strong>{{ alert_context.origem_codigo }}</strong>
+                    <span>{{ alert_context.origem_cidade|portal_text }}</span>
+                </div>
+                <div class="portal-alert-detail__route-line" aria-hidden="true">
+                    <span></span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                    </svg>
+                    <span></span>
+                </div>
+                <div>
+                    <strong>{{ alert_context.destino_codigo }}</strong>
+                    <span>{{ alert_context.destino_cidade|portal_text }}</span>
+                </div>
+            </div>
+        </div>
+
+        <aside class="portal-alert-detail__summary">
+            <p class="portal-alert-detail__summary-label">{{ alert_context.miles_kicker|portal_text }}</p>
+            <strong>{{ alert_context.miles_label|portal_text }}</strong>
+            {% if alert_context.miles_caption %}
+            <span>{{ alert_context.miles_caption|portal_text }}</span>
+            {% endif %}
+            <div class="portal-alert-detail__summary-meta">
+                <div>
+                    <span>Programa</span>
+                    <strong>{{ alert_context.programa|portal_text }}</strong>
+                </div>
+                <div>
+                    <span>Companhia</span>
+                    <strong>{{ alert_context.companhia|portal_text }}</strong>
+                </div>
+                <div>
+                    <span>Classe</span>
+                    <strong>{{ alert_context.classe_label|portal_text }}</strong>
+                </div>
+                {% if alert_context.money_label %}
+                <div>
+                    <span>Taxas estimadas</span>
+                    <strong>{{ alert_context.money_label|portal_text }}</strong>
+                </div>
+                {% endif %}
+                {% if alert_context.validade_label %}
+                <div>
+                    <span>Disponibilidade</span>
+                    <strong>{{ alert_context.validade_label|portal_text }}</strong>
+                </div>
+                {% endif %}
+            </div>
+            {% if alert_context.cta_url %}
+            <a
+                href="{{ alert_context.cta_url }}"
+                class="portal-button portal-button--primary portal-alert-detail__cta"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-analytics-event="click_resgatar_alerta"
+                data-analytics-category="conversion"
+                data-analytics-label="{{ alert_context.programa }}"
+                data-analytics-section="alert_detail_cta"
+            >
+                Resgatar agora
+            </a>
+            {% endif %}
+        </aside>
+    </section>
+
+    <section class="portal-alert-detail__content">
+        <div class="portal-alert-detail__left">
+            <article class="portal-alert-detail__panel">
+                <h2>Sobre esta oferta</h2>
+                <p>{{ alert_context.about_offer|portal_text }}</p>
+            </article>
+
+            <article class="portal-alert-detail__panel">
+                <h2>Datas dispon&iacute;veis</h2>
+                <div class="portal-alert-detail__dates-grid">
+                    <div class="portal-alert-detail__date-card">
+                        <h3>Ida</h3>
+                        {% if alert_context.ida_groups %}
+                        <div class="portal-alert-detail__date-groups">
+                            {% for group in alert_context.ida_groups %}
+                            <div class="portal-alert-detail__date-group">
+                                <strong>{{ group.label|portal_text }}</strong>
+                                <div class="portal-alert-detail__date-chips">
+                                    {% for day in group.days %}
+                                    <span>{{ day }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="portal-alert-detail__empty-note">Sem datas de ida informadas.</p>
+                        {% endif %}
+                    </div>
+                    <div class="portal-alert-detail__date-card">
+                        <h3>Volta</h3>
+                        {% if alert_context.volta_groups %}
+                        <div class="portal-alert-detail__date-groups">
+                            {% for group in alert_context.volta_groups %}
+                            <div class="portal-alert-detail__date-group">
+                                <strong>{{ group.label|portal_text }}</strong>
+                                <div class="portal-alert-detail__date-chips">
+                                    {% for day in group.days %}
+                                    <span>{{ day }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="portal-alert-detail__empty-note">Sem datas de volta informadas.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+
+            <article class="portal-alert-detail__panel">
+                <h2>Benef&iacute;cios do alerta</h2>
+                <div class="portal-alert-detail__benefits">
+                    {% for benefit in alert_context.benefits %}
+                    <div class="portal-alert-detail__benefit">
+                        <span aria-hidden="true">&#10003;</span>
+                        <p>{{ benefit|portal_text }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </article>
+        </div>
+
+        <div class="portal-alert-detail__right">
+            <article class="portal-alert-detail__panel">
+                <h2>Como funciona?</h2>
+                <div class="portal-alert-detail__steps">
+                    {% for step in alert_context.steps %}
+                    <article class="portal-alert-detail__step">
+                        <strong>{{ forloop.counter }}</strong>
+                        <div>
+                            <h3>{{ step.title|portal_text }}</h3>
+                            <p>{{ step.description|portal_text }}</p>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </article>
+        </div>
+    </section>
+
+    {% if similar_alerts %}
+    <section class="portal-alert-detail__similar">
+        <header class="news-section-bar news-section-bar--stacked">
+            <div>
+                <h2>Alertas semelhantes</h2>
+                        <p>Outras oportunidades de emiss&atilde;o para acompanhar agora.</p>
+            </div>
+        </header>
+        <div class="news-alerts-home__grid">
+            {% for alerta in similar_alerts %}
+            <a
+                href="{{ alerta.url }}"
+                class="news-alert-card"
+                data-analytics-event="click_alerta_semelhante"
+                data-analytics-category="content"
+                data-analytics-label="{{ alerta.origem_codigo }}-{{ alerta.destino_codigo }}"
+                data-analytics-section="alert_similar"
+            >
+                    <div class="news-alert-card__route news-alert-card__route--compact">
+                        <div>
+                            <strong>{{ alerta.origem_codigo }}</strong>
+                            <span>{{ alerta.origem_cidade|portal_text }}</span>
+                        </div>
+                        <div class="news-alert-card__route-line" aria-hidden="true">
+                            <span></span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 12h18M15 6l6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                            </svg>
+                            <span></span>
+                        </div>
+                        <div class="news-alert-card__destination">
+                            <strong>{{ alerta.destino_codigo }}</strong>
+                            <span>{{ alerta.destino_cidade|portal_text }}</span>
+                        </div>
+                    </div>
+                    <div class="news-alert-card__price-box">
+                        <small>{{ alerta.miles_kicker|portal_text }}</small>
+                        <strong>{{ alerta.miles_label|portal_text }}</strong>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

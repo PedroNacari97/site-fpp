@@ -19,7 +19,7 @@
   min-height: 40px;
   padding: 10px 16px;
   border-radius: 8px;
-  background: #155dfc;
+  background: #ff6b6b;
   color: #ffffff;
   font-size: 14px;
   font-weight: 500;
@@ -117,7 +117,7 @@
 
 .airport-page__search-button {
   border: none;
-  background: #155dfc;
+  background: #ff6b6b;
   color: #ffffff;
 }
 
@@ -304,14 +304,14 @@
 
 .airport-form input:focus {
   outline: none;
-  border-color: #155dfc;
-  box-shadow: 0 0 0 1px rgba(21, 93, 252, 0.18);
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.18);
 }
 
 .airport-page__field input:focus {
   outline: none;
-  border-color: #155dfc;
-  box-shadow: 0 0 0 1px rgba(21, 93, 252, 0.18);
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.18);
 }
 
 .airport-form__field-error {
@@ -335,7 +335,7 @@
   padding: 10px 24px;
   border: none;
   border-radius: 8px;
-  background: #155dfc;
+  background: #ff6b6b;
   color: #ffffff;
   font-size: 14px;
   font-weight: 500;

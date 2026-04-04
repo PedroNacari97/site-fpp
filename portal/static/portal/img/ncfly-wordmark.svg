@@ -1,0 +1,15 @@
+<svg width="320" height="160" viewBox="0 0 320 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ncflySwoosh" x1="24" y1="132" x2="226" y2="36" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF6B6B"/>
+      <stop offset="1" stop-color="#F5A623"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="160" fill="none"/>
+  <text x="36" y="96" fill="#0F1B2D" font-family="Segoe UI, Arial, sans-serif" font-size="70" font-weight="800" letter-spacing="-3">NC</text>
+  <text x="157" y="96" fill="#0F1B2D" font-family="Segoe UI, Arial, sans-serif" font-size="66" font-weight="400" letter-spacing="-2">fly</text>
+  <path d="M22 130C84 126 133 106 170 83C193 69 211 52 227 34" stroke="url(#ncflySwoosh)" stroke-width="7.5" stroke-linecap="round"/>
+  <g transform="translate(234 18) rotate(-10)">
+    <path d="M2 13H18L30 2L34 6L25 14L34 22L30 26L18 15H2L-6 21L-9 18L-4 14L-9 10L-6 7L2 13Z" fill="#F5A623"/>
+  </g>
+</svg>

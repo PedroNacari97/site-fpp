@@ -18,7 +18,11 @@ from .passageiro_frequente import PassageiroFrequente
 from .uso_cpf import UsoCPF
 from .audit_log import AuditLog
 from .alerta_viagem import AlertaViagem
+from .telegram_alerta_evento import TelegramAlertaEvento
 from .notificacao_sistema import NotificacaoSistema
+from .acompanhamento_passagem import AcompanhamentoPassagem
+from .interesse_viagem_cliente import InteresseViagemCliente, InteresseViagemMatch
+from .documento_plataforma import DocumentoPlataforma, AceiteDocumentoPlataforma
 
 __all__ = [
     'Cliente',
@@ -41,5 +45,11 @@ __all__ = [
     'UsoCPF',
     'AuditLog',
     'AlertaViagem',
+    'TelegramAlertaEvento',
     'NotificacaoSistema',
+    'AcompanhamentoPassagem',
+    'InteresseViagemCliente',
+    'InteresseViagemMatch',
+    'DocumentoPlataforma',
+    'AceiteDocumentoPlataforma',
 ]

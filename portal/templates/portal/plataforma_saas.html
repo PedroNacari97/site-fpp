@@ -1,0 +1,282 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ seo_title|default:"Plataforma NC Fly | Produto para opera&ccedil;&atilde;o de viagens" }}{% endblock %}
+
+{% block content %}
+<div class="portal-saas-page">
+    <section class="portal-saas-hero">
+        <div class="portal-saas-hero__copy">
+            <span class="news-kicker news-kicker--light">{{ page_eyebrow|portal_text }}</span>
+            <h1>{{ saas_brand_name|portal_text }}</h1>
+            <p class="portal-saas-hero__lead">{{ page_intro|portal_text }}</p>
+            <p class="portal-saas-hero__tagline">{{ saas_brand_tagline|portal_text }}</p>
+            <div class="portal-saas-hero__actions">
+                <a
+                    href="#saas-modulos"
+                    class="portal-button portal-button--light"
+                    data-analytics-event="click_cta_saas"
+                    data-analytics-category="engagement"
+                    data-analytics-label="hero_modulos"
+                    data-analytics-section="saas_hero"
+                >
+                    Ver módulos
+                </a>
+                <a
+                    href="#saas-faq"
+                    class="portal-button portal-button--ghost portal-button--light-outline"
+                    data-analytics-event="click_cta_saas"
+                    data-analytics-category="engagement"
+                    data-analytics-label="hero_faq"
+                    data-analytics-section="saas_hero"
+                >
+                    Perguntas frequentes
+                </a>
+            </div>
+        </div>
+        <div class="portal-saas-hero__panel">
+            <div class="portal-saas-hero__window">
+                <div class="portal-saas-hero__window-top">
+                    <span></span><span></span><span></span>
+                </div>
+                <div class="portal-saas-hero__window-body">
+                    <article>
+                        <small>Fluxo operacional</small>
+                        <strong>Cotação &rarr; Emissão &rarr; Acompanhamento</strong>
+                        <p>Dados reaproveitados, PDF consistente e contexto comercial preservado.</p>
+                    </article>
+                    <article>
+                        <small>Equipe alinhada</small>
+                        <strong>Clientes, alertas e contexto no mesmo lugar</strong>
+                        <p>Menos ruído operacional e mais velocidade para agir no momento certo.</p>
+                    </article>
+                    <article>
+                        <small>Padrão operacional</small>
+                        <strong>Processo mais claro do primeiro contato até a entrega</strong>
+                        <p>Uma base mais simples para vender melhor, emitir com contexto e acompanhar cada atendimento.</p>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="portal-saas-section" id="saas-modulos">
+        <header class="portal-saas-section__header">
+            <span class="news-kicker">Módulos principais</span>
+            <h2>Uma camada única para organizar a operação comercial e operacional</h2>
+            <p>A Plataforma NC Fly foi desenhada para reduzir retrabalho, dar mais padrão ao time e centralizar o que normalmente fica espalhado em planilhas, mensagens e processos manuais.</p>
+        </header>
+        <div class="portal-saas-modules">
+            {% for module in saas_modules %}
+            <article class="portal-saas-card">
+                <h3>{{ module.title|portal_text }}</h3>
+                <p>{{ module.description|portal_text }}</p>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="portal-saas-section portal-saas-section--soft">
+        <header class="portal-saas-section__header">
+            <span class="news-kicker">Como funciona</span>
+            <h2>Do pedido inicial ao acompanhamento do cliente</h2>
+        </header>
+        <div class="portal-saas-flow">
+            {% for item in saas_flow %}
+            <article class="portal-saas-flow__step">
+                <span>{{ item.step }}</span>
+                <h3>{{ item.title|portal_text }}</h3>
+                <p>{{ item.description|portal_text }}</p>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="portal-saas-section">
+        <header class="portal-saas-section__header">
+            <span class="news-kicker">Benefícios</span>
+            <h2>Ganhos práticos para uma operação mais clara</h2>
+            <p>Menos retrabalho, mais velocidade comercial e uma base melhor para o time atender, vender e acompanhar cada caso.</p>
+        </header>
+        <div class="portal-saas-list-grid">
+            {% for benefit in saas_benefits %}
+            <article class="portal-saas-card portal-saas-card--compact">
+                <h3>{{ benefit.title|portal_text }}</h3>
+                <p>{{ benefit.description|portal_text }}</p>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="portal-saas-section portal-saas-section--soft">
+        <header class="portal-saas-section__header">
+            <span class="news-kicker">Para quem</span>
+            <h2>Onde a Plataforma NC Fly encaixa melhor</h2>
+            <p>Uma estrutura pensada para equipes de viagens e milhas que precisam ganhar ritmo sem perder contexto e qualidade na execução.</p>
+        </header>
+        <div class="portal-saas-list-grid">
+            {% for audience in saas_audience %}
+            <article class="portal-saas-card portal-saas-card--compact">
+                <h3>{{ audience.title|portal_text }}</h3>
+                <p>{{ audience.description|portal_text }}</p>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="portal-saas-section portal-saas-section--contrast">
+        <div class="portal-saas-two-column">
+            <div class="portal-saas-two-column__block">
+                <span class="news-kicker news-kicker--light">O que muda na prática</span>
+                <h2>O valor da plataforma aparece no ritmo e na clareza da sua operação.</h2>
+                <ul class="portal-saas-security-list">
+                    {% for item in saas_outcomes %}
+                    <li>{{ item|portal_text }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="portal-saas-two-column__block">
+                <div class="portal-saas-legal-card">
+                    <small>Em resumo</small>
+                    {% for item in saas_focus_points %}
+                    <div class="portal-saas-legal-card__item">
+                        <strong>{{ item.title|portal_text }}</strong>
+                        <p>{{ item.description|portal_text }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="portal-saas-section portal-saas-section--soft" id="saas-interesse">
+        <div class="portal-saas-lead">
+            <div class="portal-saas-lead__copy">
+                <span class="news-kicker">Interesse na plataforma</span>
+                <h2>Quer saber quando a Plataforma NC Fly estiver pronta?</h2>
+                <p>Deixe seu contato para a equipe da NC Fly avisar quando a plataforma avançar e fizer sentido para a sua operação.</p>
+                <ul class="portal-saas-security-list">
+                    <li>Contato direto da equipe da NC Fly.</li>
+                    <li>Sem criar login ou acesso agora.</li>
+                    <li>Formulário simples e rápido.</li>
+                </ul>
+            </div>
+            <div class="portal-lead-form-card portal-saas-lead__form-card">
+                {% if quick_lead_submitted %}
+                <div class="portal-saas-lead__success">
+                    <span class="portal-saas-lead__success-badge">Contato recebido</span>
+                    <h2>Recebemos seu interesse.</h2>
+                    <p>A equipe da NC Fly vai analisar seus dados e entrar em contato em breve pelo e-mail informado.</p>
+                    <ul class="portal-saas-security-list">
+                        <li>Seu contato já foi registrado com sucesso.</li>
+                        <li>Não é necessário enviar novamente agora.</li>
+                        <li>Se quiser, você pode seguir explorando a plataforma.</li>
+                    </ul>
+                    <a
+                        href="{% url 'portal_plataforma_saas' %}#saas-faq"
+                        class="portal-button portal-button--primary"
+                        data-analytics-event="click_cta_saas"
+                        data-analytics-category="engagement"
+                        data-analytics-label="quick_lead_success_continue"
+                        data-analytics-section="saas_interest"
+                    >
+                        Continuar navegando
+                    </a>
+                </div>
+                {% else %}
+                <h2>Receber contato</h2>
+                <p>Preencha só o essencial. O telefone é opcional.</p>
+                <form method="post" class="portal-lead-form portal-lead-form--compact">
+                    {% csrf_token %}
+                    <div class="portal-lead-form__grid portal-lead-form__grid--compact">
+                        <div class="portal-lead-field">
+                            <label for="{{ quick_lead_form.nome.id_for_label }}">{{ quick_lead_form.nome.label }}</label>
+                            {{ quick_lead_form.nome }}
+                            {% for error in quick_lead_form.nome.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        <div class="portal-lead-field">
+                            <label for="{{ quick_lead_form.email.id_for_label }}">{{ quick_lead_form.email.label }}</label>
+                            {{ quick_lead_form.email }}
+                            {% for error in quick_lead_form.email.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                        <div class="portal-lead-field">
+                            <label for="{{ quick_lead_form.telefone.id_for_label }}">{{ quick_lead_form.telefone.label }}</label>
+                            {{ quick_lead_form.telefone }}
+                            {% for error in quick_lead_form.telefone.errors %}
+                            <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <label class="portal-saas-lead__consent">
+                        {{ quick_lead_form.aceite_contato }}
+                        <span>
+                            Li e aceito o contato da NC Fly. Também concordo com a
+                            <a href="{% url 'portal_privacidade' %}">Política de Privacidade</a>.
+                        </span>
+                    </label>
+                    {% for error in quick_lead_form.aceite_contato.errors %}
+                    <p class="portal-saas-lead__error">{{ error }}</p>
+                    {% endfor %}
+                    <button
+                        type="submit"
+                        class="portal-button portal-button--primary"
+                        data-analytics-event="click_cta_saas"
+                        data-analytics-category="engagement"
+                        data-analytics-label="quick_lead_submit"
+                        data-analytics-section="saas_interest"
+                    >
+                        Quero saber mais
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="portal-saas-section" id="saas-faq">
+        <header class="portal-saas-section__header">
+            <span class="news-kicker">FAQ</span>
+            <h2>Perguntas frequentes sobre a Plataforma NC Fly</h2>
+        </header>
+        <div class="portal-saas-faq">
+            {% for item in saas_faqs %}
+            <details class="portal-saas-faq__item">
+                <summary class="portal-saas-faq__question">
+                    <span>{{ item.question|portal_text }}</span>
+                </summary>
+                <div class="portal-saas-faq__answer">
+                    <p>{{ item.answer|portal_text }}</p>
+                </div>
+            </details>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="portal-saas-cta">
+        <div>
+            <span class="news-kicker news-kicker--light">Plataforma NC Fly</span>
+            <h2>Uma visão clara do que a plataforma vai entregar</h2>
+            <p>A Plataforma NC Fly está em preparação. Por enquanto, esta página apresenta a proposta do produto e os módulos centrais da operação.</p>
+        </div>
+        <div class="portal-saas-cta__actions">
+            <a
+                href="{% url 'portal_home' %}"
+                class="portal-button portal-button--light"
+                data-analytics-event="click_cta_saas"
+                data-analytics-category="engagement"
+                data-analytics-label="bottom_home"
+                data-analytics-section="saas_bottom_cta"
+            >
+                Voltar para a home
+            </a>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block footer %}
+{% include "portal/partials/saas_footer.html" %}
+{% endblock %}

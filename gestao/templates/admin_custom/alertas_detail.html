@@ -11,7 +11,7 @@
         <h2 class="section-title">{{ alerta.titulo }}</h2>
         <p class="section-subtitle">{{ alerta.cidade_destino }} - {{ alerta.pais }}</p>
       </div>
-      <a href="{% url 'alertas_passagens' %}" class="btn btn--ghost">Voltar</a>
+      <a href="{{ back_url }}" class="btn btn--ghost">Voltar</a>
     </div>
 
     <div class="alert-detail__meta">
@@ -35,7 +35,7 @@
 
     <div class="alert-detail__prices">
       {% if alerta.valor_milhas %}
-        <span class="price-tag">{{ alerta.valor_milhas }} milhas</span>
+        <span class="price-tag">A partir de {{ alerta.valor_milhas }} milhas</span>
       {% endif %}
       {% if alerta.valor_reais %}
         <span class="price-tag">R$ {{ alerta.valor_reais }}</span>

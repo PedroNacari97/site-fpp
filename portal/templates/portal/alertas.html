@@ -1,0 +1,144 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ seo_title|default:"Alertas de passagens | NC Fly News" }}{% endblock %}
+{% block content %}
+<div class="portal-alerts-page">
+    <section class="portal-alerts-page__hero">
+        <span class="news-kicker">Alertas NC Fly</span>
+        <h1>{{ page_title|portal_text }}</h1>
+        <p>{{ page_intro|portal_text }}</p>
+        <div class="portal-alerts-page__filters">
+            <form method="get" class="portal-alerts-page__filter-form">
+                <div class="portal-lead-field">
+                    <label for="alert-filter-aeroporto">Aeroporto</label>
+                    <input
+                        id="alert-filter-aeroporto"
+                        type="text"
+                        name="aeroporto"
+                        class="portal-lead-field__input"
+                        maxlength="10"
+                        placeholder="Ex.: GRU, MIA, SSA"
+                        value="{{ selected_alert_filters.aeroporto|default:'' }}"
+                    >
+                </div>
+                <div class="portal-lead-field">
+                    <label for="alert-filter-programa">Programa</label>
+                    <select id="alert-filter-programa" name="programa" class="portal-lead-field__input">
+                        <option value="">Todos os programas</option>
+                        {% for option in alert_filter_options.programas %}
+                        <option value="{{ option.value }}" {% if selected_alert_filters.programa == option.value %}selected{% endif %}>{{ option.label|portal_text }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="portal-lead-field">
+                    <label for="alert-filter-companhia">Companhia a&eacute;rea</label>
+                    <select id="alert-filter-companhia" name="companhia" class="portal-lead-field__input">
+                        <option value="">Todas as companhias</option>
+                        {% for option in alert_filter_options.companhias %}
+                        <option value="{{ option.value }}" {% if selected_alert_filters.companhia == option.value %}selected{% endif %}>{{ option.label|portal_text }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="portal-alerts-page__filter-actions">
+                    <button type="submit" class="portal-button portal-button--light">Filtrar</button>
+                    {% if filters_active %}
+                    <a href="{% url 'portal_alertas' %}" class="portal-button portal-button--ghost portal-button--light-outline">Limpar</a>
+                    {% endif %}
+                </div>
+            </form>
+            <p class="portal-alerts-page__filter-note">
+                {{ alert_results_total }} alerta{{ alert_results_total|pluralize }} encontrado{{ alert_results_total|pluralize }}.
+            </p>
+        </div>
+    </section>
+    {% if alertas_publicos %}
+    <section class="news-alerts-home news-alerts-home--listing">
+        <div id="public-alerts-grid" class="news-alerts-home__grid news-alerts-home__grid--listing">
+            {% for alerta in alertas_publicos %}
+            <a
+                href="{{ alerta.url }}"
+                class="news-alert-card news-alert-card--listing{% if forloop.counter > alerts_page_size %} is-hidden{% endif %}"
+                data-load-more-item
+                data-analytics-event="click_alerta_listagem"
+                data-analytics-category="content"
+                data-analytics-label="{{ alerta.origem_codigo }}-{{ alerta.destino_codigo }}"
+                data-analytics-section="alerts_listing"
+                >
+                    <div class="news-alert-card__top">
+                        <span class="news-alert-card__plane" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                            </svg>
+                        </span>
+                        {% if alerta.validade_label %}
+                        <span class="news-alert-card__validity">{{ alerta.validade_label|portal_text }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="news-alert-card__route">
+                        <div>
+                            <strong>{{ alerta.origem_codigo }}</strong>
+                            <span>{{ alerta.origem_cidade|portal_text }}</span>
+                        </div>
+                        <div class="news-alert-card__route-line" aria-hidden="true">
+                            <span></span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 12h18M15 6l6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                            </svg>
+                            <span></span>
+                        </div>
+                        <div class="news-alert-card__destination">
+                            <strong>{{ alerta.destino_codigo }}</strong>
+                            <span>{{ alerta.destino_cidade|portal_text }}</span>
+                        </div>
+                    </div>
+                    <div class="news-alert-card__meta">
+                        <span class="news-alert-card__meta-badge">
+                            <small>Programa</small>
+                            <strong>{{ alerta.programa|portal_text }}</strong>
+                        </span>
+                        <span class="news-alert-card__meta-badge">
+                            <small>Companhia</small>
+                            <strong>{{ alerta.companhia|portal_text }}</strong>
+                        </span>
+                    </div>
+                    <div class="news-alert-card__price-box">
+                        <small>{{ alerta.miles_kicker|portal_text }}</small>
+                        <strong>{{ alerta.miles_label|portal_text }}</strong>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+        {% if hidden_alert_count %}
+        <div class="portal-category-loadmore">
+            <button
+                type="button"
+                class="portal-button portal-button--light"
+                data-load-more-button
+                data-load-more-target="public-alerts-grid"
+                data-batch-size="{{ alerts_page_size }}"
+                data-label-default="Carregar mais alertas"
+                data-analytics-event="click_carregar_mais_alertas"
+                data-analytics-category="engagement"
+                data-analytics-label="public_alerts"
+            >
+                Carregar mais alertas
+            </button>
+        </div>
+        {% endif %}
+    </section>
+    {% else %}
+    <section class="news-empty">
+        <div class="news-empty__card">
+            {% if filters_active %}
+            <h2>Nenhum alerta encontrado</h2>
+            <p>Esses filtros n&atilde;o retornaram alertas no momento. Tente ampliar a busca ou limpar os filtros.</p>
+            <a href="{% url 'portal_alertas' %}" class="portal-button portal-button--light">Limpar filtros</a>
+            {% else %}
+            <h2>Sem alertas no momento</h2>
+            <p>Assim que novos alertas entrarem na vitrine p&uacute;blica, eles v&atilde;o aparecer aqui.</p>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

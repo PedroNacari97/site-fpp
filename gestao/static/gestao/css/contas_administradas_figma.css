@@ -1,22 +1,22 @@
 :root {
-  --managed-bg: #0f1419;
-  --managed-surface: #1a2332;
-  --managed-border: #1e2939;
-  --managed-border-soft: #364153;
-  --managed-text: #ffffff;
-  --managed-text-soft: #d1d5dc;
-  --managed-text-muted: #99a1af;
-  --managed-text-faint: #6a7282;
-  --managed-blue: #155dfc;
-  --managed-blue-strong: #0f4de0;
-  --managed-green: #05df72;
-  --managed-green-bg: rgba(0, 201, 80, 0.1);
-  --managed-yellow: #fbbf24;
-  --managed-yellow-bg: rgba(251, 191, 36, 0.12);
+  --managed-bg: #f4f7fb;
+  --managed-surface: #ffffff;
+  --managed-border: #dbe3ee;
+  --managed-border-soft: #d2dce8;
+  --managed-text: #0f1b2d;
+  --managed-text-soft: #425466;
+  --managed-text-muted: #708198;
+  --managed-text-faint: #8c9aae;
+  --managed-blue: #ff6b6b;
+  --managed-blue-strong: #f15f62;
+  --managed-green: #f5a623;
+  --managed-green-bg: rgba(245, 166, 35, 0.12);
+  --managed-yellow: #f5a623;
+  --managed-yellow-bg: rgba(245, 166, 35, 0.14);
   --managed-red: #ff6467;
   --managed-red-bg: rgba(255, 100, 103, 0.1);
-  --managed-purple: #c27aff;
-  --managed-info: #51a2ff;
+  --managed-purple: #0f1b2d;
+  --managed-info: #ff8b5f;
 }
 
 .admin-managed,
@@ -33,7 +33,7 @@
   min-height: 36px;
   padding: 0 16px;
   border-radius: 8px;
-  background: var(--managed-blue);
+  background: linear-gradient(135deg, var(--managed-blue), #f5a623);
   color: var(--managed-text);
   display: inline-flex;
   align-items: center;
@@ -154,8 +154,8 @@
 .admin-managed-form__field input:focus,
 .admin-managed-form__field textarea:focus {
   outline: none;
-  border-color: rgba(21, 93, 252, 0.72);
-  box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.14);
+  border-color: rgba(255, 107, 107, 0.62);
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.14);
 }
 
 .admin-managed__filter-actions,
@@ -170,7 +170,7 @@
   padding: 0 16px;
   border: 1px solid var(--managed-blue);
   border-radius: 8px;
-  background: var(--managed-blue);
+  background: linear-gradient(135deg, var(--managed-blue), #f5a623);
   color: var(--managed-text);
   display: inline-flex;
   align-items: center;

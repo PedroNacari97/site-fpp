@@ -1,5 +1,5 @@
 :root {
-  --theme-outline-strong: hsl(221 39% 11% / 0.82);
+  --theme-outline-strong: rgba(15, 27, 45, 0.12);
   --home-bg: var(--color-bg);
   --home-surface: var(--color-surface);
   --home-surface-2: var(--color-input-bg);
@@ -10,7 +10,7 @@
   --home-text-muted: var(--color-muted);
   --home-text-dim: var(--color-muted);
   --home-blue: hsl(var(--primary));
-  --home-green: hsl(var(--success));
+  --home-green: hsl(var(--accent));
 
   --dashboard-bg: var(--color-bg);
   --dashboard-surface: var(--color-surface);
@@ -21,9 +21,9 @@
   --dashboard-text-soft: var(--color-heading);
   --dashboard-text-muted: var(--color-muted);
   --dashboard-blue: hsl(var(--primary));
-  --dashboard-cyan: #36cfc9;
-  --dashboard-green: hsl(var(--success));
-  --dashboard-purple: #8b5cf6;
+  --dashboard-cyan: hsl(var(--accent));
+  --dashboard-green: hsl(var(--accent));
+  --dashboard-purple: hsl(var(--accent));
 
   --clients-bg: var(--color-bg);
   --clients-surface: var(--color-surface);
@@ -36,8 +36,8 @@
   --clients-text-dim: var(--color-muted);
   --clients-blue: hsl(var(--primary));
   --clients-blue-2: hsl(var(--primary));
-  --clients-green: hsl(var(--success));
-  --clients-green-bg: hsl(var(--success) / 0.1);
+  --clients-green: hsl(var(--accent));
+  --clients-green-bg: hsl(var(--accent) / 0.12);
   --clients-red: hsl(var(--destructive));
   --clients-red-bg: hsl(var(--destructive) / 0.1);
 
@@ -50,7 +50,7 @@
   --loyalty-text-soft: var(--color-heading);
   --loyalty-text-muted: var(--color-muted);
   --loyalty-blue: hsl(var(--primary));
-  --loyalty-green: hsl(var(--success));
+  --loyalty-green: hsl(var(--accent));
   --loyalty-yellow: hsl(var(--warning));
   --loyalty-red: hsl(var(--destructive));
 
@@ -63,14 +63,14 @@
   --managed-text-muted: var(--color-muted);
   --managed-text-faint: var(--color-muted);
   --managed-blue: hsl(var(--primary));
-  --managed-blue-strong: hsl(221 83% 53%);
-  --managed-green: hsl(var(--success));
-  --managed-green-bg: hsl(var(--success) / 0.1);
+  --managed-blue-strong: hsl(var(--accent));
+  --managed-green: hsl(var(--accent));
+  --managed-green-bg: hsl(var(--accent) / 0.12);
   --managed-yellow: hsl(var(--warning));
   --managed-yellow-bg: hsl(var(--warning) / 0.12);
   --managed-red: hsl(var(--destructive));
   --managed-red-bg: hsl(var(--destructive) / 0.1);
-  --managed-purple: #8b5cf6;
+  --managed-purple: hsl(var(--accent));
   --managed-info: hsl(var(--primary));
 
   --client-form-bg: var(--color-bg);
@@ -96,12 +96,12 @@
   --detail-text-dim: var(--color-muted);
   --detail-blue: hsl(var(--primary));
   --detail-blue-2: hsl(var(--primary));
-  --detail-purple: #8b5cf6;
-  --detail-purple-2: #a855f7;
-  --detail-teal: #14b8a6;
-  --detail-teal-2: #2dd4bf;
-  --detail-amber: #d97706;
-  --detail-amber-2: #f59e0b;
+  --detail-purple: hsl(var(--accent));
+  --detail-purple-2: hsl(var(--accent));
+  --detail-teal: hsl(var(--primary));
+  --detail-teal-2: hsl(var(--accent));
+  --detail-amber: hsl(var(--accent));
+  --detail-amber-2: hsl(var(--accent));
   --detail-red: hsl(var(--destructive));
   --detail-red-border: hsl(var(--destructive) / 0.22);
 
@@ -242,8 +242,10 @@ body:not(.dark-mode) .miles-dashboard,
 body:not(.dark-mode) .home-ops,
 body:not(.dark-mode) .clients-page,
 body:not(.dark-mode) .loyalty-accounts,
+body:not(.dark-mode) .fidelity-programs,
 body:not(.dark-mode) .admin-managed,
 body:not(.dark-mode) .admin-managed-form,
+body:not(.dark-mode) .admin-users,
 body:not(.dark-mode) .client-form,
 body:not(.dark-mode) .detail-client {
   color: var(--color-heading) !important;
@@ -304,8 +306,10 @@ body:not(.dark-mode) :is(
   .miles-dashboard,
   .clients-page,
   .loyalty-accounts,
+  .fidelity-programs,
   .admin-managed,
   .admin-managed-form,
+  .admin-users,
   .client-form,
   .detail-client,
   .points-program,
@@ -330,8 +334,10 @@ body:not(.dark-mode) :is(
   .miles-dashboard,
   .clients-page,
   .loyalty-accounts,
+  .fidelity-programs,
   .admin-managed,
   .admin-managed-form,
+  .admin-users,
   .client-form,
   .detail-client,
   .points-program,
@@ -365,8 +371,10 @@ body:not(.dark-mode) :is(
   .miles-dashboard,
   .clients-page,
   .loyalty-accounts,
+  .fidelity-programs,
   .admin-managed,
   .admin-managed-form,
+  .admin-users,
   .client-form,
   .detail-client,
   .points-program,
@@ -404,8 +412,10 @@ body:not(.dark-mode) :is(
   .miles-dashboard,
   .clients-page,
   .loyalty-accounts,
+  .fidelity-programs,
   .admin-managed,
   .admin-managed-form,
+  .admin-users,
   .client-form,
   .detail-client,
   .points-program,
@@ -438,6 +448,7 @@ body:not(.dark-mode) :is(
 ) {
   background: var(--color-surface) !important;
   border-color: var(--theme-outline-strong) !important;
+  border-radius: 16px !important;
 }
 
 body:not(.dark-mode) :is(
@@ -445,8 +456,10 @@ body:not(.dark-mode) :is(
   .miles-dashboard,
   .clients-page,
   .loyalty-accounts,
+  .fidelity-programs,
   .admin-managed,
   .admin-managed-form,
+  .admin-users,
   .client-form,
   .detail-client,
   .points-program,
@@ -473,8 +486,10 @@ body:not(.dark-mode) :is(
   .miles-dashboard,
   .clients-page,
   .loyalty-accounts,
+  .fidelity-programs,
   .admin-managed,
   .admin-managed-form,
+  .admin-users,
   .client-form,
   .detail-client,
   .points-program,
@@ -499,8 +514,10 @@ body:not(.dark-mode) :is(
   .miles-dashboard,
   .clients-page,
   .loyalty-accounts,
+  .fidelity-programs,
   .admin-managed,
   .admin-managed-form,
+  .admin-users,
   .client-form,
   .detail-client,
   .points-program,
@@ -537,6 +554,78 @@ body:not(.dark-mode) :is(
   .home-ops__button-secondary,
   .filter-panel .btn-primary,
   .filter-panel .btn-secondary
+):hover {
+  background: var(--color-surface-muted) !important;
+  color: var(--color-heading) !important;
+}
+
+body:not(.dark-mode) :is(
+  .admin-users__cta,
+  .admin-users__primary,
+  .emissions-page__button--primary,
+  .airport-page__header-action,
+  .airlines-page__header-action,
+  .partner-page__header-action,
+  .hotel-page__header-action,
+  .points-program__header-action,
+  .airport-page__search-button,
+  .airlines-page__search-button,
+  .points-program__search-button,
+  .hotel-page__filters button
+) {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent))) !important;
+  color: #fff !important;
+  border: 1px solid transparent !important;
+  box-shadow: 0 12px 24px rgba(255, 107, 107, 0.18) !important;
+}
+
+body:not(.dark-mode) :is(
+  .admin-users__cta,
+  .admin-users__primary,
+  .emissions-page__button--primary,
+  .airport-page__header-action,
+  .airlines-page__header-action,
+  .partner-page__header-action,
+  .hotel-page__header-action,
+  .points-program__header-action,
+  .airport-page__search-button,
+  .airlines-page__search-button,
+  .points-program__search-button,
+  .hotel-page__filters button
+):hover {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent))) !important;
+  filter: saturate(1.02) brightness(0.98) !important;
+}
+
+body:not(.dark-mode) :is(
+  .admin-users__secondary,
+  .admin-users__table-action,
+  .admin-users__danger,
+  .emissions-page__button--ghost,
+  .emissions-page__row-button,
+  .airport-page__clear-button,
+  .airlines-page__clear-button,
+  .partner-page__filter-clear,
+  .hotel-page__filters a,
+  .points-program__clear-button
+) {
+  background: var(--color-surface) !important;
+  color: var(--color-heading) !important;
+  border: 1px solid var(--theme-outline-strong) !important;
+  box-shadow: none !important;
+}
+
+body:not(.dark-mode) :is(
+  .admin-users__secondary,
+  .admin-users__table-action,
+  .admin-users__danger,
+  .emissions-page__button--ghost,
+  .emissions-page__row-button,
+  .airport-page__clear-button,
+  .airlines-page__clear-button,
+  .partner-page__filter-clear,
+  .hotel-page__filters a,
+  .points-program__clear-button
 ):hover {
   background: var(--color-surface-muted) !important;
   color: var(--color-heading) !important;

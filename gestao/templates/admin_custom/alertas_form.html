@@ -6,12 +6,38 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
+<style>
+  .form-actions--inline {
+    justify-content: flex-start;
+    margin-top: 12px;
+  }
+</style>
 {% endblock %}
 {% block content %}
 <div class="form-wrapper">
   <form method="post" class="form-shell" data-alerta-form>
     {% csrf_token %}
     <div class="form-title">{{ titulo_pagina }}</div>
+
+    <div class="section-card">
+      <div class="section-card__header">
+        <div>
+          <div class="section-card__title">Importar alerta bruto</div>
+          <p class="section-card__description">Cole o texto recebido no formato do Telegram para autopreencher rota, programa, companhia, milhas e datas.</p>
+        </div>
+      </div>
+      <div class="form-group single">
+        <div>
+          <label class="form-label" for="{{ form.alerta_bruto.id_for_label }}">{{ form.alerta_bruto.label }}</label>
+          {{ form.alerta_bruto }}
+          <p class="form-hint">Depois de colar, clique em <strong>Autopreencher</strong>. Voce revisa os campos e so depois salva o alerta.</p>
+          {% for error in form.alerta_bruto.errors %}<div class="errorlist">{{ error }}</div>{% endfor %}
+        </div>
+      </div>
+      <div class="form-actions form-actions--inline">
+        <button type="button" class="btn btn--ghost" data-alerta-autopreencher>Autopreencher</button>
+      </div>
+    </div>
 
     <div class="form-group single">
       <label class="form-label" for="{{ form.titulo.id_for_label }}">{{ form.titulo.label }}</label>
@@ -137,14 +163,36 @@
       </div>
     </div>
 
+    <div class="section-card">
+      <div class="section-card__header">
+        <div>
+          <div class="section-card__title">Regras de exibicao</div>
+          <p class="section-card__description">Por padrao o alerta sai da vitrine publica depois de 5 dias.</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <div>
+          <label class="form-label" for="{{ form.manter_apos_cinco_dias.id_for_label }}">{{ form.manter_apos_cinco_dias.label }}</label>
+          {{ form.manter_apos_cinco_dias }}
+          <p class="form-hint">Se marcado, o alerta continua aparecendo mesmo depois dos 5 dias.</p>
+        </div>
+        <div>
+          <label class="form-label" for="{{ form.ocultar_apos_datas.id_for_label }}">{{ form.ocultar_apos_datas.label }}</label>
+          {{ form.ocultar_apos_datas }}
+          <p class="form-hint">Se marcado, ele some da vitrine quando passar a ultima data disponivel.</p>
+        </div>
+      </div>
+    </div>
+
     <div class="form-actions">
       <button type="submit" class="btn">Salvar alerta</button>
       <a href="{% url 'admin_alertas_passagens' %}" class="btn btn--ghost">Cancelar</a>
     </div>
   </form>
 </div>
+{{ aeroportos_json|json_script:"alerta-aeroportos-data" }}
 {% endblock %}
-{% block extra_js %}
+{% block extra_body %}
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="{% static 'gestao/js/alertas_form.js' %}"></script>
 {% endblock %}

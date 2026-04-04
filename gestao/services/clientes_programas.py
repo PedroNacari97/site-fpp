@@ -87,7 +87,6 @@ def build_clientes_programas_map(
                 "cpfs_disponiveis": cpfs_disponiveis,
                 "cpfs_total": limite_cpfs,
                 "cpfs_usados": cpfs_usados,
-                "cpfs_usados_list": cpfs_usados_list,
                 "status": controle.get("status", "disponivel"),
             }
         )
@@ -105,7 +104,6 @@ def build_clientes_programas_map(
                     "cpfs_disponiveis": None,
                     "cpfs_total": None,
                     "cpfs_usados": len(cpfs_sets_map.get(("cliente", instance.cliente_id, instance.programa_id), set())),
-                    "cpfs_usados_list": sorted(cpfs_sets_map.get(("cliente", instance.cliente_id, instance.programa_id), set())),
                 }
             )
     return data
@@ -144,7 +142,6 @@ def build_contas_administradas_programas_map(
                 "cpfs_disponiveis": cpfs_disponiveis,
                 "cpfs_total": limite_cpfs,
                 "cpfs_usados": cpfs_usados,
-                "cpfs_usados_list": cpfs_usados_list,
                 "status": controle.get("status", "disponivel"),
             }
         )
@@ -162,12 +159,6 @@ def build_contas_administradas_programas_map(
                     "cpfs_disponiveis": None,
                     "cpfs_total": None,
                     "cpfs_usados": len(
-                        cpfs_sets_map.get(
-                            ("administrada", instance.conta_administrada_id, instance.programa_id),
-                            set(),
-                        )
-                    ),
-                    "cpfs_usados_list": sorted(
                         cpfs_sets_map.get(
                             ("administrada", instance.conta_administrada_id, instance.programa_id),
                             set(),
@@ -194,7 +185,6 @@ def build_empresa_programas_map(
             "cpfs_disponiveis": None,
             "cpfs_total": None,
             "cpfs_usados": 0,
-            "cpfs_usados_list": [],
         }
         for programa in programas.values()
     ]
@@ -210,7 +200,6 @@ def build_empresa_programas_map(
                     "cpfs_disponiveis": None,
                     "cpfs_total": None,
                     "cpfs_usados": 0,
-                    "cpfs_usados_list": [],
                 }
             )
     return data

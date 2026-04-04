@@ -1,17 +1,17 @@
 :root {
-  --clients-bg: #0f1419;
-  --clients-surface: #1a2332;
-  --clients-surface-2: #111924;
-  --clients-border: #1e2939;
-  --clients-border-soft: #364153;
-  --clients-text: #ffffff;
-  --clients-text-soft: #d7deea;
-  --clients-text-muted: #99a1af;
-  --clients-text-dim: #6a7282;
-  --clients-blue: #155dfc;
-  --clients-blue-2: #2b7fff;
-  --clients-green: #05df72;
-  --clients-green-bg: rgba(0, 201, 80, 0.18);
+  --clients-bg: #f4f7fb;
+  --clients-surface: #ffffff;
+  --clients-surface-2: #f8fafc;
+  --clients-border: #dbe3ee;
+  --clients-border-soft: #d2dce8;
+  --clients-text: #0f1b2d;
+  --clients-text-soft: #425466;
+  --clients-text-muted: #708198;
+  --clients-text-dim: #8c9aae;
+  --clients-blue: #ff6b6b;
+  --clients-blue-2: #f5a623;
+  --clients-green: #f5a623;
+  --clients-green-bg: rgba(245, 166, 35, 0.16);
   --clients-red: #f87171;
   --clients-red-bg: rgba(248, 113, 113, 0.16);
 }
@@ -83,8 +83,8 @@
 .clients-page__field input:focus,
 .clients-page__field select:focus {
   outline: none;
-  border-color: rgba(43, 127, 255, 0.7);
-  box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.14);
+  border-color: rgba(255, 107, 107, 0.62);
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.14);
 }
 
 .clients-page__actions {
@@ -113,7 +113,7 @@
 .clients-page__button,
 .clients-page__row-button {
   border: 1px solid var(--clients-blue);
-  background: var(--clients-blue);
+  background: linear-gradient(135deg, var(--clients-blue), var(--clients-blue-2));
   color: #fff;
 }
 

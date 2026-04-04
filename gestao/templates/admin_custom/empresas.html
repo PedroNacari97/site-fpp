@@ -3,7 +3,7 @@
 
 {% block title %}Empresas{% endblock %}
 {% block header_title %}Empresas{% endblock %}
-{% block header_subtitle %}<span>Gestao central das organizacoes, administradores e capacidade operacional.</span>{% endblock %}
+{% block header_subtitle %}<span>Gestao central das organizacoes, administradores, capacidade operacional e status comercial.</span>{% endblock %}
 {% block header_actions %}
 <a href="{% url 'admin_criar_empresa' %}" class="btn">Nova Empresa</a>
 {% endblock %}
@@ -18,11 +18,11 @@
     <div>
       <p class="superadmin-hero__eyebrow">Super Admin</p>
       <h2 class="superadmin-hero__title">Empresas cadastradas</h2>
-      <p class="superadmin-hero__subtitle">Acompanhe quantidade de empresas, admins vinculados, operadores e base de clientes em um unico painel.</p>
+      <p class="superadmin-hero__subtitle">Veja rapidamente quem esta ativo, qual empresa esta sem folga operacional e acesse a edicao sem sair da camada de governanca.</p>
     </div>
   </section>
 
-  <section class="superadmin-kpis">
+  <section class="superadmin-kpis superadmin-kpis--five">
     <article class="superadmin-kpi">
       <span class="superadmin-kpi__label">Empresas</span>
       <strong class="superadmin-kpi__value">{{ totais.empresas }}</strong>
@@ -39,6 +39,21 @@
       <span class="superadmin-kpi__label">Clientes</span>
       <strong class="superadmin-kpi__value">{{ totais.clientes }}</strong>
     </article>
+    <article class="superadmin-kpi">
+      <span class="superadmin-kpi__label">Limite zerado</span>
+      <strong class="superadmin-kpi__value">{{ totais.bloqueadas }}</strong>
+    </article>
+  </section>
+
+  <section class="superadmin-note-grid">
+    <div class="superadmin-sidebar-note">
+      <span class="superadmin-sidebar-note__label">Regra atual</span>
+      <p>O administrador principal da empresa nao entra no limite de colaboradores. O valor <strong>0</strong> bloqueia novos operadores no portal da empresa.</p>
+    </div>
+    <div class="superadmin-sidebar-note">
+      <span class="superadmin-sidebar-note__label">Fluxo recomendado</span>
+      <p>Use editar empresa para ajustar capacidade, contato institucional, status e mensagem usada nos PDFs e visualizacoes.</p>
+    </div>
   </section>
 
   <section class="superadmin-card">
@@ -56,11 +71,11 @@
           <thead>
             <tr>
               <th>Empresa</th>
+              <th>Contato</th>
               <th>Administrador</th>
-              <th>Limite de operadores</th>
-              <th>Operadores atuais</th>
-              <th>Clientes</th>
+              <th>Capacidade</th>
               <th>Status</th>
+              <th>Acoes</th>
             </tr>
           </thead>
           <tbody>
@@ -69,19 +84,53 @@
                 <td>
                   <div class="superadmin-company">
                     <strong>{{ info.empresa.nome }}</strong>
-                    <span>ID {{ info.empresa.id }}</span>
+                    <span>ID {{ info.empresa.id }}{% if info.empresa.cidade or info.empresa.estado %} &middot; {{ info.empresa.cidade|default:"" }}{% if info.empresa.cidade and info.empresa.estado %}/{% endif %}{{ info.empresa.estado|default:"" }}{% endif %}</span>
                   </div>
                 </td>
-                <td>{{ info.empresa.admin.usuario.get_full_name|default:info.empresa.admin.usuario.username|default:"-" }}</td>
-                <td>{{ info.empresa.limite_colaboradores|default:"0" }}</td>
-                <td>{{ info.operadores }}</td>
-                <td>{{ info.clientes }}</td>
+                <td>
+                  <div class="superadmin-company superadmin-company--compact">
+                    <strong>{{ info.empresa.responsavel_nome|default:"Nao informado" }}</strong>
+                    <span>{{ info.empresa.email_contato|default:"Sem e-mail" }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="superadmin-company superadmin-company--compact">
+                    {% if info.empresa.admin %}
+                    <strong>{{ info.empresa.admin.usuario.get_full_name|default:info.empresa.admin.usuario.username }}</strong>
+                    <span>{{ info.empresa.admin.usuario.email|default:"Sem e-mail" }}</span>
+                    {% else %}
+                    <strong>Sem admin</strong>
+                    <span>Sem e-mail</span>
+                    {% endif %}
+                  </div>
+                </td>
+                <td>
+                  <div class="superadmin-capacity">
+                    <strong>{{ info.operadores }} / {{ info.empresa.limite_colaboradores }}</strong>
+                    <span>{{ info.vagas }} vaga(s) disponivel(is)</span>
+                    {% if info.empresa.limite_colaboradores == 0 %}
+                      <span class="superadmin-tag superadmin-tag--danger">Bloqueada</span>
+                    {% elif info.limite_atingido %}
+                      <span class="superadmin-tag superadmin-tag--danger">Sem vagas</span>
+                    {% else %}
+                      <span class="superadmin-tag superadmin-tag--success">Disponivel</span>
+                    {% endif %}
+                  </div>
+                </td>
                 <td>
                   {% if info.empresa.ativo %}
                     <span class="superadmin-tag superadmin-tag--success">Ativa</span>
                   {% else %}
                     <span class="superadmin-tag superadmin-tag--danger">Inativa</span>
                   {% endif %}
+                </td>
+                <td>
+                  <div class="superadmin-actions">
+                    <a href="{% url 'admin_editar_empresa' info.empresa.id %}" class="btn btn--outline btn--sm">Editar</a>
+                    {% if info.empresa.admin %}
+                    <a href="{% url 'user_edit' info.empresa.admin.id %}" class="btn btn--outline btn--sm">Admin</a>
+                    {% endif %}
+                  </div>
                 </td>
               </tr>
             {% endfor %}

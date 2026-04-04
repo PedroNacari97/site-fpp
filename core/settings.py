@@ -1,6 +1,8 @@
 from pathlib import Path
 import os
+from urllib.parse import urlparse
 
+import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse_lazy
 
@@ -46,7 +48,7 @@ def _env_list(name, default=None):
 
 DEBUG = _env_bool("DJANGO_DEBUG", True)
 
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY")
 if not SECRET_KEY:
     if DEBUG:
         SECRET_KEY = "chave-super-secreta-para-dev"
@@ -70,6 +72,7 @@ INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
+    "django.contrib.sitemaps",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
@@ -96,6 +99,7 @@ MIDDLEWARE = [
     "accounts.middleware.SingleSessionMiddleware",
     "accounts.middleware.SessionInactivityMiddleware",
     "accounts.middleware.AdminAreaAccessMiddleware",
+    "accounts.middleware.PlatformDocumentAcceptanceMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "gestao.middleware.AuditLogMiddleware",
 ]
@@ -112,7 +116,9 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "gestao.context_processors.app_branding",
                 "gestao.context_processors.admin_notifications",
+                "portal.context_processors.portal_public_settings",
             ],
         },
     },
@@ -120,9 +126,26 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
-DB_ENGINE = os.getenv("DB_ENGINE", "sqlite")
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+DB_ENGINE = os.getenv("DB_ENGINE", "sqlite").strip().lower()
 
-if DB_ENGINE == "mysql":
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=60,
+            ssl_require=not DEBUG,
+        )
+    }
+    if DATABASES["default"]["ENGINE"] == "django.db.backends.mysql":
+        DATABASES["default"].setdefault("OPTIONS", {})
+        DATABASES["default"]["OPTIONS"].update(
+            {
+                "charset": "utf8mb4",
+                "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+            }
+        )
+elif DB_ENGINE == "mysql":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
@@ -155,10 +178,54 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC"
+LANGUAGE_CODE = "pt-br"
+TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
 USE_TZ = True
+
+GOOGLE_ANALYTICS_MEASUREMENT_ID = os.environ.get(
+    "GOOGLE_ANALYTICS_MEASUREMENT_ID", ""
+).strip().upper()
+GOOGLE_SEARCH_CONSOLE_VERIFICATION = os.environ.get(
+    "GOOGLE_SEARCH_CONSOLE_VERIFICATION", ""
+).strip()
+
+SITE_BASE_URL = os.environ.get("SITE_BASE_URL", "").strip().rstrip("/")
+SITE_ENVIRONMENT = os.environ.get(
+    "SITE_ENVIRONMENT",
+    "local" if DEBUG else "production",
+).strip().lower() or ("local" if DEBUG else "production")
+PORTAL_SITE_NAME = os.environ.get("PORTAL_SITE_NAME", "NC Fly News").strip() or "NC Fly News"
+PORTAL_SITE_LOGO_URL = os.environ.get(
+    "PORTAL_SITE_LOGO_URL", "/static/portal/img/ncfly-wordmark.svg"
+).strip()
+PORTAL_SITE_LOGO_LIGHT_URL = os.environ.get(
+    "PORTAL_SITE_LOGO_LIGHT_URL", "/static/portal/img/ncfly-wordmark-light.svg"
+).strip()
+PORTAL_DEFAULT_META_DESCRIPTION = (
+    os.environ.get(
+        "PORTAL_DEFAULT_META_DESCRIPTION",
+        "Portal da NC Fly com notícias, promoções, milhas, cartões de crédito, hotéis e estratégias para viajar melhor.",
+    ).strip()
+    or "Portal da NC Fly com notícias, promoções, milhas, cartões de crédito, hotéis e estratégias para viajar melhor."
+)
+
+PORTAL_LEGAL_ENTITY_NAME = os.environ.get("PORTAL_LEGAL_ENTITY_NAME", "NC Fly").strip() or "NC Fly"
+PORTAL_CONTACT_EMAIL = os.environ.get("PORTAL_CONTACT_EMAIL", "").strip()
+PORTAL_CONTACT_PHONE = os.environ.get("PORTAL_CONTACT_PHONE", "").strip()
+PORTAL_CONTACT_WHATSAPP = os.environ.get("PORTAL_CONTACT_WHATSAPP", "").strip()
+PORTAL_COMPANY_CNPJ = os.environ.get("PORTAL_COMPANY_CNPJ", "").strip()
+PORTAL_COMPANY_ADDRESS = os.environ.get("PORTAL_COMPANY_ADDRESS", "").strip()
+PORTAL_DPO_EMAIL = os.environ.get("PORTAL_DPO_EMAIL", PORTAL_CONTACT_EMAIL).strip()
+PORTAL_COOKIE_CONSENT_COOKIE_NAME = os.environ.get(
+    "PORTAL_COOKIE_CONSENT_COOKIE_NAME", "ncfly_cookie_preferences"
+).strip() or "ncfly_cookie_preferences"
+PORTAL_COOKIE_CONSENT_VERSION = os.environ.get(
+    "PORTAL_COOKIE_CONSENT_VERSION", "2026-04"
+).strip() or "2026-04"
+PORTAL_COOKIE_CONSENT_MAX_AGE_DAYS = int(
+    os.environ.get("PORTAL_COOKIE_CONSENT_MAX_AGE_DAYS", "180")
+)
 
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
@@ -212,7 +279,21 @@ EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = _env_bool("DJANGO_EMAIL_USE_TLS", False)
 EMAIL_USE_SSL = _env_bool("DJANGO_EMAIL_USE_SSL", False)
-DEFAULT_FROM_EMAIL = os.environ.get("DJANGO_DEFAULT_FROM_EMAIL", "no-reply@ncfly.local")
+
+
+def _default_outbound_email():
+    if SITE_BASE_URL:
+        hostname = (urlparse(SITE_BASE_URL).hostname or "").strip().lower()
+        if hostname and hostname not in {"127.0.0.1", "localhost"}:
+            return f"contato@{hostname}"
+    return "contato@ncfly.com.br"
+
+
+DEFAULT_FROM_EMAIL = os.environ.get("DJANGO_DEFAULT_FROM_EMAIL", _default_outbound_email())
+
+TELEGRAM_ALERTS_BOT_TOKEN = os.environ.get("TELEGRAM_ALERTS_BOT_TOKEN", "")
+TELEGRAM_ALERTS_WEBHOOK_SECRET = os.environ.get("TELEGRAM_ALERTS_WEBHOOK_SECRET", "")
+TELEGRAM_ALERTS_ALLOWED_CHAT_IDS = _env_list("TELEGRAM_ALERTS_ALLOWED_CHAT_IDS", [])
 
 if os.environ.get("AWS_STORAGE_BUCKET_NAME"):
     AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]

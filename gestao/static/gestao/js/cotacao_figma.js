@@ -38,8 +38,16 @@
     routeCompanhia: qs("#route-preview-companhia"),
     dataIda: qs("#id_data_ida"),
     dataVolta: qs("#id_data_volta"),
+    duracaoIda: qs("#id_duracao_voo_ida_minutos"),
+    duracaoVolta: qs("#id_duracao_voo_volta_minutos"),
+    fusoIda: qs("#id_fuso_horario_ida"),
+    fusoVolta: qs("#id_fuso_horario_volta"),
     possuiVolta: qs("#possui-volta"),
+    idaTemFuso: qs("#ida-tem-fuso"),
+    voltaTemFuso: qs("#volta-tem-fuso"),
     horarioVolta: qs("#horario-volta"),
+    idaFusoWrapper: qs("#ida-fuso-wrapper"),
+    voltaFusoWrapper: qs("#volta-fuso-wrapper"),
     idaTemEscala: qs("#ida-tem-escala"),
     voltaTemEscala: qs("#volta-tem-escala"),
     escalaIdaWrapper: qs("#escala-ida-wrapper"),
@@ -53,11 +61,14 @@
     parcelas: qs("#id_parcelas"),
     juros: qs("#id_juros"),
     desconto: qs("#id_desconto"),
+    mostrarValorParcelado: qs("#id_mostrar_valor_parcelado"),
     status: qs("#id_status"),
     validade: qs("#id_validade"),
     observacoes: qs("#id_observacoes"),
     routeOrigin: qs("#route-preview-origin"),
     routeDestination: qs("#route-preview-destination"),
+    routeArrivalIda: qs("#route-preview-arrival-ida"),
+    routeArrivalVolta: qs("#route-preview-arrival-volta"),
     heroStatus: qs("#quote-hero-status"),
     summaryClientName: qs("#summary-client-name"),
     summaryProgramName: qs("#summary-program-name"),
@@ -67,6 +78,7 @@
     summaryDestinationCity: qs("#summary-destination-city"),
     resumoDatas: qs("#resumo-datas"),
     resumoPassageiros: qs("#resumo-passageiros"),
+    resumoRateio: qs("#resumo-rateio"),
     resumoFinanceiro: qs("#resumo-financeiro"),
     summaryValorPassagem: qs("#summary-valor-passagem"),
     summaryValorTaxas: qs("#summary-valor-taxas"),
@@ -75,9 +87,16 @@
     summaryStatusBadge: qs("#summary-status-badge"),
     summaryMissingList: qs("#summary-missing-list"),
     previewBase: qs("#preview-base"),
+    previewBaseDetail: qs("#preview-base-detail"),
     previewParcelado: qs("#preview-parcelado"),
+    previewParceladoDetail: qs("#preview-parcelado-detail"),
+    previewParceladoCard: qs("#preview-parcelado-card"),
     previewVista: qs("#preview-vista"),
+    previewVistaDetail: qs("#preview-vista-detail"),
     previewEconomia: qs("#preview-economia"),
+    previewEconomiaDetail: qs("#preview-economia-detail"),
+    parcelasConfigWrapper: qs("#parcelado-config-wrapper"),
+    jurosConfigWrapper: qs("#juros-config-wrapper"),
   };
 
   const toNumber = (value) => {
@@ -101,6 +120,20 @@
       dateStyle: "short",
       timeStyle: "short",
     }).format(parsed);
+  };
+
+  const parseDurationMinutes = (value) => {
+    if (!value) return 0;
+    const [hours, minutes] = String(value).split(":").map((item) => Number(item || 0));
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return 0;
+    return (hours * 60) + minutes;
+  };
+
+  const calculateArrival = (departureValue, durationMinutes, timezoneOffsetHours) => {
+    if (!departureValue || !durationMinutes) return null;
+    const departure = new Date(departureValue);
+    if (Number.isNaN(departure.getTime())) return null;
+    return new Date(departure.getTime() + ((durationMinutes + (timezoneOffsetHours * 60)) * 60000));
   };
 
   const getAirportMeta = (select) => {
@@ -182,7 +215,9 @@
     if (refs.possuiVolta) refs.possuiVolta.checked = shouldShow;
     if (!shouldShow) {
       if (refs.dataVolta) refs.dataVolta.value = "";
+      if (refs.duracaoVolta) refs.duracaoVolta.value = "";
       if (refs.voltaTemEscala) refs.voltaTemEscala.checked = false;
+      if (refs.voltaTemFuso) refs.voltaTemFuso.checked = false;
       if (refs.escalaVoltaWrapper) refs.escalaVoltaWrapper.classList.remove("is-visible");
       const qtdEscalasVolta = qs("#id_qtd_escalas_volta");
       if (qtdEscalasVolta) qtdEscalasVolta.value = "0";
@@ -191,6 +226,19 @@
       const container = qs("#escalas-volta-container");
       if (container) container.innerHTML = "";
     }
+  }
+
+  function setFusoVisibility() {
+    const idaHasOffset = Boolean(refs.idaTemFuso?.checked || toNumber(refs.fusoIda?.value));
+    if (refs.idaFusoWrapper) refs.idaFusoWrapper.classList.toggle("is-visible", idaHasOffset);
+    if (refs.idaTemFuso) refs.idaTemFuso.checked = idaHasOffset;
+    if (!idaHasOffset && refs.fusoIda) refs.fusoIda.value = "0";
+
+    const voltaEnabled = hasVolta();
+    const voltaHasOffset = Boolean(voltaEnabled && (refs.voltaTemFuso?.checked || toNumber(refs.fusoVolta?.value)));
+    if (refs.voltaFusoWrapper) refs.voltaFusoWrapper.classList.toggle("is-visible", voltaHasOffset);
+    if (refs.voltaTemFuso) refs.voltaTemFuso.checked = voltaHasOffset;
+    if ((!voltaEnabled || !voltaHasOffset) && refs.fusoVolta) refs.fusoVolta.value = "0";
   }
 
   function buildScaleRow(tipo, index, data) {
@@ -310,9 +358,17 @@
     const companhia = getSelectedText(refs.companhia);
     const dataIda = refs.dataIda?.value || "";
     const dataVolta = refs.dataVolta?.value || "";
+    const duracaoIdaMinutos = parseDurationMinutes(refs.duracaoIda?.value);
+    const duracaoVoltaMinutos = parseDurationMinutes(refs.duracaoVolta?.value);
+    const fusoIda = refs.idaTemFuso?.checked ? toNumber(refs.fusoIda?.value) : 0;
+    const fusoVolta = refs.voltaTemFuso?.checked ? toNumber(refs.fusoVolta?.value) : 0;
+    const chegadaIda = calculateArrival(dataIda, duracaoIdaMinutos, fusoIda);
+    const chegadaVolta = calculateArrival(dataVolta, duracaoVoltaMinutos, fusoVolta);
     const idaEscalas = Number(qs("#id_qtd_escalas_ida")?.value || 0);
     const voltaEscalas = Number(qs("#id_qtd_escalas_volta")?.value || 0);
     const qtdPassageiros = refs.qtdPassageiros?.value || "0";
+    const qtdPassageirosNum = Math.max(parseInt(qtdPassageiros, 10) || 0, 0);
+    const factor = qtdPassageirosNum || 1;
     const classe = getSelectedText(refs.classe, "Classe nao informada");
     const valorPassagem = toNumber(refs.valorPassagem?.value);
     const taxas = toNumber(refs.taxas?.value);
@@ -320,19 +376,35 @@
     const valorMilheiro = toNumber(refs.valorMilheiro?.value);
     const juros = toNumber(refs.juros?.value || 1);
     const desconto = toNumber(refs.desconto?.value || 1);
+    const mostrarValorParcelado = refs.mostrarValorParcelado?.checked ?? true;
     const clienteLabel =
       refs.tipoTitular?.value === "administrada"
         ? getSelectedText(refs.contaAdm, "---")
         : getSelectedText(refs.cliente, "---");
     const programaLabel = getSelectedText(refs.programa, "Nenhum programa selecionado");
 
-    const base = (milhas / 1000) * valorMilheiro + taxas;
-    const parcelado = base * (juros || 1);
-    const vista = parcelado * (desconto || 1);
-    const economia = valorPassagem - vista;
-
+    const passagemUnit = valorPassagem;
+    const taxasUnit = taxas;
+    const valorEncontradoUnit = (milhas / 1000) * valorMilheiro;
+    const baseUnit = valorEncontradoUnit + taxasUnit;
+    const parceladoUnit = baseUnit * (juros || 1);
+    const vistaUnit = parceladoUnit * (desconto || 1);
+    const economiaUnit = passagemUnit - vistaUnit;
+    const passagemTotal = passagemUnit * factor;
+    const taxasTotal = taxasUnit * factor;
+    const milhasTotal = milhas * factor;
+    const valorEncontradoTotal = valorEncontradoUnit * factor;
+    const baseTotal = baseUnit * factor;
+    const parceladoTotal = parceladoUnit * factor;
+    const vistaTotal = vistaUnit * factor;
+    const economiaTotal = economiaUnit * factor;
+    const passengerDetail = qtdPassageirosNum
+      ? `${qtdPassageirosNum} passageiro(s)`
+      : "quantidade pendente";
     if (refs.routeOrigin) refs.routeOrigin.textContent = origem.label;
     if (refs.routeDestination) refs.routeDestination.textContent = destino.label;
+    if (refs.routeArrivalIda) refs.routeArrivalIda.textContent = chegadaIda ? formatDateTime(chegadaIda) : "--";
+    if (refs.routeArrivalVolta) refs.routeArrivalVolta.textContent = chegadaVolta ? formatDateTime(chegadaVolta) : "--";
     if (refs.routeCompanhia) refs.routeCompanhia.textContent = companhia;
     if (refs.summaryClientName) refs.summaryClientName.textContent = clienteLabel;
     if (refs.summaryProgramName) refs.summaryProgramName.textContent = programaLabel;
@@ -341,24 +413,46 @@
     if (refs.summaryDestinationCode) refs.summaryDestinationCode.textContent = destino.code;
     if (refs.summaryDestinationCity) refs.summaryDestinationCity.textContent = destino.city;
     if (refs.resumoDatas) {
-      refs.resumoDatas.textContent = `${dataIda ? `Ida: ${formatDateTime(dataIda)}` : "Ida pendente"} | ${
-        hasVolta() ? (dataVolta ? `Volta: ${formatDateTime(dataVolta)}` : "Volta pendente") : "Somente ida"
-      }`;
+      const idaResumo = dataIda
+        ? `Ida: ${formatDateTime(dataIda)}${chegadaIda ? ` -> ${formatDateTime(chegadaIda)}` : ""}`
+        : "Ida pendente";
+      const voltaResumo = hasVolta()
+        ? (dataVolta ? `Volta: ${formatDateTime(dataVolta)}${chegadaVolta ? ` -> ${formatDateTime(chegadaVolta)}` : ""}` : "Volta pendente")
+        : "Somente ida";
+      refs.resumoDatas.textContent = `${idaResumo} | ${voltaResumo}`;
     }
     if (refs.resumoPassageiros) {
       refs.resumoPassageiros.textContent = `${qtdPassageiros} passageiro(s) | ${classe}`;
     }
-    if (refs.summaryValorPassagem) refs.summaryValorPassagem.textContent = formatCurrency(valorPassagem);
-    if (refs.summaryValorTaxas) refs.summaryValorTaxas.textContent = formatCurrency(taxas);
-    if (refs.summaryValorMilhas) refs.summaryValorMilhas.textContent = milhas ? `${milhas}` : "0";
-    if (refs.summaryValorTotal) refs.summaryValorTotal.textContent = formatCurrency(vista);
-    if (refs.resumoFinanceiro) {
-      refs.resumoFinanceiro.textContent = `A vista estimado: ${formatCurrency(vista)} | Economia estimada: ${formatCurrency(economia)}`;
+    if (refs.resumoRateio) {
+      refs.resumoRateio.textContent = `Campos monetarios e milhas por pessoa | Totais com ${passengerDetail}.`;
     }
-    if (refs.previewBase) refs.previewBase.textContent = formatCurrency(base);
-    if (refs.previewParcelado) refs.previewParcelado.textContent = formatCurrency(parcelado);
-    if (refs.previewVista) refs.previewVista.textContent = formatCurrency(vista);
-    if (refs.previewEconomia) refs.previewEconomia.textContent = formatCurrency(economia);
+    if (refs.summaryValorPassagem) refs.summaryValorPassagem.textContent = formatCurrency(passagemTotal);
+    if (refs.summaryValorTaxas) refs.summaryValorTaxas.textContent = formatCurrency(taxasTotal);
+    if (refs.summaryValorMilhas) {
+      refs.summaryValorMilhas.textContent = milhas
+        ? qtdPassageirosNum
+          ? `${milhas.toLocaleString("pt-BR")} por pax | ${milhasTotal.toLocaleString("pt-BR")} total`
+          : `${milhas.toLocaleString("pt-BR")} por pax`
+        : "0";
+    }
+    if (refs.summaryValorTotal) refs.summaryValorTotal.textContent = formatCurrency(vistaTotal);
+    if (refs.resumoFinanceiro) {
+      refs.resumoFinanceiro.textContent = mostrarValorParcelado
+        ? `Valor encontrado: ${formatCurrency(valorEncontradoTotal)} | Valor total: ${formatCurrency(vistaTotal)}`
+        : `Valor encontrado: ${formatCurrency(valorEncontradoTotal)} | Valor total: ${formatCurrency(vistaTotal)}`;
+    }
+    if (refs.previewBase) refs.previewBase.textContent = formatCurrency(valorEncontradoTotal);
+    if (refs.previewBaseDetail) refs.previewBaseDetail.textContent = `${formatCurrency(valorEncontradoUnit)} por pessoa${qtdPassageirosNum ? ` x ${qtdPassageirosNum} = ${formatCurrency(valorEncontradoTotal)}` : ""}`;
+    if (refs.previewParcelado) refs.previewParcelado.textContent = formatCurrency(parceladoTotal);
+    if (refs.previewParceladoDetail) refs.previewParceladoDetail.textContent = `${formatCurrency(parceladoUnit)} por pessoa${qtdPassageirosNum ? ` x ${qtdPassageirosNum} = ${formatCurrency(parceladoTotal)}` : ""}`;
+    if (refs.previewParceladoCard) refs.previewParceladoCard.classList.toggle("quote-hidden", !mostrarValorParcelado);
+    if (refs.previewVista) refs.previewVista.textContent = formatCurrency(vistaTotal);
+    if (refs.previewVistaDetail) refs.previewVistaDetail.textContent = `${formatCurrency(vistaUnit)} por pessoa${qtdPassageirosNum ? ` x ${qtdPassageirosNum} = ${formatCurrency(vistaTotal)}` : ""}`;
+    if (refs.previewEconomia) refs.previewEconomia.textContent = formatCurrency(taxasTotal);
+    if (refs.previewEconomiaDetail) refs.previewEconomiaDetail.textContent = `${formatCurrency(taxasUnit)} por pessoa${qtdPassageirosNum ? ` x ${qtdPassageirosNum} = ${formatCurrency(taxasTotal)}` : ""}`;
+    if (refs.parcelasConfigWrapper) refs.parcelasConfigWrapper.classList.toggle("quote-hidden", !mostrarValorParcelado);
+    if (refs.jurosConfigWrapper) refs.jurosConfigWrapper.classList.toggle("quote-hidden", !mostrarValorParcelado);
 
     const statusLabel = getStatusLabel();
     applyStatusVisual(statusLabel);
@@ -370,7 +464,6 @@
     } else if (!refs.cliente?.value) {
       missing.push("Cliente");
     }
-    if (!refs.programa?.value) missing.push("Programa de milhas");
     if (!refs.origem?.value) missing.push("Origem");
     if (!refs.destino?.value) missing.push("Destino");
     if (!refs.companhia?.value) missing.push("Companhia");
@@ -419,15 +512,26 @@
   });
   refs.possuiVolta?.addEventListener("change", () => {
     setVoltaVisibility();
+    setFusoVisibility();
     updateResumoVisual();
   });
+  refs.idaTemFuso?.addEventListener("change", () => {
+    setFusoVisibility();
+    updateResumoVisual();
+  });
+  refs.voltaTemFuso?.addEventListener("change", () => {
+    setFusoVisibility();
+    updateResumoVisual();
+  });
+  refs.mostrarValorParcelado?.addEventListener("change", updateResumoVisual);
   refs.dataVolta?.addEventListener("change", () => {
     setVoltaVisibility();
+    setFusoVisibility();
     updateResumoVisual();
   });
 
   qsa(
-    "#id_origem, #id_destino, #id_companhia_aerea, #id_data_ida, #id_data_volta, #id_qtd_passageiros, #id_classe, #id_valor_passagem, #id_taxas, #id_milhas, #id_valor_milheiro, #id_parcelas, #id_juros, #id_desconto, #id_status, #id_validade, #id_observacoes",
+    "#id_origem, #id_destino, #id_companhia_aerea, #id_data_ida, #id_data_volta, #id_duracao_voo_ida_minutos, #id_duracao_voo_volta_minutos, #id_fuso_horario_ida, #id_fuso_horario_volta, #id_qtd_passageiros, #id_classe, #id_valor_passagem, #id_taxas, #id_milhas, #id_valor_milheiro, #id_parcelas, #id_juros, #id_desconto, #id_status, #id_validade, #id_observacoes",
   ).forEach((field) => {
     field.addEventListener("input", updateResumoVisual);
     field.addEventListener("change", updateResumoVisual);
@@ -435,6 +539,7 @@
 
   toggleTitularFields();
   setVoltaVisibility();
+  setFusoVisibility();
   initEscalaSection("ida", escalasIdaData);
   initEscalaSection("volta", escalasVoltaData);
   updateProgramaOptions();

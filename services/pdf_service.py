@@ -50,7 +50,10 @@ def cotacao_pdf_response(cotacao, *, filename_prefix="cotacao", as_attachment=Tr
                 "cotacao": cotacao,
                 **build_cotacao_preview_context(cotacao),
             },
-            css_paths=("gestao/css/cotacao_preview.css",),
+            css_paths=(
+                "gestao/css/cotacao_preview.css",
+                "gestao/css/emissao_preview.css",
+            ),
         )
     except Exception:
         pdf_content = gerar_pdf_cotacao(cotacao)

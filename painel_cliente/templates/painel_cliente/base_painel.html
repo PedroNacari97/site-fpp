@@ -8,15 +8,17 @@
     <link rel="stylesheet" href="{% static 'painel_cliente/css/main.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}">
+<body class="{% block body_class %}{% endblock %}" data-default-theme="light">
     <div class="app-shell">
         <div class="sidebar-overlay" data-sidebar-overlay></div>
 
         <aside class="sidebar" data-sidebar>
             <div class="sidebar-header">
                 <a class="sidebar-brand" href="{% url 'painel_dashboard' %}">
-                    <div class="sidebar-logo gradient-primary">âœˆï¸</div>
-                    <span class="sidebar-title">NCfly</span>
+                    <div class="sidebar-logo">
+                        <img src="{{ app_branding.logo_url }}" alt="{{ app_branding.alt }}">
+                    </div>
+                    <span class="sidebar-title">{% if app_branding.has_custom_logo %}{{ app_branding.name }}{% else %}NCfly{% endif %}</span>
                 </a>
                 <button class="icon-button sidebar-close" type="button" aria-label="Fechar menu" data-sidebar-close>
                     <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -97,6 +99,12 @@
                         <form action="{% url 'logout' %}" method="post">{% csrf_token %}
                             <button class="icon-button" type="submit" aria-label="Sair">âŽ‹</button>
                         </form>
+                    </div>
+                    <div class="sidebar-legal">
+                        <a href="{% url 'portal_termos_plataforma' %}">Termos da Plataforma</a>
+                        <a href="{% url 'portal_privacidade_plataforma' %}">Privacidade da Plataforma</a>
+                        <a href="{% url 'portal_dpa_plataforma' %}">DPA da Plataforma</a>
+                        <a href="{% url 'portal_seguranca_plataforma' %}">Politica de Seguranca</a>
                     </div>
                 </div>
             {% endif %}

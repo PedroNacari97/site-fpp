@@ -3,8 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
+from django.urls import reverse
 from decimal import Decimal
 from gestao.models import ContaFidelidade, Movimentacao, AcessoClienteLog
 from django.db import models, transaction
@@ -18,6 +19,7 @@ from ..forms import (
     EmissaoPassagemForm,
     EmissaoHotelForm,
     CotacaoVooForm,
+    AcompanhamentoPassagemForm,
 )
 from django.contrib.auth.models import User
 from ..models import (
@@ -30,14 +32,16 @@ from ..models import (
     EmissaoHotel,
     CotacaoVoo,
     Passageiro,
+    PassageiroFrequente,
     Escala,
     CompanhiaAerea,
+    AcompanhamentoPassagem,
 )
 import csv
 import json
 from datetime import timedelta
 
-from .permissions import require_admin_or_operator
+from .permissions import require_admin_or_operator, scope_queryset_to_company
 from gestao.services.emissao_financeiro import (
     calcular_custo_milhas,
     calcular_custo_total_emissao,
@@ -59,22 +63,32 @@ from gestao.services.dashboard import (
     build_operational_dashboard_context,
 )
 from gestao.services.emissao_preview import build_emissao_preview_context
+from gestao.services.acompanhamento_passagem import (
+    ensure_acompanhamento_passagem,
+    sync_acompanhamento_passagem,
+)
 from services.pdf_service import emissao_pdf_response
 
 
 
 
-def _get_emissao_for_preview(emissao_id):
+def _get_emissao_for_preview(request, emissao_id):
     return get_object_or_404(
-        EmissaoPassagem.objects.select_related(
-            "cliente__usuario",
-            "conta_administrada",
-            "programa",
-            "emissor_parceiro",
-            "companhia_aerea",
-            "aeroporto_partida",
-            "aeroporto_destino",
-        ).prefetch_related("passageiros", "escalas__aeroporto"),
+        scope_queryset_to_company(
+            EmissaoPassagem.objects.select_related(
+                "cliente__usuario",
+                "conta_administrada",
+                "programa",
+                "emissor_parceiro",
+                "companhia_aerea",
+                "aeroporto_partida",
+                "aeroporto_destino",
+            ).prefetch_related("passageiros", "escalas__aeroporto"),
+            request,
+            "cliente__empresa",
+            "conta_administrada__empresa",
+            "emissor_parceiro__empresa",
+        ),
         id=emissao_id,
     )
 
@@ -105,35 +119,14 @@ def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=
         if len(filtros) > 1:
             conta = ContaFidelidade.objects.filter(**filtros).select_related('programa', 'cliente__usuario', 'conta_administrada').first()
     controle = get_cpf_control_data(conta)
-    passageiros_frequentes = {}
     clientes_ids = set(cliente_programas.keys())
     if cliente_sel:
         try:
             clientes_ids.add(int(cliente_sel))
         except (TypeError, ValueError):
             pass
-    for cliente in Cliente.objects.filter(id__in=clientes_ids).prefetch_related('passageiros_frequentes'):
-        passageiros_frequentes[cliente.id] = [
-            {
-                'id': item.id,
-                'nome': item.nome,
-                'cpf': item.cpf,
-                'rg': item.rg,
-                'passaporte': item.passaporte,
-                'passaporte_validade': item.passaporte_validade.isoformat() if item.passaporte_validade else '',
-                'data_nascimento': item.data_nascimento.isoformat() if item.data_nascimento else '',
-                'tipo': item.tipo,
-                'relacao': item.relacao,
-            }
-            for item in cliente.passageiros_frequentes.all().order_by('nome')
-        ]
-    clientes_data = {
-        cliente.id: {
-            "nome": cliente.usuario.get_full_name() or cliente.usuario.username,
-            "cpf": cliente.cpf,
-        }
-        for cliente in Cliente.objects.filter(id__in=clientes_ids).select_related("usuario")
-    }
+    cliente_context_url_template = reverse("admin_emissao_cliente_contexto", args=[0]).replace("/0/", "/__ID__/")
+    passageiro_frequente_url_template = reverse("admin_emissao_passageiro_frequente_detalhe", args=[0]).replace("/0/", "/__ID__/")
     return {
         'form': form,
         'emissoes': emissoes if emissoes is not None else EmissaoPassagem.objects.all().order_by('-data_ida'),
@@ -145,13 +138,79 @@ def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=
         'cliente_programas_json': json.dumps(cliente_programas),
         'contas_adm_programas_json': json.dumps(contas_adm_programas),
         'empresa_programas_json': json.dumps(empresa_programas),
-        'passageiros_frequentes_json': json.dumps(passageiros_frequentes),
-        'clientes_data_json': json.dumps(clientes_data),
         'cpf_controle_json': json.dumps(controle or {}),
+        'cliente_context_url_template': cliente_context_url_template,
+        'passageiro_frequente_url_template': passageiro_frequente_url_template,
         'cotacao_conversion': cotacao_conversion,
         'cotacao_conversion_id': cotacao_conversion["id"] if cotacao_conversion else None,
         'menu_ativo': menu_ativo,
     }
+
+
+def _mask_cpf(value):
+    digits = "".join(ch for ch in str(value or "") if ch.isdigit())
+    if len(digits) != 11:
+        return ""
+    return f"{digits[:3]}.***.***-{digits[-2:]}"
+
+
+@login_required
+def emissao_cliente_contexto(request, cliente_id):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    cliente = get_object_or_404(
+        scope_queryset_to_company(
+            Cliente.objects.select_related("usuario"),
+            request,
+            "empresa",
+        ),
+        id=cliente_id,
+        perfil="cliente",
+        ativo=True,
+    )
+    passageiros = PassageiroFrequente.objects.filter(cliente=cliente).order_by("nome")
+    return JsonResponse(
+        {
+            "cliente": {
+                "id": cliente.id,
+                "nome": cliente.usuario.get_full_name() or cliente.usuario.username,
+                "cpf": cliente.cpf or "",
+            },
+            "passageiros_frequentes": [
+                {
+                    "id": item.id,
+                    "nome": item.nome,
+                    "cpf_masked": _mask_cpf(item.cpf),
+                }
+                for item in passageiros
+            ],
+        }
+    )
+
+
+@login_required
+def emissao_passageiro_frequente_detalhe(request, passageiro_id):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    passageiro = get_object_or_404(
+        scope_queryset_to_company(
+            PassageiroFrequente.objects.select_related("cliente"),
+            request,
+            "cliente__empresa",
+        ),
+        id=passageiro_id,
+    )
+    return JsonResponse(
+        {
+            "id": passageiro.id,
+            "nome": passageiro.nome or "",
+            "cpf": passageiro.cpf or "",
+            "rg": passageiro.rg or "",
+            "passaporte": passageiro.passaporte or "",
+            "passaporte_validade": passageiro.passaporte_validade.isoformat() if passageiro.passaporte_validade else "",
+            "data_nascimento": passageiro.data_nascimento.isoformat() if passageiro.data_nascimento else "",
+        }
+    )
 
 def _build_escalas_from_request(request):
     escalas = []
@@ -312,13 +371,18 @@ def _resolve_cotacao_for_conversion(request):
     if not cotacao_id:
         return None
     return get_object_or_404(
-        CotacaoVoo.objects.select_related(
-            "cliente__usuario",
-            "conta_administrada",
-            "programa",
-            "origem",
-            "destino",
-            "emissao",
+        scope_queryset_to_company(
+            CotacaoVoo.objects.select_related(
+                "cliente__usuario",
+                "conta_administrada",
+                "programa",
+                "origem",
+                "destino",
+                "emissao",
+            ),
+            request,
+            "cliente__empresa",
+            "conta_administrada__empresa",
         ),
         id=cotacao_id,
     )
@@ -440,16 +504,22 @@ def admin_emissoes(request):
     selected_contas = _management_filter_list(active_filters, "conta")
     selected_status = _management_filter_value(active_filters, "status")
 
-    emissoes = EmissaoPassagem.objects.filter(
-        Q(cliente__perfil="cliente", cliente__ativo=True) | Q(conta_administrada__isnull=False)
-    ).select_related(
-        "cliente",
-        "programa",
-        "aeroporto_partida",
-        "aeroporto_destino",
-        "conta_administrada",
-        "emissor_parceiro",
-        "companhia_aerea",
+    emissoes = scope_queryset_to_company(
+        EmissaoPassagem.objects.filter(
+            Q(cliente__perfil="cliente", cliente__ativo=True) | Q(conta_administrada__isnull=False)
+        ).select_related(
+            "cliente",
+            "programa",
+            "aeroporto_partida",
+            "aeroporto_destino",
+            "conta_administrada",
+            "emissor_parceiro",
+            "companhia_aerea",
+        ),
+        request,
+        "cliente__empresa",
+        "conta_administrada__empresa",
+        "emissor_parceiro__empresa",
     )
     if start_date:
         emissoes = emissoes.filter(criado_em__date__gte=start_date)
@@ -729,7 +799,10 @@ def nova_emissao(request):
 def editar_emissao(request, emissao_id):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
-    emissao = EmissaoPassagem.objects.get(id=emissao_id)
+    emissao = get_object_or_404(
+        scope_queryset_to_company(EmissaoPassagem.objects.all(), request, "cliente__empresa", "conta_administrada__empresa", "emissor_parceiro__empresa"),
+        id=emissao_id,
+    )
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     escalas_por_tipo = _format_escalas(
         emissao.escalas.values("aeroporto_id", "duracao", "cidade", "tipo", "ordem")
@@ -965,7 +1038,13 @@ def editar_emissao(request, emissao_id):
             )
     else:
         form = EmissaoPassagemForm(instance=emissao, empresa=empresa)
-    emissoes = EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida")
+    emissoes = scope_queryset_to_company(
+        EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida"),
+        request,
+        "cliente__empresa",
+        "conta_administrada__empresa",
+        "emissor_parceiro__empresa",
+    )
     passageiros = _serialize_passageiros_list(list(
         emissao.passageiros.filter(categoria="adulto").values(
             "nome",
@@ -1020,7 +1099,7 @@ def emissao_pdf(request, emissao_id):
     """Download da emissão em formato PDF para o painel administrativo."""
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
-    emissao = _get_emissao_for_preview(emissao_id)
+    emissao = _get_emissao_for_preview(request, emissao_id)
     return emissao_pdf_response(
         emissao,
         filename_prefix="emissao_preview",
@@ -1032,7 +1111,9 @@ def emissao_pdf(request, emissao_id):
 def emissao_detalhe(request, emissao_id):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
-    emissao = _get_emissao_for_preview(emissao_id)
+    emissao = _get_emissao_for_preview(request, emissao_id)
+    ensure_acompanhamento_passagem(emissao)
+    emissao = _get_emissao_for_preview(request, emissao_id)
     return render(
         request,
         "admin_custom/emissao_preview.html",
@@ -1045,13 +1126,53 @@ def emissao_detalhe(request, emissao_id):
 
 
 @login_required
+def emissao_acompanhamento(request, emissao_id):
+    if permission_denied := require_admin_or_operator(request):
+        return permission_denied
+    emissao = _get_emissao_for_preview(request, emissao_id)
+    acompanhamento = ensure_acompanhamento_passagem(emissao)
+
+    if request.method == "POST":
+        form = AcompanhamentoPassagemForm(request.POST, instance=acompanhamento)
+        if form.is_valid():
+            acompanhamento = form.save()
+            if "sincronizar" in request.POST:
+                result = sync_acompanhamento_passagem(acompanhamento)
+                if result.success:
+                    messages.success(request, result.message)
+                else:
+                    messages.warning(request, result.message)
+            else:
+                messages.success(request, "Acompanhamento salvo com sucesso.")
+            return redirect("admin_emissao_acompanhamento", emissao_id=emissao.id)
+        messages.error(request, "Nao foi possivel salvar o acompanhamento. Revise os campos e tente novamente.")
+    else:
+        form = AcompanhamentoPassagemForm(instance=acompanhamento)
+
+    return render(
+        request,
+        "admin_custom/emissao_acompanhamento.html",
+        {
+            "emissao": emissao,
+            "acompanhamento": acompanhamento,
+            "form": form,
+            "menu_ativo": "emissoes",
+        },
+    )
+
+
+@login_required
 def deletar_emissao(request, emissao_id):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
         return render(request, "sem_permissao.html")
-    EmissaoPassagem.objects.filter(id=emissao_id).delete()
+    emissao = get_object_or_404(
+        scope_queryset_to_company(EmissaoPassagem.objects.all(), request, "cliente__empresa", "conta_administrada__empresa", "emissor_parceiro__empresa"),
+        id=emissao_id,
+    )
+    emissao.delete()
     messages.success(request, "Emissão deletada com sucesso.")
     return redirect("admin_emissoes")
 
@@ -1067,7 +1188,11 @@ def admin_hoteis(request):
     end_date = _management_filter_value(active_filters, "data_fim")
     selected_clientes = _management_filter_list(active_filters, "cliente")
 
-    emissoes = EmissaoHotel.objects.all().select_related("cliente__usuario")
+    emissoes = scope_queryset_to_company(
+        EmissaoHotel.objects.all().select_related("cliente__usuario"),
+        request,
+        "cliente__empresa",
+    )
     if start_date:
         emissoes = emissoes.filter(check_in__gte=start_date)
     if end_date:
@@ -1123,7 +1248,10 @@ def nova_emissao_hotel(request):
 def editar_emissao_hotel(request, emissao_id):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
-    emissao = EmissaoHotel.objects.get(id=emissao_id)
+    emissao = get_object_or_404(
+        scope_queryset_to_company(EmissaoHotel.objects.all(), request, "cliente__empresa"),
+        id=emissao_id,
+    )
     if request.method == "POST":
         form = EmissaoHotelForm(request.POST, instance=emissao)
         if form.is_valid():
@@ -1148,6 +1276,10 @@ def deletar_emissao_hotel(request, emissao_id):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
         return render(request, "sem_permissao.html")
-    EmissaoHotel.objects.filter(id=emissao_id).delete()
+    emissao = get_object_or_404(
+        scope_queryset_to_company(EmissaoHotel.objects.all(), request, "cliente__empresa"),
+        id=emissao_id,
+    )
+    emissao.delete()
     messages.success(request, "Emissão deletada com sucesso.")
     return redirect("admin_hoteis")

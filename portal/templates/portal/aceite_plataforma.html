@@ -1,0 +1,81 @@
+{% extends "portal/base_public.html" %}
+{% load static portal_extras %}
+{% block title %}{{ seo_title|default:"Aceite da Plataforma | NC Fly" }}{% endblock %}
+{% block extra_head %}
+<script defer src="{% static 'portal/js/aceite_plataforma.js' %}"></script>
+{% endblock %}
+{% block content %}
+<div class="portal-static-page">
+    <section class="portal-static-page__shell">
+        <header class="portal-static-page__hero">
+            <span class="news-pill news-pill--primary">{{ page_eyebrow }}</span>
+            <h1>Aceite da plataforma</h1>
+            <p>{{ page_intro }}</p>
+        </header>
+
+        {% if messages %}
+            <section class="portal-static-page__section">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </section>
+        {% endif %}
+
+        <form method="post" class="portal-static-page__section" data-acceptance-form>
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next_url }}">
+            <input type="hidden" name="device_type" value="" data-acceptance-field="device_type">
+            <input type="hidden" name="browser_name" value="" data-acceptance-field="browser_name">
+            <input type="hidden" name="browser_version" value="" data-acceptance-field="browser_version">
+            <input type="hidden" name="os_name" value="" data-acceptance-field="os_name">
+            <input type="hidden" name="os_version" value="" data-acceptance-field="os_version">
+            <input type="hidden" name="device_language" value="" data-acceptance-field="device_language">
+            <input type="hidden" name="device_timezone" value="" data-acceptance-field="device_timezone">
+            <input type="hidden" name="screen_resolution" value="" data-acceptance-field="screen_resolution">
+            <input type="hidden" name="geolocation_status" value="not_requested" data-acceptance-field="geolocation_status">
+            <input type="hidden" name="latitude" value="" data-acceptance-field="latitude">
+            <input type="hidden" name="longitude" value="" data-acceptance-field="longitude">
+            <input type="hidden" name="geolocation_accuracy_meters" value="" data-acceptance-field="geolocation_accuracy_meters">
+
+            <div class="portal-static-page__card">
+                <h3>Metadados do aceite</h3>
+                <p>Este aceite registra IP, navegador, sistema operacional, tipo de dispositivo, idioma, fuso e resolucao da tela para auditoria e seguranca da plataforma.</p>
+                <label class="portal-cookie-option">
+                    <span>
+                        <strong>Localizacao opcional no momento do aceite</strong>
+                        <small>Se voce autorizar no navegador, a plataforma salva latitude, longitude e precisao do ponto. Sem permissao, o aceite continua normalmente.</small>
+                    </span>
+                    <input type="checkbox" value="1" data-acceptance-geolocation-optin>
+                </label>
+                <p class="portal-static-page__updated" data-acceptance-geolocation-status>Localizacao nao solicitada.</p>
+            </div>
+
+            <div class="portal-static-page__grid">
+                {% for item in pendencias %}
+                    <article class="portal-static-page__card">
+                        <h3>{{ item.documento.get_tipo_display }}</h3>
+                        <p><strong>Versao:</strong> {{ item.documento.versao_atual }}</p>
+                        <p><strong>Vigencia:</strong> {{ item.documento.data_vigencia|br_date_long }}</p>
+                        {% if item.documento.observacoes_internas %}
+                            <p>{{ item.documento.observacoes_internas }}</p>
+                        {% endif %}
+                        <p><a href="{{ item.url }}" target="_blank" rel="noopener">Ler documento</a></p>
+                    </article>
+                {% endfor %}
+            </div>
+            <div class="portal-static-page__card">
+                <label class="portal-cookie-option">
+                    <span>
+                        <strong>Confirmacao obrigatoria</strong>
+                        <small>Li e aceito os documentos vigentes da plataforma em nome da empresa vinculada ao meu acesso.</small>
+                    </span>
+                    <input type="checkbox" name="platform_accept" value="1">
+                </label>
+            </div>
+            <div class="portal-static-page__cta-row" style="margin-top: 24px;">
+                <button type="submit" class="portal-button portal-button--primary">Confirmar aceite e continuar</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+.tracking-page .superadmin-card__title {
+  font-size: 28px;
+}
+
+.tracking-chip {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-surface-muted) 8%);
+}
+
+.tracking-chip strong {
+  color: var(--color-heading);
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.tracking-chip small {
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.tracking-form__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.tracking-form__checkbox input {
+  width: 18px;
+  height: 18px;
+}
+
+.tracking-form__checkbox span {
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tracking-sidebar-note {
+  padding: 18px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--color-surface) 94%, var(--color-primary-soft) 6%);
+  border: 1px solid var(--color-border);
+}
+
+.tracking-sidebar-note p {
+  margin: 8px 0 0;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.tracking-sidebar-note--danger {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.22);
+}
+
+.tracking-sidebar-note--danger p {
+  color: #fca5a5;
+}
+
+@media (max-width: 900px) {
+  .tracking-page .superadmin-card__title {
+    font-size: 24px;
+  }
+
+  .tracking-form__checkbox {
+    align-items: flex-start;
+    padding: 14px 16px;
+  }
+}

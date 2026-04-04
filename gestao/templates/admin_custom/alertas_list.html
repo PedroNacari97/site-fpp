@@ -10,49 +10,6 @@
 {% block content %}
 <div class="alerts-page">
   <div class="alerts-page__shell">
-    <div class="alerts-page__grid-4">
-      <article class="alerts-page__card">
-        <div class="alerts-page__stat-head">
-          <div>
-            <p class="alerts-page__stat-label">Alertas ativos</p>
-            <p class="alerts-page__stat-value">{{ alerta_totais.ativos }}</p>
-          </div>
-          <span class="alerts-page__stat-icon alerts-page__stat-icon--blue"></span>
-        </div>
-        <p class="alerts-page__stat-note">+{{ alerta_totais.recentes }} no recorte mais recente</p>
-      </article>
-      <article class="alerts-page__card">
-        <div class="alerts-page__stat-head">
-          <div>
-            <p class="alerts-page__stat-label">Melhorando</p>
-            <p class="alerts-page__stat-value">{{ alerta_totais.melhorando }}</p>
-          </div>
-          <span class="alerts-page__stat-icon alerts-page__stat-icon--green"></span>
-        </div>
-        <p class="alerts-page__stat-note">Tendencia positiva nos alertas filtrados</p>
-      </article>
-      <article class="alerts-page__card">
-        <div class="alerts-page__stat-head">
-          <div>
-            <p class="alerts-page__stat-label">Favoritos</p>
-            <p class="alerts-page__stat-value">{{ alerta_totais.favoritos }}</p>
-          </div>
-          <span class="alerts-page__stat-icon alerts-page__stat-icon--yellow"></span>
-        </div>
-        <p class="alerts-page__stat-note">Marcados por disponibilidade favoravel</p>
-      </article>
-      <article class="alerts-page__card">
-        <div class="alerts-page__stat-head">
-          <div>
-            <p class="alerts-page__stat-label">Emissoes realizadas</p>
-            <p class="alerts-page__stat-value">{{ alerta_totais.realizadas }}</p>
-          </div>
-          <span class="alerts-page__stat-icon alerts-page__stat-icon--purple"></span>
-        </div>
-        <p class="alerts-page__stat-note">Alertas resolvidos ou encerrados</p>
-      </article>
-    </div>
-
     <div class="alerts-page__nav-box">
       <div class="alerts-page__box-head">
         <div>
@@ -66,23 +23,41 @@
           {% endif %}
         </div>
       </div>
-      <div class="alerts-page__crumbs">
-        {% for item in continente_options %}
-          <a href="?{{ item.query }}" class="alerts-page__crumb {% if item.selected %}is-selected{% endif %}">
-            <span class="alerts-page__crumb-dot"></span>{{ item.label }}
-          </a>
-        {% endfor %}
-        {% for item in pais_options %}
-          <a href="?{{ item.query }}" class="alerts-page__crumb {% if item.selected %}is-selected{% endif %}">
-            <span class="alerts-page__crumb-dot"></span>{{ item.label }}
-          </a>
-        {% endfor %}
-        {% for item in cidade_options %}
-          <a href="?{{ item.query }}" class="alerts-page__crumb {% if item.selected %}is-selected{% endif %}">
-            <span class="alerts-page__crumb-dot"></span>{{ item.label }}
-          </a>
-        {% endfor %}
-      </div>
+      <form method="get" class="alerts-page__destination-form" data-auto-submit-filters>
+        <input type="hidden" name="q" value="{{ search_query }}">
+        <input type="hidden" name="programa" value="{{ selected_programa }}">
+        <input type="hidden" name="classe" value="{{ selected_classe }}">
+        <input type="hidden" name="status_alerta" value="{{ selected_status }}">
+        <div class="alerts-page__destination-grid">
+          <div class="alerts-page__field">
+            <label for="alerta_continente">Continente</label>
+            <select id="alerta_continente" name="continente">
+              <option value="">Todos os continentes</option>
+              {% for item in continente_options %}
+                <option value="{{ item.label }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="alerts-page__field">
+            <label for="alerta_pais">Pais</label>
+            <select id="alerta_pais" name="pais">
+              <option value="">Todos os paises</option>
+              {% for item in pais_options %}
+                <option value="{{ item.label }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="alerts-page__field">
+            <label for="alerta_cidade">Cidade</label>
+            <select id="alerta_cidade" name="cidade">
+              <option value="">Todas as cidades</option>
+              {% for item in cidade_options %}
+                <option value="{{ item.label }}" {% if item.selected %}selected{% endif %}>{{ item.label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </form>
     </div>
 
     <div class="alerts-page__filter-box">
@@ -179,6 +154,24 @@
               <a href="{{ row.detail_url }}" class="alerts-page__button">Ver Detalhes</a>
             </div>
           </div>
+
+          <form method="post" class="alerts-page__rules-form">
+            {% csrf_token %}
+            <input type="hidden" name="alerta_id" value="{{ alerta.id }}">
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <div class="alerts-page__rules-note">
+              Se nao marcar nada, o alerta some da vitrine depois de 5 dias.
+            </div>
+            <label class="alerts-page__rule-option">
+              <input type="checkbox" name="manter_apos_cinco_dias" {% if alerta.manter_apos_cinco_dias %}checked{% endif %}>
+              <span>Continuar apos 5 dias</span>
+            </label>
+            <label class="alerts-page__rule-option">
+              <input type="checkbox" name="ocultar_apos_datas" {% if alerta.ocultar_apos_datas %}checked{% endif %}>
+              <span>Sumir quando todas as datas passarem</span>
+            </label>
+            <button type="submit" class="alerts-page__button-secondary alerts-page__button-secondary--small">Salvar regras</button>
+          </form>
         </article>
       {% endwith %}
     {% empty %}

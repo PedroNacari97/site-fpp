@@ -1,14 +1,14 @@
 :root {
-  --client-form-bg: #0f1419;
-  --client-form-surface: #1a2332;
-  --client-form-surface-2: #111924;
-  --client-form-border: #1e2939;
-  --client-form-border-soft: #364153;
-  --client-form-text: #ffffff;
-  --client-form-text-soft: #d1d5dc;
-  --client-form-text-muted: #99a1af;
-  --client-form-text-dim: #717182;
-  --client-form-blue: #155dfc;
+  --client-form-bg: #f4f7fb;
+  --client-form-surface: #ffffff;
+  --client-form-surface-2: #f8fafc;
+  --client-form-border: #dbe3ee;
+  --client-form-border-soft: #d2dce8;
+  --client-form-text: #0f1b2d;
+  --client-form-text-soft: #425466;
+  --client-form-text-muted: #708198;
+  --client-form-text-dim: #8c9aae;
+  --client-form-blue: #ff6b6b;
   --client-form-red: #ff8f91;
 }
 
@@ -168,8 +168,8 @@
 .client-form__field select:focus,
 .client-form__field textarea:focus {
   outline: none;
-  border-color: rgba(21, 93, 252, 0.72);
-  box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.14);
+  border-color: rgba(255, 107, 107, 0.62);
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.14);
 }
 
 .client-form__field input[disabled],

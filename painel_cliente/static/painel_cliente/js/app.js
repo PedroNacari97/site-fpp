@@ -90,10 +90,59 @@ const initAdminNotifications = () => {
   const toggle = document.querySelector("[data-notification-toggle]");
   const panel = document.querySelector("[data-notification-panel]");
   const closeButton = document.querySelector("[data-notification-close]");
+  const list = document.querySelector("[data-notification-list]");
+  const badge = document.querySelector("[data-notification-badge]");
+  const subtitle = document.querySelector("[data-notification-subtitle]");
+  const markUrl = root?.dataset.notificationMarkUrl;
 
   if (!root || !toggle || !panel) {
     return;
   }
+
+  const getCsrfToken = () => {
+    const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : "";
+  };
+
+  const updateUnreadState = (count) => {
+    if (subtitle) {
+      subtitle.textContent = `${count} não lida(s)`;
+    }
+
+    if (!badge) {
+      return;
+    }
+
+    if (count > 0) {
+      badge.hidden = false;
+      badge.textContent = String(count);
+      return;
+    }
+
+    badge.hidden = true;
+    badge.textContent = "";
+  };
+
+  const ensureEmptyState = () => {
+    if (!list) {
+      return;
+    }
+
+    const remainingItems = list.querySelectorAll("[data-notification-item]");
+    const currentEmpty = list.querySelector("[data-notification-empty]");
+    if (remainingItems.length) {
+      currentEmpty?.remove();
+      return;
+    }
+
+    if (!currentEmpty) {
+      const empty = document.createElement("div");
+      empty.className = "admin-notifications-panel__empty";
+      empty.dataset.notificationEmpty = "true";
+      empty.textContent = "Sem notificações operacionais no momento.";
+      list.appendChild(empty);
+    }
+  };
 
   const closePanel = () => {
     panel.hidden = true;
@@ -122,6 +171,47 @@ const initAdminNotifications = () => {
     event.stopPropagation();
   });
 
+  panel.addEventListener("click", async (event) => {
+    const markButton = event.target.closest("[data-notification-mark-read]");
+    if (!markButton) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const item = markButton.closest("[data-notification-item]");
+    const key = item?.dataset.notificationKey;
+    if (!item || !key || !markUrl || markButton.disabled) {
+      return;
+    }
+
+    markButton.disabled = true;
+
+    try {
+      const response = await fetch(markUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: JSON.stringify({ key }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao atualizar notificação.");
+      }
+
+      const payload = await response.json();
+      item.remove();
+      updateUnreadState(payload.unread_count ?? 0);
+      ensureEmptyState();
+    } catch (error) {
+      markButton.disabled = false;
+      console.error(error);
+    }
+  });
+
   document.addEventListener("click", (event) => {
     if (!root.contains(event.target)) {
       closePanel();
@@ -133,6 +223,8 @@ const initAdminNotifications = () => {
       closePanel();
     }
   });
+
+  ensureEmptyState();
 };
 
 const initAutoSubmitFilters = () => {

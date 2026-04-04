@@ -77,14 +77,14 @@
 
 .wizard-stepper__item.is-active {
   color: #fff;
-  border-color: #3b82f6;
-  background: #2563eb;
+  border-color: #ff6b6b;
+  background: linear-gradient(135deg, #ff6b6b, #f5a623);
 }
 
 .wizard-stepper__item.is-complete {
   color: #fff;
-  border-color: #10b981;
-  background: #059669;
+  border-color: #f5a623;
+  background: linear-gradient(135deg, #0f1b2d, #f5a623);
 }
 
 .wizard-stepper__item:disabled {

@@ -1,4 +1,4 @@
-(() => {
+(async () => {
   const context = window.emissionWizardContext || {};
   const form = document.querySelector(".emission-form-shell");
   if (!form) return;
@@ -92,6 +92,8 @@
     { key: "crianca", title: "Crianca", field: refs.countCriancas, label: refs.countCriancasLabel },
     { key: "bebe", title: "Bebe", field: refs.countBebes, label: refs.countBebesLabel },
   ];
+  const clientContextCache = {};
+  const passengerDetailCache = {};
 
   function loadDraft() {
     return null;
@@ -114,6 +116,38 @@
   function formatCurrency(value) {
     const numeric = Number.isFinite(Number(value)) ? Number(value) : 0;
     return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(numeric);
+  }
+
+  function buildContextUrl(template, id) {
+    return (template || "").replace("__ID__", String(id));
+  }
+
+  async function fetchJson(url) {
+    if (!url) return null;
+    const response = await fetch(url, {
+      headers: { "X-Requested-With": "XMLHttpRequest" },
+      credentials: "same-origin",
+    });
+    if (!response.ok) throw new Error(`Falha ao carregar contexto (${response.status})`);
+    return response.json();
+  }
+
+  async function ensureClientContext(clienteId) {
+    const normalizedId = Number(clienteId || 0);
+    if (!normalizedId) return null;
+    if (clientContextCache[normalizedId]) return clientContextCache[normalizedId];
+    const payload = await fetchJson(buildContextUrl(context.clienteContextUrlTemplate, normalizedId));
+    clientContextCache[normalizedId] = payload;
+    return payload;
+  }
+
+  async function ensurePassengerDetail(passageiroId) {
+    const normalizedId = Number(passageiroId || 0);
+    if (!normalizedId) return null;
+    if (passengerDetailCache[normalizedId]) return passengerDetailCache[normalizedId];
+    const payload = await fetchJson(buildContextUrl(context.passageiroFrequenteUrlTemplate, normalizedId));
+    passengerDetailCache[normalizedId] = payload;
+    return payload;
   }
 
   function getTipoEmissao() {
@@ -235,15 +269,13 @@
       return;
     }
     const cpfs = qsa('input[name^="passageiro-"][name$="-cpf"]').map((field) => (field.value || "").replace(/\D/g, "")).filter(Boolean);
-    const usados = (selected.cpfs_usados_list || []).map((value) => String(value || "").replace(/\D/g, ""));
-    const novos = [...new Set(cpfs)].filter((cpf) => !usados.includes(cpf));
-    const consumo = novos.length;
+    const consumo = [...new Set(cpfs)].length;
     const ilimitado = selected.cpfs_total === null || selected.cpfs_total === undefined;
     const bloqueado = selected.status === "bloqueado";
-    const excedeu = !ilimitado && consumo > (selected.cpfs_disponiveis || 0);
+    const excedeuEstimativa = !ilimitado && consumo > Number(selected.cpfs_disponiveis || 0);
     if (refs.cpfConsumoInfo) refs.cpfConsumoInfo.textContent = ilimitado ? `CPFs nesta emissao: ${consumo} • Disponiveis: ilimitado` : `CPFs nesta emissao: ${consumo} • Disponiveis: ${selected.cpfs_disponiveis} de ${selected.cpfs_total}`;
-    if (refs.cpfLimiteError) refs.cpfLimiteError.textContent = bloqueado ? "Conta bloqueada para nova emissao." : excedeu ? "Limite de CPFs excedido para este programa." : "";
-    if (refs.finishButton) refs.finishButton.disabled = bloqueado || excedeu;
+    if (refs.cpfLimiteError) refs.cpfLimiteError.textContent = bloqueado ? "Conta bloqueada para nova emissao." : excedeuEstimativa ? "A validacao final dos CPFs ocorre ao salvar a emissao." : "";
+    if (refs.finishButton) refs.finishButton.disabled = bloqueado;
   }
 
   function updateProgramaInfo() {
@@ -362,17 +394,23 @@
     });
   }
 
+  function getCurrentClientContext() {
+    const clienteId = Number(refs.cliente?.value || 0);
+    return clienteId ? clientContextCache[clienteId] || null : null;
+  }
+
   function renderPassengers() {
     if (!refs.passageirosContainer || !refs.totalPassageiros) return;
     updatePassengerCountLabels();
     const seed = passengerSeed();
+    const clientContext = getCurrentClientContext();
+    const frequentes = clientContext?.passageiros_frequentes || [];
     refs.passageirosContainer.innerHTML = "";
     let index = 0;
     passengerKinds.forEach((kind) => {
       const quantity = Number(kind.field?.value || 0);
       for (let position = 0; position < quantity; position += 1) {
         const previous = seed[index] || {};
-        const frequentes = context.passageirosFrequentes?.[parseInt(refs.cliente?.value || 0, 10)] || [];
         const options = ['<option value="">Preencher manualmente</option>', '<option value="__cliente__">Usar dados do cliente</option>', ...frequentes.map((item) => `<option value="${item.id}">${item.nome} • ${item.cpf}</option>`)].join("");
         const card = document.createElement("div");
         card.className = "passenger-card passageiro-fields";
@@ -415,6 +453,72 @@
         if (passaporte) passaporte.value = selected.passaporte || "";
         if (passaporteValidade) passaporteValidade.value = selected.passaporte_validade || "";
         if (dataNascimento) dataNascimento.value = selected.data_nascimento || "";
+      }
+      updateCpfLimite();
+      saveDraft();
+    }));
+    updateCpfLimite();
+    updateResumo();
+  }
+
+  function fillPassengerFields(indexValue, values) {
+    const nome = form.querySelector(`[name="passageiro-${indexValue}-nome"]`);
+    const cpf = form.querySelector(`[name="passageiro-${indexValue}-cpf"]`);
+    const rg = form.querySelector(`[name="passageiro-${indexValue}-rg"]`);
+    const passaporte = form.querySelector(`[name="passageiro-${indexValue}-passaporte"]`);
+    const passaporteValidade = form.querySelector(`[name="passageiro-${indexValue}-passaporte-validade"]`);
+    const dataNascimento = form.querySelector(`[name="passageiro-${indexValue}-data-nascimento"]`);
+    if (nome) nome.value = values?.nome || "";
+    if (cpf) cpf.value = values?.cpf || "";
+    if (rg) rg.value = values?.rg || "";
+    if (passaporte) passaporte.value = values?.passaporte || "";
+    if (passaporteValidade) passaporteValidade.value = values?.passaporte_validade || "";
+    if (dataNascimento) dataNascimento.value = values?.data_nascimento || "";
+  }
+
+  renderPassengers = function renderPassengersSecure() {
+    if (!refs.passageirosContainer || !refs.totalPassageiros) return;
+    updatePassengerCountLabels();
+    const seed = passengerSeed();
+    const clientContext = getCurrentClientContext();
+    const frequentes = clientContext?.passageiros_frequentes || [];
+    refs.passageirosContainer.innerHTML = "";
+    let index = 0;
+    passengerKinds.forEach((kind) => {
+      const quantity = Number(kind.field?.value || 0);
+      for (let position = 0; position < quantity; position += 1) {
+        const previous = seed[index] || {};
+        const options = ['<option value="">Preencher manualmente</option>', '<option value="__cliente__">Usar dados do cliente</option>', ...frequentes.map((item) => `<option value="${item.id}">${item.nome}${item.cpf_masked ? ` • ${item.cpf_masked}` : ""}</option>`)].join("");
+        const card = document.createElement("div");
+        card.className = "passenger-card passageiro-fields";
+        card.innerHTML = `<div class="passenger-card__head"><span class="passenger-card__badge passenger-card__badge--${kind.key}">${kind.title} ${position + 1}</span><button type="button" class="passenger-card__remove" data-remove-kind="${kind.key}">Remover</button></div><div class="passenger-card__fields"><div><label class="wizard-label">${kind.title} ${position + 1} - Passageiro frequente</label><select name="passageiro-${index}-frequente" data-passageiro-frequente="${index}">${options}</select></div><div><label class="wizard-label">Nome completo</label><input type="text" name="passageiro-${index}-nome" value="${previous.nome || ""}" required></div><div><label class="wizard-label">CPF</label><input type="text" name="passageiro-${index}-cpf" value="${previous.cpf || ""}" required></div><div><label class="wizard-label">RG</label><input type="text" name="passageiro-${index}-rg" value="${previous.rg || ""}"></div><div><label class="wizard-label">Passaporte</label><input type="text" name="passageiro-${index}-passaporte" value="${previous.passaporte || ""}"></div><div><label class="wizard-label">Validade do passaporte</label><input type="date" name="passageiro-${index}-passaporte-validade" value="${previous.passaporte_validade || ""}"></div><div><label class="wizard-label">Data de nascimento</label><input type="date" name="passageiro-${index}-data-nascimento" value="${previous.data_nascimento || ""}" required></div><div><label class="wizard-label">Observacoes</label><textarea name="passageiro-${index}-observacoes" rows="3">${previous.observacoes || ""}</textarea></div></div><input type="hidden" name="passageiro-${index}-categoria" value="${previous.categoria || kind.key}">`;
+        refs.passageirosContainer.appendChild(card);
+        index += 1;
+      }
+    });
+    refs.totalPassageiros.value = String(index);
+    if (!index) refs.passageirosContainer.innerHTML = emptyState("Nenhum passageiro adicionado", "Use os atalhos acima para incluir adultos, criancas ou bebes.");
+    qsa("[data-remove-kind]").forEach((button) => button.addEventListener("click", () => {
+      const kind = passengerKinds.find((item) => item.key === button.dataset.removeKind);
+      if (!kind?.field) return;
+      kind.field.value = String(Math.max(0, Number(kind.field.value || 0) - 1));
+      renderPassengers();
+      saveDraft();
+    }));
+    qsa("[data-passageiro-frequente]").forEach((select) => select.addEventListener("change", async (event) => {
+      const indexValue = event.currentTarget.dataset.passageiroFrequente;
+      if (event.currentTarget.value === "__cliente__") {
+        const clienteContextPayload = await ensureClientContext(refs.cliente?.value);
+        fillPassengerFields(indexValue, {
+          nome: clienteContextPayload?.cliente?.nome || "",
+          cpf: clienteContextPayload?.cliente?.cpf || "",
+          rg: "",
+          passaporte: "",
+          passaporte_validade: "",
+          data_nascimento: "",
+        });
+      } else if (event.currentTarget.value) {
+        fillPassengerFields(indexValue, await ensurePassengerDetail(event.currentTarget.value));
       }
       updateCpfLimite();
       saveDraft();
@@ -578,7 +682,7 @@
     refs.prevButton?.addEventListener("click", () => setStep(getPrevStep(currentStep)));
     refs.nextButton?.addEventListener("click", () => { if (validateStep(currentStep)) setStep(getNextStep(currentStep)); });
     refs.tipoEmissao?.addEventListener("change", () => { toggleTitularFields(); updateResumo(); saveDraft(); });
-    refs.cliente?.addEventListener("change", () => { updateProgramaOptions(); renderPassengers(); updateResumo(); saveDraft(); });
+    refs.cliente?.addEventListener("change", async () => { await ensureClientContext(refs.cliente?.value); updateProgramaOptions(); renderPassengers(); updateResumo(); saveDraft(); });
     refs.contaAdm?.addEventListener("change", () => { updateProgramaOptions(); updateResumo(); saveDraft(); });
     refs.emissorParceiro?.addEventListener("change", () => { updateResumo(); saveDraft(); });
     refs.programa?.addEventListener("change", () => { updateProgramaInfo(); updateResumo(); saveDraft(); });
@@ -632,8 +736,10 @@
   toggleTitularFields();
   initScaleSection("ida", context.escalasIdaData || []);
   initScaleSection("volta", context.escalasVoltaData || []);
+  await ensureClientContext(refs.cliente?.value);
   renderPassengers();
   applyFieldValues(loadedDraft);
+  await ensureClientContext(refs.cliente?.value);
   renderPassengers();
   updateProgramaOptions();
   recalcValores();

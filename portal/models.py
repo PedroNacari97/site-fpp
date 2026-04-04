@@ -152,3 +152,92 @@ class JobExecucao(models.Model):
 
     def __str__(self):
         return f"{self.job_name} - {self.get_status_display()} - {self.horario:%d/%m/%Y %H:%M}"
+
+
+class PortalMetricDaily(models.Model):
+    METRIC_TYPE_CHOICES = (
+        ("page_view", "Page View"),
+        ("click", "Click"),
+    )
+
+    metric_date = models.DateField(db_index=True)
+    site_environment = models.CharField(max_length=20, default="local", db_index=True)
+    site_host = models.CharField(max_length=120, blank=True, db_index=True)
+    metric_type = models.CharField(max_length=20, choices=METRIC_TYPE_CHOICES, db_index=True)
+    path = models.CharField(max_length=255, blank=True, db_index=True)
+    event_name = models.CharField(max_length=80, blank=True, db_index=True)
+    section = models.CharField(max_length=80, blank=True)
+    article_slug = models.CharField(max_length=240, blank=True, db_index=True)
+    article_category = models.CharField(max_length=120, blank=True)
+    article_topic = models.CharField(max_length=120, blank=True)
+    total = models.PositiveIntegerField(default=0)
+    metadata_json = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-metric_date", "-updated_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "metric_date",
+                    "site_environment",
+                    "site_host",
+                    "metric_type",
+                    "path",
+                    "event_name",
+                    "section",
+                    "article_slug",
+                    "article_category",
+                    "article_topic",
+                ],
+                name="portal_metric_daily_unique_bucket_env",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.metric_date} {self.metric_type} {self.path or self.event_name} ({self.total})"
+
+
+class LeadPlataforma(models.Model):
+    STATUS_CHOICES = (
+        ("novo", "Novo"),
+        ("contatado", "Contatado"),
+        ("qualificado", "Qualificado"),
+        ("arquivado", "Arquivado"),
+    )
+
+    EQUIPE_TAMANHO_CHOICES = (
+        ("1-2", "1 a 2 pessoas"),
+        ("3-5", "3 a 5 pessoas"),
+        ("6-10", "6 a 10 pessoas"),
+        ("11-20", "11 a 20 pessoas"),
+        ("21+", "Mais de 20 pessoas"),
+    )
+
+    nome_completo = models.CharField(max_length=180)
+    empresa = models.CharField(max_length=180)
+    cargo = models.CharField(max_length=120, blank=True)
+    email = models.EmailField()
+    telefone = models.CharField(max_length=40)
+    equipe_tamanho = models.CharField(
+        max_length=20,
+        choices=EQUIPE_TAMANHO_CHOICES,
+        blank=True,
+    )
+    mensagem = models.TextField(blank=True)
+    aceite_versao = models.CharField(max_length=40, blank=True)
+    aceito_em = models.DateTimeField(null=True, blank=True)
+    aceito_ip = models.CharField(max_length=45, blank=True)
+    aceito_user_agent = models.CharField(max_length=255, blank=True)
+    source_environment = models.CharField(max_length=20, default="local", db_index=True)
+    source_host = models.CharField(max_length=120, blank=True, db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="novo")
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-criado_em"]
+
+    def __str__(self):
+        return f"{self.nome_completo} - {self.empresa}"

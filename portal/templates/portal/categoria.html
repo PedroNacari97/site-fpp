@@ -1,6 +1,6 @@
 {% extends "portal/base_public.html" %}
 {% load portal_extras %}
-{% block title %}{{ categoria_config.label }} | NC Fly News{% endblock %}
+{% block title %}{{ seo_title|default:categoria_config.label }}{% endblock %}
 {% block content %}
 <div class="portal-category-page">
     <section class="portal-category-hero {{ categoria_config.hero_class }}">
@@ -36,12 +36,28 @@
         <div class="portal-category-topics__header">
             <h2>Temas desta categoria</h2>
             {% if topico_ativo %}
-            <a href="{% url 'portal_categoria' categoria_slug %}" class="portal-category-topics__clear">Limpar filtro</a>
+            <a
+                href="{% url 'portal_categoria' categoria_slug %}"
+                class="portal-category-topics__clear"
+                data-analytics-event="click_limpar_topico"
+                data-analytics-category="navigation"
+                data-analytics-label="{{ categoria_config.label }}"
+                data-analytics-section="category_topics"
+            >
+                Limpar filtro
+            </a>
             {% endif %}
         </div>
         <div class="portal-category-topics__chips">
             {% for item in topicos_disponiveis %}
-            <a href="{% url 'portal_categoria' categoria_slug %}?topico={{ item.slug }}" class="news-pill news-pill--topic{% if topico_ativo and topico_ativo.slug == item.slug %} news-pill--topic-active{% endif %}">
+            <a
+                href="{% url 'portal_categoria' categoria_slug %}?topico={{ item.slug }}"
+                class="news-pill news-pill--topic{% if topico_ativo and topico_ativo.slug == item.slug %} news-pill--topic-active{% endif %}"
+                data-analytics-event="click_topico_categoria"
+                data-analytics-category="navigation"
+                data-analytics-label="{{ item.label|portal_text }}"
+                data-analytics-section="category_topics"
+            >
                 {{ item.label }}
                 <span>{{ item.count }}</span>
             </a>
@@ -54,16 +70,39 @@
     <section class="portal-category-featured">
         <article class="portal-category-featured__main">
             {% if featured.imagem_exibicao %}
-            <a href="{{ featured.get_absolute_url }}" class="portal-category-featured__image">
+            <a
+                href="{{ featured.get_absolute_url }}"
+                class="portal-category-featured__image"
+                data-analytics-event="click_noticia_categoria_destaque"
+                data-analytics-category="content"
+                data-analytics-label="{{ featured.titulo|portal_text }}"
+                data-analytics-slug="{{ featured.slug }}"
+                data-analytics-article-category="{{ featured.categoria|portal_text }}"
+                data-analytics-article-topic="{{ featured.topico|default:''|portal_text }}"
+                data-analytics-section="category_featured"
+            >
                 <img src="{{ featured.imagem_exibicao }}" alt="{{ featured.titulo }}">
             </a>
             {% endif %}
             <div class="portal-category-featured__body">
-                <span class="news-pill news-pill--primary">{% if categoria_slug == "promocoes" %}Super Oferta{% else %}Destaque{% endif %}</span>
+                <span class="news-pill news-pill--primary">{% if categoria_slug == "promocoes" %}Super oferta{% else %}Destaque{% endif %}</span>
                 {% if featured.topico %}
                 <span class="news-pill news-pill--topic">{{ featured.topico|portal_text }}</span>
                 {% endif %}
-                <h2><a href="{{ featured.get_absolute_url }}">{{ featured.titulo|portal_text }}</a></h2>
+                <h2>
+                    <a
+                        href="{{ featured.get_absolute_url }}"
+                        data-analytics-event="click_noticia_categoria_destaque"
+                        data-analytics-category="content"
+                        data-analytics-label="{{ featured.titulo|portal_text }}"
+                        data-analytics-slug="{{ featured.slug }}"
+                        data-analytics-article-category="{{ featured.categoria|portal_text }}"
+                        data-analytics-article-topic="{{ featured.topico|default:''|portal_text }}"
+                        data-analytics-section="category_featured"
+                    >
+                        {{ featured.titulo|portal_text }}
+                    </a>
+                </h2>
                 <p>{{ featured.resumo|portal_text }}</p>
                 <div class="news-meta">
                     <span>Redação NC Fly</span>
@@ -76,7 +115,17 @@
             {% for noticia in sidebar_cards %}
             <article class="news-card news-card--compact">
                 {% if noticia.imagem_exibicao %}
-                <a href="{{ noticia.get_absolute_url }}" class="news-card__image">
+                <a
+                    href="{{ noticia.get_absolute_url }}"
+                    class="news-card__image"
+                    data-analytics-event="click_noticia_categoria_sidebar"
+                    data-analytics-category="content"
+                    data-analytics-label="{{ noticia.titulo|portal_text }}"
+                    data-analytics-slug="{{ noticia.slug }}"
+                    data-analytics-article-category="{{ noticia.categoria|portal_text }}"
+                    data-analytics-article-topic="{{ noticia.topico|default:''|portal_text }}"
+                    data-analytics-section="category_sidebar"
+                >
                     <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
                 </a>
                 {% endif %}
@@ -84,7 +133,20 @@
                     {% if noticia.topico %}
                     <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
                     {% endif %}
-                    <h3><a href="{{ noticia.get_absolute_url }}">{{ noticia.titulo|portal_text }}</a></h3>
+                    <h3>
+                        <a
+                            href="{{ noticia.get_absolute_url }}"
+                            data-analytics-event="click_noticia_categoria_sidebar"
+                            data-analytics-category="content"
+                            data-analytics-label="{{ noticia.titulo|portal_text }}"
+                            data-analytics-slug="{{ noticia.slug }}"
+                            data-analytics-article-category="{{ noticia.categoria|portal_text }}"
+                            data-analytics-article-topic="{{ noticia.topico|default:''|portal_text }}"
+                            data-analytics-section="category_sidebar"
+                        >
+                            {{ noticia.titulo|portal_text }}
+                        </a>
+                    </h3>
                     <p>{{ noticia.resumo|portal_text|truncatechars:88 }}</p>
                     <div class="news-meta">
                         <span>Redação NC Fly</span>
@@ -98,15 +160,21 @@
     {% endif %}
 
     {% if grid_cards or hidden_cards %}
-    <section
-        class="portal-category-grid"
-        id="portal-category-grid"
-        data-load-more-grid
-    >
+    <section class="portal-category-grid" id="portal-category-grid" data-load-more-grid>
         {% for noticia in grid_cards %}
         <article class="news-card">
             {% if noticia.imagem_exibicao %}
-            <a href="{{ noticia.get_absolute_url }}" class="news-card__image">
+            <a
+                href="{{ noticia.get_absolute_url }}"
+                class="news-card__image"
+                data-analytics-event="click_noticia_categoria_grid"
+                data-analytics-category="content"
+                data-analytics-label="{{ noticia.titulo|portal_text }}"
+                data-analytics-slug="{{ noticia.slug }}"
+                data-analytics-article-category="{{ noticia.categoria|portal_text }}"
+                data-analytics-article-topic="{{ noticia.topico|default:''|portal_text }}"
+                data-analytics-section="category_grid"
+            >
                 <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
             </a>
             {% endif %}
@@ -114,7 +182,20 @@
                 {% if noticia.topico %}
                 <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
                 {% endif %}
-                <h3><a href="{{ noticia.get_absolute_url }}">{{ noticia.titulo|portal_text }}</a></h3>
+                <h3>
+                    <a
+                        href="{{ noticia.get_absolute_url }}"
+                        data-analytics-event="click_noticia_categoria_grid"
+                        data-analytics-category="content"
+                        data-analytics-label="{{ noticia.titulo|portal_text }}"
+                        data-analytics-slug="{{ noticia.slug }}"
+                        data-analytics-article-category="{{ noticia.categoria|portal_text }}"
+                        data-analytics-article-topic="{{ noticia.topico|default:''|portal_text }}"
+                        data-analytics-section="category_grid"
+                    >
+                        {{ noticia.titulo|portal_text }}
+                    </a>
+                </h3>
                 <p>{{ noticia.resumo|portal_text|truncatechars:100 }}</p>
                 <div class="news-meta">
                     <span>Redação NC Fly</span>
@@ -126,7 +207,17 @@
         {% for noticia in hidden_cards %}
         <article class="news-card is-hidden" data-load-more-item>
             {% if noticia.imagem_exibicao %}
-            <a href="{{ noticia.get_absolute_url }}" class="news-card__image">
+            <a
+                href="{{ noticia.get_absolute_url }}"
+                class="news-card__image"
+                data-analytics-event="click_noticia_categoria_grid"
+                data-analytics-category="content"
+                data-analytics-label="{{ noticia.titulo|portal_text }}"
+                data-analytics-slug="{{ noticia.slug }}"
+                data-analytics-article-category="{{ noticia.categoria|portal_text }}"
+                data-analytics-article-topic="{{ noticia.topico|default:''|portal_text }}"
+                data-analytics-section="category_grid_hidden"
+            >
                 <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
             </a>
             {% endif %}
@@ -134,7 +225,20 @@
                 {% if noticia.topico %}
                 <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
                 {% endif %}
-                <h3><a href="{{ noticia.get_absolute_url }}">{{ noticia.titulo|portal_text }}</a></h3>
+                <h3>
+                    <a
+                        href="{{ noticia.get_absolute_url }}"
+                        data-analytics-event="click_noticia_categoria_grid"
+                        data-analytics-category="content"
+                        data-analytics-label="{{ noticia.titulo|portal_text }}"
+                        data-analytics-slug="{{ noticia.slug }}"
+                        data-analytics-article-category="{{ noticia.categoria|portal_text }}"
+                        data-analytics-article-topic="{{ noticia.topico|default:''|portal_text }}"
+                        data-analytics-section="category_grid_hidden"
+                    >
+                        {{ noticia.titulo|portal_text }}
+                    </a>
+                </h3>
                 <p>{{ noticia.resumo|portal_text|truncatechars:100 }}</p>
                 <div class="news-meta">
                     <span>Redação NC Fly</span>
@@ -161,6 +265,9 @@
             data-load-more-target="portal-category-grid"
             data-batch-size="6"
             data-label-default="{{ categoria_config.load_more_label }}"
+            data-analytics-event="click_carregar_mais_noticias"
+            data-analytics-category="engagement"
+            data-analytics-label="{{ categoria_config.label|portal_text }}"
         >
             {{ categoria_config.load_more_label }}
         </button>
@@ -173,7 +280,16 @@
             <h2>{{ categoria_config.cta_title }}</h2>
             <p>{{ categoria_config.cta_description }}</p>
         </div>
-        <a href="{% url 'login_custom' %}" class="portal-button portal-button--light">{{ categoria_config.cta_button }}</a>
+        <a
+            href="{% url 'login_custom' %}"
+            class="portal-button portal-button--light"
+            data-analytics-event="click_cta_categoria"
+            data-analytics-category="conversion"
+            data-analytics-label="{{ categoria_config.label|portal_text }}"
+            data-analytics-section="category_cta"
+        >
+            {{ categoria_config.cta_button }}
+        </a>
     </section>
     {% endif %}
 </div>

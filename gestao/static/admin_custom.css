@@ -4,7 +4,8 @@
     --border: #e3e8ef;
     --muted: #5b6473;
     --heading: #0f172a;
-    --primary: #2563eb;
+    --primary: #ff6b6b;
+    --accent: #f5a623;
 }
 
 /* ===== Base ===== */
@@ -65,7 +66,7 @@ textarea {
 }
 
 button {
-    background-color: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--accent));
     color: #ffffff;
     border: none;
     padding: 0.65rem 1rem;
@@ -75,7 +76,7 @@ button {
 }
 
 button:hover {
-    filter: brightness(0.97);
+    filter: saturate(1.02) brightness(0.98);
 }
 
 /* ===== Layout Principal ===== */

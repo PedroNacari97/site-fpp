@@ -1,12 +1,13 @@
 {% extends "admin_custom/base_admin.html" %}
 {% load static %}
 
-{% block title %}Nova Empresa{% endblock %}
-{% block header_title %}Nova Empresa{% endblock %}
-{% block header_subtitle %}<span>Cadastre uma nova empresa e ja vincule o administrador inicial.</span>{% endblock %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block header_title %}{{ hero_title }}{% endblock %}
+{% block header_subtitle %}<span>{{ page_subtitle }}</span>{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/css/superadmin_figma.css' %}">
+<link rel="stylesheet" href="{% static 'gestao/css/empresa_configuracoes.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -14,12 +15,12 @@
   <section class="superadmin-hero">
     <div>
       <p class="superadmin-hero__eyebrow">Super Admin</p>
-      <h2 class="superadmin-hero__title">Criar nova empresa</h2>
-      <p class="superadmin-hero__subtitle">Defina dados da organizacao e o primeiro administrador em uma unica tela.</p>
+      <h2 class="superadmin-hero__title">{{ hero_title }}</h2>
+      <p class="superadmin-hero__subtitle">{{ hero_subtitle }}</p>
     </div>
   </section>
 
-  <form method="post" class="superadmin-form">
+  <form method="post" enctype="multipart/form-data" class="superadmin-form">
     {% csrf_token %}
 
     {% if form.non_field_errors %}
@@ -49,22 +50,35 @@
           <div class="superadmin-field">
             <label class="superadmin-label" for="{{ form.responsavel_nome.id_for_label }}">{{ form.responsavel_nome.label }}</label>
             {{ form.responsavel_nome }}
+            {% if not is_editing %}
             <p class="superadmin-helper">Se vazio, usaremos o nome do admin inicial como referencia.</p>
+            {% endif %}
             {% for error in form.responsavel_nome.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
           </div>
 
           <div class="superadmin-field">
             <label class="superadmin-label" for="{{ form.limite_colaboradores.id_for_label }}">{{ form.limite_colaboradores.label }}</label>
             {{ form.limite_colaboradores }}
-            <p class="superadmin-helper">Limite maximo de operadores que essa empresa podera criar.</p>
+            <p class="superadmin-helper">O admin principal da empresa nao entra nessa conta. Valor <strong>0</strong> bloqueia novos operadores.</p>
             {% for error in form.limite_colaboradores.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
           </div>
+
+          {% if form.ativo %}
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.ativo.id_for_label }}">{{ form.ativo.label }}</label>
+            <label class="superadmin-toggle superadmin-toggle--inline">
+              {{ form.ativo }}
+              <span>Empresa liberada para operar no portal.</span>
+            </label>
+            {% for error in form.ativo.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+          {% endif %}
         </div>
 
-        <div class="superadmin-card__head" style="margin-top: 26px;">
+        <div class="superadmin-card__head superadmin-card__head--spaced">
           <div>
             <p class="superadmin-card__eyebrow">Contato</p>
-            <h3 class="superadmin-card__title" style="font-size: 24px;">Dados institucionais</h3>
+            <h3 class="superadmin-card__title superadmin-card__title--md">Dados institucionais</h3>
           </div>
         </div>
 
@@ -72,7 +86,9 @@
           <div class="superadmin-field">
             <label class="superadmin-label" for="{{ form.email_contato.id_for_label }}">{{ form.email_contato.label }}</label>
             {{ form.email_contato }}
+            {% if not is_editing %}
             <p class="superadmin-helper">Se vazio, usaremos o e-mail do admin inicial.</p>
+            {% endif %}
             {% for error in form.email_contato.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
           </div>
 
@@ -105,32 +121,103 @@
             {{ form.estado }}
             {% for error in form.estado.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
           </div>
-        </div>
 
-        <div class="superadmin-form__stack" style="margin-top: 18px;">
-          <div class="superadmin-field">
+          <div class="superadmin-field superadmin-field--full">
             <label class="superadmin-label" for="{{ form.endereco.id_for_label }}">{{ form.endereco.label }}</label>
             {{ form.endereco }}
             {% for error in form.endereco.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
           </div>
 
-          <div class="superadmin-field">
+          <div class="superadmin-field superadmin-field--full">
             <label class="superadmin-label" for="{{ form.descricao_rodape.id_for_label }}">{{ form.descricao_rodape.label }}</label>
             {{ form.descricao_rodape }}
-            <p class="superadmin-helper">Esse texto podera ser usado em visualizacoes, PDFs e comunicacoes da empresa.</p>
+            <p class="superadmin-helper">Esse texto pode ser usado em visualizacoes, PDFs e comunicacoes da empresa.</p>
             {% for error in form.descricao_rodape.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
           </div>
         </div>
 
-        <div class="superadmin-toggle-card">
-          <label class="superadmin-toggle">
-            {{ form.ativo }}
-            <span>Empresa ativa para operar logo apos a criacao</span>
-          </label>
-          {% for error in form.ativo.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+        <div class="superadmin-card__head superadmin-card__head--spaced">
+          <div>
+            <p class="superadmin-card__eyebrow">Identidade visual</p>
+            <h3 class="superadmin-card__title superadmin-card__title--md">Logo dos documentos</h3>
+          </div>
+        </div>
+
+        <div class="company-brand-card">
+          <div class="company-brand-preview">
+            {% if is_editing and empresa.logo_documentos_url %}
+            <img src="{{ empresa.logo_documentos_url }}" alt="{{ empresa.nome }}">
+            {% else %}
+            <img src="{% static 'portal/img/ncfly-wordmark.svg' %}" alt="NC Fly">
+            {% endif %}
+          </div>
+
+          <div class="company-brand-copy">
+            <div class="superadmin-field">
+              <label class="superadmin-label" for="{{ form.logo_documentos.id_for_label }}">{{ form.logo_documentos.label }}</label>
+              {{ form.logo_documentos }}
+              <p class="superadmin-helper">Envie um PNG horizontal com fundo transparente. Recomendado 1200x400px e ate 150KB.</p>
+              {% for error in form.logo_documentos.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+            </div>
+
+            {% if is_editing and empresa.logo_documentos %}
+            <label class="company-brand-checkline" for="{{ form.remover_logo_documentos.id_for_label }}">
+              {{ form.remover_logo_documentos }}
+              <span>Remover a logo atual e voltar para a marca padrao da NC Fly.</span>
+            </label>
+            {% endif %}
+
+            <label class="company-brand-checkline" for="{{ form.ocultar_logo_documentos.id_for_label }}">
+              {{ form.ocultar_logo_documentos }}
+              <span>Ocultar a logo principal nos previews e PDFs.</span>
+            </label>
+
+            <p class="company-brand-note">
+              Se nenhuma logo for enviada, o sistema usa a marca da NC Fly por padrao. Ao usar logo propria ou ocultar a logo principal, a NC Fly pode aparecer como marca d'agua discreta no rodape.
+            </p>
+          </div>
         </div>
       </section>
 
+      {% if is_editing %}
+      <aside class="superadmin-card superadmin-card--sidebar">
+        <div class="superadmin-card__head">
+          <div>
+            <p class="superadmin-card__eyebrow">Contexto</p>
+            <h3 class="superadmin-card__title">Estado da empresa</h3>
+          </div>
+        </div>
+
+        <div class="superadmin-form__stack">
+          <div class="superadmin-sidebar-note">
+            <span class="superadmin-sidebar-note__label">Administrador principal</span>
+            <p>
+              {% if admin_user %}
+                {{ admin_user.get_full_name|default:admin_user.username }}
+                {% if admin_user.email %}<br>{{ admin_user.email }}{% endif %}
+              {% else %}
+                Nenhum admin vinculado.
+              {% endif %}
+            </p>
+          </div>
+
+          <div class="superadmin-sidebar-note">
+            <span class="superadmin-sidebar-note__label">Capacidade operacional</span>
+            <p>{{ operadores_ativos }} operador(es) ativo(s) de {{ empresa.limite_colaboradores }} permitidos.<br>{{ vagas_disponiveis }} vaga(s) disponivel(is).</p>
+          </div>
+
+          <div class="superadmin-sidebar-note">
+            <span class="superadmin-sidebar-note__label">Base ativa</span>
+            <p>{{ clientes_ativos }} cliente(s) ativo(s).</p>
+          </div>
+
+          <div class="superadmin-sidebar-note">
+            <span class="superadmin-sidebar-note__label">Historico</span>
+            <p>Criada em {{ empresa.criado_em|date:"d/m/Y H:i" }}<br>Atualizada em {{ empresa.atualizado_em|date:"d/m/Y H:i" }}</p>
+          </div>
+        </div>
+      </aside>
+      {% else %}
       <aside class="superadmin-card superadmin-card--sidebar">
         <div class="superadmin-card__head">
           <div>
@@ -167,14 +254,15 @@
 
         <div class="superadmin-sidebar-note">
           <span class="superadmin-sidebar-note__label">Resumo</span>
-          <p>Ao salvar, o sistema cria a empresa e ja gera o primeiro usuario administrador com acesso ao painel interno.</p>
+          <p>Ao salvar, o sistema cria a empresa e gera o primeiro usuario administrador com acesso ao portal interno.</p>
         </div>
       </aside>
+      {% endif %}
     </div>
 
     <div class="superadmin-form__actions">
       <a href="{% url 'admin_empresas' %}" class="btn btn--outline">Cancelar</a>
-      <button type="submit" class="btn">Salvar empresa</button>
+      <button type="submit" class="btn">{{ submit_label }}</button>
     </div>
   </form>
 </div>

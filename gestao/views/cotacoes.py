@@ -52,7 +52,7 @@ import json
 from datetime import timedelta
 from decimal import Decimal
 
-from .permissions import require_admin_or_operator
+from .permissions import ensure_company_access, require_admin_or_operator, scope_queryset_to_company
 from gestao.services.dashboard import (
     _current_management_filters,
     _management_filter_list,
@@ -114,7 +114,11 @@ def _format_escalas(escalas_queryset):
 
 
 def _resolve_cotacao_conta(form):
-    conta_filters = {"programa": form.cleaned_data["programa"]}
+    programa = form.cleaned_data.get("programa")
+    if not programa:
+        return None, None
+
+    conta_filters = {"programa": programa}
     if form.cleaned_data.get("conta_administrada"):
         conta_filters["conta_administrada"] = form.cleaned_data["conta_administrada"]
     else:
@@ -272,10 +276,15 @@ def admin_cotacoes_voo(request):
     selected_contas = _management_filter_list(active_filters, "conta")
     selected_status = _management_filter_value(active_filters, "status")
 
-    cotacoes = CotacaoVoo.objects.filter(
-        Q(cliente__perfil="cliente", cliente__ativo=True) | Q(conta_administrada__isnull=False)
-    ).select_related(
-        "cliente__usuario", "origem", "destino", "conta_administrada"
+    cotacoes = scope_queryset_to_company(
+        CotacaoVoo.objects.filter(
+            Q(cliente__perfil="cliente", cliente__ativo=True) | Q(conta_administrada__isnull=False)
+        ).select_related(
+            "cliente__usuario", "origem", "destino", "conta_administrada"
+        ),
+        request,
+        "cliente__empresa",
+        "conta_administrada__empresa",
     )
     if start_date:
         cotacoes = cotacoes.filter(criado_em__date__gte=start_date)
@@ -324,7 +333,10 @@ def nova_cotacao_voo(request):
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     emissao_id = request.GET.get("emissao")
     if emissao_id:
-        emissao = get_object_or_404(EmissaoPassagem, id=emissao_id)
+        emissao = get_object_or_404(
+            scope_queryset_to_company(EmissaoPassagem.objects.all(), request, "cliente__empresa", "conta_administrada__empresa", "emissor_parceiro__empresa"),
+            id=emissao_id,
+        )
         initial = {
             "cliente": emissao.cliente_id,
             "companhia_aerea": (
@@ -346,7 +358,8 @@ def nova_cotacao_voo(request):
         escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():
             conta, valor_medio_milheiro = _resolve_cotacao_conta(form)
-            if not conta:
+            valor_milheiro_informado = Decimal(str(form.cleaned_data.get("valor_milheiro") or 0))
+            if form.cleaned_data.get("programa") and not conta:
                 form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
             if form.errors:
                 form.add_error(None, "Revise os campos destacados antes de salvar a cotação.")
@@ -354,9 +367,9 @@ def nova_cotacao_voo(request):
                     request,
                     "Não foi possível salvar a cotação: revise o programa e os campos destacados.",
                 )
-            elif form.cleaned_data.get("milhas") and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
+            elif form.cleaned_data.get("milhas") and (not valor_medio_milheiro or valor_medio_milheiro <= 0) and valor_milheiro_informado <= 0:
                 form.add_error(
-                    "programa",
+                    "valor_milheiro",
                     "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
                 )
                 messages.error(
@@ -442,7 +455,10 @@ def nova_cotacao_voo(request):
 def editar_cotacao_voo(request, cotacao_id):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
-    cotacao = get_object_or_404(CotacaoVoo, id=cotacao_id)
+    cotacao = get_object_or_404(
+        scope_queryset_to_company(CotacaoVoo.objects.all(), request, "cliente__empresa", "conta_administrada__empresa"),
+        id=cotacao_id,
+    )
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     escalas_por_tipo = _format_escalas(
         cotacao.escalas.values("aeroporto_id", "duracao", "cidade", "tipo", "ordem")
@@ -454,12 +470,13 @@ def editar_cotacao_voo(request, cotacao_id):
         if form.is_valid():
             with transaction.atomic():
                 conta, valor_medio_milheiro = _resolve_cotacao_conta(form)
+                valor_milheiro_informado = Decimal(str(form.cleaned_data.get("valor_milheiro") or 0))
                 if cotacao.emissao_id and form.cleaned_data.get("status") != "emissao":
                     form.add_error(
                         "status",
                         "Esta cotação já possui emissão vinculada. Mantenha o status emitido.",
                     )
-                if not conta:
+                if form.cleaned_data.get("programa") and not conta:
                     form.add_error("programa", "Selecione um programa vinculado ao titular escolhido.")
                 if form.errors:
                     form.add_error(None, "Revise os campos destacados antes de salvar a cotação.")
@@ -467,9 +484,9 @@ def editar_cotacao_voo(request, cotacao_id):
                         request,
                         "Não foi possível salvar a cotação: revise o programa e os campos destacados.",
                     )
-                elif form.cleaned_data.get("milhas") and (not valor_medio_milheiro or valor_medio_milheiro <= 0):
+                elif form.cleaned_data.get("milhas") and (not valor_medio_milheiro or valor_medio_milheiro <= 0) and valor_milheiro_informado <= 0:
                     form.add_error(
-                        "programa",
+                        "valor_milheiro",
                         "Valor médio do milheiro ausente para o titular selecionado. Atualize os dados antes de prosseguir.",
                     )
                     messages.error(
@@ -555,7 +572,11 @@ def deletar_cotacao_voo(request, cotacao_id):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
         return render(request, "sem_permissao.html")
-    CotacaoVoo.objects.filter(id=cotacao_id).delete()
+    cotacao = get_object_or_404(
+        scope_queryset_to_company(CotacaoVoo.objects.all(), request, "cliente__empresa", "conta_administrada__empresa"),
+        id=cotacao_id,
+    )
+    cotacao.delete()
     messages.success(request, "Cotação de voo deletada com sucesso.")
     return redirect("admin_cotacoes_voo")
 
@@ -578,12 +599,17 @@ def cotacao_voo_pdf(request, cotacao_id):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     cotacao = get_object_or_404(
-        CotacaoVoo.objects.select_related(
-            "cliente__usuario",
-            "conta_administrada",
-            "origem",
-            "destino",
-            "programa",
+        scope_queryset_to_company(
+            CotacaoVoo.objects.select_related(
+                "cliente__usuario",
+                "conta_administrada",
+                "origem",
+                "destino",
+                "programa",
+            ),
+            request,
+            "cliente__empresa",
+            "conta_administrada__empresa",
         ),
         id=cotacao_id,
     )
@@ -599,12 +625,17 @@ def visualizar_cotacao_voo(request, cotacao_id):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     cotacao = get_object_or_404(
-        CotacaoVoo.objects.select_related(
+        scope_queryset_to_company(
+            CotacaoVoo.objects.select_related(
             "cliente__usuario",
             "conta_administrada",
             "origem",
             "destino",
             "programa",
+        ),
+            request,
+            "cliente__empresa",
+            "conta_administrada__empresa",
         ),
         id=cotacao_id,
     )

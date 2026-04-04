@@ -120,19 +120,20 @@
         <div class="fidelity-account-form__card-body fidelity-account-form__club-body" data-club-body>
           <label class="fidelity-account-form__toggle">
             {{ form.clube_ativo }}
-            <span>Esta conta possui clube de periodicidade ativa</span>
+            <span>Esta conta possui recorrencia ativa de clube</span>
           </label>
+          <p class="fidelity-account-form__hint">Cada recorrencia gera automaticamente uma movimentacao com pontos e valor pago, recalculando o valor medio do milheiro.</p>
 
           <div class="fidelity-account-form__row fidelity-account-form__row--double">
             <div class="fidelity-account-form__field">
-              <label for="{{ form.pontos_clube_mes.id_for_label }}">Pontos por Mes</label>
+              <label for="{{ form.pontos_clube_mes.id_for_label }}">{{ form.pontos_clube_mes.label }}</label>
               {{ form.pontos_clube_mes }}
               {% for error in form.pontos_clube_mes.errors %}
               <div class="fidelity-account-form__field-error">{{ error }}</div>
               {% endfor %}
             </div>
             <div class="fidelity-account-form__field">
-              <label for="{{ form.valor_assinatura_clube.id_for_label }}">Valor da Assinatura</label>
+              <label for="{{ form.valor_assinatura_clube.id_for_label }}">{{ form.valor_assinatura_clube.label }}</label>
               {{ form.valor_assinatura_clube }}
               {% for error in form.valor_assinatura_clube.errors %}
               <div class="fidelity-account-form__field-error">{{ error }}</div>
@@ -142,7 +143,7 @@
 
           <div class="fidelity-account-form__row fidelity-account-form__row--double">
             <div class="fidelity-account-form__field">
-              <label for="{{ form.clube_periodicidade.id_for_label }}">Tipo de Assinatura</label>
+              <label for="{{ form.clube_periodicidade.id_for_label }}">{{ form.clube_periodicidade.label }}</label>
               {{ form.clube_periodicidade }}
               {% for error in form.clube_periodicidade.errors %}
               <div class="fidelity-account-form__field-error">{{ error }}</div>
@@ -164,7 +165,7 @@
         </header>
         <div class="fidelity-account-form__card-body">
           <div class="fidelity-account-form__field">
-            <label for="{{ form.data_inicio_clube.id_for_label }}">Data Inicio Clube</label>
+            <label for="{{ form.data_inicio_clube.id_for_label }}">{{ form.data_inicio_clube.label }}</label>
             {{ form.data_inicio_clube }}
             {% for error in form.data_inicio_clube.errors %}
             <div class="fidelity-account-form__field-error">{{ error }}</div>

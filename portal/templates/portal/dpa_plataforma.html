@@ -1,0 +1,62 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ seo_title|default:"DPA da Plataforma | NC Fly" }}{% endblock %}
+{% block content %}
+<div class="portal-static-page">
+    <section class="portal-static-page__shell">
+        <header class="portal-static-page__hero">
+            <nav class="portal-static-page__breadcrumbs">
+                <a href="{% url 'login_custom' %}">Login</a>
+                <span>/</span>
+                <span>DPA da Plataforma</span>
+            </nav>
+            <span class="news-pill news-pill--primary">{{ page_eyebrow }}</span>
+            <h1>DPA / Aditivo de Tratamento de Dados</h1>
+            <p>{{ page_intro }}</p>
+            {% if documento_versao %}
+                <p class="portal-static-page__updated">Versao {{ documento_versao }}{% if documento_vigencia %} • vigente desde {{ documento_vigencia|br_date_long }}{% endif %}.</p>
+            {% endif %}
+        </header>
+
+        <section class="portal-static-page__section">
+            <h2>1. Finalidade do documento</h2>
+            <p>Este documento serve como base para contratos, propostas, onboarding comercial e relacoes B2B envolvendo a plataforma NC Fly. Ele organiza o tratamento de dados no contexto do SaaS, especialmente quando a empresa contratante utiliza a plataforma para operar dados de clientes, passageiros, emissoes, cotacoes, documentos e historicos operacionais.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>2. Distribuicao de papeis</h2>
+            <ul class="portal-static-page__list">
+                <li>A empresa contratante pode atuar como controladora dos dados pessoais tratados em sua operacao.</li>
+                <li>A NC Fly pode atuar como operadora quando tratar dados pessoais por conta e ordem do contratante, conforme o escopo do servico.</li>
+                <li>Em situacoes especificas, a NC Fly pode assumir papel proprio de controladora em temas de seguranca, login, auditoria, obrigacoes legais e operacao da propria plataforma.</li>
+            </ul>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>3. Instrucoes e limites</h2>
+            <p>O contratante deve fornecer instrucoes legitimas, compatíveis com a legislacao aplicavel e coerentes com a finalidade da plataforma. A NC Fly pode recusar instrucao manifestamente ilicita, tecnicamente inviavel ou que coloque em risco a seguranca, a integridade do servico ou os direitos dos titulares.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>4. Suboperadores e fornecedores</h2>
+            <p>A NC Fly pode utilizar suboperadores, infraestrutura em nuvem, provedores de e-mail, monitoramento, hospedagem, seguranca, analytics consentido e fornecedores tecnicos necessarios a execucao do servico, observados criterios de necessidade, seguranca e compatibilidade juridica. A contratante reconhece que parte da cadeia operacional do SaaS depende desses prestadores.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>5. Incidentes e cooperacao</h2>
+            <p>Em caso de incidente de seguranca com potencial impacto a dados pessoais no escopo da plataforma, a NC Fly deve atuar com diligencia razoavel para avaliar o fato, mitigar impacto, preservar evidencias, cooperar com o contratante dentro do contexto aplicavel e adotar os encaminhamentos exigidos pela legislacao e pelas circunstâncias do evento.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>6. Retencao e encerramento</h2>
+            <p>Os dados podem ser mantidos pelo periodo necessario a execucao do contrato, seguranca da plataforma, suporte, auditoria, defesa de direitos e cumprimento de obrigacoes legais. Regras especificas de descarte, devolucao, retencao tecnica e trilha de auditoria devem observar o contrato comercial e a legislacao aplicavel.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>7. Natureza contratual</h2>
+            <p>Este texto funciona como base documental do produto, mas o instrumento contratual comercial pode complementar, restringir ou detalhar obrigacoes, anexos, SLAs, niveis de servico, seguranca, onboarding, suporte e responsabilidades entre as partes.</p>
+            <p class="portal-static-page__updated">Atualizado em {{ page_updated_at|br_date_long }}.</p>
+        </section>
+    </section>
+</div>
+{% endblock %}

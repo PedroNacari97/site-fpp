@@ -414,9 +414,9 @@ window.emissionWizardContext = {
     clienteProgramas: {{ cliente_programas_json|safe }},
     contasAdmProgramas: {{ contas_adm_programas_json|safe }},
     empresaProgramas: {{ empresa_programas_json|safe }},
-    passageirosFrequentes: {{ passageiros_frequentes_json|safe }},
-    clientesData: {{ clientes_data_json|safe }},
     cpfControleInicial: {{ cpf_controle_json|safe }},
+    clienteContextUrlTemplate: "{{ cliente_context_url_template|escapejs }}",
+    passageiroFrequenteUrlTemplate: "{{ passageiro_frequente_url_template|escapejs }}",
     cotacaoConversionId: {% if cotacao_conversion_id %}{{ cotacao_conversion_id }}{% else %}null{% endif %}
 };
 </script>

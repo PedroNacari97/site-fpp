@@ -1,12 +1,12 @@
 :root {
-  --fidelity-bg: #0f1419;
-  --fidelity-surface: #1a2332;
-  --fidelity-border: #1e2939;
-  --fidelity-border-soft: #364153;
-  --fidelity-text: #ffffff;
-  --fidelity-text-soft: #d1d5dc;
-  --fidelity-text-muted: #99a1af;
-  --fidelity-orange: #ff8904;
+  --fidelity-bg: #f4f7fb;
+  --fidelity-surface: #ffffff;
+  --fidelity-border: #dbe3ee;
+  --fidelity-border-soft: #d2dce8;
+  --fidelity-text: #0f1b2d;
+  --fidelity-text-soft: #425466;
+  --fidelity-text-muted: #708198;
+  --fidelity-orange: #f5a623;
 }
 
 .fidelity-programs {

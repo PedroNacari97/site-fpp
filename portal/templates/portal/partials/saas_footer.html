@@ -1,0 +1,43 @@
+{% load static %}
+<footer class="portal-footer portal-footer--home portal-footer--saas">
+    <div class="portal-footer__panel">
+        <div class="portal-footer__panel-inner portal-footer__panel-inner--saas">
+            <div class="portal-footer__brand-block portal-footer__brand-block--saas">
+                <a href="{% url 'portal_plataforma_saas' %}" class="portal-brand portal-brand--footer">
+                    <span class="portal-brand__logo">
+                        <img src="{{ app_branding.footer_logo_url }}" alt="{{ app_branding.alt }}">
+                    </span>
+                    <span class="portal-brand__copy">
+                        <strong>Plataforma NC Fly</strong>
+                        <small>Apresenta&ccedil;&atilde;o p&uacute;blica do produto</small>
+                    </span>
+                </a>
+                <p>Uma vis&atilde;o da plataforma da NC Fly para organizar cota&ccedil;&otilde;es, emiss&otilde;es, alertas, clientes e contas fidelidade em um fluxo mais claro.</p>
+            </div>
+
+            <div class="portal-footer__column portal-footer__column--saas">
+                <h3>Plataforma</h3>
+                <a href="{% url 'portal_plataforma_saas' %}">Vis&atilde;o geral</a>
+                <a href="{% url 'portal_plataforma_saas' %}#saas-modulos">M&oacute;dulos</a>
+                <a href="{% url 'portal_plataforma_saas' %}#saas-faq">FAQ</a>
+                <a href="{% url 'portal_home' %}">Voltar para a home</a>
+            </div>
+
+            <div class="portal-footer__column portal-footer__column--saas">
+                <h3>NC Fly</h3>
+                <a href="{% url 'portal_sobre' %}">Quem somos</a>
+                <a href="{% url 'portal_privacidade' %}">Pol&iacute;tica de Privacidade</a>
+                <a href="{% url 'portal_termos' %}">Termos de Uso</a>
+                {% if portal_contact_email %}
+                <a href="mailto:{{ portal_contact_email }}">Falar com a NC Fly</a>
+                {% endif %}
+                <button type="button" class="portal-footer__link-button" data-cookie-open-preferences>Prefer&ecirc;ncias de cookies</button>
+            </div>
+        </div>
+    </div>
+    <div class="portal-footer__bar">
+        <div class="portal-footer__bar-inner portal-footer__bar-inner--saas">
+            <span>&copy; {% now "Y" %} Plataforma NC Fly. P&aacute;gina p&uacute;blica de apresenta&ccedil;&atilde;o do produto.</span>
+        </div>
+    </div>
+</footer>

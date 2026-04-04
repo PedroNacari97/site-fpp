@@ -14,7 +14,8 @@
 <div class="detail-client">
   <div class="detail-client__shell">
     <section class="detail-client__filters">
-<form method="get" class="detail-client__filter-grid" data-auto-submit-filters>
+      <form method="get" class="detail-client__filter-grid" data-auto-submit-filters>
+        <input type="hidden" name="tab" value="{{ active_client_tab }}">
         <div class="detail-client__field">
           <label for="data_inicio">Data inicial</label>
           <input id="data_inicio" type="date" name="data_inicio" value="{{ management_dashboard.start_date }}">
@@ -64,7 +65,7 @@
         </div>
         <div class="detail-client__actions">
           <button type="submit" class="detail-client__button">Filtrar</button>
-          <a href="?{{ management_dashboard.clear_filters_query }}" class="detail-client__button-secondary">Limpar</a>
+          <a href="?{{ management_dashboard.clear_filters_query }}{% if management_dashboard.clear_filters_query %}&{% endif %}tab={{ active_client_tab }}" class="detail-client__button-secondary">Limpar</a>
         </div>
       </form>
     </section>
@@ -79,7 +80,15 @@
       {% endfor %}
     </section>
 
-    <section class="detail-client__panel">
+    <nav class="detail-client__tabs" aria-label="Areas do cliente">
+      <a href="{{ client_tab_urls.passageiros }}" class="detail-client__tab {% if active_client_tab == 'passageiros' %}is-active{% endif %}">Passageiros frequentes</a>
+      <a href="{{ client_tab_urls.interesses }}" class="detail-client__tab {% if active_client_tab == 'interesses' %}is-active{% endif %}">Interesses de viagem</a>
+      <a href="{{ client_tab_urls.cotacoes }}" class="detail-client__tab {% if active_client_tab == 'cotacoes' %}is-active{% endif %}">Cotacoes</a>
+      <a href="{{ client_tab_urls.contas }}" class="detail-client__tab {% if active_client_tab == 'contas' %}is-active{% endif %}">Contas Fidelidade</a>
+      <a href="{{ client_tab_urls.emissoes }}" class="detail-client__tab {% if active_client_tab == 'emissoes' %}is-active{% endif %}">Emissoes</a>
+    </nav>
+
+    <section class="detail-client__panel detail-client__tab-panel" {% if active_client_tab != 'passageiros' %}hidden{% endif %}>
       <header class="detail-client__panel-head">
         <h2 class="detail-client__panel-title">Passageiros frequentes</h2>
       </header>
@@ -165,7 +174,283 @@
       </div>
     </section>
 
-    <section class="detail-client__panel detail-client__panel--table">
+    <section class="detail-client__panel detail-client__tab-panel" {% if active_client_tab != 'interesses' %}hidden{% endif %}>
+      <header class="detail-client__panel-head">
+        <h2 class="detail-client__panel-title">Interesses de viagem</h2>
+      </header>
+      <div class="detail-client__passengers-grid">
+        <article class="detail-client__passenger-column">
+          <h3 class="detail-client__section-label">Cadastrar interesse</h3>
+          <form method="post" class="detail-client__interest-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_interesse_viagem">
+            {% if interesse_viagem_form.errors %}
+              <div class="detail-client__form-errors">
+                Corrija os campos destacados para salvar o interesse.
+              </div>
+            {% endif %}
+
+            <section class="detail-client__interest-block">
+              <div class="detail-client__interest-block-head">
+                <h4>Resumo do interesse</h4>
+                <p>Use um nome interno para organizar os perfis de viagem do cliente.</p>
+              </div>
+              <div class="detail-client__interest-grid detail-client__interest-grid--single">
+                <div>
+                  <label for="{{ interesse_viagem_form.nome.id_for_label }}">Nome</label>
+                  {{ interesse_viagem_form.nome }}
+                </div>
+                <label class="detail-client__toggle-field" for="{{ interesse_viagem_form.ativo.id_for_label }}">
+                  {{ interesse_viagem_form.ativo }}
+                  <span>Interesse ativo</span>
+                </label>
+              </div>
+            </section>
+
+            <section class="detail-client__interest-block">
+              <div class="detail-client__interest-block-head">
+                <h4>Destino e rota</h4>
+                <p>Voce pode combinar filtros amplos, como continente, com pontos especificos, como IATA.</p>
+              </div>
+              <div class="detail-client__interest-grid">
+                <div>
+                  <label for="{{ interesse_viagem_form.continente.id_for_label }}">Continente</label>
+                  {{ interesse_viagem_form.continente }}
+                </div>
+                <div>
+                  <label for="{{ interesse_viagem_form.pais.id_for_label }}">Pais</label>
+                  {{ interesse_viagem_form.pais }}
+                </div>
+                <div>
+                  <label for="{{ interesse_viagem_form.cidade_destino.id_for_label }}">Cidade de destino</label>
+                  {{ interesse_viagem_form.cidade_destino }}
+                </div>
+                <div>
+                  <label for="{{ interesse_viagem_form.destino.id_for_label }}">Aeroporto de destino</label>
+                  {{ interesse_viagem_form.destino }}
+                </div>
+                <div class="detail-client__interest-grid-span">
+                  <label for="{{ interesse_viagem_form.origem.id_for_label }}">Aeroporto de origem</label>
+                  {{ interesse_viagem_form.origem }}
+                </div>
+              </div>
+            </section>
+
+            <section class="detail-client__interest-block">
+              <div class="detail-client__interest-block-head">
+                <h4>Preferencias de emissao</h4>
+                <p>Trave programa, companhia e cabine apenas quando fizer sentido para o cliente.</p>
+              </div>
+              <div class="detail-client__interest-grid">
+                <div>
+                  <label for="{{ interesse_viagem_form.classe.id_for_label }}">Classe</label>
+                  {{ interesse_viagem_form.classe }}
+                </div>
+                <div>
+                  <label for="{{ interesse_viagem_form.programa_fidelidade.id_for_label }}">Programa</label>
+                  {{ interesse_viagem_form.programa_fidelidade }}
+                </div>
+                <div class="detail-client__interest-grid-span">
+                  <label for="{{ interesse_viagem_form.companhia_aerea.id_for_label }}">Companhia aerea</label>
+                  {{ interesse_viagem_form.companhia_aerea }}
+                </div>
+              </div>
+            </section>
+
+            <section class="detail-client__interest-block">
+              <div class="detail-client__interest-block-head">
+                <h4>Janela de ida</h4>
+                <p>Voce pode cruzar mes, dia do mes e semestre. Tudo que for preenchido vira criterio do match.</p>
+              </div>
+              <div class="detail-client__interest-grid detail-client__interest-grid--three">
+                <div>
+                  <label for="{{ interesse_viagem_form.meses_ida.id_for_label }}">{{ interesse_viagem_form.meses_ida.label }}</label>
+                  {{ interesse_viagem_form.meses_ida }}
+                </div>
+                <div>
+                  <label for="{{ interesse_viagem_form.dias_ida.id_for_label }}">{{ interesse_viagem_form.dias_ida.label }}</label>
+                  {{ interesse_viagem_form.dias_ida }}
+                </div>
+                <div>
+                  <label for="{{ interesse_viagem_form.semestres_ida.id_for_label }}">{{ interesse_viagem_form.semestres_ida.label }}</label>
+                  {{ interesse_viagem_form.semestres_ida }}
+                </div>
+              </div>
+            </section>
+
+            <section class="detail-client__interest-block">
+              <div class="detail-client__interest-block-head">
+                <h4>Janela de volta</h4>
+                <p>Preencha a volta apenas quando o retorno tambem fizer parte do interesse.</p>
+              </div>
+              <div class="detail-client__interest-grid detail-client__interest-grid--three">
+                <div>
+                  <label for="{{ interesse_viagem_form.meses_volta.id_for_label }}">{{ interesse_viagem_form.meses_volta.label }}</label>
+                  {{ interesse_viagem_form.meses_volta }}
+                </div>
+                <div>
+                  <label for="{{ interesse_viagem_form.dias_volta.id_for_label }}">{{ interesse_viagem_form.dias_volta.label }}</label>
+                  {{ interesse_viagem_form.dias_volta }}
+                </div>
+                <div>
+                  <label for="{{ interesse_viagem_form.semestres_volta.id_for_label }}">{{ interesse_viagem_form.semestres_volta.label }}</label>
+                  {{ interesse_viagem_form.semestres_volta }}
+                </div>
+              </div>
+            </section>
+
+            <div>
+              <button type="submit" class="detail-client__button detail-client__button--full">Salvar interesse</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="detail-client__passenger-column">
+          <h3 class="detail-client__section-label">Interesses cadastrados</h3>
+          <div class="detail-client__passenger-list">
+            {% for item in interest_cards %}
+              <article class="detail-client__passenger-card">
+                <div class="detail-client__passenger-card-head">
+                  <div class="detail-client__passenger-card-main">
+                    <div class="detail-client__passenger-avatar detail-client__passenger-avatar--purple">IV</div>
+                    <div class="detail-client__passenger-identity">
+                      <strong>{{ item.nome }}</strong>
+                      <span>{{ item.status_label }}</span>
+                    </div>
+                  </div>
+                  <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="interesse_id" value="{{ item.id }}">
+                    <button type="submit" name="action" value="delete_interesse_viagem" class="detail-client__remove-button" onclick="return confirm('Remover interesse de viagem?');">Remover</button>
+                  </form>
+                </div>
+
+                <div class="detail-client__interest-card-group">
+                  <span class="detail-client__interest-card-label">Destino e rota</span>
+                  <div class="detail-client__tag-list">
+                    {% for criterio in item.criterios %}
+                      <span class="detail-client__tag">{{ criterio }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div class="detail-client__interest-card-group">
+                  <span class="detail-client__interest-card-label">Preferencias</span>
+                  <div class="detail-client__tag-list">
+                    {% for preferencia in item.preferencias %}
+                      <span class="detail-client__tag detail-client__tag--secondary">{{ preferencia }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+
+                <div class="detail-client__interest-card-group">
+                  <span class="detail-client__interest-card-label">Janela</span>
+                  <div class="detail-client__interest-window-list">
+                    {% for janela in item.janelas %}
+                      <div class="detail-client__interest-window-item">
+                        <strong>{{ janela.label }}</strong>
+                        <div class="detail-client__tag-list">
+                          {% for valor in janela.items %}
+                            <span class="detail-client__tag detail-client__tag--tertiary">{{ valor }}</span>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </article>
+            {% empty %}
+              <div class="detail-client__empty">Nenhum interesse de viagem cadastrado.</div>
+            {% endfor %}
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="detail-client__panel detail-client__panel--table detail-client__tab-panel" {% if active_client_tab != 'cotacoes' %}hidden{% endif %}>
+      <header class="detail-client__panel-head">
+        <h2 class="detail-client__panel-title">Cotacoes do cliente</h2>
+      </header>
+      <div class="detail-client__table-wrap">
+        <table class="detail-client__table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Programa</th>
+              <th>Trecho</th>
+              <th>Classe</th>
+              <th>Status</th>
+              <th>Valor</th>
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in cotacao_rows %}
+              <tr>
+                <td>{{ row.data }}</td>
+                <td>{{ row.programa }}</td>
+                <td>{{ row.trecho }}</td>
+                <td>{{ row.classe }}</td>
+                <td>{{ row.status }}</td>
+                <td>{{ row.valor }}</td>
+                <td>
+                  <div class="detail-client__table-actions">
+                    <a href="{{ row.view_url }}" class="detail-client__table-link">Visualizar</a>
+                    <a href="{{ row.edit_url }}" class="detail-client__table-link detail-client__table-link--secondary">Editar</a>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="detail-client__table-empty">Nenhuma cotacao encontrada.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="detail-client__panel detail-client__panel--table detail-client__tab-panel" {% if active_client_tab != 'contas' %}hidden{% endif %}>
+      <header class="detail-client__panel-head">
+        <h2 class="detail-client__panel-title">Contas fidelidade do cliente</h2>
+      </header>
+      <div class="detail-client__table-wrap">
+        <table class="detail-client__table">
+          <thead>
+            <tr>
+              <th>Programa</th>
+              <th>Saldo</th>
+              <th>Valor pago</th>
+              <th>Valor medio</th>
+              <th>Limite CPFs</th>
+              <th>Disponiveis</th>
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in conta_rows %}
+              <tr>
+                <td>{{ row.programa }}</td>
+                <td>{{ row.saldo }}</td>
+                <td>{{ row.valor_pago }}</td>
+                <td>{{ row.valor_medio }}</td>
+                <td>{{ row.cpfs_total }}</td>
+                <td>{{ row.cpfs_disponiveis }}</td>
+                <td>
+                  <a href="{{ row.movimentacoes_url }}" class="detail-client__table-link">Movimentacoes</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="detail-client__table-empty">Nenhuma conta fidelidade encontrada.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="detail-client__panel detail-client__panel--table detail-client__tab-panel" {% if active_client_tab != 'emissoes' %}hidden{% endif %}>
       <header class="detail-client__panel-head">
         <h2 class="detail-client__panel-title">Emissoes do cliente</h2>
       </header>

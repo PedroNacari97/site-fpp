@@ -1,0 +1,186 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Governanca da Plataforma{% endblock %}
+{% block header_title %}Governanca da Plataforma{% endblock %}
+{% block header_subtitle %}<span>Camada mestre do SaaS da NC Fly, separada da operacao B2B das empresas locatarias.</span>{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/superadmin_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="superadmin-page">
+  <section class="superadmin-hero">
+    <div>
+      <p class="superadmin-hero__eyebrow">Super Admin</p>
+      <h2 class="superadmin-hero__title">Governanca juridica e operacional</h2>
+      <p class="superadmin-hero__subtitle">Este painel existe para a camada dona da plataforma. O admin da empresa contratante usa a NC Fly como locatario B2B e nao controla os documentos-mestre, a governanca global nem as regras estruturais do SaaS.</p>
+    </div>
+  </section>
+
+  <section class="superadmin-kpis">
+    {% for item in kpis %}
+      <article class="superadmin-kpi">
+        <span class="superadmin-kpi__label">{{ item.label }}</span>
+        <strong class="superadmin-kpi__value" style="font-size: 26px; line-height: 1.15;">{{ item.value }}</strong>
+        <p class="superadmin-helper" style="margin-top: 10px;">{{ item.description }}</p>
+      </article>
+    {% endfor %}
+  </section>
+
+  <section class="superadmin-card">
+    <div class="superadmin-card__head">
+      <div>
+        <p class="superadmin-card__eyebrow">Documentos publicos</p>
+        <h3 class="superadmin-card__title">Portal e paginas abertas</h3>
+      </div>
+      <span class="superadmin-card__meta">{{ documentos_publicos|length }} documento(s)</span>
+    </div>
+
+    <div class="superadmin-table-wrap">
+      <table class="superadmin-table">
+        <thead>
+          <tr>
+            <th>Documento</th>
+            <th>Escopo</th>
+            <th>Descricao</th>
+            <th>Abrir</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for doc in documentos_publicos %}
+            <tr>
+              <td><strong>{{ doc.label }}</strong></td>
+              <td>{{ doc.escopo }}</td>
+              <td>{{ doc.descricao }}</td>
+              <td><a href="{{ doc.url }}" class="btn btn--outline btn--sm">Abrir</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="superadmin-card">
+    <div class="superadmin-card__head">
+      <div>
+        <p class="superadmin-card__eyebrow">Documentos da plataforma</p>
+        <h3 class="superadmin-card__title">Versoes e aceite contratual</h3>
+      </div>
+      <span class="superadmin-card__meta">{{ documentos_plataforma|length }} documento(s)</span>
+    </div>
+
+    <div class="superadmin-form__stack">
+      {% for item in documentos_plataforma %}
+        <form method="post" action="{% url 'admin_atualizar_documento_plataforma' item.documento.id %}" class="superadmin-toggle-card">
+          {% csrf_token %}
+          <div class="superadmin-card__head" style="margin-bottom: 14px;">
+            <div>
+              <p class="superadmin-card__eyebrow">Area logada</p>
+              <h3 class="superadmin-card__title" style="font-size: 24px;">{{ item.documento.get_tipo_display }}</h3>
+            </div>
+            <a href="{{ item.url }}" class="btn btn--outline btn--sm">Abrir documento</a>
+          </div>
+          <div class="superadmin-form__grid">
+            {% for field in item.form %}
+              <div class="superadmin-field{% if field.name == 'observacoes_internas' %} superadmin-field--full{% endif %}">
+                <label class="superadmin-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+          <div class="superadmin-form__actions" style="margin-top: 16px;">
+            <button type="submit" class="btn btn--sm">Salvar versao</button>
+          </div>
+        </form>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="superadmin-card">
+    <div class="superadmin-card__head">
+      <div>
+        <p class="superadmin-card__eyebrow">Aceites recentes</p>
+        <h3 class="superadmin-card__title">Historico da plataforma</h3>
+      </div>
+      <span class="superadmin-card__meta">{{ aceites_recentes|length }} registro(s)</span>
+    </div>
+
+    {% if aceites_recentes %}
+      <div class="superadmin-table-wrap">
+        <table class="superadmin-table">
+          <thead>
+              <tr>
+                <th>Empresa</th>
+                <th>Documento</th>
+                <th>Versao</th>
+                <th>Aceito por</th>
+                <th>Data</th>
+                <th>IP</th>
+                <th>Dispositivo</th>
+                <th>Navegador / SO</th>
+                <th>Localizacao</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for aceite in aceites_recentes %}
+                <tr>
+                <td>{{ aceite.empresa.nome }}</td>
+                <td>{{ aceite.documento.get_tipo_display }}</td>
+                  <td>{{ aceite.versao_aceita }}</td>
+                  <td>{{ aceite.aceito_por.get_full_name|default:aceite.aceito_por.username }}</td>
+                  <td>{{ aceite.aceito_em|date:"d/m/Y H:i" }}</td>
+                  <td>{{ aceite.ip_aceite|default:"-" }}</td>
+                  <td>{{ aceite.device_type|default:"-" }}</td>
+                  <td>
+                    {% if aceite.browser_name or aceite.os_name %}
+                      {{ aceite.browser_name|default:"-" }} {{ aceite.browser_version|default:"" }}<br>
+                      <small>{{ aceite.os_name|default:"-" }} {{ aceite.os_version|default:"" }}</small>
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if aceite.latitude and aceite.longitude %}
+                      {{ aceite.latitude }}, {{ aceite.longitude }}<br>
+                      <small>{{ aceite.geolocation_status|default:"granted" }}{% if aceite.geolocation_accuracy_meters %} &middot; ~{{ aceite.geolocation_accuracy_meters }} m{% endif %}</small>
+                    {% else %}
+                      <small>{{ aceite.geolocation_status|default:"-" }}</small>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+      </div>
+    {% else %}
+      <div class="superadmin-empty">Nenhum aceite registrado ate o momento.</div>
+    {% endif %}
+  </section>
+
+  <section class="superadmin-card">
+    <div class="superadmin-card__head">
+      <div>
+        <p class="superadmin-card__eyebrow">Diretriz</p>
+        <h3 class="superadmin-card__title">Regra de governanca recomendada</h3>
+      </div>
+    </div>
+    <div class="superadmin-form__stack">
+      <div class="superadmin-sidebar-note">
+        <span class="superadmin-sidebar-note__label">Modelo</span>
+        <p>Superadmin administra versoes, texto mestre, politicas, termos, aceitacao e trilha de evidencia da plataforma.</p>
+      </div>
+      <div class="superadmin-sidebar-note">
+        <span class="superadmin-sidebar-note__label">Locatario B2B</span>
+        <p>Admin da empresa contratante apenas consulta, aceita e usa a plataforma dentro do contrato dele, sem alterar a governanca geral do SaaS.</p>
+      </div>
+      <div class="superadmin-sidebar-note">
+        <span class="superadmin-sidebar-note__label">Proximo passo</span>
+        <p>O passo mais forte agora e versionar os termos da plataforma e registrar aceite por empresa, usuario, data, IP e versao do documento.</p>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

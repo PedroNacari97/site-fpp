@@ -1,0 +1,127 @@
+<header class="portal-topbar">
+    <div class="portal-topbar__inner">
+        <div class="portal-topbar__nav-wrap">
+            <a href="{% url 'portal_home' %}" class="portal-brand portal-brand--topbar" data-analytics-event="click_brand_publica" data-analytics-label="topbar_brand" aria-label="{{ app_branding.alt }}">
+                <span class="portal-brand__logo">
+                    <img src="{{ app_branding.logo_url }}" alt="{{ app_branding.alt }}">
+                </span>
+            </a>
+
+            <nav class="portal-topbar__nav" aria-label="Navega&ccedil;&atilde;o principal">
+                <a href="{% url 'portal_home' %}" class="portal-topbar__nav-link {% if request.resolver_match.url_name == 'portal_home' %}is-active{% endif %}">
+                    <span class="portal-topbar__nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M3 12 12 4l9 8M5 10.5V20h14v-9.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                    </span>
+                    <span>Home</span>
+                </a>
+                <a href="{% url 'portal_alertas' %}" class="portal-topbar__nav-link {% if request.resolver_match.url_name == 'portal_alertas' or request.resolver_match.url_name == 'portal_alerta_detalhe' %}is-active{% endif %}">
+                    <span class="portal-topbar__nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 4a5 5 0 0 0-5 5v2.46c0 .53-.21 1.04-.59 1.41L5 14.29V16h14v-1.71l-1.41-1.42a1.99 1.99 0 0 1-.59-1.41V9a5 5 0 0 0-5-5Zm0 16a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 20Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                    </span>
+                    <span>Alertas</span>
+                </a>
+                {% for category in public_nav_categories %}
+                <a
+                    href="{{ category.url }}"
+                    class="portal-topbar__nav-link portal-topbar__nav-link--category {% if request.resolver_match.url_name == 'portal_categoria' and request.resolver_match.kwargs.categoria_slug == category.slug %}is-active{% endif %}"
+                >
+                    <span class="portal-topbar__nav-icon" aria-hidden="true">
+                        {% if category.icon_variant == "miles" %}
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                        {% elif category.icon_variant == "cards" %}
+                        <svg viewBox="0 0 24 24">
+                            <rect x="4" y="6" width="16" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"></rect>
+                            <path d="M4 10h16" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+                        </svg>
+                        {% elif category.icon_variant == "hotels" %}
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                        {% else %}
+                        <svg viewBox="0 0 24 24">
+                            <path d="m5 15 4-4 3 3 7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                            <path d="M19 7h-5v5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                        {% endif %}
+                    </span>
+                    <span>{{ category.nav_label }}</span>
+                </a>
+                {% endfor %}
+                <a href="{% url 'portal_plataforma_saas' %}" class="portal-topbar__nav-link {% if request.resolver_match.url_name == 'portal_plataforma_saas' %}is-active{% endif %}">
+                    <span class="portal-topbar__nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 4 4 8l8 4 8-4-8-4ZM4 12l8 4 8-4M4 16l8 4 8-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                    </span>
+                    <span>Plataforma</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="portal-topbar__tools">
+            <form action="{% url 'portal_home' %}" method="get" class="portal-search-form{% if search_query %} is-open{% endif %}" role="search" data-topbar-search>
+                <button
+                    type="button"
+                    class="portal-icon-button portal-search-form__toggle"
+                    aria-label="Abrir busca"
+                    aria-expanded="{% if search_query %}true{% else %}false{% endif %}"
+                    data-search-toggle
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></circle>
+                        <path d="M20 20l-4.35-4.35" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                    </svg>
+                </button>
+                <div class="portal-search-form__panel" data-search-panel>
+                    <input
+                        id="portal-public-search"
+                        type="search"
+                        name="q"
+                        value="{{ search_query|default:'' }}"
+                        class="portal-search-form__input"
+                        placeholder="Buscar not&iacute;cias"
+                        aria-label="Buscar not&iacute;cias"
+                        data-search-input
+                    >
+                    <button
+                        type="submit"
+                        class="portal-search-form__submit"
+                        data-analytics-event="click_busca_publica"
+                        data-analytics-category="navigation"
+                        data-analytics-label="topbar_search"
+                        data-analytics-section="topbar_search"
+                    >
+                        Buscar
+                    </button>
+                </div>
+            </form>
+            {% if request.user.is_authenticated %}
+                {% if request.user.is_staff or request.user.is_superuser %}
+                <a
+                    href="{% url 'admin_dashboard' %}"
+                    class="portal-button portal-button--primary portal-button--sm"
+                    data-analytics-event="click_area_logada"
+                    data-analytics-label="topbar_admin"
+                >
+                    Admin
+                </a>
+                {% else %}
+                <a
+                    href="{% url 'painel_dashboard' %}"
+                    class="portal-button portal-button--primary portal-button--sm"
+                    data-analytics-event="click_area_logada"
+                    data-analytics-label="topbar_painel"
+                >
+                    Painel
+                </a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</header>

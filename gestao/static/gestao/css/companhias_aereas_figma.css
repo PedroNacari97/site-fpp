@@ -16,7 +16,7 @@
   min-height: 40px;
   padding: 10px 16px;
   border-radius: 8px;
-  background: #155dfc;
+  background: #ff6b6b;
   color: #ffffff;
   font-size: 14px;
   font-weight: 500;
@@ -124,7 +124,7 @@
 .airlines-page__search-button,
 .airlines-form__submit {
   border: none;
-  background: #155dfc;
+  background: #ff6b6b;
   color: #ffffff;
 }
 
@@ -177,7 +177,7 @@
 }
 
 .airlines-page__link {
-  color: #51a2ff;
+  color: #ff8b5f;
   text-decoration: none;
 }
 
@@ -279,8 +279,8 @@
 .airlines-page__field input:focus,
 .airlines-form input:focus {
   outline: none;
-  border-color: #155dfc;
-  box-shadow: 0 0 0 1px rgba(21, 93, 252, 0.18);
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.18);
 }
 
 @media (max-width: 860px) {

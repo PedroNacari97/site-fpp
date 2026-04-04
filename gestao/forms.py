@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Q
+from uuid import uuid4
 
 from gestao.utils import (
     generate_unique_username,
@@ -9,6 +10,7 @@ from gestao.utils import (
     parse_br_date,
     validate_cpf_digits,
 )
+from gestao.services.aeroporto_localizacao import infer_airport_location
 
 from .models import (
     ContaFidelidade,
@@ -24,10 +26,70 @@ from .models import (
     EmissorParceiro,
     AlertaViagem,
     PassageiroFrequente,
+    AcompanhamentoPassagem,
+    InteresseViagemCliente,
+    DocumentoPlataforma,
 )
 
 
 User = get_user_model()
+
+MONTH_CHOICES = [
+    ("1", "Jan"),
+    ("2", "Fev"),
+    ("3", "Mar"),
+    ("4", "Abr"),
+    ("5", "Mai"),
+    ("6", "Jun"),
+    ("7", "Jul"),
+    ("8", "Ago"),
+    ("9", "Set"),
+    ("10", "Out"),
+    ("11", "Nov"),
+    ("12", "Dez"),
+]
+
+DAY_CHOICES = [(str(day), f"{day:02d}") for day in range(1, 32)]
+
+SEMESTER_CHOICES = [
+    ("1", "1o semestre"),
+    ("2", "2o semestre"),
+]
+
+TIMEZONE_OFFSET_CHOICES = [(str(offset), f"{offset:+d}h") for offset in range(-12, 15)]
+
+
+def _parse_duration_to_minutes(value):
+    raw_value = str(value or "").strip()
+    if not raw_value:
+        return 0
+    try:
+        hours_str, minutes_str = raw_value.split(":", 1)
+        hours = int(hours_str)
+        minutes = int(minutes_str)
+    except (TypeError, ValueError):
+        raise forms.ValidationError("Informe o tempo de voo no formato HH:MM.")
+    if hours < 0 or minutes < 0 or minutes > 59:
+        raise forms.ValidationError("Informe um tempo de voo valido.")
+    total_minutes = (hours * 60) + minutes
+    if total_minutes <= 0:
+        raise forms.ValidationError("Informe um tempo de voo maior que zero.")
+    return total_minutes
+
+
+def _format_duration_from_minutes(value):
+    total_minutes = int(value or 0)
+    if total_minutes <= 0:
+        return ""
+    hours, minutes = divmod(total_minutes, 60)
+    return f"{hours:02d}:{minutes:02d}"
+
+
+def _generate_internal_cpf():
+    while True:
+        candidate = f"9{uuid4().int % 10**10:010d}"
+        if not Cliente.objects.filter(cpf=candidate).exists():
+            return candidate
 
 class ContaFidelidadeForm(forms.ModelForm):
     clube_ativo = forms.BooleanField(required=False)
@@ -123,6 +185,10 @@ class ContaFidelidadeForm(forms.ModelForm):
         self.fields["cliente"].empty_label = "Selecione o cliente"
         self.fields["conta_administrada"].empty_label = "Selecione"
         self.fields["programa"].empty_label = "Selecione o programa"
+        self.fields["clube_periodicidade"].label = "Periodicidade da cobrança"
+        self.fields["pontos_clube_mes"].label = "Pontos por recorrência"
+        self.fields["valor_assinatura_clube"].label = "Valor por recorrência"
+        self.fields["data_inicio_clube"].label = "Data de início da recorrência"
         self.fields["clube_periodicidade"].required = False
         self.fields["clube_periodicidade"].choices = [
             ("", "Selecione o tipo"),
@@ -160,6 +226,8 @@ class ContaFidelidadeForm(forms.ModelForm):
         if clube_ativo:
             if not cleaned.get("clube_periodicidade"):
                 self.add_error("clube_periodicidade", "Selecione o tipo de assinatura.")
+            if not cleaned.get("data_inicio_clube"):
+                self.add_error("data_inicio_clube", "Informe a data de início da recorrência.")
         else:
             cleaned["clube_periodicidade"] = "nenhum"
             cleaned["pontos_clube_mes"] = cleaned.get("pontos_clube_mes") or 0
@@ -336,6 +404,14 @@ class ClienteForm(forms.ModelForm):
             ),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["cpf"].required = False
+        self.fields["telefone"].required = False
+        self.fields["data_nascimento"].required = False
+        self.fields["observacoes"].required = False
+        self.fields["ativo"].initial = True
+
     def clean_cpf(self):
         cpf = validate_cpf_digits(self.cleaned_data.get("cpf"))
         if Cliente.objects.exclude(pk=self.instance.pk).filter(cpf=cpf).exists():
@@ -348,13 +424,15 @@ class ClienteForm(forms.ModelForm):
 
 class NovoClienteForm(forms.ModelForm):
     password = forms.CharField(
+        required=False,
         widget=forms.PasswordInput(attrs={"placeholder": "Digite a senha"})
     )
     confirm_password = forms.CharField(
+        required=False,
         widget=forms.PasswordInput(attrs={"placeholder": "Confirme a senha"})
     )
-    first_name = forms.CharField(required=False, widget=forms.TextInput(attrs={"placeholder": "Nome"}))
-    last_name = forms.CharField(required=False, widget=forms.TextInput(attrs={"placeholder": "Sobrenome"}))
+    first_name = forms.CharField(required=True, widget=forms.TextInput(attrs={"placeholder": "Nome"}))
+    last_name = forms.CharField(required=True, widget=forms.TextInput(attrs={"placeholder": "Sobrenome"}))
     email = forms.EmailField(required=False, widget=forms.EmailInput(attrs={"placeholder": "exemplo@email.com"}))
     perfil = forms.CharField(widget=forms.HiddenInput(), initial="cliente")
 
@@ -387,6 +465,14 @@ class NovoClienteForm(forms.ModelForm):
             ),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["cpf"].required = False
+        self.fields["telefone"].required = False
+        self.fields["data_nascimento"].required = False
+        self.fields["observacoes"].required = False
+        self.fields["ativo"].initial = True
+
     def clean_cpf(self):
         cpf = validate_cpf_digits(self.cleaned_data.get("cpf"))
         if Cliente.objects.filter(cpf=cpf).exists():
@@ -402,6 +488,24 @@ class NovoClienteForm(forms.ModelForm):
         confirm_password = cleaned.get("confirm_password")
         if password and confirm_password and password != confirm_password:
             self.add_error("confirm_password", "As senhas nao coincidem.")
+        return cleaned
+
+    def clean_cpf(self):
+        cpf = self.cleaned_data.get("cpf")
+        if not cpf:
+            return _generate_internal_cpf()
+        cpf = validate_cpf_digits(cpf)
+        if Cliente.objects.filter(cpf=cpf).exists():
+            raise forms.ValidationError("JÃ¡ existe um cliente com este CPF.")
+        return cpf
+
+    def clean(self):
+        cleaned = super().clean()
+        password = cleaned.get("password")
+        confirm_password = cleaned.get("confirm_password")
+        if password or confirm_password:
+            if password != confirm_password:
+                self.add_error("confirm_password", "As senhas nao coincidem.")
         return cleaned
 
 
@@ -651,6 +755,145 @@ class PassageiroFrequenteForm(forms.ModelForm):
         return cleaned
 
 
+class InteresseViagemClienteForm(forms.ModelForm):
+    continente = forms.ChoiceField(required=False, choices=[])
+    pais = forms.ChoiceField(required=False, choices=[])
+    cidade_destino = forms.ChoiceField(required=False, choices=[])
+    origem = forms.ChoiceField(required=False, choices=[])
+    destino = forms.ChoiceField(required=False, choices=[])
+    programa_fidelidade = forms.ChoiceField(required=False, choices=[])
+    companhia_aerea = forms.ChoiceField(required=False, choices=[])
+    meses_ida = forms.ChoiceField(required=False, choices=[], label="Mes de ida")
+    meses_volta = forms.ChoiceField(required=False, choices=[], label="Mes de volta")
+    dias_ida = forms.ChoiceField(required=False, choices=[], label="Dia de ida")
+    dias_volta = forms.ChoiceField(required=False, choices=[], label="Dia de volta")
+    semestres_ida = forms.ChoiceField(required=False, choices=[], label="Semestre de ida")
+    semestres_volta = forms.ChoiceField(required=False, choices=[], label="Semestre de volta")
+
+    class Meta:
+        model = InteresseViagemCliente
+        fields = [
+            "nome",
+            "continente",
+            "pais",
+            "cidade_destino",
+            "origem",
+            "destino",
+            "classe",
+            "programa_fidelidade",
+            "companhia_aerea",
+            "meses_ida",
+            "meses_volta",
+            "dias_ida",
+            "dias_volta",
+            "semestres_ida",
+            "semestres_volta",
+            "ativo",
+        ]
+        widgets = {
+            "nome": forms.TextInput(attrs={"placeholder": "Ex.: Europa em setembro"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        continent_choices = [("", "Qualquer continente"), *AlertaViagem.CONTINENTE_CHOICES]
+        self.fields["continente"].choices = continent_choices
+        self.fields["classe"].choices = [("", "Qualquer classe"), *InteresseViagemCliente.CLASSE_CHOICES[1:]]
+        self.fields["meses_ida"].choices = [("", "Qualquer mes"), *MONTH_CHOICES]
+        self.fields["meses_volta"].choices = [("", "Qualquer mes"), *MONTH_CHOICES]
+        self.fields["dias_ida"].choices = [("", "Qualquer dia"), *DAY_CHOICES]
+        self.fields["dias_volta"].choices = [("", "Qualquer dia"), *DAY_CHOICES]
+        self.fields["semestres_ida"].choices = [("", "Qualquer semestre"), *SEMESTER_CHOICES]
+        self.fields["semestres_volta"].choices = [("", "Qualquer semestre"), *SEMESTER_CHOICES]
+
+        airport_choices = []
+        seen_airports = set()
+        country_choices = []
+        seen_countries = set()
+        city_choices = []
+        seen_cities = set()
+
+        for airport in Aeroporto.objects.all().order_by("sigla", "nome"):
+            code = (airport.sigla or "").strip().upper()
+            if code and code not in seen_airports:
+                label_city = airport.cidade or airport.nome
+                airport_choices.append((code, f"{code} • {label_city}"))
+                seen_airports.add(code)
+
+            resolved = infer_airport_location(airport)
+            country = (resolved.get("pais") or "").strip()
+            city = (resolved.get("cidade") or airport.cidade or "").strip()
+            if country and country not in seen_countries:
+                country_choices.append((country, country))
+                seen_countries.add(country)
+            if city and city not in seen_cities:
+                city_choices.append((city, city))
+                seen_cities.add(city)
+
+        def _append_current_choice(field_name, choices, default_label):
+            current_value = (self.initial.get(field_name) or getattr(self.instance, field_name, "") or "").strip()
+            if current_value and all(value != current_value for value, _ in choices):
+                choices.append((current_value, current_value))
+            self.fields[field_name].choices = [("", default_label), *choices]
+
+        _append_current_choice("pais", sorted(country_choices, key=lambda item: item[1]), "Qualquer pais")
+        _append_current_choice("cidade_destino", sorted(city_choices, key=lambda item: item[1]), "Qualquer cidade")
+        _append_current_choice("origem", airport_choices, "Qualquer origem")
+        _append_current_choice("destino", airport_choices, "Qualquer destino")
+
+        program_choices = [
+            (nome, nome)
+            for nome in ProgramaFidelidade.objects.order_by("nome").values_list("nome", flat=True).distinct()
+            if nome
+        ]
+        company_choices = [
+            (nome, nome)
+            for nome in CompanhiaAerea.objects.order_by("nome").values_list("nome", flat=True).distinct()
+            if nome
+        ]
+        _append_current_choice(
+            "programa_fidelidade",
+            program_choices,
+            "Qualquer programa",
+        )
+        _append_current_choice(
+            "companhia_aerea",
+            company_choices,
+            "Qualquer companhia",
+        )
+
+        self.fields["meses_ida"].initial = str((self.instance.meses_ida or [None])[0] or "")
+        self.fields["meses_volta"].initial = str((self.instance.meses_volta or [None])[0] or "")
+        self.fields["dias_ida"].initial = str((self.instance.dias_ida or [None])[0] or "")
+        self.fields["dias_volta"].initial = str((self.instance.dias_volta or [None])[0] or "")
+        self.fields["semestres_ida"].initial = str((self.instance.semestres_ida or [None])[0] or "")
+        self.fields["semestres_volta"].initial = str((self.instance.semestres_volta or [None])[0] or "")
+
+    def clean_meses_ida(self):
+        value = self.cleaned_data.get("meses_ida")
+        return [int(value)] if value else []
+
+    def clean_meses_volta(self):
+        value = self.cleaned_data.get("meses_volta")
+        return [int(value)] if value else []
+
+    def clean_dias_ida(self):
+        value = self.cleaned_data.get("dias_ida")
+        return [int(value)] if value else []
+
+    def clean_dias_volta(self):
+        value = self.cleaned_data.get("dias_volta")
+        return [int(value)] if value else []
+
+    def clean_semestres_ida(self):
+        value = self.cleaned_data.get("semestres_ida")
+        return [int(value)] if value else []
+
+    def clean_semestres_volta(self):
+        value = self.cleaned_data.get("semestres_volta")
+        return [int(value)] if value else []
+
+
 class EmissaoHotelForm(forms.ModelForm):
     class Meta:
         model = EmissaoHotel
@@ -749,6 +992,28 @@ class CotacaoVooForm(forms.ModelForm):
 
     companhia_aerea = forms.ChoiceField(choices=[], required=False)
     classe = forms.ChoiceField(choices=CLASSE_CHOICES, required=False)
+    duracao_voo_ida_minutos = forms.CharField(
+        required=False,
+        widget=forms.TimeInput(attrs={"type": "time", "step": "60"}),
+    )
+    fuso_horario_ida = forms.TypedChoiceField(
+        choices=TIMEZONE_OFFSET_CHOICES,
+        coerce=int,
+        required=False,
+        empty_value=0,
+        initial=0,
+    )
+    duracao_voo_volta_minutos = forms.CharField(
+        required=False,
+        widget=forms.TimeInput(attrs={"type": "time", "step": "60"}),
+    )
+    fuso_horario_volta = forms.TypedChoiceField(
+        choices=TIMEZONE_OFFSET_CHOICES,
+        coerce=int,
+        required=False,
+        empty_value=0,
+        initial=0,
+    )
     tipo_titular = forms.ChoiceField(
         choices=(("cliente", "Conta de Cliente"), ("administrada", "Conta Administrada")),
         initial="cliente",
@@ -777,6 +1042,13 @@ class CotacaoVooForm(forms.ModelForm):
         self.fields["conta_administrada"].empty_label = "Selecione a conta"
         self.fields["origem"].empty_label = "Selecione o aeroporto de origem"
         self.fields["destino"].empty_label = "Selecione o aeroporto de destino"
+        self.fields["programa"].required = False
+        self.fields["duracao_voo_ida_minutos"].initial = _format_duration_from_minutes(
+            getattr(self.instance, "duracao_voo_ida_minutos", 0)
+        )
+        self.fields["duracao_voo_volta_minutos"].initial = _format_duration_from_minutes(
+            getattr(self.instance, "duracao_voo_volta_minutos", 0)
+        )
 
         selected_tipo = self.data.get("tipo_titular") or self.initial.get("tipo_titular") or ("administrada" if getattr(self.instance, "conta_administrada_id", None) else "cliente")
         self.initial.setdefault("tipo_titular", selected_tipo)
@@ -807,6 +1079,8 @@ class CotacaoVooForm(forms.ModelForm):
             programas_qs = programas_qs | ProgramaFidelidade.objects.filter(id=self.instance.programa_id)
         self.fields["programa"].queryset = programas_qs.distinct()
         self.fields["programa"].empty_label = "Selecione o programa"
+        self.fields["duracao_voo_ida_minutos"].widget.attrs.update({"placeholder": "Ex: 05:30"})
+        self.fields["duracao_voo_volta_minutos"].widget.attrs.update({"placeholder": "Ex: 04:45"})
 
         self.fields["companhia_aerea"].widget.attrs.update({"data-role": "companhia-select"})
         self.fields["data_ida"].widget.attrs.update({"placeholder": "Selecione data e horário"})
@@ -819,6 +1093,7 @@ class CotacaoVooForm(forms.ModelForm):
         self.fields["parcelas"].widget.attrs.update({"min": "1"})
         self.fields["juros"].widget.attrs.update({"step": "0.01"})
         self.fields["desconto"].widget.attrs.update({"step": "0.01"})
+        self.fields["mostrar_valor_parcelado"].required = False
         self.fields["observacoes"].widget.attrs.update({
             "rows": 4,
             "placeholder": "Observações comerciais ou regras do resgate",
@@ -836,6 +1111,10 @@ class CotacaoVooForm(forms.ModelForm):
                 raise forms.ValidationError("Selecione uma conta administrada para usar pontos ou escolha 'Conta de Cliente'.")
         else:
             cleaned["conta_administrada"] = None
+        cleaned["duracao_voo_ida_minutos"] = _parse_duration_to_minutes(cleaned.get("duracao_voo_ida_minutos"))
+        cleaned["duracao_voo_volta_minutos"] = _parse_duration_to_minutes(cleaned.get("duracao_voo_volta_minutos"))
+        cleaned["fuso_horario_ida"] = int(cleaned.get("fuso_horario_ida") or 0)
+        cleaned["fuso_horario_volta"] = int(cleaned.get("fuso_horario_volta") or 0)
         return cleaned
 
     class Meta:
@@ -850,6 +1129,10 @@ class CotacaoVooForm(forms.ModelForm):
             'programa',
             'data_ida',
             'data_volta',
+            'duracao_voo_ida_minutos',
+            'fuso_horario_ida',
+            'duracao_voo_volta_minutos',
+            'fuso_horario_volta',
             'qtd_passageiros',
             'classe',
             'observacoes',
@@ -860,9 +1143,17 @@ class CotacaoVooForm(forms.ModelForm):
             'parcelas',
             'juros',
             'desconto',
+            'mostrar_valor_parcelado',
             'validade',
             'status',
         ]
+        labels = {
+            'parcelas': 'Numero de parcelas sem juros',
+            'duracao_voo_ida_minutos': 'Tempo de voo da ida',
+            'fuso_horario_ida': 'Diferenca de fuso na ida',
+            'duracao_voo_volta_minutos': 'Tempo de voo da volta',
+            'fuso_horario_volta': 'Diferenca de fuso na volta',
+        }
         labels = {
             'parcelas': 'Número de parcelas sem juros',
         }
@@ -884,6 +1175,16 @@ class CalculadoraCotacaoForm(forms.Form):
 
 
 class AlertaViagemForm(forms.ModelForm):
+    alerta_bruto = forms.CharField(
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "rows": 10,
+                "placeholder": "Cole aqui o alerta bruto recebido do Telegram.",
+            }
+        ),
+        label="Alerta bruto",
+    )
     conteudo = forms.CharField(
         required=False,
         widget=forms.Textarea(
@@ -914,6 +1215,8 @@ class AlertaViagemForm(forms.ModelForm):
             "valor_reais",
             "datas_ida",
             "datas_volta",
+            "manter_apos_cinco_dias",
+            "ocultar_apos_datas",
             "ativo",
         ]
         widgets = {}
@@ -925,7 +1228,16 @@ class AlertaViagemForm(forms.ModelForm):
             "valor_reais": "Valor em reais",
             "datas_ida": "Datas de ida",
             "datas_volta": "Datas de volta",
+            "manter_apos_cinco_dias": "Continuar após 5 dias",
+            "ocultar_apos_datas": "Ocultar quando todas as datas passarem",
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["valor_milhas"].required = False
+        self.fields["valor_reais"].required = False
+        self.fields["manter_apos_cinco_dias"].required = False
+        self.fields["ocultar_apos_datas"].required = False
 
     def _clean_datas(self, field_name):
         raw_value = self.cleaned_data.get(field_name) or []
@@ -980,6 +1292,7 @@ class EmpresaForm(forms.ModelForm):
     admin_password = forms.CharField(
         widget=forms.PasswordInput, label="Senha inicial do admin"
     )
+    remover_logo_documentos = forms.BooleanField(required=False)
 
     class Meta:
         model = Empresa
@@ -994,6 +1307,8 @@ class EmpresaForm(forms.ModelForm):
             "estado",
             "endereco",
             "descricao_rodape",
+            "logo_documentos",
+            "ocultar_logo_documentos",
             "limite_colaboradores",
             "ativo",
         ]
@@ -1008,6 +1323,8 @@ class EmpresaForm(forms.ModelForm):
             "estado": "Estado",
             "endereco": "Endereco",
             "descricao_rodape": "Mensagem institucional",
+            "logo_documentos": "Logo nos documentos",
+            "ocultar_logo_documentos": "Nao exibir logo principal nos documentos",
             "limite_colaboradores": "Limite de colaboradores",
             "ativo": "Empresa ativa",
         }
@@ -1024,6 +1341,11 @@ class EmpresaForm(forms.ModelForm):
             "estado": forms.TextInput(),
             "endereco": forms.TextInput(),
             "descricao_rodape": forms.Textarea(attrs={"rows": 3}),
+            "logo_documentos": forms.FileInput(
+                attrs={
+                    "accept": ".png,image/png",
+                }
+            ),
             "limite_colaboradores": forms.NumberInput(
                 attrs={"class": "w-full bg-zinc-900 border border-zinc-600 text-white rounded p-2", "min": 0}
             ),
@@ -1042,6 +1364,7 @@ class EmpresaForm(forms.ModelForm):
             "estado": "Estado",
             "endereco": "Rua, numero e complemento",
             "descricao_rodape": "Texto institucional para PDFs e visualizacoes.",
+            "logo_documentos": "",
             "limite_colaboradores": "Ex: 10",
             "admin_nome": "Nome completo do administrador",
             "admin_cpf": "000.000.000-00",
@@ -1055,6 +1378,22 @@ class EmpresaForm(forms.ModelForm):
                 field.widget.attrs["placeholder"] = placeholders[field_name]
         self.fields["limite_colaboradores"].widget.attrs["min"] = 0
         self.fields["ativo"].widget.attrs["class"] = "superadmin-form__checkbox"
+        self.fields["ocultar_logo_documentos"].widget.attrs["class"] = "superadmin-form__checkbox"
+        self.fields["logo_documentos"].widget.attrs["class"] = "company-brand-form__file-input"
+
+    def clean_logo_documentos(self):
+        logo = self.cleaned_data.get("logo_documentos")
+        if not logo:
+            return logo
+
+        if getattr(logo, "size", 0) > 150 * 1024:
+            raise forms.ValidationError("Envie uma logo com no maximo 150KB.")
+
+        content_type = getattr(logo, "content_type", "")
+        if content_type and content_type != "image/png":
+            raise forms.ValidationError("Envie a logo em PNG com fundo transparente.")
+
+        return logo
 
     def clean_admin_cpf(self):
         cpf = validate_cpf_digits(self.cleaned_data.get("admin_cpf"), field_label="CPF do admin")
@@ -1090,6 +1429,8 @@ class EmpresaForm(forms.ModelForm):
 
 
 class EmpresaProfileForm(forms.ModelForm):
+    remover_logo_documentos = forms.BooleanField(required=False)
+
     class Meta:
         model = Empresa
         fields = [
@@ -1103,6 +1444,8 @@ class EmpresaProfileForm(forms.ModelForm):
             "estado",
             "endereco",
             "descricao_rodape",
+            "logo_documentos",
+            "ocultar_logo_documentos",
         ]
         labels = {
             "nome": "Nome da empresa",
@@ -1115,6 +1458,8 @@ class EmpresaProfileForm(forms.ModelForm):
             "estado": "Estado",
             "endereco": "Endereco",
             "descricao_rodape": "Mensagem institucional",
+            "logo_documentos": "Logo nos documentos",
+            "ocultar_logo_documentos": "Nao exibir logo principal nos documentos",
         }
         widgets = {
             "nome": forms.TextInput(),
@@ -1127,6 +1472,11 @@ class EmpresaProfileForm(forms.ModelForm):
             "estado": forms.TextInput(),
             "endereco": forms.TextInput(),
             "descricao_rodape": forms.Textarea(attrs={"rows": 4}),
+            "logo_documentos": forms.FileInput(
+                attrs={
+                    "accept": ".png,image/png",
+                }
+            ),
         }
 
     def __init__(self, *args, **kwargs):
@@ -1142,6 +1492,345 @@ class EmpresaProfileForm(forms.ModelForm):
             "estado": "Estado",
             "endereco": "Rua, numero e complemento",
             "descricao_rodape": "Texto institucional usado nas visualizacoes e PDFs.",
+            "logo_documentos": "",
+        }
+        for field_name, field in self.fields.items():
+            field.widget.attrs.pop("class", None)
+            field.widget.attrs["autocomplete"] = "off"
+            if field_name in placeholders:
+                field.widget.attrs["placeholder"] = placeholders[field_name]
+        self.fields["ocultar_logo_documentos"].widget.attrs["class"] = "superadmin-form__checkbox"
+        self.fields["logo_documentos"].widget.attrs["class"] = "company-brand-form__file-input"
+
+    def clean_logo_documentos(self):
+        logo = self.cleaned_data.get("logo_documentos")
+        if not logo:
+            return logo
+
+        if getattr(logo, "size", 0) > 150 * 1024:
+            raise forms.ValidationError("Envie uma logo com no maximo 150KB.")
+
+        content_type = getattr(logo, "content_type", "")
+        if content_type and content_type != "image/png":
+            raise forms.ValidationError("Envie a logo em PNG com fundo transparente.")
+
+        return logo
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        uploaded_logo = self.files.get("logo_documentos")
+        if self.cleaned_data.get("remover_logo_documentos") and not uploaded_logo and instance.logo_documentos:
+            instance.logo_documentos.delete(save=False)
+            instance.logo_documentos = None
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance
+
+
+class EmpresaDocumentTextsForm(forms.ModelForm):
+    class Meta:
+        model = Empresa
+        fields = [
+            "cotacao_observacao_padrao",
+            "cotacao_condicoes_gerais",
+            "cotacao_hint_valor_referencia",
+            "cotacao_hint_valor_encontrado",
+            "cotacao_hint_taxa_embarque",
+            "cotacao_hint_valor_total",
+            "cotacao_hint_valor_parcelado",
+            "cotacao_hint_economia",
+            "emissao_observacao_confirmada",
+            "emissao_observacao_pendente",
+            "emissao_orientacoes",
+            "emissao_cta_companhia",
+            "emissao_bagagem_mao_hint",
+            "emissao_bagagem_despachada_hint",
+            "emissao_hint_taxa_embarque",
+            "emissao_hint_taxa_servico",
+            "emissao_hint_valor_total",
+        ]
+        labels = {
+            "cotacao_observacao_padrao": "Observacao importante padrao",
+            "cotacao_condicoes_gerais": "Condicoes gerais padrao",
+            "cotacao_hint_valor_referencia": "Descricao de valor de referencia",
+            "cotacao_hint_valor_encontrado": "Descricao de valor encontrado",
+            "cotacao_hint_taxa_embarque": "Descricao de taxa de embarque",
+            "cotacao_hint_valor_total": "Descricao de valor total",
+            "cotacao_hint_valor_parcelado": "Descricao de valor parcelado",
+            "cotacao_hint_economia": "Descricao de valor economizado",
+            "emissao_observacao_confirmada": "Observacao padrao para emissao confirmada",
+            "emissao_observacao_pendente": "Observacao padrao para emissao pendente",
+            "emissao_orientacoes": "Orientacoes padrao para a viagem",
+            "emissao_cta_companhia": "Texto do botao da companhia",
+            "emissao_bagagem_mao_hint": "Descricao de bagagem de mao",
+            "emissao_bagagem_despachada_hint": "Descricao de bagagem despachada",
+            "emissao_hint_taxa_embarque": "Descricao de taxa de embarque",
+            "emissao_hint_taxa_servico": "Descricao de taxa de servico",
+            "emissao_hint_valor_total": "Descricao de valor total",
+        }
+        widgets = {
+            "cotacao_observacao_padrao": forms.Textarea(attrs={"rows": 4}),
+            "cotacao_condicoes_gerais": forms.Textarea(attrs={"rows": 6}),
+            "emissao_observacao_confirmada": forms.Textarea(attrs={"rows": 4}),
+            "emissao_observacao_pendente": forms.Textarea(attrs={"rows": 4}),
+            "emissao_orientacoes": forms.Textarea(attrs={"rows": 6}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        placeholders = {
+            "cotacao_observacao_padrao": "Texto exibido em Observacoes importantes da cotacao. Se deixar vazio, o sistema usa o padrao.",
+            "cotacao_condicoes_gerais": "Uma condicao por linha. Se deixar vazio, o sistema usa as regras padrao.",
+            "cotacao_hint_valor_referencia": "Ex: Valor de mercado usado como comparativo.",
+            "cotacao_hint_valor_encontrado": "Ex: Valor da passagem encontrada na cotacao.",
+            "cotacao_hint_taxa_embarque": "Ex: Impostos e taxas aeroportuarias.",
+            "cotacao_hint_valor_total": "Ex: Valor final da proposta.",
+            "cotacao_hint_valor_parcelado": "Ex: Condicao de parcelamento apresentada ao cliente.",
+            "cotacao_hint_economia": "Ex: Diferenca entre a referencia e a proposta.",
+            "emissao_observacao_confirmada": "Texto padrao quando a emissao estiver confirmada.",
+            "emissao_observacao_pendente": "Texto padrao quando a emissao ainda estiver pendente.",
+            "emissao_orientacoes": "Uma orientacao por linha. Se deixar vazio, o sistema usa as orientacoes padrao.",
+            "emissao_cta_companhia": "Ex: Acessar Minha Reserva",
+            "emissao_bagagem_mao_hint": "Ex: Franquia definida na emissao.",
+            "emissao_bagagem_despachada_hint": "Ex: Franquia validada para a tarifa emitida.",
+            "emissao_hint_taxa_embarque": "Ex: Impostos e taxas aeroportuarias.",
+            "emissao_hint_taxa_servico": "Ex: Consultoria e emissao.",
+            "emissao_hint_valor_total": "Ex: Valor final consolidado da emissao.",
+        }
+        for field_name, field in self.fields.items():
+            field.widget.attrs.pop("class", None)
+            field.widget.attrs["autocomplete"] = "off"
+            if field_name in placeholders:
+                field.widget.attrs["placeholder"] = placeholders[field_name]
+
+
+class EmpresaManagementForm(forms.ModelForm):
+    remover_logo_documentos = forms.BooleanField(required=False)
+
+    class Meta:
+        model = Empresa
+        fields = [
+            "nome",
+            "responsavel_nome",
+            "email_contato",
+            "telefone_contato",
+            "whatsapp",
+            "website",
+            "cidade",
+            "estado",
+            "endereco",
+            "descricao_rodape",
+            "logo_documentos",
+            "ocultar_logo_documentos",
+            "limite_colaboradores",
+            "ativo",
+        ]
+        labels = {
+            "nome": "Nome da empresa",
+            "responsavel_nome": "Responsavel pelo atendimento",
+            "email_contato": "E-mail principal",
+            "telefone_contato": "Telefone principal",
+            "whatsapp": "WhatsApp",
+            "website": "Website",
+            "cidade": "Cidade",
+            "estado": "Estado",
+            "endereco": "Endereco",
+            "descricao_rodape": "Mensagem institucional",
+            "logo_documentos": "Logo nos documentos",
+            "ocultar_logo_documentos": "Nao exibir logo principal nos documentos",
+            "limite_colaboradores": "Limite de colaboradores",
+            "ativo": "Empresa ativa",
+        }
+        widgets = {
+            "nome": forms.TextInput(),
+            "responsavel_nome": forms.TextInput(),
+            "email_contato": forms.EmailInput(),
+            "telefone_contato": forms.TextInput(),
+            "whatsapp": forms.TextInput(),
+            "website": forms.URLInput(),
+            "cidade": forms.TextInput(),
+            "estado": forms.TextInput(),
+            "endereco": forms.TextInput(),
+            "descricao_rodape": forms.Textarea(attrs={"rows": 4}),
+            "logo_documentos": forms.FileInput(
+                attrs={
+                    "accept": ".png,image/png",
+                }
+            ),
+            "limite_colaboradores": forms.NumberInput(attrs={"min": 0}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        placeholders = {
+            "nome": "Nome da empresa",
+            "responsavel_nome": "Responsavel principal pela empresa",
+            "email_contato": "contato@empresa.com",
+            "telefone_contato": "(11) 99999-9999",
+            "whatsapp": "(11) 99999-9999",
+            "website": "https://www.empresa.com.br",
+            "cidade": "Cidade base da operacao",
+            "estado": "Estado",
+            "endereco": "Rua, numero e complemento",
+            "descricao_rodape": "Texto institucional usado nas visualizacoes e PDFs.",
+            "logo_documentos": "",
+            "limite_colaboradores": "0 bloqueia novos operadores",
+        }
+        for field_name, field in self.fields.items():
+            field.widget.attrs.pop("class", None)
+            field.widget.attrs["autocomplete"] = "off"
+            if field_name in placeholders:
+                field.widget.attrs["placeholder"] = placeholders[field_name]
+        self.fields["ativo"].widget.attrs["class"] = "superadmin-form__checkbox"
+        self.fields["ocultar_logo_documentos"].widget.attrs["class"] = "superadmin-form__checkbox"
+        self.fields["logo_documentos"].widget.attrs["class"] = "company-brand-form__file-input"
+
+    def clean_logo_documentos(self):
+        logo = self.cleaned_data.get("logo_documentos")
+        if not logo:
+            return logo
+
+        if getattr(logo, "size", 0) > 150 * 1024:
+            raise forms.ValidationError("Envie uma logo com no maximo 150KB.")
+
+        content_type = getattr(logo, "content_type", "")
+        if content_type and content_type != "image/png":
+            raise forms.ValidationError("Envie a logo em PNG com fundo transparente.")
+
+        return logo
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        uploaded_logo = self.files.get("logo_documentos")
+        if self.cleaned_data.get("remover_logo_documentos") and not uploaded_logo and instance.logo_documentos:
+            instance.logo_documentos.delete(save=False)
+            instance.logo_documentos = None
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance
+
+
+class AcompanhamentoPassagemForm(forms.ModelForm):
+    proxima_verificacao_em = forms.DateTimeField(
+        required=False,
+        input_formats=["%Y-%m-%dT%H:%M"],
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
+    )
+
+    class Meta:
+        model = AcompanhamentoPassagem
+        fields = [
+            "modo_consulta",
+            "sistema_origem",
+            "referencia_externa",
+            "localizador_consulta",
+            "sobrenome_consulta",
+            "email_consulta",
+            "status_reserva",
+            "status_voo",
+            "ultimo_resumo",
+            "orientacao_operacional",
+            "proxima_verificacao_em",
+            "ativo",
+        ]
+        widgets = {
+            "sistema_origem": forms.TextInput(),
+            "referencia_externa": forms.TextInput(),
+            "localizador_consulta": forms.TextInput(),
+            "sobrenome_consulta": forms.TextInput(),
+            "email_consulta": forms.EmailInput(),
+            "ultimo_resumo": forms.Textarea(attrs={"rows": 4}),
+            "orientacao_operacional": forms.Textarea(attrs={"rows": 5}),
+        }
+        labels = {
+            "modo_consulta": "Origem da consulta",
+            "sistema_origem": "Sistema de origem",
+            "referencia_externa": "Referencia externa",
+            "localizador_consulta": "Localizador para consulta",
+            "sobrenome_consulta": "Sobrenome do passageiro",
+            "email_consulta": "E-mail de consulta",
+            "status_reserva": "Status da reserva",
+            "status_voo": "Status do voo",
+            "ultimo_resumo": "Resumo operacional",
+            "orientacao_operacional": "Orientacao interna",
+            "proxima_verificacao_em": "Proxima verificacao",
+            "ativo": "Acompanhamento ativo",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        placeholders = {
+            "sistema_origem": "Ex: consolidator, backoffice, GDS, emissor parceiro",
+            "referencia_externa": "Ex: ID da emissao no sistema de origem",
+            "localizador_consulta": "Ex: ABC123",
+            "sobrenome_consulta": "Ex: Silva",
+            "email_consulta": "E-mail usado na consulta, quando aplicavel",
+            "ultimo_resumo": "Resumo curto do ultimo retorno operacional.",
+            "orientacao_operacional": "Proximos passos, pendencias ou observacoes internas.",
+        }
+        for field_name, field in self.fields.items():
+            field.widget.attrs.pop("class", None)
+            field.widget.attrs["autocomplete"] = "off"
+            if field_name in placeholders:
+                field.widget.attrs["placeholder"] = placeholders[field_name]
+        self.fields["modo_consulta"].choices = [
+            ("", "Selecione o modo"),
+            *self.fields["modo_consulta"].choices,
+        ]
+        self.fields["status_reserva"].choices = [
+            ("", "Selecione o status"),
+            *self.fields["status_reserva"].choices,
+        ]
+        self.fields["status_voo"].choices = [
+            ("", "Selecione o status"),
+            *self.fields["status_voo"].choices,
+        ]
+
+    def clean(self):
+        cleaned = super().clean()
+        modo = cleaned.get("modo_consulta")
+        localizador = (cleaned.get("localizador_consulta") or "").strip()
+        sobrenome = (cleaned.get("sobrenome_consulta") or "").strip()
+        sistema_origem = (cleaned.get("sistema_origem") or "").strip()
+        if modo == AcompanhamentoPassagem.MODO_PORTAL_COMPANHIA and not localizador:
+            self.add_error("localizador_consulta", "Informe o localizador para consultas no portal da companhia.")
+        if modo == AcompanhamentoPassagem.MODO_PORTAL_COMPANHIA and localizador and not sobrenome:
+            self.add_error("sobrenome_consulta", "Informe o sobrenome do passageiro para o portal da companhia.")
+        if modo == AcompanhamentoPassagem.MODO_SISTEMA_ORIGEM and not sistema_origem:
+            self.add_error("sistema_origem", "Informe o nome do sistema de origem.")
+        return cleaned
+
+
+class DocumentoPlataformaForm(forms.ModelForm):
+    class Meta:
+        model = DocumentoPlataforma
+        fields = [
+            "versao_atual",
+            "data_vigencia",
+            "exige_aceite_empresa",
+            "ativo",
+            "observacoes_internas",
+        ]
+        widgets = {
+            "versao_atual": forms.TextInput(),
+            "data_vigencia": forms.DateInput(attrs={"type": "date"}),
+            "observacoes_internas": forms.Textarea(attrs={"rows": 3}),
+        }
+        labels = {
+            "versao_atual": "Versao atual",
+            "data_vigencia": "Data de vigencia",
+            "exige_aceite_empresa": "Exigir aceite do admin da empresa",
+            "ativo": "Documento ativo",
+            "observacoes_internas": "Observacoes internas",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        placeholders = {
+            "versao_atual": "Ex: v1.0",
+            "observacoes_internas": "Observacoes operacionais ou juridicas sobre a versao atual.",
         }
         for field_name, field in self.fields.items():
             field.widget.attrs.pop("class", None)

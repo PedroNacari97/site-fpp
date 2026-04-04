@@ -1,5 +1,5 @@
 .emission-preview-hero {
-    background: linear-gradient(90deg, #00a63e 0%, #009966 100%);
+    background: linear-gradient(90deg, #0f1b2d 0%, #ff6b6b 100%);
 }
 
 .emission-preview-hero__mark {
@@ -8,9 +8,9 @@
     height: 3rem;
     place-items: center;
     border-radius: 1rem;
-    background: #ffffff;
-    color: #00a63e;
-    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.15);
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    box-shadow: none;
 }
 
 .emission-preview-hero__mark svg {
@@ -58,18 +58,24 @@
 }
 
 .emission-preview-hero__status {
-    background: #ffffff;
-    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.18);
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: none;
 }
 
 .emission-preview-hero__status--success span,
 .emission-preview-hero__status--success strong {
-    color: #00a63e;
+    color: #ffffff;
 }
 
 .emission-preview-hero__status--warning span,
 .emission-preview-hero__status--warning strong {
-    color: #f97316;
+    color: #fff7ed;
+}
+
+.emission-preview-hero__status--danger span,
+.emission-preview-hero__status--danger strong {
+    color: #fff1f2;
 }
 
 .emission-preview-meta {
@@ -91,8 +97,8 @@
 .emission-preview-passenger-card {
     padding: 1.35rem 1.4rem;
     border-radius: 1.1rem;
-    border-left: 4px solid #2b7fff;
-    background: linear-gradient(90deg, #eff6ff 0%, #eef2ff 100%);
+    border-left: 4px solid #ff6b6b;
+    background: linear-gradient(90deg, #fff4f1 0%, #fff9f0 100%);
 }
 
 .emission-preview-passenger-card__header {
@@ -116,7 +122,7 @@
     justify-content: center;
     padding: 0.35rem 0.75rem;
     border-radius: 999px;
-    background: #2563eb;
+    background: #ff6b6b;
     color: #ffffff;
     font-size: 0.76rem;
     font-weight: 700;
@@ -167,7 +173,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 1rem 1.2rem;
+    padding: 0.78rem 1.2rem;
     background: linear-gradient(90deg, #ff8a00 0%, #ff6a00 100%);
     color: #ffffff;
 }
@@ -184,6 +190,7 @@
     gap: 0.35rem;
     font-size: 1rem;
     font-weight: 700;
+    color: #ffffff;
 }
 
 .emission-preview-flight-card__company {
@@ -213,6 +220,14 @@
     padding: 1.2rem 1.2rem 1rem;
 }
 
+.emission-preview-flight-card__route > * {
+    min-width: 0;
+}
+
+.emission-preview-flight-stop {
+    min-width: 0;
+}
+
 .emission-preview-flight-stop span {
     display: block;
     margin-bottom: 0.3rem;
@@ -228,6 +243,8 @@
     color: #101828;
     font-size: 1rem;
     font-weight: 700;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .emission-preview-flight-stop small,
@@ -239,6 +256,8 @@
     margin-top: 0.35rem;
     color: #6a7282;
     font-size: 0.82rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .emission-preview-flight-stop b {
@@ -266,7 +285,7 @@
     content: "";
     position: absolute;
     top: 0.55rem;
-    width: 64px;
+    width: calc(50% - 2px);
     height: 2px;
     background: rgba(249, 115, 22, 0.3);
 }
@@ -286,7 +305,7 @@
     margin: 0 1.2rem 1rem;
     min-height: 48px;
     border-radius: 0.8rem;
-    background: linear-gradient(90deg, #2563eb 0%, #4338ca 100%);
+    background: linear-gradient(90deg, #ff6b6b 0%, #f5a623 100%);
     color: #ffffff;
     font-size: 0.92rem;
     font-weight: 700;
@@ -331,8 +350,8 @@
 .emission-preview-baggage-card {
     padding: 1rem 1.1rem;
     border-radius: 1rem;
-    background: #eef2ff;
-    border: 1px solid #dbeafe;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
 }
 
 .emission-preview-baggage-card small {
@@ -351,8 +370,8 @@
     margin-top: 1rem;
     padding: 1.25rem 1.35rem;
     border-radius: 0.95rem;
-    border: 1.6px solid rgba(0, 201, 80, 0.45);
-    background: linear-gradient(90deg, #f0fdf4 0%, #ecfdf5 100%);
+    border: 1.6px solid rgba(34, 197, 94, 0.32);
+    background: rgba(34, 197, 94, 0.08);
 }
 
 .emission-preview-total-card span {
@@ -369,21 +388,104 @@
 }
 
 .emission-preview-total-card strong {
-    color: #00a63e;
+    color: #16a34a;
     font-size: 2rem;
     font-weight: 700;
     white-space: nowrap;
 }
 
 .emission-preview-alert {
-    border-left-color: #2b7fff;
-    background: #eff6ff;
+    border-left-color: #ff6b6b;
+    background: #fff4f1;
     color: #364153;
+}
+
+.emission-preview-tracking {
+    display: grid;
+    gap: 1rem;
+}
+
+.emission-preview-tracking__status {
+    display: grid;
+    gap: 0.18rem;
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+.emission-preview-tracking__status span,
+.emission-preview-tracking__item span {
+    color: #6a7282;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.emission-preview-tracking__status strong,
+.emission-preview-tracking__item strong {
+    color: #101828;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.emission-preview-tracking__status small {
+    color: #4b5563;
+    font-size: 0.85rem;
+}
+
+.emission-preview-tracking__status--success {
+    border-color: rgba(34, 197, 94, 0.28);
+    background: rgba(34, 197, 94, 0.08);
+}
+
+.emission-preview-tracking__status--warning {
+    border-color: rgba(249, 115, 22, 0.28);
+    background: rgba(249, 115, 22, 0.08);
+}
+
+.emission-preview-tracking__status--danger {
+    border-color: rgba(239, 68, 68, 0.28);
+    background: rgba(255, 107, 107, 0.08);
+}
+
+.emission-preview-tracking__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.emission-preview-tracking__item {
+    padding: 1rem 1.05rem;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+.emission-preview-tracking__note,
+.emission-preview-tracking__error {
+    padding: 1rem 1.1rem;
+    border-radius: 1rem;
+    line-height: 1.65;
+}
+
+.emission-preview-tracking__note {
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #364153;
+}
+
+.emission-preview-tracking__error {
+    border: 1px solid rgba(239, 68, 68, 0.16);
+    background: #fef2f2;
+    color: #b91c1c;
 }
 
 @media (max-width: 960px) {
     .emission-preview-passenger-card__grid,
-    .emission-preview-baggage-grid {
+    .emission-preview-baggage-grid,
+    .emission-preview-tracking__grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -414,7 +516,8 @@
 
     .emission-preview-hero__summary,
     .emission-preview-passenger-card__grid,
-    .emission-preview-baggage-grid {
+    .emission-preview-baggage-grid,
+    .emission-preview-tracking__grid {
         width: 100%;
         grid-template-columns: 1fr;
     }

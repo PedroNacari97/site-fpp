@@ -16,7 +16,7 @@
   min-height: 36px;
   padding: 8px 16px;
   border-radius: 8px;
-  background: #155dfc;
+  background: #ff6b6b;
   color: #ffffff;
   font-size: 14px;
   font-weight: 500;
@@ -86,7 +86,7 @@
 
 .hotel-page__filters button {
   border: none;
-  background: #155dfc;
+  background: #ff6b6b;
   color: #ffffff;
 }
 
@@ -318,8 +318,8 @@
 .hotel-page__filters input:focus,
 .hotel-page__filters select:focus {
   outline: none;
-  border-color: #155dfc;
-  box-shadow: 0 0 0 1px rgba(21, 93, 252, 0.18);
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.18);
 }
 
 .hotel-form__hint {
@@ -363,9 +363,10 @@
 }
 
 .hotel-form__submit {
-  border: none;
-  background: #155dfc;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
   color: #ffffff;
+  box-shadow: 0 14px 28px hsl(var(--primary) / 0.2);
 }
 
 .hotel-form__cancel:hover,
@@ -403,4 +404,94 @@
   .hotel-form__submit {
     width: 100%;
   }
+}
+
+/* Light alignment with the rest of the admin experience */
+.hotel-page,
+.hotel-form {
+  color: var(--color-heading);
+}
+
+.hotel-page__header-action,
+.hotel-page__filters button,
+.hotel-form__submit {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(255, 107, 107, 0.18);
+  border-color: transparent;
+}
+
+.hotel-page__header-action:hover,
+.hotel-page__filters button:hover,
+.hotel-form__submit:hover {
+  background: linear-gradient(135deg, var(--primary-strong) 0%, var(--accent) 100%);
+  color: #ffffff;
+  filter: none;
+}
+
+.hotel-page__filters > section,
+.hotel-page__stat-card,
+.hotel-page__table-card,
+.hotel-form__card {
+  border-color: var(--color-border);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow-card);
+}
+
+.hotel-page__table-head,
+.hotel-form__card-head {
+  border-bottom-color: var(--color-border);
+}
+
+.hotel-page__filters label,
+.hotel-page__stat-label,
+.hotel-page__table th,
+.hotel-form__field label,
+.hotel-form__hint,
+.hotel-page__empty {
+  color: var(--color-muted);
+}
+
+.hotel-page__stat-value,
+.hotel-page__table-head h2,
+.hotel-page__table td,
+.hotel-form__card-title,
+.hotel-form input:not([type="checkbox"]):not([type="radio"]),
+.hotel-form select,
+.hotel-form textarea,
+.hotel-page__filters input:not([type="checkbox"]):not([type="radio"]),
+.hotel-page__filters select,
+.hotel-page__row-action,
+.hotel-form__cancel {
+  color: var(--color-heading);
+}
+
+.hotel-page__filters input:not([type="checkbox"]):not([type="radio"]),
+.hotel-page__filters select,
+.hotel-form input:not([type="checkbox"]):not([type="radio"]),
+.hotel-form select,
+.hotel-form textarea,
+.hotel-page__row-action,
+.hotel-form__cancel {
+  border-color: var(--color-input-border);
+  background: var(--color-input-bg);
+}
+
+.hotel-page__table thead tr {
+  background: var(--color-surface-muted);
+}
+
+.hotel-page__table td {
+  border-top-color: var(--color-border);
+}
+
+.hotel-form__alert {
+  border-color: rgba(239, 68, 68, 0.22);
+  background: rgba(254, 242, 242, 0.94);
+}
+
+.hotel-form__alert-title,
+.hotel-form__field-error,
+.hotel-form__alert-list {
+  color: #b91c1c;
 }

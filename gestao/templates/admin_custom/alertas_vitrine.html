@@ -79,7 +79,7 @@
               <p><strong>Companhia:</strong> {{ alerta.companhia_aerea }}</p>
               <div class="alert-card__prices">
                 {% if alerta.valor_milhas %}
-                  <span class="price-tag">{{ alerta.valor_milhas }} milhas</span>
+                  <span class="price-tag">A partir de {{ alerta.valor_milhas }} milhas</span>
                 {% endif %}
                 {% if alerta.valor_reais %}
                   <span class="price-tag">R$ {{ alerta.valor_reais }}</span>
@@ -88,7 +88,7 @@
               <span class="pill pill-danger">Baixa disponibilidade</span>
             </div>
             <div class="alert-card__footer">
-              <a href="{% url 'alerta_passagem_detalhe' alerta.id %}" class="btn btn-primary">Ver detalhes</a>
+              <a href="{% url 'alerta_passagem_detalhe' alerta.id %}?next={{ request.get_full_path|urlencode }}" class="btn btn-primary">Ver detalhes</a>
             </div>
           </article>
         {% empty %}

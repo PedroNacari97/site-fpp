@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from ..forms import ContaFidelidadeForm, ContaAdministradaForm
 from ..models import ContaFidelidade, ContaAdministrada
-from .permissions import require_admin_or_operator
+from .permissions import ensure_company_access, require_admin_or_operator, scope_queryset_to_company
 
 
 @login_required
@@ -55,6 +55,8 @@ def editar_conta(request, conta_id):
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
     conta = get_object_or_404(ContaFidelidade, id=conta_id)
+    if (permission_denied := ensure_company_access(request, conta)):
+        return permission_denied
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
     if request.method == "POST":
         form = ContaFidelidadeForm(request.POST, instance=conta, empresa=empresa)
@@ -101,7 +103,11 @@ def deletar_conta(request, conta_id):
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     if perfil != "admin":
         return render(request, "sem_permissao.html")
-    ContaFidelidade.objects.filter(id=conta_id).delete()
+    conta = get_object_or_404(
+        scope_queryset_to_company(ContaFidelidade.objects.all(), request, "cliente__empresa", "conta_administrada__empresa"),
+        id=conta_id,
+    )
+    conta.delete()
     messages.success(request, "Conta deletada com sucesso.")
     return redirect("admin_contas")
 
@@ -126,8 +132,12 @@ def admin_contas(request):
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
     busca = request.GET.get("busca", "")
-    contas = ContaFidelidade.objects.select_related("cliente__usuario", "programa").filter(
-        cliente__perfil="cliente", cliente__ativo=True, conta_administrada__isnull=True
+    contas = scope_queryset_to_company(
+        ContaFidelidade.objects.select_related("cliente__usuario", "programa").filter(
+            cliente__perfil="cliente", cliente__ativo=True, conta_administrada__isnull=True
+        ),
+        request,
+        "cliente__empresa",
     )
     if busca:
         contas = contas.filter(

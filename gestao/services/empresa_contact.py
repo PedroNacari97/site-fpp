@@ -1,3 +1,6 @@
+from django.conf import settings
+
+
 def _clean_text(value, fallback="Sob consulta"):
     text = str(value or "").strip()
     return text or fallback
@@ -32,6 +35,11 @@ def build_empresa_contact_context(empresa):
         admin_name = admin_user.get_full_name() or admin_user.username or ""
         admin_email = getattr(admin_user, "email", "") or ""
 
+    custom_logo_url = getattr(empresa, "logo_documentos_url", "") if empresa else ""
+    hide_primary_logo = bool(getattr(empresa, "ocultar_logo_documentos", False)) if empresa else False
+    default_logo_url = getattr(settings, "PORTAL_SITE_LOGO_URL", "/static/portal/img/ncfly-wordmark.svg")
+    show_primary_logo = not hide_primary_logo
+
     return {
         "empresa_nome": _clean_text(getattr(empresa, "nome", ""), fallback="NC Fly"),
         "responsavel_nome": _clean_text(
@@ -59,4 +67,14 @@ def build_empresa_contact_context(empresa):
             getattr(empresa, "descricao_rodape", ""),
             fallback="Atendimento especializado em emissao, milhas e viagens.",
         ),
+        "branding": {
+            "logo_url": custom_logo_url or (default_logo_url if show_primary_logo else ""),
+            "default_logo_url": default_logo_url,
+            "mostrar_logo_principal": show_primary_logo,
+            "usa_logo_empresa": bool(custom_logo_url),
+            "usa_logo_padrao": bool(show_primary_logo and not custom_logo_url),
+            "mostrar_marca_dagua_ncfly": bool(custom_logo_url or hide_primary_logo),
+            "brand_title": _clean_text(getattr(empresa, "nome", ""), fallback="NC Fly"),
+            "brand_subtitle": "Material gerado na plataforma NC Fly",
+        },
     }

@@ -1,14 +1,35 @@
 {% extends "portal/base_public.html" %}
 {% load portal_extras %}
-{% block title %}NC Fly News | Home{% endblock %}
+{% block title %}{{ seo_title|default:"NC Fly News | Home" }}{% endblock %}
 {% block content %}
 <div class="news-home-frame">
     <section class="news-home-shell">
-        {% if destaque %}
+        {% if is_searching %}
+        <section class="news-search-state">
+            <div class="news-search-state__copy">
+                <span class="news-kicker">Busca no portal</span>
+                <h2>Resultados para "{{ search_query|portal_text }}"</h2>
+                <p>{{ search_results_total }} not&iacute;cia{{ search_results_total|pluralize:"s" }} encontrada{{ search_results_total|pluralize:"s" }}.</p>
+            </div>
+            <a href="{% url 'portal_home' %}" class="portal-button portal-button--ghost">Limpar busca</a>
+        </section>
+        {% endif %}
+
+        {% if destaque and not is_searching %}
         <section class="news-featured">
             <article class="news-featured__main news-featured__main--horizontal">
                 {% if destaque.imagem_exibicao %}
-                <a href="{{ destaque.get_absolute_url }}" class="news-featured__image">
+                <a
+                    href="{{ destaque.get_absolute_url }}"
+                    class="news-featured__image"
+                    data-analytics-event="click_noticia_destaque"
+                    data-analytics-category="content"
+                    data-analytics-label="{{ destaque.titulo|portal_text }}"
+                    data-analytics-slug="{{ destaque.slug }}"
+                    data-analytics-article-category="{{ destaque.categoria|default:'Milhas e Pontos'|portal_text }}"
+                    data-analytics-article-topic="{{ destaque.topico|default:''|portal_text }}"
+                    data-analytics-section="home_featured"
+                >
                     <img src="{{ destaque.imagem_exibicao }}" alt="{{ destaque.titulo }}">
                 </a>
                 {% endif %}
@@ -17,31 +38,264 @@
                     {% if destaque.topico %}
                     <span class="news-pill news-pill--topic">{{ destaque.topico|portal_text }}</span>
                     {% endif %}
-                    <h2><a href="{{ destaque.get_absolute_url }}">{{ destaque.titulo|portal_text }}</a></h2>
+                    <h2>
+                        <a
+                            href="{{ destaque.get_absolute_url }}"
+                            data-analytics-event="click_noticia_destaque"
+                            data-analytics-category="content"
+                            data-analytics-label="{{ destaque.titulo|portal_text }}"
+                            data-analytics-slug="{{ destaque.slug }}"
+                            data-analytics-article-category="{{ destaque.categoria|default:'Milhas e Pontos'|portal_text }}"
+                            data-analytics-article-topic="{{ destaque.topico|default:''|portal_text }}"
+                            data-analytics-section="home_featured"
+                        >
+                            {{ destaque.titulo|portal_text }}
+                        </a>
+                    </h2>
                     <p>{{ destaque.resumo|portal_text }}</p>
                     <div class="news-meta">
-                        <span>Redação NC Fly</span>
+                        <span>Reda&ccedil;&atilde;o NC Fly</span>
                         <span>{{ destaque.publicada_em|br_date_long }}</span>
                     </div>
                 </div>
             </article>
         </section>
-        {% else %}
+        {% elif not is_searching %}
         <section class="news-empty">
             <div class="news-empty__card">
-                <h2>Nenhuma notícia publicada ainda</h2>
-                <p>Assim que a primeira sincronização terminar, esta home pública vai preencher os blocos automaticamente.</p>
+                <h2>Nenhuma not&iacute;cia publicada ainda</h2>
+                <p>Assim que a primeira sincroniza&ccedil;&atilde;o terminar, esta home p&uacute;blica vai preencher os blocos automaticamente.</p>
             </div>
         </section>
         {% endif %}
 
-        <section class="news-categories-strip">
+        {% if alertas_home and not is_searching %}
+        <section class="news-alerts-home">
+            <header class="news-section-bar news-section-bar--alerts">
+                <div class="news-alerts-home__title">
+                    <span class="news-alerts-home__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 4a5 5 0 0 0-5 5v2.46c0 .53-.21 1.04-.59 1.41L5 14.29V16h14v-1.71l-1.41-1.42a1.99 1.99 0 0 1-.59-1.41V9a5 5 0 0 0-5-5Zm0 16a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 20Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                    </span>
+                    <div>
+                        <h2>Receba as melhores ofertas de milhas</h2>
+                        <p>Alertas atualizados em tempo real</p>
+                    </div>
+                </div>
+                <a
+                    href="{% url 'portal_alertas' %}"
+                    class="news-section-bar__link news-section-bar__link--alerts"
+                    data-analytics-event="click_alertas_home_ver_todos"
+                    data-analytics-category="navigation"
+                    data-analytics-label="home_alertas_ver_todos"
+                    data-analytics-section="home_alerts"
+                >
+                    Ver mais
+                    <span aria-hidden="true">&rarr;</span>
+                </a>
+            </header>
+            <div class="news-alerts-carousel" data-alerts-carousel>
+                <button
+                    type="button"
+                    class="news-alerts-carousel__control news-alerts-carousel__control--prev"
+                    aria-label="Alerta anterior"
+                    data-alerts-prev
+                >
+                    <span aria-hidden="true">&lsaquo;</span>
+                </button>
+                <div class="news-alerts-carousel__viewport" data-alerts-viewport>
+                    <div class="news-alerts-home__grid news-alerts-home__grid--carousel" data-alerts-track>
+                        {% for alerta in alertas_home %}
+                        <a
+                            href="{{ alerta.url }}"
+                            class="news-alert-card"
+                            data-alerts-slide
+                            data-analytics-event="click_alerta_home"
+                            data-analytics-category="content"
+                            data-analytics-label="{{ alerta.origem_codigo }}-{{ alerta.destino_codigo }}"
+                            data-analytics-section="home_alerts"
+                        >
+                            <div class="news-alert-card__top">
+                                <span class="news-alert-card__plane" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                                    </svg>
+                                </span>
+                                {% if alerta.validade_label %}
+                                <span class="news-alert-card__validity">{{ alerta.validade_label }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="news-alert-card__route">
+                                <div>
+                                    <strong>{{ alerta.origem_codigo }}</strong>
+                                    <span>{{ alerta.origem_cidade }}</span>
+                                </div>
+                                <div class="news-alert-card__route-line" aria-hidden="true">
+                                    <span></span>
+                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M3 12h18M15 6l6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                                    </svg>
+                                    <span></span>
+                                </div>
+                                <div class="news-alert-card__destination">
+                                    <strong>{{ alerta.destino_codigo }}</strong>
+                                    <span>{{ alerta.destino_cidade }}</span>
+                                </div>
+                            </div>
+                            <div class="news-alert-card__price-box">
+                                <small>{{ alerta.miles_kicker }}</small>
+                                <strong>{{ alerta.miles_label }}</strong>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    class="news-alerts-carousel__control news-alerts-carousel__control--next"
+                    aria-label="Próximo alerta"
+                    data-alerts-next
+                >
+                    <span aria-hidden="true">&rsaquo;</span>
+                </button>
+                <div class="news-alerts-carousel__dots" data-alerts-dots></div>
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="news-latest-block">
             <header class="news-section-bar">
-                <h2>Explore por Categoria</h2>
+                <h2>{% if is_searching %}Resultados da busca{% else %}&Uacute;ltimas not&iacute;cias{% endif %}</h2>
+            </header>
+            {% if noticias_grade %}
+            <div class="news-quick-grid">
+                {% for noticia in noticias_grade %}
+                <article class="news-card">
+                    {% if noticia.imagem_exibicao %}
+                    <a
+                        href="{{ noticia.get_absolute_url }}"
+                        class="news-card__image"
+                        data-analytics-event="click_noticia_card"
+                        data-analytics-category="content"
+                        data-analytics-label="{{ noticia.titulo|portal_text }}"
+                        data-analytics-slug="{{ noticia.slug }}"
+                        data-analytics-article-category="{{ noticia.categoria|default:'Notícias'|portal_text }}"
+                        data-analytics-article-topic="{{ noticia.topico|default:''|portal_text }}"
+                        data-analytics-section="home_latest"
+                    >
+                        <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
+                    </a>
+                    {% endif %}
+                    <div class="news-card__body">
+                        <span class="news-pill news-pill--muted">{{ noticia.categoria|default:"Notícias"|portal_text }}</span>
+                        {% if noticia.topico %}
+                        <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
+                        {% endif %}
+                        <h3>
+                            <a
+                                href="{{ noticia.get_absolute_url }}"
+                                data-analytics-event="click_noticia_card"
+                                data-analytics-category="content"
+                                data-analytics-label="{{ noticia.titulo|portal_text }}"
+                                data-analytics-slug="{{ noticia.slug }}"
+                                data-analytics-article-category="{{ noticia.categoria|default:'Notícias'|portal_text }}"
+                                data-analytics-article-topic="{{ noticia.topico|default:''|portal_text }}"
+                                data-analytics-section="home_latest"
+                            >
+                                {{ noticia.titulo|portal_text }}
+                            </a>
+                        </h3>
+                        <p>{{ noticia.resumo|portal_text|truncatechars:100 }}</p>
+                        <div class="news-meta">
+                            <span>Reda&ccedil;&atilde;o NC Fly</span>
+                            <span>{{ noticia.publicada_em|br_date_long }}</span>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="news-empty__card">
+                {% if is_searching %}
+                <p>N&atilde;o encontramos not&iacute;cias para essa busca.</p>
+                {% else %}
+                <p>Sem not&iacute;cias publicadas no momento.</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </section>
+
+        <section class="news-platform-spotlight">
+            <div class="news-platform-spotlight__copy">
+                <span class="news-kicker">Plataforma NC Fly</span>
+                <h2>Conhe&ccedil;a a Plataforma NC Fly</h2>
+                <p>
+                    Entenda como a Plataforma NC Fly ajuda empresas a organizar cota&ccedil;&otilde;es,
+                    emiss&otilde;es, alertas, clientes e contas fidelidade em um &uacute;nico fluxo.
+                </p>
+                <ul class="news-platform-spotlight__list">
+                    <li>Cota&ccedil;&atilde;o para emiss&atilde;o sem retrabalho.</li>
+                    <li>Alertas, clientes e contexto no mesmo lugar.</li>
+                    <li>Mais padr&atilde;o operacional para o time inteiro.</li>
+                </ul>
+                <div class="news-platform-spotlight__actions">
+                    <a
+                        href="{% url 'portal_plataforma_saas' %}"
+                        class="portal-button portal-button--primary"
+                        data-analytics-event="click_saas_teaser"
+                        data-analytics-category="conversion"
+                        data-analytics-label="home_spotlight"
+                        data-analytics-section="home_saas_spotlight"
+                    >
+                        Conhecer a plataforma
+                    </a>
+                </div>
+            </div>
+            <div class="news-platform-spotlight__panel">
+                <div class="news-platform-spotlight__card">
+                    <span>Plataforma NC Fly</span>
+                    <strong>Mais velocidade comercial em um &uacute;nico lugar</strong>
+                    <p>Clientes, cota&ccedil;&otilde;es, emiss&otilde;es, alertas e fidelidade organizados no mesmo ambiente.</p>
+                </div>
+                <div class="news-platform-spotlight__grid">
+                    <article>
+                        <strong>Cota&ccedil;&otilde;es</strong>
+                        <p>PDF comercial, resumo claro e passagem de contexto para emiss&atilde;o.</p>
+                    </article>
+                    <article>
+                        <strong>Alertas</strong>
+                        <p>Oportunidades, interesses e timing comercial organizados em um &uacute;nico painel.</p>
+                    </article>
+                    <article>
+                        <strong>Clientes</strong>
+                        <p>Interesses, passageiros frequentes e contas fidelidade por empresa.</p>
+                    </article>
+                    <article>
+                        <strong>Controle</strong>
+                        <p>Processo mais claro para o time responder r&aacute;pido e manter padr&atilde;o operacional.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="news-categories-strip" id="explore-categorias">
+            <header class="news-section-bar news-section-bar--stacked">
+                <div>
+                    <h2>Explore por categoria</h2>
+                    <p>Encontre as melhores ofertas por categoria</p>
+                </div>
             </header>
             <div class="news-categories-grid">
                 {% for item in explore_categories %}
-                <a href="{% url 'portal_categoria' item.slug %}" class="news-category-card">
+                <a
+                    href="{% url 'portal_categoria' item.slug %}"
+                    class="news-category-card"
+                    data-analytics-event="click_categoria"
+                    data-analytics-category="navigation"
+                    data-analytics-label="{{ item.label }}"
+                    data-analytics-section="home_categories"
+                >
                     <div class="news-category-card__icon {{ item.css_class }}">
                         {% if item.icon_variant == "miles" %}
                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -64,54 +318,12 @@
                         {% endif %}
                     </div>
                     <strong>{{ item.label }}</strong>
+                    <span class="news-category-card__cta">
+                        Explorar
+                        <span aria-hidden="true">&rarr;</span>
+                    </span>
                 </a>
                 {% endfor %}
-            </div>
-        </section>
-
-        <section class="news-latest-block">
-            <header class="news-section-bar">
-                <h2>Últimas Notícias</h2>
-            </header>
-            {% if noticias_grade %}
-            <div class="news-quick-grid">
-                {% for noticia in noticias_grade %}
-                <article class="news-card">
-                    {% if noticia.imagem_exibicao %}
-                    <a href="{{ noticia.get_absolute_url }}" class="news-card__image">
-                        <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
-                    </a>
-                    {% endif %}
-                    <div class="news-card__body">
-                        <span class="news-pill news-pill--muted">{{ noticia.categoria|default:"Notícias"|portal_text }}</span>
-                        {% if noticia.topico %}
-                        <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
-                        {% endif %}
-                        <h3><a href="{{ noticia.get_absolute_url }}">{{ noticia.titulo|portal_text }}</a></h3>
-                        <p>{{ noticia.resumo|portal_text|truncatechars:100 }}</p>
-                        <div class="news-meta">
-                            <span>Redação NC Fly</span>
-                            <span>{{ noticia.publicada_em|br_date_long }}</span>
-                        </div>
-                    </div>
-                </article>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="news-empty__card">
-                <p>Sem notícias publicadas no momento.</p>
-            </div>
-            {% endif %}
-        </section>
-
-        <section class="news-newsletter-banner">
-            <div>
-                <h2>Receba as melhores ofertas de milhas</h2>
-                <p>Cadastre-se e fique por dentro das promoções e novidades do mundo das milhas.</p>
-            </div>
-            <div class="news-newsletter-banner__actions">
-                <span>Seu melhor e-mail</span>
-                <a href="{% url 'login_custom' %}" class="portal-button portal-button--light">Assinar grátis</a>
             </div>
         </section>
     </section>

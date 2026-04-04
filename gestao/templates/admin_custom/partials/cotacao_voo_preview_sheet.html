@@ -1,14 +1,14 @@
 <section class="quote-preview-sheet">
     <header class="quote-preview-hero">
         <div class="quote-preview-hero__brand">
-            <div class="quote-preview-hero__mark">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
-                </svg>
+            {% if empresa_contato.branding.mostrar_logo_principal and empresa_contato.branding.logo_url %}
+            <div class="quote-preview-hero__logo-box" aria-hidden="true">
+                <img src="{{ empresa_contato.branding.logo_url }}" alt="{{ empresa_contato.branding.brand_title }}">
             </div>
+            {% endif %}
             <div>
-                <h2>NC Fly</h2>
-                <p>Consultoria em Milhas e Viagens</p>
+                <h2>{{ empresa_contato.branding.brand_title }}</h2>
+                <p>{{ empresa_contato.branding.brand_subtitle }}</p>
             </div>
         </div>
         <div class="quote-preview-hero__badge">
@@ -66,28 +66,49 @@
             </span>
             <h3>Detalhes do Voo</h3>
         </div>
-        <div class="quote-preview-route">
-            <div class="quote-preview-route__stop">
-                <span>Origem</span>
-                <strong>{{ origem_nome }}</strong>
-                <small>{{ cotacao.data_ida|date:"d/m/Y" }}</small>
-            </div>
-            <div class="quote-preview-route__divider">
-                <span>{{ origem_sigla }}</span>
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
-                </svg>
-                <span>{{ destino_sigla }}</span>
-            </div>
-            <div class="quote-preview-route__stop quote-preview-route__stop--right">
-                <span>Destino</span>
-                <strong>{{ destino_nome }}</strong>
-                {% if cotacao.data_volta %}
-                <small>{{ cotacao.data_volta|date:"d/m/Y" }}</small>
-                {% else %}
-                <small>Somente ida</small>
+        <div class="emission-preview-flights">
+            {% for voo in voos %}
+            <article class="emission-preview-flight-card emission-preview-flight-card--{{ voo.tone }}">
+                <div class="emission-preview-flight-card__header">
+                    <div class="emission-preview-flight-card__title">
+                        <span class="emission-preview-flight-card__tag">{{ voo.label }}</span>
+                    </div>
+                    <div class="emission-preview-flight-card__company">
+                        <strong>{{ voo.companhia_nome }}</strong>
+                        <small>{{ voo.companhia_aux }}</small>
+                    </div>
+                </div>
+
+                <div class="emission-preview-flight-card__route">
+                    <div class="emission-preview-flight-stop">
+                        <span>Origem</span>
+                        <strong>{{ voo.origem_label }}</strong>
+                        <small>{{ voo.origem_data }}</small>
+                        <b>{{ voo.origem_hora }}</b>
+                    </div>
+                    <div class="emission-preview-flight-divider">
+                        <span>{{ voo.trajeto_hint }}</span>
+                    </div>
+                    <div class="emission-preview-flight-stop emission-preview-flight-stop--right">
+                        <span>Destino</span>
+                        <strong>{{ voo.destino_label }}</strong>
+                        <small>{{ voo.destino_data }}</small>
+                        <b>{{ voo.destino_hora }}</b>
+                    </div>
+                </div>
+
+                {% if voo.escalas %}
+                <div class="emission-preview-flight-card__scales">
+                    {% for escala in voo.escalas %}
+                    <div class="emission-preview-flight-card__scale">
+                        <span>{{ escala.label }}</span>
+                        <strong>{{ escala.hint }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
                 {% endif %}
-            </div>
+            </article>
+            {% endfor %}
         </div>
 
         <div class="quote-preview-grid quote-preview-grid--four">
@@ -108,29 +129,6 @@
                 <strong>{{ programa_label }}</strong>
             </article>
         </div>
-
-        {% if tem_volta or escalas_ida or escalas_volta %}
-        <div class="quote-preview-notes-grid">
-            {% if tem_volta %}
-            <article class="quote-preview-note-card">
-                <span>Horario da volta</span>
-                <strong>{{ cotacao.data_volta|date:"d/m/Y H:i" }}</strong>
-            </article>
-            {% endif %}
-            {% if escalas_ida %}
-            <article class="quote-preview-note-card">
-                <span>Escalas na ida</span>
-                <strong>{% for escala in escalas_ida %}{{ escala.aeroporto.sigla }}{% if not forloop.last %} • {% endif %}{% endfor %}</strong>
-            </article>
-            {% endif %}
-            {% if escalas_volta %}
-            <article class="quote-preview-note-card">
-                <span>Escalas na volta</span>
-                <strong>{% for escala in escalas_volta %}{{ escala.aeroporto.sigla }}{% if not forloop.last %} • {% endif %}{% endfor %}</strong>
-            </article>
-            {% endif %}
-        </div>
-        {% endif %}
     </section>
 
     <section class="quote-preview-section">
@@ -158,17 +156,26 @@
         <div class="quote-preview-price-stack">
             <article class="quote-preview-price-highlight quote-preview-price-highlight--success">
                 <div>
-                    <span>Valor a Vista</span>
-                    <p>Pagamento integral</p>
+                    <span>Valor total</span>
+                    <p>{{ valor_total_hint }}</p>
                 </div>
                 <strong>{{ valor_vista_total }}</strong>
             </article>
+            {% if mostrar_valor_parcelado %}
             <article class="quote-preview-price-highlight quote-preview-price-highlight--primary">
                 <div>
                     <span>Valor Parcelado</span>
-                    <p>{{ valor_parcelado_hint }}</p>
+                    <p>{{ valor_parcelado_descricao }}{% if valor_parcelado_hint %} • {{ valor_parcelado_hint }}{% endif %}</p>
                 </div>
                 <strong>{{ valor_parcelado_total }}</strong>
+            </article>
+            {% endif %}
+            <article class="quote-preview-price-highlight quote-preview-price-highlight--economy">
+                <div>
+                    <span>Valor economizado</span>
+                    <p>{{ economia_hint }}</p>
+                </div>
+                <strong>{{ economia_total }}</strong>
             </article>
         </div>
     </section>
@@ -197,7 +204,15 @@
         </ul>
     </section>
 
-    <footer class="quote-preview-contact">
+    <footer class="quote-preview-contact{% if empresa_contato.branding.mostrar_marca_dagua_ncfly %} quote-preview-contact--with-watermark{% endif %}">
+        {% if empresa_contato.branding.mostrar_marca_dagua_ncfly %}
+        <img
+            class="quote-preview-contact__watermark"
+            src="{{ empresa_contato.branding.default_logo_url }}"
+            alt="NC Fly"
+            aria-hidden="true"
+        >
+        {% endif %}
         <article>
             <span>Telefone</span>
             <strong>{{ empresa_contato.telefone }}</strong>

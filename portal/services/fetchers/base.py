@@ -5,10 +5,14 @@ from datetime import datetime
 from html import unescape
 from html.parser import HTMLParser
 import json
+import os
 import re
 from typing import Iterable
 from urllib.parse import urljoin, urlparse
 from urllib.request import Request, urlopen
+
+PUBLIC_SITE_FOR_BOT = (os.environ.get("SITE_BASE_URL") or "https://ncfly.com.br").strip().rstrip("/") or "https://ncfly.com.br"
+DEFAULT_BOT_USER_AGENT = f"NCFlyBot/1.0 (+{PUBLIC_SITE_FOR_BOT})"
 
 
 @dataclass
@@ -86,7 +90,7 @@ OUTBOUND_LINK_BLOCKED_DOMAINS = (
 
 def fetch_url(url: str, headers: dict | None = None, timeout: int = 20) -> str:
     merged_headers = {
-        "User-Agent": "NCFlyBot/1.0 (+https://ncfly.local)",
+        "User-Agent": DEFAULT_BOT_USER_AGENT,
         "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
     }
     merged_headers.update(headers or {})

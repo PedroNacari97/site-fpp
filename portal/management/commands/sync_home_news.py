@@ -217,8 +217,13 @@ class Command(BaseCommand):
 
                 image_storage_path = None
                 illustrative = False
-                if not draft.imagem_url:
-                    image_storage_path, illustrative = ensure_cover_for_news(draft)
+                image_storage_path, illustrative = ensure_cover_for_news(draft)
+                if image_storage_path:
+                    cover_source = "local_fallback" if image_storage_path.lower().endswith(".svg") else "ai_generated"
+                elif draft.imagem_url:
+                    cover_source = "source_image"
+                else:
+                    cover_source = "no_image"
 
                 with transaction.atomic():
                     defaults = {
@@ -239,6 +244,7 @@ class Command(BaseCommand):
                             {
                                 **(draft.metadata or {}),
                                 "story_fingerprint": story_fingerprint,
+                                "cover_source": cover_source,
                             },
                             source_name=source.nome,
                             article_url=article.url,
@@ -251,6 +257,10 @@ class Command(BaseCommand):
                     )
                     if image_storage_path:
                         noticia.imagem.name = image_storage_path
+                        noticia.save(update_fields=["imagem"])
+                    elif noticia.imagem:
+                        noticia.imagem.delete(save=False)
+                        noticia.imagem = None
                         noticia.save(update_fields=["imagem"])
                     raw_article.processada_em = timezone.now()
                     raw_article.save(update_fields=["processada_em"])

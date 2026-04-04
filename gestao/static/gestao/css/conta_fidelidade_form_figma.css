@@ -1,13 +1,13 @@
 :root {
-  --account-form-bg: #0f1419;
-  --account-form-surface: #1a2332;
-  --account-form-border: #1e2939;
-  --account-form-border-soft: #364153;
-  --account-form-text: #ffffff;
-  --account-form-text-muted: #99a1af;
-  --account-form-text-faint: #6a7282;
-  --account-form-blue: #155dfc;
-  --account-form-blue-strong: #0f4de0;
+  --account-form-bg: #f4f7fb;
+  --account-form-surface: #ffffff;
+  --account-form-border: #dbe3ee;
+  --account-form-border-soft: #d2dce8;
+  --account-form-text: #0f1b2d;
+  --account-form-text-muted: #708198;
+  --account-form-text-faint: #8c9aae;
+  --account-form-blue: #ff6b6b;
+  --account-form-blue-strong: #f15f62;
   --account-form-danger: #ff6467;
 }
 
@@ -141,7 +141,7 @@
 .fidelity-account-form__field select:focus,
 .fidelity-account-form__field textarea:focus {
   border-color: var(--account-form-blue);
-  box-shadow: 0 0 0 1px var(--account-form-blue);
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.14);
 }
 
 .fidelity-account-form__field-error {

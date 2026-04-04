@@ -1,0 +1,84 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ seo_title|default:"Termos de Uso | NC Fly News" }}{% endblock %}
+{% block content %}
+<div class="portal-static-page">
+    <section class="portal-static-page__shell">
+        <header class="portal-static-page__hero">
+            <nav class="portal-static-page__breadcrumbs">
+                <a href="{% url 'portal_home' %}">Home</a>
+                <span>/</span>
+                <span>Termos de Uso</span>
+            </nav>
+            <span class="news-pill news-pill--primary">{{ page_eyebrow|portal_text }}</span>
+            <h1>Termos de Uso</h1>
+            <p>{{ page_intro|portal_text }}</p>
+        </header>
+
+        <section class="portal-static-page__section">
+            <h2>1. Objeto</h2>
+            <p>Os presentes termos regulam o acesso e o uso do portal p&uacute;blico NC Fly News, suas p&aacute;ginas editoriais, categorias, conte&uacute;dos institucionais e eventuais &aacute;reas autenticadas vinculadas &agrave; plataforma.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>2. Aceita&ccedil;&atilde;o</h2>
+            <p>Ao navegar no portal e acessar p&aacute;ginas internas, o usu&aacute;rio declara ci&ecirc;ncia destes termos, da pol&iacute;tica de privacidade e da legisla&ccedil;&atilde;o aplic&aacute;vel. O uso de cookies opcionais e tecnologias de analytics depende das prefer&ecirc;ncias escolhidas pelo pr&oacute;prio usu&aacute;rio no centro de prefer&ecirc;ncias de cookies.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>3. Natureza do conte&uacute;do</h2>
+            <ul class="portal-static-page__list">
+                <li>O portal possui finalidade informativa, editorial e operacional.</li>
+                <li>Conte&uacute;dos sobre milhas, promo&ccedil;&otilde;es, cart&otilde;es, passagens, hot&eacute;is e viagens n&atilde;o equivalem, por si s&oacute;, a oferta irrevog&aacute;vel da NC Fly.</li>
+                <li>Pre&ccedil;os, estoques, disponibilidade, regras comerciais e condi&ccedil;&otilde;es promocionais dependem da origem da oferta e podem mudar sem aviso.</li>
+            </ul>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>4. Publicidade, links patrocinados e afilia&ccedil;&atilde;o</h2>
+            <p>O portal pode exibir publicidade, espa&ccedil;os comerciais, destaques patrocinados, links promocionais, links de parceiros e rela&ccedil;&otilde;es de afilia&ccedil;&atilde;o. A eventual exist&ecirc;ncia de interesse comercial n&atilde;o elimina a necessidade de confer&ecirc;ncia final de regras, pre&ccedil;o, disponibilidade e condi&ccedil;&otilde;es diretamente no destino final da oferta.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>5. Uso adequado da plataforma</h2>
+            <ul class="portal-static-page__list">
+                <li>N&atilde;o utilizar o portal para fraude, engenharia reversa, raspagem indevida, automa&ccedil;&atilde;o abusiva, sobrecarga ou tentativa de acesso n&atilde;o autorizado.</li>
+                <li>N&atilde;o publicar, transmitir ou inserir conte&uacute;dos il&iacute;citos, ofensivos, discriminat&oacute;rios ou que violem direitos de terceiros.</li>
+                <li>N&atilde;o tentar acessar &aacute;reas, dados, contas, emiss&otilde;es, cota&ccedil;&otilde;es ou registros sem permiss&atilde;o.</li>
+            </ul>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>6. Links externos, promo&ccedil;&otilde;es e terceiros</h2>
+            <p>O portal pode redirecionar para sites, programas, bancos, parceiros, companhias a&eacute;reas, hot&eacute;is ou plataformas de terceiros. Esses ambientes possuem regras, termos, pol&iacute;ticas, disponibilidade e tratamentos de dados pr&oacute;prios. A confer&ecirc;ncia final da oferta deve ser feita pelo usu&aacute;rio na origem da condi&ccedil;&atilde;o comercial.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>7. Propriedade intelectual</h2>
+            <p>O layout, identidade visual, marca, organiza&ccedil;&atilde;o editorial, c&oacute;digo, bases estruturadas e demais elementos do portal s&atilde;o protegidos pela legisla&ccedil;&atilde;o aplic&aacute;vel. N&atilde;o &eacute; permitida reprodu&ccedil;&atilde;o, redistribui&ccedil;&atilde;o, explora&ccedil;&atilde;o comercial ou uso indevido sem autoriza&ccedil;&atilde;o.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>8. Limita&ccedil;&atilde;o de responsabilidade</h2>
+            <ul class="portal-static-page__list">
+                <li>A NC Fly n&atilde;o garante disponibilidade permanente, aus&ecirc;ncia total de falhas ou continuidade ininterrupta da plataforma.</li>
+                <li>A NC Fly n&atilde;o responde por mudan&ccedil;as unilaterais feitas por terceiros em promo&ccedil;&otilde;es, estoques, links, programas, companhias ou parceiros externos.</li>
+                <li>Decis&otilde;es de compra, emiss&atilde;o, reserva, transfer&ecirc;ncia de pontos ou ades&atilde;o a ofertas devem ser confirmadas pelo usu&aacute;rio antes da contrata&ccedil;&atilde;o final.</li>
+                <li>Conte&uacute;dos editoriais n&atilde;o devem ser interpretados, isoladamente, como aconselhamento financeiro, jur&iacute;dico, tribut&aacute;rio ou garantia de resultado econ&ocirc;mico.</li>
+            </ul>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>9. Privacidade e prote&ccedil;&atilde;o de dados</h2>
+            <p>O tratamento de dados pessoais observa a Pol&iacute;tica de Privacidade do portal e a legisla&ccedil;&atilde;o aplic&aacute;vel. O uso continuado do portal deve ser interpretado em conjunto com essas regras.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>10. Legisla&ccedil;&atilde;o aplic&aacute;vel e foro</h2>
+            <p>Estes termos devem ser interpretados conforme a legisla&ccedil;&atilde;o brasileira, especialmente o Marco Civil da Internet, a Lei Geral de Prote&ccedil;&atilde;o de Dados, o C&oacute;digo de Defesa do Consumidor e o Decreto do com&eacute;rcio eletr&ocirc;nico, quando aplic&aacute;veis ao caso concreto.</p>
+            <p>Sempre que cab&iacute;vel e observadas as normas protetivas aplic&aacute;veis ao consumidor e ao titular de dados, eventuais controv&eacute;rsias dever&atilde;o ser tratadas conforme a legisla&ccedil;&atilde;o brasileira e pelas autoridades competentes.</p>
+            <p class="portal-static-page__updated">Atualizado em {{ page_updated_at|br_date_long }}.</p>
+        </section>
+    </section>
+</div>
+{% endblock %}

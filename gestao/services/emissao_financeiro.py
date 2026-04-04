@@ -65,15 +65,17 @@ def registrar_movimentacao_pontos(
     conta_base = conta.conta_saldo()
     descricao = f"Emissão #{emissao.id} - uso de pontos"
     if not pontos_utilizados:
-        Movimentacao.objects.filter(conta=conta_base, descricao=descricao).delete()
+        Movimentacao.objects.filter(conta=conta_base, chave_origem=f"emissao:{emissao.id}").delete()
         return
 
     Movimentacao.objects.update_or_create(
         conta=conta_base,
-        descricao=descricao,
+        chave_origem=f"emissao:{emissao.id}",
         defaults={
             "data": getattr(emissao, "data_ida", None).date() if getattr(emissao, "data_ida", None) else timezone.now().date(),
             "pontos": -int(pontos_utilizados),
             "valor_pago": -valor_referencia_pontos,
+            "descricao": descricao,
+            "tipo": Movimentacao.TIPO_EMISSAO,
         },
     )

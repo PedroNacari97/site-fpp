@@ -1,16 +1,16 @@
 :root {
-  --dashboard-bg: #0f1419;
-  --dashboard-surface: #1a2332;
-  --dashboard-surface-soft: #11171f;
-  --dashboard-border: #1e2939;
-  --dashboard-field-border: #364153;
-  --dashboard-text: #ffffff;
-  --dashboard-text-soft: #d1d5dc;
-  --dashboard-text-muted: #99a1af;
-  --dashboard-blue: #155dfc;
-  --dashboard-cyan: #36cfc9;
-  --dashboard-green: #22c55e;
-  --dashboard-purple: #8b5cf6;
+  --dashboard-bg: #f4f7fb;
+  --dashboard-surface: #ffffff;
+  --dashboard-surface-soft: #f8fafc;
+  --dashboard-border: #dbe3ee;
+  --dashboard-field-border: #d2dce8;
+  --dashboard-text: #0f1b2d;
+  --dashboard-text-soft: #425466;
+  --dashboard-text-muted: #708198;
+  --dashboard-blue: #ff6b6b;
+  --dashboard-cyan: #f5a623;
+  --dashboard-green: #f5a623;
+  --dashboard-purple: #0f1b2d;
 }
 
 .miles-dashboard {
@@ -128,7 +128,7 @@
 .miles-dashboard__field select:focus {
   outline: none;
   border-color: var(--dashboard-blue);
-  box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.12);
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.14);
 }
 
 .miles-dashboard__actions {
@@ -154,7 +154,7 @@
 }
 
 .miles-dashboard__button {
-  background: var(--dashboard-blue);
+  background: linear-gradient(135deg, var(--dashboard-blue), var(--dashboard-cyan));
   color: #fff;
 }
 

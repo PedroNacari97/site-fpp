@@ -1,7 +1,7 @@
 .emissions-page {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   color: #fff;
 }
 
@@ -55,9 +55,10 @@
 }
 
 .emissions-page__button--primary {
-  background: #155dfc;
-  border-color: #155dfc;
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  border-color: transparent;
   color: #fff;
+  box-shadow: 0 14px 28px rgba(255, 107, 107, 0.18);
 }
 
 .emissions-page__button:hover {
@@ -65,19 +66,20 @@
 }
 
 .emissions-page__button--primary:hover {
-  background: #0f4ed8;
-  border-color: #0f4ed8;
+  background: linear-gradient(135deg, var(--primary-strong) 0%, hsl(var(--accent)) 100%);
+  border-color: transparent;
+  color: #fff;
 }
 
 .emissions-page__panel,
 .emissions-page__stat-card {
   background: #1a2332;
   border: 1px solid #1e2939;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .emissions-page__filters {
-  padding: 16px;
+  padding: 14px 16px;
 }
 
 .emissions-page__filters-form {
@@ -129,18 +131,18 @@
 .emissions-page input:focus,
 .emissions-page select:focus {
   outline: none;
-  border-color: #155dfc;
-  box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.12);
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.12);
 }
 
 .emissions-page__stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 24px;
+  gap: 16px;
 }
 
 .emissions-page__stat-card {
-  padding: 22px 24px;
+  padding: 16px 18px;
 }
 
 .emissions-page__stat-label {
@@ -155,8 +157,8 @@
 
 .emissions-page__stat-value {
   margin: 0;
-  font-size: 30px;
-  line-height: 36px;
+  font-size: 28px;
+  line-height: 34px;
   font-weight: 700;
   color: #fff;
 }
@@ -166,7 +168,7 @@
 }
 
 .emissions-page__table-head {
-  padding: 20px;
+  padding: 16px 18px;
   border-bottom: 1px solid #1e2939;
 }
 
@@ -209,7 +211,7 @@
 }
 
 .emissions-page__table td {
-  padding: 16px;
+  padding: 14px 16px;
   border-top: 1px solid #1e2939;
   font-size: 14px;
   line-height: 20px;

@@ -373,6 +373,12 @@ def operator_list(request):
 
     if "toggle" in request.GET and request.method == "GET":
         operador = get_object_or_404(operadores, id=request.GET["toggle"])
+        if not operador.ativo and operador.empresa and operador.empresa.limite_colaboradores_atingido():
+            messages.error(
+                request,
+                f"O limite de {operador.empresa.limite_colaboradores} colaboradores para esta empresa foi atingido.",
+            )
+            return redirect("operator_list")
         operador.ativo = not operador.ativo
         operador.save(update_fields=["ativo"])
         sync_cliente_activation(operador)

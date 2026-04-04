@@ -5,51 +5,53 @@
 {% block header_title %}Emissoes de Hoteis{% endblock %}
 {% block header_subtitle %}<span>Padrao global com filtros, indicadores e tabela operacional.</span>{% endblock %}
 
-{% block header_actions %}
-<a href="{% url 'admin_nova_emissao_hotel' %}" class="hotel-page__header-action">Nova Emissao</a>
-{% endblock %}
-
-{% block mobile_header_actions %}
-<a href="{% url 'admin_nova_emissao_hotel' %}" class="hotel-page__header-action">Nova Emissao</a>
-{% endblock %}
-
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/css/home_figma.css' %}">
-<link rel="stylesheet" href="{% static 'gestao/css/hotel_figma.css' %}">
+<link rel="stylesheet" href="{% static 'gestao/css/emissoes_figma.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="hotel-page">
+<div class="emissions-page">
+  <div class="emissions-page__header">
+    <div>
+      <h2 class="emissions-page__title">Emissoes de Hoteis</h2>
+      <p class="emissions-page__subtitle">Padrao global com filtros, indicadores e tabela operacional.</p>
+    </div>
+    <div class="emissions-page__header-actions">
+      <a href="{% url 'admin_nova_emissao_hotel' %}" class="emissions-page__button emissions-page__button--primary">Nova Emissao</a>
+    </div>
+  </div>
+
   <section class="home-ops__filters">
     {% include "admin_custom/partials/home_management_filters.html" %}
   </section>
 
-  <section class="hotel-page__stats">
-    <article class="hotel-page__stat-card">
-      <p class="hotel-page__stat-label">Reservas Filtradas</p>
-      <p class="hotel-page__stat-value">{{ hotel_totais.total }}</p>
+  <section class="emissions-page__stats">
+    <article class="emissions-page__stat-card">
+      <p class="emissions-page__stat-label">Reservas filtradas</p>
+      <p class="emissions-page__stat-value">{{ hotel_totais.total }}</p>
     </article>
-    <article class="hotel-page__stat-card">
-      <p class="hotel-page__stat-label">Valor Referencia</p>
-      <p class="hotel-page__stat-value">{{ hotel_totais.referencia }}</p>
+    <article class="emissions-page__stat-card">
+      <p class="emissions-page__stat-label">Valor referencia</p>
+      <p class="emissions-page__stat-value">{{ hotel_totais.referencia }}</p>
     </article>
-    <article class="hotel-page__stat-card">
-      <p class="hotel-page__stat-label">Valor Pago</p>
-      <p class="hotel-page__stat-value">{{ hotel_totais.pago }}</p>
+    <article class="emissions-page__stat-card">
+      <p class="emissions-page__stat-label">Valor pago</p>
+      <p class="emissions-page__stat-value">{{ hotel_totais.pago }}</p>
     </article>
-    <article class="hotel-page__stat-card">
-      <p class="hotel-page__stat-label">Economia Total</p>
-      <p class="hotel-page__stat-value">{{ hotel_totais.economia }}</p>
+    <article class="emissions-page__stat-card">
+      <p class="emissions-page__stat-label">Economia total</p>
+      <p class="emissions-page__stat-value">{{ hotel_totais.economia }}</p>
     </article>
   </section>
 
-  <section class="hotel-page__table-card">
-    <header class="hotel-page__table-head">
-      <h2>Lista de emissoes de hotel</h2>
-    </header>
+  <section class="emissions-page__panel emissions-page__table-panel">
+    <div class="emissions-page__table-head">
+      <h3>Lista de emissoes de hotel</h3>
+    </div>
 
-    <div class="hotel-page__table-wrap">
-      <table class="hotel-page__table">
+    <div class="emissions-page__table-wrap">
+      <table class="emissions-page__table">
         <thead>
           <tr>
             <th>Cliente</th>
@@ -73,15 +75,15 @@
             <td>R$ {{ e.valor_pago|floatformat:2 }}</td>
             <td>R$ {{ e.economia_obtida|floatformat:2 }}</td>
             <td>
-              <div class="hotel-page__row-actions">
-                <a href="{% url 'admin_editar_emissao_hotel' e.id %}" class="hotel-page__row-action">Editar</a>
-                <a href="{% url 'admin_deletar_emissao_hotel' e.id %}" class="hotel-page__row-action">Deletar</a>
+              <div class="emissions-page__row-actions">
+                <a href="{% url 'admin_editar_emissao_hotel' e.id %}" class="emissions-page__row-button">Editar</a>
+                <a href="{% url 'admin_deletar_emissao_hotel' e.id %}" class="emissions-page__row-button">Deletar</a>
               </div>
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="8" class="hotel-page__empty">Nenhuma emissao encontrada.</td>
+            <td colspan="8" class="emissions-page__empty">Nenhuma emissao encontrada.</td>
           </tr>
           {% endfor %}
         </tbody>

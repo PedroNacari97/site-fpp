@@ -1,0 +1,79 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ seo_title|default:"Privacidade da Plataforma | NC Fly" }}{% endblock %}
+{% block content %}
+<div class="portal-static-page">
+    <section class="portal-static-page__shell">
+        <header class="portal-static-page__hero">
+            <nav class="portal-static-page__breadcrumbs">
+                <a href="{% url 'login_custom' %}">Login</a>
+                <span>/</span>
+                <span>Privacidade da Plataforma</span>
+            </nav>
+            <span class="news-pill news-pill--primary">{{ page_eyebrow }}</span>
+            <h1>Privacidade da Plataforma</h1>
+            <p>{{ page_intro }}</p>
+            {% if documento_versao %}
+                <p class="portal-static-page__updated">Versao {{ documento_versao }}{% if documento_vigencia %} • vigente desde {{ documento_vigencia|br_date_long }}{% endif %}.</p>
+            {% endif %}
+        </header>
+
+        <section class="portal-static-page__section">
+            <h2>1. Escopo</h2>
+            <p>Este aviso complementa a pol&iacute;tica de privacidade do portal p&uacute;blico e se aplica especificamente ao login, ao painel autenticado, &agrave; administra&ccedil;&atilde;o, &agrave;s cota&ccedil;&otilde;es, emiss&otilde;es, contas de fidelidade, auditoria, alertas, cadastros operacionais e demais fluxos internos da plataforma NC Fly.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>2. Pap&eacute;is de tratamento</h2>
+            <p>Dependendo do fluxo, a NC Fly pode atuar como controladora ou como operadora de dados pessoais. Em opera&ccedil;&otilde;es ligadas &agrave; execu&ccedil;&atilde;o do servi&ccedil;o contratado, aos cadastros da empresa usu&aacute;ria e aos controles internos da plataforma, a qualifica&ccedil;&atilde;o jur&iacute;dica pode variar conforme a finalidade, a origem dos dados e as instru&ccedil;&otilde;es recebidas do contratante.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>3. Dados tratados na &aacute;rea logada</h2>
+            <ul class="portal-static-page__list">
+                <li>Credenciais, identificadores de acesso, perfil, empresa vinculada e permiss&otilde;es.</li>
+                <li>Logs de autentica&ccedil;&atilde;o, eventos de seguran&ccedil;a, sess&otilde;es, tentativas de acesso e auditoria operacional.</li>
+                <li>Dados cadastrais e operacionais de clientes, passageiros, emissores, parceiros, companhias, programas e aeroportos.</li>
+                <li>Dados eventualmente sens&iacute;veis do ponto de vista operacional, como documentos, localizadores, hist&oacute;rico de emiss&otilde;es, prefer&ecirc;ncias e registros de atendimento, quando inseridos ou tratados na plataforma.</li>
+            </ul>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>4. Finalidades e bases legais</h2>
+            <ul class="portal-static-page__list">
+                <li>Autenticar usu&aacute;rios e restringir o acesso por perfil, empresa e escopo operacional.</li>
+                <li>Executar servi&ccedil;os contratados, procedimentos preliminares, opera&ccedil;&otilde;es de emiss&atilde;o, cota&ccedil;&atilde;o, acompanhamento e suporte.</li>
+                <li>Registrar trilhas de auditoria, prevenir fraude, abuso, acesso indevido e incidentes de seguran&ccedil;a.</li>
+                <li>Cumprir obriga&ccedil;&otilde;es legais, regulat&oacute;rias, contratuais e exercer direitos em processos administrativos, arbitrais ou judiciais.</li>
+            </ul>
+            <p>As bases legais podem incluir execu&ccedil;&atilde;o de contrato, procedimentos preliminares, cumprimento de obriga&ccedil;&atilde;o legal ou regulat&oacute;ria, exerc&iacute;cio regular de direitos, leg&iacute;timo interesse e, quando necess&aacute;rio no caso concreto, consentimento.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>5. Seguran&ccedil;a, monitoramento e auditoria</h2>
+            <p>A plataforma pode registrar e correlacionar eventos de login, origem de acesso, trilhas operacionais, erros, bloqueios tempor&aacute;rios, altera&ccedil;&otilde;es relevantes e hist&oacute;rico de uso para garantir seguran&ccedil;a, rastreabilidade, suporte, governan&ccedil;a e responsabiliza&ccedil;&atilde;o. Esses registros podem ser mantidos pelo prazo necess&aacute;rio ao atendimento da finalidade, &agrave; preserva&ccedil;&atilde;o de evid&ecirc;ncias e ao cumprimento de obriga&ccedil;&otilde;es legais.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>6. Compartilhamento e operadores</h2>
+            <p>Os dados podem ser compartilhados com a empresa contratante, usu&aacute;rios autorizados, provedores de infraestrutura, autentica&ccedil;&atilde;o, hospedagem, e-mail, seguran&ccedil;a, analytics consentido, suporte t&eacute;cnico e autoridades competentes, sempre conforme a necessidade operacional e os requisitos legais aplic&aacute;veis.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>7. Cookies e sess&atilde;o na plataforma</h2>
+            <p>Na &aacute;rea autenticada, cookies e mecanismos t&eacute;cnicos essenciais podem ser usados para login, seguran&ccedil;a, persist&ecirc;ncia de sess&atilde;o, prefer&ecirc;ncias b&aacute;sicas e defesa contra abuso. Esses elementos s&atilde;o necess&aacute;rios ao funcionamento da plataforma. Cookies opcionais de analytics continuam sujeitos &agrave;s prefer&ecirc;ncias do usu&aacute;rio quando aplic&aacute;veis.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>8. Direitos do titular e solicita&ccedil;&otilde;es</h2>
+            <p>Pedidos de acesso, corre&ccedil;&atilde;o, revis&atilde;o, elimina&ccedil;&atilde;o, informa&ccedil;&otilde;es sobre compartilhamento e demais direitos previstos na legisla&ccedil;&atilde;o aplic&aacute;vel podem ser apresentados pelos canais institucionais da controladora. Dependendo do contexto, a NC Fly poder&aacute; direcionar o pedido ao contratante respons&aacute;vel ou atuar conforme a distribui&ccedil;&atilde;o de pap&eacute;is entre controlador e operador.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>9. Contatos e documentos correlatos</h2>
+            <p>Este aviso deve ser lido em conjunto com a <a href="{% url 'portal_privacidade' %}">Pol&iacute;tica de Privacidade do portal p&uacute;blico</a>, os <a href="{% url 'portal_termos_plataforma' %}">Termos da Plataforma</a>, o <a href="{% url 'portal_dpa_plataforma' %}">DPA / Aditivo de Tratamento de Dados</a> e a <a href="{% url 'portal_seguranca_plataforma' %}">Politica de Seguranca</a>.{% if portal_dpo_email or portal_contact_email %} Para temas de privacidade, utilize <a href="mailto:{{ portal_dpo_email|default:portal_contact_email }}">{{ portal_dpo_email|default:portal_contact_email }}</a>.{% endif %}</p>
+            <p class="portal-static-page__updated">Atualizado em {{ page_updated_at|br_date_long }}.</p>
+        </section>
+    </section>
+</div>
+{% endblock %}

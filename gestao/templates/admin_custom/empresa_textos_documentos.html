@@ -1,0 +1,124 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Textos da Empresa{% endblock %}
+{% block header_title %}Minha Empresa{% endblock %}
+{% block header_subtitle %}<span>Defina os textos exibidos nas visualizacoes e PDFs de cotacao e emissao.</span>{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/superadmin_figma.css' %}">
+<link rel="stylesheet" href="{% static 'gestao/css/empresa_configuracoes.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="superadmin-page company-profile-page">
+  <section class="superadmin-hero">
+    <div>
+      <p class="superadmin-hero__eyebrow">Minha Empresa</p>
+      <h2 class="superadmin-hero__title">Textos de cotacao e emissao</h2>
+      <p class="superadmin-hero__subtitle">Personalize descricoes, observacoes, orientacoes e CTA da companhia. Se deixar vazio, o sistema usa os textos padrao da plataforma.</p>
+    </div>
+  </section>
+
+  <form method="post" class="superadmin-form">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="superadmin-alert">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="superadmin-form__layout">
+      <section class="superadmin-card">
+        <div class="superadmin-card__head">
+          <div>
+            <p class="superadmin-card__eyebrow">Cotacao</p>
+            <h3 class="superadmin-card__title">Textos da proposta</h3>
+          </div>
+        </div>
+
+        <div class="superadmin-form__stack">
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.cotacao_observacao_padrao.id_for_label }}">{{ form.cotacao_observacao_padrao.label }}</label>
+            {{ form.cotacao_observacao_padrao }}
+            <p class="superadmin-helper">Texto principal do bloco de observacoes importantes.</p>
+            {% for error in form.cotacao_observacao_padrao.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.cotacao_condicoes_gerais.id_for_label }}">{{ form.cotacao_condicoes_gerais.label }}</label>
+            {{ form.cotacao_condicoes_gerais }}
+            <p class="superadmin-helper">Use uma linha por item para montar a lista final.</p>
+            {% for error in form.cotacao_condicoes_gerais.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="superadmin-form__grid" style="margin-top: 18px;">
+          {% for field in form %}
+            {% if field.name == 'cotacao_hint_valor_referencia' or field.name == 'cotacao_hint_valor_encontrado' or field.name == 'cotacao_hint_taxa_embarque' or field.name == 'cotacao_hint_valor_total' or field.name == 'cotacao_hint_valor_parcelado' or field.name == 'cotacao_hint_economia' %}
+            <div class="superadmin-field">
+              <label class="superadmin-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+            </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </section>
+
+      <aside class="superadmin-card superadmin-card--sidebar">
+        <div class="superadmin-card__head">
+          <div>
+            <p class="superadmin-card__eyebrow">Emissao</p>
+            <h3 class="superadmin-card__title">Textos do bilhete</h3>
+          </div>
+        </div>
+
+        <div class="superadmin-form__stack">
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.emissao_observacao_confirmada.id_for_label }}">{{ form.emissao_observacao_confirmada.label }}</label>
+            {{ form.emissao_observacao_confirmada }}
+            {% for error in form.emissao_observacao_confirmada.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.emissao_observacao_pendente.id_for_label }}">{{ form.emissao_observacao_pendente.label }}</label>
+            {{ form.emissao_observacao_pendente }}
+            {% for error in form.emissao_observacao_pendente.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.emissao_orientacoes.id_for_label }}">{{ form.emissao_orientacoes.label }}</label>
+            {{ form.emissao_orientacoes }}
+            <p class="superadmin-helper">Use uma linha por item para montar a lista final.</p>
+            {% for error in form.emissao_orientacoes.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          {% for field in form %}
+            {% if field.name == 'emissao_cta_companhia' or field.name == 'emissao_bagagem_mao_hint' or field.name == 'emissao_bagagem_despachada_hint' or field.name == 'emissao_hint_taxa_embarque' or field.name == 'emissao_hint_taxa_servico' or field.name == 'emissao_hint_valor_total' %}
+            <div class="superadmin-field">
+              <label class="superadmin-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+            </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <div class="superadmin-sidebar-note">
+          <span class="superadmin-sidebar-note__label">Como funciona</span>
+          <p>Esses textos sao opcionais. O sistema usa as configuracoes da empresa nesta ordem: texto preenchido aqui, texto do caso especifico e, se nada vier, o padrao nativo da plataforma.</p>
+        </div>
+      </aside>
+    </div>
+
+    <div class="superadmin-form__actions">
+      <a href="{% url 'admin_empresa_configuracoes' %}" class="btn btn--outline">Voltar</a>
+      <button type="submit" class="btn">Salvar textos</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

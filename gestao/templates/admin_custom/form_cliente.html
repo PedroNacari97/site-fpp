@@ -42,12 +42,12 @@
 
                   <div class="client-form__grid client-form__grid--two">
                     <div class="client-form__field">
-                      <label for="{{ form.email.id_for_label }}">Email <span>*</span></label>
+                      <label for="{{ form.email.id_for_label }}">Email</label>
                       {{ form.email }}
                       {% if form.email.errors %}<div class="client-form__field-error">{{ form.email.errors }}</div>{% endif %}
                     </div>
                     <div class="client-form__field">
-                      <label for="{{ form.telefone.id_for_label }}">Telefone <span>*</span></label>
+                      <label for="{{ form.telefone.id_for_label }}">Telefone</label>
                       {{ form.telefone }}
                       {% if form.telefone.errors %}<div class="client-form__field-error">{{ form.telefone.errors }}</div>{% endif %}
                     </div>
@@ -69,7 +69,7 @@
                 <div class="client-form__section-body">
                   <div class="client-form__grid client-form__grid--two">
                     <div class="client-form__field">
-                      <label for="{{ form.cpf.id_for_label }}">CPF <span>*</span></label>
+                      <label for="{{ form.cpf.id_for_label }}">CPF</label>
                       {{ form.cpf }}
                       {% if form.cpf.errors %}<div class="client-form__field-error">{{ form.cpf.errors }}</div>{% endif %}
                     </div>
@@ -106,7 +106,7 @@
                 </div>
               </section>
 
-              <section class="client-form__section-card">
+              <section class="client-form__section-card" hidden aria-hidden="true">
                 <header class="client-form__section-head">
                   <p class="client-form__section-eyebrow">Acesso ao Sistema</p>
                   <h3 class="client-form__section-subtitle">Credenciais de login</h3>
@@ -114,12 +114,12 @@
                 <div class="client-form__section-body">
                   <div class="client-form__grid client-form__grid--two">
                     <div class="client-form__field">
-                      <label for="{{ form.password.id_for_label }}">Senha <span>*</span></label>
+                      <label for="{{ form.password.id_for_label }}">Senha</label>
                       {{ form.password }}
                       {% if form.password.errors %}<div class="client-form__field-error">{{ form.password.errors }}</div>{% endif %}
                     </div>
                     <div class="client-form__field">
-                      <label for="{{ form.confirm_password.id_for_label }}">Confirmar senha <span>*</span></label>
+                      <label for="{{ form.confirm_password.id_for_label }}">Confirmar senha</label>
                       {{ form.confirm_password }}
                       {% if form.confirm_password.errors %}<div class="client-form__field-error">{{ form.confirm_password.errors }}</div>{% endif %}
                     </div>
@@ -158,10 +158,10 @@
                 <div class="client-form__tips">
                   <h3>Dicas</h3>
                   <ul>
-                    <li>Campos marcados com <span>*</span> sao obrigatorios</li>
-                    <li>O email sera usado para login</li>
-                    <li>CPF deve ser unico no sistema</li>
-                    <li>Senha deve ter no minimo 6 caracteres</li>
+                    <li>Somente nome e sobrenome sao obrigatorios</li>
+                    <li>Email, telefone e CPF podem ser preenchidos depois</li>
+                    <li>O cliente e criado sem acesso ao portal neste cadastro</li>
+                    <li>Se informar CPF, ele deve ser unico no sistema</li>
                   </ul>
                 </div>
               </section>

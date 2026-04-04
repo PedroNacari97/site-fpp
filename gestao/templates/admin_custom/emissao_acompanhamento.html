@@ -1,0 +1,179 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Acompanhamento da Passagem{% endblock %}
+{% block header_title %}Acompanhamento da Passagem{% endblock %}
+{% block header_subtitle %}<span>Prepare a emissao para consultas futuras no sistema de origem, portal da companhia ou API operacional.</span>{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/superadmin_figma.css' %}">
+<link rel="stylesheet" href="{% static 'gestao/css/acompanhamento_passagem.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="superadmin-page tracking-page">
+  <section class="superadmin-hero">
+    <div>
+      <p class="superadmin-hero__eyebrow">Emissão #{{ emissao.id }}</p>
+      <h2 class="superadmin-hero__title">Monitoramento da passagem</h2>
+      <p class="superadmin-hero__subtitle">Essa base interna recebe os dados mínimos da emissão agora e fica pronta para receber depois o conector do sistema de origem ou da companhia aérea.</p>
+    </div>
+  </section>
+
+  <form method="post" class="superadmin-form">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="superadmin-alert">
+        {% for error in form.non_field_errors %}
+          <div>{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="superadmin-form__layout">
+      <section class="superadmin-card">
+        <div class="superadmin-card__head">
+          <div>
+            <p class="superadmin-card__eyebrow">Consulta</p>
+            <h3 class="superadmin-card__title">Dados do acompanhamento</h3>
+          </div>
+        </div>
+
+        <div class="superadmin-form__grid">
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.modo_consulta.id_for_label }}">{{ form.modo_consulta.label }}</label>
+            {{ form.modo_consulta }}
+            {% for error in form.modo_consulta.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.sistema_origem.id_for_label }}">{{ form.sistema_origem.label }}</label>
+            {{ form.sistema_origem }}
+            {% for error in form.sistema_origem.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.referencia_externa.id_for_label }}">{{ form.referencia_externa.label }}</label>
+            {{ form.referencia_externa }}
+            {% for error in form.referencia_externa.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.localizador_consulta.id_for_label }}">{{ form.localizador_consulta.label }}</label>
+            {{ form.localizador_consulta }}
+            {% for error in form.localizador_consulta.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.sobrenome_consulta.id_for_label }}">{{ form.sobrenome_consulta.label }}</label>
+            {{ form.sobrenome_consulta }}
+            {% for error in form.sobrenome_consulta.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.email_consulta.id_for_label }}">{{ form.email_consulta.label }}</label>
+            {{ form.email_consulta }}
+            {% for error in form.email_consulta.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.status_reserva.id_for_label }}">{{ form.status_reserva.label }}</label>
+            {{ form.status_reserva }}
+            {% for error in form.status_reserva.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.status_voo.id_for_label }}">{{ form.status_voo.label }}</label>
+            {{ form.status_voo }}
+            {% for error in form.status_voo.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.proxima_verificacao_em.id_for_label }}">{{ form.proxima_verificacao_em.label }}</label>
+            {{ form.proxima_verificacao_em }}
+            {% for error in form.proxima_verificacao_em.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field superadmin-field--checkbox">
+            <label class="superadmin-label" for="{{ form.ativo.id_for_label }}">{{ form.ativo.label }}</label>
+            <div class="tracking-form__checkbox">
+              {{ form.ativo }}
+              <span>Manter essa passagem participando das futuras sincronizações.</span>
+            </div>
+            {% for error in form.ativo.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+
+        <div class="superadmin-form__stack" style="margin-top: 18px;">
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.ultimo_resumo.id_for_label }}">{{ form.ultimo_resumo.label }}</label>
+            {{ form.ultimo_resumo }}
+            <p class="superadmin-helper">Esse campo pode ser preenchido manualmente agora e depois passar a ser alimentado pelo conector automático.</p>
+            {% for error in form.ultimo_resumo.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+
+          <div class="superadmin-field">
+            <label class="superadmin-label" for="{{ form.orientacao_operacional.id_for_label }}">{{ form.orientacao_operacional.label }}</label>
+            {{ form.orientacao_operacional }}
+            {% for error in form.orientacao_operacional.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <aside class="superadmin-card superadmin-card--sidebar">
+        <div class="superadmin-card__head">
+          <div>
+            <p class="superadmin-card__eyebrow">Resumo</p>
+            <h3 class="superadmin-card__title">Contexto da emissão</h3>
+          </div>
+        </div>
+
+        <div class="superadmin-form__stack">
+          <div class="tracking-chip">
+            <span class="superadmin-sidebar-note__label">Cliente</span>
+            <strong>{{ emissao.cliente }}</strong>
+            <small>Programa: {{ emissao.programa|default:"Nao informado" }}</small>
+          </div>
+
+          <div class="tracking-chip">
+            <span class="superadmin-sidebar-note__label">Trecho</span>
+            <strong>{{ emissao.aeroporto_partida.sigla|default:"---" }} → {{ emissao.aeroporto_destino.sigla|default:"---" }}</strong>
+            <small>{{ emissao.data_ida|date:"d/m/Y H:i" }}{% if emissao.data_volta %} • volta em {{ emissao.data_volta|date:"d/m/Y H:i" }}{% endif %}</small>
+          </div>
+
+          <div class="tracking-chip">
+            <span class="superadmin-sidebar-note__label">Companhia</span>
+            <strong>{{ emissao.companhia_aerea.nome|default:"Nao informada" }}</strong>
+            <small>{% if emissao.companhia_aerea.site_url %}{{ emissao.companhia_aerea.site_url }}{% else %}Sem portal cadastrado{% endif %}</small>
+          </div>
+
+          <div class="tracking-chip">
+            <span class="superadmin-sidebar-note__label">Ultima sincronizacao</span>
+            <strong>{% if acompanhamento.ultima_sincronizacao_em %}{{ acompanhamento.ultima_sincronizacao_em|date:"d/m/Y H:i" }}{% else %}Nao sincronizado{% endif %}</strong>
+            <small>Status atual: {{ acompanhamento.get_status_reserva_display }} / {{ acompanhamento.get_status_voo_display }}</small>
+          </div>
+        </div>
+
+        {% if acompanhamento.ultimo_erro %}
+        <div class="tracking-sidebar-note tracking-sidebar-note--danger">
+          <span class="superadmin-sidebar-note__label">Ultimo retorno</span>
+          <p>{{ acompanhamento.ultimo_erro }}</p>
+        </div>
+        {% else %}
+        <div class="tracking-sidebar-note">
+          <span class="superadmin-sidebar-note__label">Proximo passo recomendado</span>
+          <p>Enquanto a integração não nasce, use essa tela para guardar os dados mínimos de consulta e manter o histórico operacional consistente.</p>
+        </div>
+        {% endif %}
+      </aside>
+    </div>
+
+    <div class="superadmin-form__actions">
+      <a href="{% url 'admin_emissao_detalhe' emissao.id %}" class="btn btn--outline">Voltar para visualizacao</a>
+      <button type="submit" class="btn btn--outline">Salvar</button>
+      <button type="submit" name="sincronizar" value="1" class="btn">Salvar e sincronizar</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

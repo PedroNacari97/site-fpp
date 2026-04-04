@@ -178,6 +178,15 @@ def _build_styles():
             alignment=TA_RIGHT,
             textColor=colors.HexColor("#2563EB"),
         ),
+        "highlight_value_orange": ParagraphStyle(
+            "HighlightValueOrange",
+            parent=styles["Normal"],
+            fontName="Helvetica-Bold",
+            fontSize=19,
+            leading=21,
+            alignment=TA_RIGHT,
+            textColor=colors.HexColor("#F97316"),
+        ),
         "alert_text": ParagraphStyle(
             "AlertText",
             parent=styles["Normal"],
@@ -593,8 +602,8 @@ def gerar_pdf_cotacao(cotacao):
     elements.append(Spacer(1, 0.16 * cm))
     elements.append(
         _highlight_card(
-            "Valor a Vista",
-            "Pagamento integral",
+            "Valor Total",
+            "Valor final da proposta",
             context["valor_vista_total"],
             colors.HexColor("#4ADE80"),
             colors.HexColor("#ECFDF5"),
@@ -602,15 +611,28 @@ def gerar_pdf_cotacao(cotacao):
             styles,
         )
     )
+    if context.get("mostrar_valor_parcelado", True):
+        elements.append(Spacer(1, 0.12 * cm))
+        elements.append(
+            _highlight_card(
+                "Valor Parcelado",
+                context["valor_parcelado_hint"],
+                context["valor_parcelado_total"],
+                colors.HexColor("#60A5FA"),
+                colors.HexColor("#EFF6FF"),
+                styles["highlight_value_blue"],
+                styles,
+            )
+        )
     elements.append(Spacer(1, 0.12 * cm))
     elements.append(
         _highlight_card(
-            "Valor Parcelado",
-            context["valor_parcelado_hint"],
-            context["valor_parcelado_total"],
-            colors.HexColor("#60A5FA"),
-            colors.HexColor("#EFF6FF"),
-            styles["highlight_value_blue"],
+            "Valor Economizado",
+            "Diferenca entre a referencia e a proposta",
+            context["economia_total"],
+            colors.HexColor("#FDBA74"),
+            colors.HexColor("#FFF7ED"),
+            styles["highlight_value_orange"],
             styles,
         )
     )

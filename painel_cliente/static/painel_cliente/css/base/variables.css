@@ -1,37 +1,37 @@
 :root {
-  --background: 220 23% 98%;
-  --foreground: 221 39% 11%;
+  --background: 28 78% 97%;
+  --foreground: 213 52% 12%;
   --card: 0 0% 100%;
-  --card-foreground: 220 20% 10%;
+  --card-foreground: 213 52% 12%;
   --popover: 0 0% 100%;
-  --popover-foreground: 220 20% 10%;
-  --primary: 217 91% 60%;
+  --popover-foreground: 213 52% 12%;
+  --primary: 0 100% 71%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 220 14% 96%;
-  --secondary-foreground: 217 19% 27%;
-  --muted: 220 14% 96%;
-  --muted-foreground: 217 13% 46%;
-  --accent: 263 70% 58%;
-  --accent-foreground: 0 0% 100%;
+  --secondary: 28 58% 95%;
+  --secondary-foreground: 213 39% 18%;
+  --muted: 28 58% 95%;
+  --muted-foreground: 214 16% 45%;
+  --accent: 37 91% 55%;
+  --accent-foreground: 213 52% 12%;
   --destructive: 0 84% 60%;
   --success: 142 71% 45%;
   --warning: 38 92% 50%;
-  --border: 220 13% 91%;
-  --input: 220 9% 83%;
-  --ring: 217 91% 60%;
+  --border: 24 29% 88%;
+  --input: 24 24% 84%;
+  --ring: 0 100% 71%;
   --radius: 0.75rem;
   --sidebar-background: 0 0% 100%;
-  --sidebar-foreground: 221 39% 11%;
-  --sidebar-primary: 217 91% 60%;
-  --sidebar-accent: 217 91% 60%;
-  --sidebar-border: 220 13% 91%;
-  --sidebar-muted: 220 14% 96%;
+  --sidebar-foreground: 213 52% 12%;
+  --sidebar-primary: 37 91% 55%;
+  --sidebar-accent: 0 100% 71%;
+  --sidebar-border: 214 23% 88%;
+  --sidebar-muted: 28 58% 95%;
 
   --color-bg: hsl(var(--background));
   --color-text: hsl(var(--foreground));
   --color-heading: hsl(var(--foreground));
   --color-primary: hsl(var(--primary));
-  --color-primary-dark: hsl(var(--primary));
+  --color-primary-dark: hsl(0 96% 66%);
   --color-muted: hsl(var(--muted-foreground));
   --color-border: hsl(var(--border));
   --color-success: hsl(var(--success));
@@ -43,9 +43,9 @@
   --color-input-bg: hsl(var(--background));
   --color-input-border: hsl(var(--input));
 
-  --shadow-card: 0 10px 25px -15px hsl(220 20% 20% / 0.12);
-  --shadow-table: 0 10px 25px -18px hsl(220 20% 20% / 0.12);
-  --shadow-login: 0 20px 40px -20px hsl(220 20% 20% / 0.2);
+  --shadow-card: 0 18px 34px -24px hsl(213 52% 12% / 0.18);
+  --shadow-table: 0 16px 32px -24px hsl(213 52% 12% / 0.14);
+  --shadow-login: 0 32px 60px -36px hsl(213 52% 12% / 0.24);
 
   --radius-lg: var(--radius);
   --radius-md: 0.625rem;
@@ -60,20 +60,20 @@
 }
 
 body.dark-mode {
-  --background: 210 24% 8%;
+  --background: 213 40% 10%;
   --foreground: 0 0% 100%;
-  --card: 219 31% 15%;
+  --card: 213 32% 15%;
   --card-foreground: 0 0% 100%;
-  --secondary: 215 28% 17%;
+  --secondary: 213 28% 19%;
   --secondary-foreground: 0 0% 100%;
-  --muted: 215 28% 17%;
-  --muted-foreground: 217 10% 64%;
-  --border: 215 28% 17%;
-  --input: 217 19% 27%;
-  --sidebar-background: 210 24% 8%;
+  --muted: 213 28% 19%;
+  --muted-foreground: 214 17% 70%;
+  --border: 213 28% 19%;
+  --input: 213 20% 28%;
+  --sidebar-background: 213 40% 10%;
   --sidebar-foreground: 0 0% 100%;
-  --sidebar-border: 215 28% 17%;
-  --sidebar-muted: 215 28% 17%;
+  --sidebar-border: 213 28% 19%;
+  --sidebar-muted: 213 28% 19%;
 
   --color-bg: hsl(var(--background));
   --color-text: hsl(var(--foreground));
@@ -85,7 +85,7 @@ body.dark-mode {
   --color-surface-active: hsl(var(--secondary));
   --color-input-bg: hsl(var(--background));
   --color-input-border: hsl(var(--input));
-  --shadow-card: 0 10px 25px -15px hsl(220 20% 8% / 0.5);
-  --shadow-table: 0 12px 28px -18px hsl(220 20% 8% / 0.6);
-  --shadow-login: 0 24px 48px -28px hsl(220 20% 8% / 0.6);
+  --shadow-card: 0 18px 34px -24px hsl(213 40% 6% / 0.5);
+  --shadow-table: 0 18px 36px -24px hsl(213 40% 6% / 0.58);
+  --shadow-login: 0 32px 60px -36px hsl(213 40% 6% / 0.62);
 }

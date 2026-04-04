@@ -6,9 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="description" content="{{ login_title|default:'Login - NCFly' }}" />
   <title>{{ login_title|default:"Login - NCFly" }} - NCFly</title>
+  <link rel="stylesheet" href="{% static 'portal/css/portal.css' %}">
   <link rel="stylesheet" href="{% static 'gestao/css/login.css' %}">
 </head>
-<body class="login-page{% if login_mode == 'superadmin' %} login-page--superadmin{% endif %}">
+<body class="login-page{% if login_mode == 'superadmin' %} login-page--superadmin{% endif %}" data-default-theme="light">
+  {% include "portal/partials/public_topbar.html" %}
   <div class="login-background" aria-hidden="true">
     <span class="login-background__glow login-background__glow--blue"></span>
     <span class="login-background__glow login-background__glow--pink"></span>
@@ -18,7 +20,7 @@
   <main class="login-layout">
     <section class="login-brand-panel">
       <div class="login-brand-panel__inner">
-        <img src="{% static 'painel_cliente/ncfly_logo.png' %}" alt="Logo NCfly" class="login-brand-panel__logo">
+        <img src="{{ app_branding.logo_url }}" alt="{{ app_branding.alt }}" class="login-brand-panel__logo">
         <h1 class="login-brand-panel__title">{{ login_title|default:"Acesso ao painel" }}</h1>
 
         <div class="login-brand-panel__features">
@@ -138,11 +140,21 @@
               <a href="{% url 'cliente_create' %}" class="login-card__link login-card__link--strong">Cadastre-se</a>
             </div>
           {% endif %}
+          <div class="login-card__legal">
+            <span>Ao entrar, voce reconhece os documentos da area autenticada.</span>
+            <div class="login-card__legal-links">
+              <a href="{% url 'portal_termos_plataforma' %}" class="login-card__link">Termos da Plataforma</a>
+              <a href="{% url 'portal_privacidade_plataforma' %}" class="login-card__link">Privacidade da Plataforma</a>
+              <a href="{% url 'portal_dpa_plataforma' %}" class="login-card__link">DPA</a>
+              <a href="{% url 'portal_seguranca_plataforma' %}" class="login-card__link">Seguranca</a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
+  <script src="{% static 'portal/js/portal.js' %}" defer></script>
   <script type="module" src="{% static 'painel_cliente/js/app.js' %}" defer></script>
 </body>
 </html>

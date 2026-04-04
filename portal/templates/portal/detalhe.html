@@ -1,22 +1,36 @@
 {% extends "portal/base_public.html" %}
 {% load portal_extras %}
-{% block title %}{{ noticia.titulo }} | NC Fly News{% endblock %}
+{% block title %}{{ seo_title|default:noticia.titulo|portal_text }}{% endblock %}
 {% block content %}
-<div class="news-detail-frame">
+<div
+    class="news-detail-frame"
+    data-analytics-view="article"
+    data-analytics-slug="{{ noticia.slug }}"
+    data-analytics-article-category="{{ noticia.categoria|default:''|portal_text }}"
+    data-analytics-article-topic="{{ noticia.topico|default:''|portal_text }}"
+>
     <section class="news-backbar">
-        <a href="{% url 'portal_home' %}" class="news-backbar__link">&larr; Voltar para notícias</a>
+        <a
+            href="{% url 'portal_home' %}"
+            class="news-backbar__link"
+            data-analytics-event="click_voltar_noticias"
+            data-analytics-category="navigation"
+            data-analytics-label="detalhe_noticia"
+        >
+            &larr; Voltar para notícias
+        </a>
     </section>
 
     <article class="news-detail-shell">
         <nav class="news-breadcrumbs">
-            <a href="{% url 'portal_home' %}">Home</a>
+            <a href="{% url 'portal_home' %}" data-analytics-event="click_breadcrumb" data-analytics-category="navigation" data-analytics-label="home">Home</a>
             <span>/</span>
             {% if categoria_url %}
-            <a href="{{ categoria_url }}">{{ breadcrumbs_categoria|portal_text }}</a>
+            <a href="{{ categoria_url }}" data-analytics-event="click_breadcrumb" data-analytics-category="navigation" data-analytics-label="{{ breadcrumbs_categoria|portal_text }}">{{ breadcrumbs_categoria|portal_text }}</a>
             <span>/</span>
             {% endif %}
             {% if noticia.topico and topico_url %}
-            <a href="{{ topico_url }}">{{ noticia.topico|portal_text }}</a>
+            <a href="{{ topico_url }}" data-analytics-event="click_breadcrumb" data-analytics-category="navigation" data-analytics-label="{{ noticia.topico|portal_text }}">{{ noticia.topico|portal_text }}</a>
             <span>/</span>
             {% endif %}
             <span>Área da notícia</span>
@@ -47,7 +61,6 @@
                     </div>
                 </div>
                 <div class="news-detail-stats">
-                    <span>{{ visualizacoes_total }}</span>
                     <span>{{ tempo_leitura_minutos }} min</span>
                 </div>
             </div>
@@ -81,7 +94,19 @@
                         <h3>Link útil da oferta</h3>
                         <p>Encontramos um link relevante dentro do artigo de referência e o destacamos aqui para facilitar o acesso direto.</p>
                     </div>
-                    <a href="{{ offer_cta.url }}" target="_blank" rel="noopener noreferrer" class="portal-button portal-button--primary">
+                    <a
+                        href="{{ offer_cta.url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="portal-button portal-button--primary"
+                        data-analytics-event="click_offer_link"
+                        data-analytics-category="conversion"
+                        data-analytics-label="{{ offer_cta.label|default:'Ir para a oferta'|portal_text }}"
+                        data-analytics-slug="{{ noticia.slug }}"
+                        data-analytics-article-category="{{ noticia.categoria|default:''|portal_text }}"
+                        data-analytics-article-topic="{{ noticia.topico|default:''|portal_text }}"
+                        data-analytics-section="article_offer"
+                    >
                         {{ offer_cta.label|default:"Ir para a oferta"|portal_text }}
                     </a>
                 </section>
@@ -96,15 +121,6 @@
                     </div>
                 </section>
 
-                <section class="news-detail-comments">
-                    <div class="news-detail-comments__header">
-                        <span>Comentários ({{ comentarios_total }})</span>
-                    </div>
-                    <div class="news-detail-comments__box">
-                        <p>Faça login para comentar e participar da discussão.</p>
-                        <a href="{% url 'login_custom' %}" class="portal-button portal-button--primary portal-button--sm">Fazer login</a>
-                    </div>
-                </section>
             </div>
         </div>
     </article>
@@ -118,7 +134,17 @@
             {% for item in relacionadas %}
             <article class="news-card news-card--related">
                 {% if item.imagem_exibicao %}
-                <a href="{{ item.get_absolute_url }}" class="news-card__image">
+                <a
+                    href="{{ item.get_absolute_url }}"
+                    class="news-card__image"
+                    data-analytics-event="click_noticia_relacionada"
+                    data-analytics-category="content"
+                    data-analytics-label="{{ item.titulo|portal_text }}"
+                    data-analytics-slug="{{ item.slug }}"
+                    data-analytics-article-category="{{ item.categoria|default:''|portal_text }}"
+                    data-analytics-article-topic="{{ item.topico|default:''|portal_text }}"
+                    data-analytics-section="article_related"
+                >
                     <img src="{{ item.imagem_exibicao }}" alt="{{ item.titulo }}">
                 </a>
                 {% endif %}
@@ -127,7 +153,20 @@
                     {% if item.topico %}
                     <span class="news-pill news-pill--topic">{{ item.topico|portal_text }}</span>
                     {% endif %}
-                    <h3><a href="{{ item.get_absolute_url }}">{{ item.titulo|portal_text }}</a></h3>
+                    <h3>
+                        <a
+                            href="{{ item.get_absolute_url }}"
+                            data-analytics-event="click_noticia_relacionada"
+                            data-analytics-category="content"
+                            data-analytics-label="{{ item.titulo|portal_text }}"
+                            data-analytics-slug="{{ item.slug }}"
+                            data-analytics-article-category="{{ item.categoria|default:''|portal_text }}"
+                            data-analytics-article-topic="{{ item.topico|default:''|portal_text }}"
+                            data-analytics-section="article_related"
+                        >
+                            {{ item.titulo|portal_text }}
+                        </a>
+                    </h3>
                 </div>
             </article>
             {% endfor %}

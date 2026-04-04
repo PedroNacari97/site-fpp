@@ -1,4 +1,37 @@
+from django.conf import settings
+
 from gestao.services.dashboard import build_operational_notifications
+
+
+def _resolve_user_empresa(user):
+    if not user or not user.is_authenticated or user.is_superuser:
+        return None
+    cliente = getattr(user, "cliente_gestao", None)
+    return getattr(cliente, "empresa", None) if cliente else None
+
+
+def app_branding(request):
+    empresa = _resolve_user_empresa(getattr(request, "user", None))
+    default_logo_url = getattr(settings, "PORTAL_SITE_LOGO_URL", "/static/portal/img/ncfly-wordmark.svg")
+    footer_logo_url = getattr(
+        settings,
+        "PORTAL_SITE_LOGO_LIGHT_URL",
+        "/static/portal/img/ncfly-wordmark-light.svg",
+    )
+    custom_logo_url = getattr(empresa, "logo_documentos_url", "") if empresa else ""
+
+    return {
+        "app_branding": {
+            "empresa": empresa,
+            "logo_url": custom_logo_url or default_logo_url,
+            "footer_logo_url": custom_logo_url or footer_logo_url,
+            "default_logo_url": default_logo_url,
+            "default_footer_logo_url": footer_logo_url,
+            "has_custom_logo": bool(custom_logo_url),
+            "name": getattr(empresa, "nome", "") or "NC Fly",
+            "alt": getattr(empresa, "nome", "") or "NC Fly",
+        }
+    }
 
 
 def admin_notifications(request):

@@ -1,42 +1,55 @@
 {% extends "admin_custom/base_admin.html" %}
+{% load static %}
 {% block title %}Cotacoes de Voo{% endblock %}
 {% block header_title %}Cotacoes de Voo{% endblock %}
 {% block header_subtitle %}<span>Padrao global com filtros, KPIs e tabela operacional de cotacoes.</span>{% endblock %}
-{% block header_actions %}
-<a href="{% url 'admin_nova_cotacao_voo' %}" class="btn btn-primary">+ Nova Cotacao</a>
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/home_figma.css' %}">
+<link rel="stylesheet" href="{% static 'gestao/css/emissoes_figma.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="stacked py-2">
-    {% include "admin_custom/partials/management_filters.html" %}
+<div class="emissions-page">
+    <div class="emissions-page__header">
+        <div>
+            <h2 class="emissions-page__title">Cotacoes de Voo</h2>
+            <p class="emissions-page__subtitle">Padrao global com filtros, KPIs e tabela operacional de cotacoes.</p>
+        </div>
+        <div class="emissions-page__header-actions">
+            <a href="{% url 'admin_nova_cotacao_voo' %}" class="emissions-page__button emissions-page__button--primary">Nova Cotacao</a>
+        </div>
+    </div>
 
-    <section class="stat-grid">
-        <article class="stat-card">
-            <p class="eyebrow">Cotacoes filtradas</p>
-            <p class="stat-value">{{ cotacao_totais.total }}</p>
+    <section class="home-ops__filters">
+        {% include "admin_custom/partials/home_management_filters.html" %}
+    </section>
+
+    <section class="emissions-page__stats">
+        <article class="emissions-page__stat-card">
+            <p class="emissions-page__stat-label">Cotacoes filtradas</p>
+            <p class="emissions-page__stat-value">{{ cotacao_totais.total }}</p>
         </article>
-        <article class="stat-card">
-            <p class="eyebrow">Valor referencia</p>
-            <p class="stat-value">{{ cotacao_totais.referencia }}</p>
+        <article class="emissions-page__stat-card">
+            <p class="emissions-page__stat-label">Valor referencia</p>
+            <p class="emissions-page__stat-value">{{ cotacao_totais.referencia }}</p>
         </article>
-        <article class="stat-card">
-            <p class="eyebrow">Valor a vista</p>
-            <p class="stat-value">{{ cotacao_totais.venda }}</p>
+        <article class="emissions-page__stat-card">
+            <p class="emissions-page__stat-label">Valor a vista</p>
+            <p class="emissions-page__stat-value">{{ cotacao_totais.venda }}</p>
         </article>
-        <article class="stat-card">
-            <p class="eyebrow">Economia estimada</p>
-            <p class="stat-value">{{ cotacao_totais.economia }}</p>
+        <article class="emissions-page__stat-card">
+            <p class="emissions-page__stat-label">Economia estimada</p>
+            <p class="emissions-page__stat-value">{{ cotacao_totais.economia }}</p>
         </article>
     </section>
 
-    <section class="surface-card">
-        <div class="section-heading">
-            <div>
-                <h2 class="section-title">Lista de cotacoes</h2>
-            </div>
+    <section class="emissions-page__panel emissions-page__table-panel">
+        <div class="emissions-page__table-head">
+            <h3>Lista de cotacoes</h3>
         </div>
-        <div class="table-wrapper">
-            <table class="data-table">
+        <div class="emissions-page__table-wrap">
+            <table class="emissions-page__table">
                 <thead>
                     <tr>
                         <th>Cliente</th>
@@ -62,21 +75,21 @@
                         <td>{{ c.get_status_display }}</td>
                         <td>R$ {{ c.economia|floatformat:2 }}</td>
                         <td>
-                            <div class="filter-actions">
-                                <a href="{% url 'admin_visualizar_cotacao_voo' c.id %}" class="btn btn-secondary">Visualizar Cotacao</a>
-                                <a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="btn btn-secondary">Editar</a>
+                            <div class="emissions-page__row-actions">
+                                <a href="{% url 'admin_visualizar_cotacao_voo' c.id %}" class="emissions-page__row-button">Visualizar Cotacao</a>
+                                <a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="emissions-page__row-button">Editar</a>
                                 {% if c.status == "emissao" and not c.emissao_id %}
-                                <a href="{% url 'admin_nova_emissao' %}?cotacao_id={{ c.id }}" class="btn btn-secondary">Completar Emissao</a>
+                                <a href="{% url 'admin_nova_emissao' %}?cotacao_id={{ c.id }}" class="emissions-page__row-button">Completar Emissao</a>
                                 {% elif c.emissao_id %}
-                                <a href="{% url 'admin_editar_emissao' c.emissao_id %}" class="btn btn-secondary">Ver Emissao</a>
+                                <a href="{% url 'admin_editar_emissao' c.emissao_id %}" class="emissions-page__row-button">Ver Emissao</a>
                                 {% endif %}
-                                <a href="{% url 'admin_deletar_cotacao_voo' c.id %}" class="btn btn-ghost">Deletar</a>
+                                <a href="{% url 'admin_deletar_cotacao_voo' c.id %}" class="emissions-page__row-button">Deletar</a>
                             </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9" class="muted">Nenhuma cotacao encontrada.</td>
+                        <td colspan="9" class="emissions-page__empty">Nenhuma cotacao encontrada.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

@@ -72,13 +72,14 @@ class UsuarioForm(forms.Form):
             raise forms.ValidationError("Selecione uma empresa para o usuario.")
 
         if perfil == "operador" and empresa:
-            operadores = Cliente.objects.filter(empresa=empresa, perfil="operador", ativo=True)
-            if self.instance:
-                operadores = operadores.exclude(pk=self.instance.pk)
-            limite = empresa.limite_colaboradores
-            if limite and operadores.count() >= limite:
+            same_operator_slot = bool(
+                self.instance
+                and self.instance.perfil == "operador"
+                and self.instance.empresa_id == empresa.id
+            )
+            if not same_operator_slot and empresa.limite_colaboradores_atingido():
                 raise forms.ValidationError(
-                    f"O limite de {limite} colaboradores para esta empresa foi atingido. "
+                    f"O limite de {empresa.limite_colaboradores} colaboradores para esta empresa foi atingido. "
                     "Entre em contato para liberar mais acessos."
                 )
 

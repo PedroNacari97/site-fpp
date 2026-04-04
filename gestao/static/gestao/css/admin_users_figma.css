@@ -57,8 +57,8 @@
 
 .admin-users__cta,
 .admin-users__primary {
-  background: #155dfc;
-  border-color: #155dfc;
+  background: #ff6b6b;
+  border-color: #ff6b6b;
   color: #ffffff;
 }
 
@@ -138,7 +138,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #8b5cf6;
+  color: #f5a623;
   flex-shrink: 0;
 }
 
@@ -190,8 +190,8 @@
 .admin-users select:focus,
 .admin-users textarea:focus {
   outline: none;
-  border-color: #155dfc;
-  box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.12);
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.12);
 }
 
 .admin-users__filter-actions,
@@ -296,15 +296,15 @@
 }
 
 .admin-users__tag--admin {
-  color: #c27aff;
+  color: #f5a623;
   background: rgba(173, 70, 255, 0.1);
   border-color: rgba(173, 70, 255, 0.2);
 }
 
 .admin-users__tag--operador {
-  color: #51a2ff;
-  background: rgba(43, 127, 255, 0.1);
-  border-color: rgba(43, 127, 255, 0.2);
+  color: #ff8b5f;
+  background: rgba(255, 139, 95, 0.12);
+  border-color: rgba(255, 139, 95, 0.22);
 }
 
 .admin-users__empty {

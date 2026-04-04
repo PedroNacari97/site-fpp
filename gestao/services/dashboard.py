@@ -18,6 +18,8 @@ from gestao.models import (
     CotacaoVoo,
     EmissaoPassagem,
     EmissorParceiro,
+    InteresseViagemMatch,
+    NotificacaoSistema,
     ProgramaFidelidade,
 )
 from gestao.value_utils import build_valor_milheiro_map, get_valor_referencia_from_map
@@ -98,6 +100,7 @@ def _format_notification_time(reference, *, now=None):
 
 def _build_notification_item(
     *,
+    key,
     title,
     description,
     badge_label,
@@ -108,6 +111,7 @@ def _build_notification_item(
     tone=None,
 ):
     return {
+        "key": key,
         "title": title,
         "titulo": title,
         "description": description,
@@ -119,6 +123,41 @@ def _build_notification_item(
         "unread": unread,
         "tone": tone or ("yellow" if badge_tone == "alert" else "purple" if badge_tone == "info" else "blue"),
     }
+
+
+def _get_read_notification_keys(user):
+    if not user or not getattr(user, "is_authenticated", False):
+        return set()
+
+    return set(
+        NotificacaoSistema.objects.filter(
+            usuario=user,
+            lida=True,
+        )
+        .exclude(chave="")
+        .values_list("chave", flat=True)
+    )
+
+
+def mark_operational_notification_as_read(*, user, key, empresa=None, notification=None):
+    if not user or not getattr(user, "is_authenticated", False) or not key:
+        return None
+
+    notification = notification or {}
+    defaults = {
+        "empresa": empresa,
+        "titulo": notification.get("title", ""),
+        "mensagem": notification.get("description", ""),
+        "url": notification.get("url", "") or "",
+        "lida": True,
+        "lida_em": timezone.now(),
+    }
+    record, _ = NotificacaoSistema.objects.update_or_create(
+        usuario=user,
+        chave=key,
+        defaults=defaults,
+    )
+    return record
 
 
 def _build_programas_info(contas):
@@ -186,8 +225,15 @@ def _format_datas_resumo(datas_ida, datas_volta):
     return " • ".join(partes) if partes else "Datas a combinar"
 
 
+def _visible_alert_ids(queryset=None):
+    base_queryset = queryset or AlertaViagem.objects.filter(ativo=True)
+    alertas = list(base_queryset.order_by("-criado_em"))
+    return [alerta.id for alerta in alertas if alerta.deve_aparecer_na_vitrine()]
+
+
 def _build_alert_filters(selected_continente, selected_pais, selected_cidade):
-    base_qs = AlertaViagem.objects.filter(ativo=True)
+    visible_ids = _visible_alert_ids(AlertaViagem.objects.filter(ativo=True))
+    base_qs = AlertaViagem.objects.filter(id__in=visible_ids, ativo=True).order_by("-criado_em")
     continentes = list(
         base_qs.values_list("continente", flat=True).distinct().order_by("continente")
     )
@@ -399,6 +445,7 @@ def build_operational_notifications(*, user, empresa=None, cliente=None, limit=6
         dias = max((conta.validade - now_date).days, 0)
         notifications.append(
             _build_notification_item(
+                key=f"clube_vencendo:{conta.id}:{conta.validade.isoformat()}",
                 title="Clube prestes a vencer",
                 description=f"{_get_conta_titular(conta)} em {conta.programa.nome} vence em {dias} dia(s)",
                 badge_label="ALERTA",
@@ -422,6 +469,7 @@ def build_operational_notifications(*, user, empresa=None, cliente=None, limit=6
         dias = (cotacao.validade - now_date).days
         notifications.append(
             _build_notification_item(
+                key=f"cotacao_vencendo:{cotacao.id}:{cotacao.validade.isoformat()}:{cotacao.status}",
                 title="Cotacao vencendo",
                 description=f"{_get_cotacao_titular(cotacao)} precisa de retorno para {cotacao.origem or '-'} -> {cotacao.destino or '-'}",
                 badge_label="ALERTA" if dias <= 1 else "INFO",
@@ -436,6 +484,7 @@ def build_operational_notifications(*, user, empresa=None, cliente=None, limit=6
     for cotacao in pendentes_emissao:
         notifications.append(
             _build_notification_item(
+                key=f"emissao_pendente:{cotacao.id}:{cotacao.status}",
                 title="Emissao pendente",
                 description=f"{_get_cotacao_titular(cotacao)} aguarda confirmacao para {cotacao.origem or '-'} -> {cotacao.destino or '-'}",
                 badge_label="ALERTA",
@@ -459,6 +508,7 @@ def build_operational_notifications(*, user, empresa=None, cliente=None, limit=6
         destino = getattr(emissao.aeroporto_destino, "sigla", "-")
         notifications.append(
             _build_notification_item(
+                key=f"voo_proximo:{emissao.id}:{emissao.data_ida.isoformat()}:{bool(emissao.localizador)}",
                 title="Passageiro quase voando",
                 description=f"{_get_titular_name(emissao)} embarca em {origem} -> {destino}",
                 badge_label="SUCESSO" if emissao.localizador else "ALERTA",
@@ -469,11 +519,40 @@ def build_operational_notifications(*, user, empresa=None, cliente=None, limit=6
             )
         )
 
+    recent_matches = InteresseViagemMatch.objects.select_related(
+        "interesse__cliente__usuario",
+        "interesse__cliente__empresa",
+        "alerta",
+    ).order_by("-criado_em")
+    if cliente:
+        recent_matches = recent_matches.filter(interesse__cliente=cliente)
+    elif empresa:
+        recent_matches = recent_matches.filter(interesse__cliente__empresa=empresa)
+    for match in recent_matches[:3]:
+        alerta = match.alerta
+        if not alerta.deve_aparecer_na_vitrine():
+            continue
+        titular = str(match.interesse.cliente)
+        destino_label = alerta.cidade_destino or alerta.destino or "destino"
+        notifications.append(
+            _build_notification_item(
+                key=f"match_alerta:{match.id}",
+                title="Match de alerta com interesse",
+                description=f"{titular} tem interesse compatível com novo alerta para {destino_label}",
+                badge_label="INFO",
+                badge_tone="info",
+                time_label=_format_notification_time(match.criado_em, now=now),
+                url=alertas_url,
+                tone="purple",
+            )
+        )
+
     for conta in contas_qs[:20]:
         saldo = getattr(conta.conta_saldo(), "saldo_pontos", 0) or 0
         if saldo and saldo < 10000:
             notifications.append(
                 _build_notification_item(
+                    key=f"saldo_baixo:{conta.id}:{saldo}",
                     title="Saldo baixo",
                     description=f"{_get_conta_titular(conta)} em {conta.programa.nome} esta com {saldo} pontos",
                     badge_label="INFO",
@@ -485,12 +564,22 @@ def build_operational_notifications(*, user, empresa=None, cliente=None, limit=6
             )
             break
 
-    alerta_recente = AlertaViagem.objects.filter(ativo=True).order_by("-criado_em").first()
+    visible_alert_ids = _visible_alert_ids(AlertaViagem.objects.filter(ativo=True))
+    alerta_recente = (
+        AlertaViagem.objects.filter(
+            id__in=visible_alert_ids,
+            ativo=True,
+            criado_em__gte=now - timedelta(days=1),
+        )
+        .order_by("-criado_em")
+        .first()
+    )
     if alerta_recente:
         notifications.append(
             _build_notification_item(
-                title="Alerta de passagem ativo",
-                description=f"{alerta_recente.origem} -> {alerta_recente.destino} em {alerta_recente.programa_fidelidade} segue monitorado",
+                key=f"alerta_recente:{alerta_recente.id}",
+                title="Novo alerta de passagem",
+                description=f"{alerta_recente.origem} -> {alerta_recente.destino} em {alerta_recente.programa_fidelidade} entrou na vitrine",
                 badge_label="INFO",
                 badge_tone="info",
                 time_label=_format_notification_time(alerta_recente.criado_em, now=now),
@@ -499,7 +588,14 @@ def build_operational_notifications(*, user, empresa=None, cliente=None, limit=6
             )
         )
 
-    return notifications[:limit]
+    read_keys = _get_read_notification_keys(user)
+    unread_notifications = [
+        notification
+        for notification in notifications
+        if notification.get("key") not in read_keys
+    ]
+
+    return unread_notifications[:limit]
 
 
 def _parse_date(value, fallback):
@@ -628,10 +724,24 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
             Q(cliente__empresa=empresa) | Q(conta_administrada__empresa=empresa)
         )
 
+    accessible_emissoes = emissoes_qs
+    if empresa:
+        accessible_emissoes = accessible_emissoes.filter(
+            Q(cliente__empresa=empresa) | Q(conta_administrada__empresa=empresa)
+        )
+
     available_emissores = EmissorParceiro.objects.filter(ativo=True)
     available_clientes = Cliente.objects.filter(perfil="cliente", ativo=True)
-    available_companhias = CompanhiaAerea.objects.all()
-    available_programas = ProgramaFidelidade.objects.all()
+    available_companhias = CompanhiaAerea.objects.filter(
+        id__in=accessible_emissoes.exclude(companhia_aerea_id__isnull=True)
+        .values_list("companhia_aerea_id", flat=True)
+        .distinct()
+    )
+    available_programas = ProgramaFidelidade.objects.filter(
+        id__in=accessible_emissoes.exclude(programa_id__isnull=True)
+        .values_list("programa_id", flat=True)
+        .distinct()
+    )
     available_contas = ContaAdministrada.objects.filter(ativo=True)
     if empresa:
         available_emissores = available_emissores.filter(empresa=empresa)
@@ -972,8 +1082,8 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
     ])
     emission_channel_mix = _build_donut([
         {"label": "Conta do cliente", "count": channel_stats["Conta do cliente"], "color": "#ff8d4d"},
-        {"label": "Conta administrada", "count": channel_stats["Conta administrada"], "color": "#8b5cf6"},
-        {"label": "Emissor parceiro", "count": channel_stats["Emissor parceiro"], "color": "#36cfc9"},
+        {"label": "Conta administrada", "count": channel_stats["Conta administrada"], "color": "#f5a623"},
+        {"label": "Emissor parceiro", "count": channel_stats["Emissor parceiro"], "color": "#ff8b5f"},
     ])
 
     if not margin_alerts:
@@ -1066,6 +1176,9 @@ def build_operational_dashboard_context(
     selected_pais=None,
     selected_cidade=None,
 ):
+    if empresa is None and not user.is_superuser:
+        empresa = getattr(getattr(user, "cliente_gestao", None), "empresa", None)
+
     perfil = "cliente"
     if user.is_superuser:
         perfil = "superadmin"
@@ -1104,6 +1217,8 @@ def build_operational_dashboard_context(
             clientes_qs = clientes_qs.filter(empresa=empresa)
         total_clientes = clientes_qs.count()
 
+    visible_alerts_count = len(_visible_alert_ids(AlertaViagem.objects.filter(ativo=True)))
+
     resumo_cards = [
         {
             "titulo": "Total de Clientes",
@@ -1121,8 +1236,8 @@ def build_operational_dashboard_context(
             "descricao": "Economia acumulada",
         },
         {
-            "titulo": "Alertas Ativos",
-            "valor": AlertaViagem.objects.filter(ativo=True).count(),
+            "titulo": "Alertas na vitrine",
+            "valor": visible_alerts_count,
             "descricao": "Oportunidades disponíveis",
         },
     ]
@@ -1149,7 +1264,7 @@ def build_operational_dashboard_context(
             "classe": alerta.get_classe_display(),
             "programa": alerta.programa_fidelidade,
             "valor_milhas": alerta.valor_milhas or 0,
-            "status": "Ativo" if alerta.ativo else "Inativo",
+            "status": "Visivel" if alerta.deve_aparecer_na_vitrine() else "Oculto",
             "datas_resumo": _format_datas_resumo(alerta.datas_ida, alerta.datas_volta),
         }
         for alerta in alertas

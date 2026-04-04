@@ -12,6 +12,7 @@ import re
 import textwrap
 from typing import Any
 import unicodedata
+from uuid import uuid4
 from urllib.request import Request, urlopen
 
 from django.core.files.base import ContentFile
@@ -21,10 +22,13 @@ from django.utils import timezone
 
 
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
-DEFAULT_NEWS_MODEL = os.environ.get("OPENAI_NEWS_MODEL", "gpt-4.1-mini")
-DEFAULT_IMAGE_MODEL = os.environ.get("OPENAI_NEWS_IMAGE_MODEL", "gpt-image-1")
+OPENAI_IMAGES_GENERATIONS_URL = "https://api.openai.com/v1/images/generations"
+OPENAI_IMAGES_EDITS_URL = "https://api.openai.com/v1/images/edits"
+DEFAULT_NEWS_MODEL = os.environ.get("OPENAI_NEWS_MODEL", "gpt-5.4")
+DEFAULT_IMAGE_MODEL = os.environ.get("OPENAI_NEWS_IMAGE_MODEL", "gpt-image-1.5")
 DEFAULT_CONFIDENCE_THRESHOLD = Decimal(os.environ.get("PORTAL_NEWS_CONFIDENCE_THRESHOLD", "0.70"))
-ENABLE_AI_IMAGES = os.environ.get("PORTAL_GENERATE_AI_IMAGES", "0").lower() in {"1", "true", "yes", "on"}
+PUBLIC_SITE_FOR_BOT = (os.environ.get("SITE_BASE_URL") or "https://ncfly.com.br").strip().rstrip("/") or "https://ncfly.com.br"
+DEFAULT_BOT_USER_AGENT = f"Mozilla/5.0 (compatible; NCFlyBot/1.0; +{PUBLIC_SITE_FOR_BOT})"
 
 TOPIC_RULES = {
     "Milhas e Pontos": {
@@ -235,19 +239,30 @@ class NewsDraft:
     cta_label: str
     slug: str
     confianca: Decimal
+    seo_title: str = ""
+    meta_description: str = ""
     imagem_url: str = ""
     imagem_ilustrativa: bool = False
     imagem_prompt: str = ""
     metadata: dict[str, Any] | None = None
 
 
-def _openai_request(payload: dict) -> dict:
+def _env_flag(name: str, default: str = "0") -> bool:
+    return os.environ.get(name, default).lower() in {"1", "true", "yes", "on"}
+
+
+def _get_openai_api_key() -> str:
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         raise RuntimeError("OPENAI_API_KEY nao configurada.")
+    return api_key
+
+
+def _openai_json_request(url: str, payload: dict) -> dict:
+    api_key = _get_openai_api_key()
     data = json.dumps(payload).encode("utf-8")
     request = Request(
-        OPENAI_RESPONSES_URL,
+        url,
         data=data,
         headers={
             "Authorization": f"Bearer {api_key}",
@@ -257,6 +272,10 @@ def _openai_request(payload: dict) -> dict:
     )
     with urlopen(request, timeout=60) as response:
         return json.loads(response.read().decode("utf-8"))
+
+
+def _openai_request(payload: dict) -> dict:
+    return _openai_json_request(OPENAI_RESPONSES_URL, payload)
 
 
 def _extract_response_text(response_json: dict) -> str:
@@ -414,11 +433,185 @@ def _clean_generated_text(value: str) -> str:
 
 def _build_cover_prompt(title: str, summary: str, category: str) -> str:
     return (
-        f"Capa editorial ilustrativa para uma noticia de {category}. "
+        f"Capa editorial premium para uma noticia de {category}. "
         f"Tema principal: {title}. "
         f"Contexto: {summary[:220]}. "
-        "Estilo premium, moderno, sofisticado, jornalistico, sem texto, sem logos de terceiros, sem marcas d'agua."
+        "A imagem deve manter a mesma ideia editorial central da materia, com os mesmos produtos, marcas, programas, companhias, cartoes, aeronaves ou destinos quando eles forem parte essencial da noticia. "
+        "Pode mostrar logos, marcas e produtos reais de forma contextual e jornalistica, se isso fizer sentido para o tema. "
+        "Mas a composicao final precisa ser uma nova variacao visual, nao uma copia da capa vista no site de referencia. "
+        "Altere enquadramento, perspectiva, crop, distribuicao dos elementos, distancia da camera, profundidade, proporcao entre objetos, luz, textura e pequenos detalhes visuais. "
+        "O resultado pode lembrar a mesma campanha ou assunto, mas nao deve reproduzir exatamente a arte promocional original. "
+        "Visual sofisticado, limpo, com cara de capa de portal premium. Sem texto, sem marcas d'agua, sem interface, sem branding do site-fonte."
     )
+
+
+def _build_cover_reference_prompt(title: str, summary: str, category: str) -> str:
+    return (
+        f"Edite a imagem de referencia para criar uma nova capa editorial premium de {category}. "
+        f"Tema principal: {title}. "
+        f"Contexto: {summary[:220]}. "
+        "Mantenha a mesma ideia central, os mesmos produtos, marcas, programas, companhias, cartoes, aeronaves ou destinos que forem relevantes na materia. "
+        "A nova capa deve continuar reconhecivel em relacao ao tema original, mas com alteracoes controladas no enquadramento, crop, perspectiva, organizacao dos elementos, luz, profundidade, textura e pequenos detalhes. "
+        "Nao copie a arte exatamente como esta. Gere uma variacao editorial refinada e propria, como se fosse uma nova versao da mesma campanha ou assunto. "
+        "Sem texto adicional, sem marcas d'agua, sem interface, sem branding do site-fonte."
+    )
+
+
+def _guess_image_mime_type(image_url: str, content_type: str = "") -> str:
+    normalized_content_type = (content_type or "").split(";", 1)[0].strip().lower()
+    if normalized_content_type.startswith("image/"):
+        return normalized_content_type
+    lowered = (image_url or "").lower()
+    if lowered.endswith(".png"):
+        return "image/png"
+    if lowered.endswith(".webp"):
+        return "image/webp"
+    if lowered.endswith(".gif"):
+        return "image/gif"
+    return "image/jpeg"
+
+
+def _build_reference_image_data_url(image_url: str) -> str:
+    request = Request(
+        image_url,
+        headers={
+            "User-Agent": DEFAULT_BOT_USER_AGENT,
+            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        },
+    )
+    with urlopen(request, timeout=30) as response:
+        image_bytes = response.read()
+        content_type = getattr(response, "headers", {}).get("Content-Type", "")
+    mime_type = _guess_image_mime_type(image_url, content_type)
+    encoded = base64.b64encode(image_bytes).decode("ascii")
+    return f"data:{mime_type};base64,{encoded}"
+
+
+def _download_reference_image(image_url: str) -> tuple[bytes, str]:
+    request = Request(
+        image_url,
+        headers={
+            "User-Agent": DEFAULT_BOT_USER_AGENT,
+            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        },
+    )
+    with urlopen(request, timeout=30) as response:
+        image_bytes = response.read()
+        content_type = getattr(response, "headers", {}).get("Content-Type", "")
+    mime_type = _guess_image_mime_type(image_url, content_type)
+    return image_bytes, mime_type
+
+
+def _mime_type_to_extension(mime_type: str) -> str:
+    mapping = {
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "image/webp": "webp",
+    }
+    return mapping.get((mime_type or "").lower(), "jpg")
+
+
+def _build_multipart_form_data(
+    fields: list[tuple[str, str]],
+    files: list[tuple[str, str, bytes, str]],
+) -> tuple[bytes, str]:
+    boundary = f"----NCFlyBoundary{uuid4().hex}"
+    chunks: list[bytes] = []
+
+    for name, value in fields:
+        chunks.extend(
+            [
+                f"--{boundary}\r\n".encode("utf-8"),
+                f'Content-Disposition: form-data; name="{name}"\r\n\r\n'.encode("utf-8"),
+                str(value).encode("utf-8"),
+                b"\r\n",
+            ]
+        )
+
+    for field_name, filename, file_bytes, mime_type in files:
+        chunks.extend(
+            [
+                f"--{boundary}\r\n".encode("utf-8"),
+                (
+                    f'Content-Disposition: form-data; name="{field_name}"; '
+                    f'filename="{filename}"\r\n'
+                ).encode("utf-8"),
+                f"Content-Type: {mime_type}\r\n\r\n".encode("utf-8"),
+                file_bytes,
+                b"\r\n",
+            ]
+        )
+
+    chunks.append(f"--{boundary}--\r\n".encode("utf-8"))
+    return b"".join(chunks), boundary
+
+
+def _openai_multipart_request(url: str, fields: list[tuple[str, str]], files: list[tuple[str, str, bytes, str]]) -> dict:
+    api_key = _get_openai_api_key()
+    body, boundary = _build_multipart_form_data(fields, files)
+    request = Request(
+        url,
+        data=body,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+        },
+        method="POST",
+    )
+    with urlopen(request, timeout=120) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def _openai_image_generation_request(prompt: str) -> dict:
+    payload = {
+        "model": DEFAULT_IMAGE_MODEL,
+        "prompt": prompt,
+        "size": "1536x1024",
+        "quality": "medium",
+    }
+    return _openai_json_request(OPENAI_IMAGES_GENERATIONS_URL, payload)
+
+
+def _openai_image_edit_request(prompt: str, reference_image_url: str) -> dict:
+    image_bytes, mime_type = _download_reference_image(reference_image_url)
+    if mime_type not in {"image/jpeg", "image/png", "image/webp"}:
+        raise ValueError(f"Tipo de imagem de referencia nao suportado para edicao: {mime_type}")
+
+    fields = [
+        ("model", DEFAULT_IMAGE_MODEL),
+        ("prompt", prompt),
+        ("size", "1536x1024"),
+        ("quality", "medium"),
+    ]
+    files = [
+        (
+            "image",
+            f"reference.{_mime_type_to_extension(mime_type)}",
+            image_bytes,
+            mime_type,
+        )
+    ]
+    return _openai_multipart_request(OPENAI_IMAGES_EDITS_URL, fields, files)
+
+
+def _extract_generated_image_bytes(response_json: dict) -> bytes | None:
+    data = response_json.get("data") or []
+    if not data:
+        return None
+
+    first = data[0] or {}
+    if first.get("b64_json"):
+        return base64.b64decode(first["b64_json"])
+
+    if first.get("url"):
+        request = Request(
+            first["url"],
+            headers={"User-Agent": DEFAULT_BOT_USER_AGENT},
+        )
+        with urlopen(request, timeout=60) as response:
+            return response.read()
+
+    return None
 
 
 def _normalize_cta(url: str, label: str, outbound_links: list[dict] | None) -> tuple[str, str]:
@@ -453,6 +646,23 @@ def _normalize_confidence(value: Decimal | str | float | int | None) -> Decimal:
     return confidence.quantize(Decimal("0.01"))
 
 
+def _truncate_clean_text(value: str, limit: int) -> str:
+    cleaned = " ".join(_repair_text_artifacts(value or "").split()).strip()
+    if len(cleaned) <= limit:
+        return cleaned
+    clipped = cleaned[:limit].rsplit(" ", 1)[0].strip()
+    return clipped or cleaned[:limit].strip()
+
+
+def _normalize_seo_title(title: str, seo_title: str = "") -> str:
+    return _truncate_clean_text(seo_title or title, 68)
+
+
+def _normalize_meta_description(summary: str, content: str, meta_description: str = "") -> str:
+    base = meta_description or summary or content
+    return _truncate_clean_text(base, 158)
+
+
 def _apply_quality_rules(draft: NewsDraft, raw_article: dict) -> NewsDraft:
     titulo = " ".join(_repair_text_artifacts(draft.titulo or raw_article.get("titulo_extraido") or "").split()).strip()
     resumo = " ".join(_repair_text_artifacts(draft.resumo or raw_article.get("resumo_base") or "").split()).strip()
@@ -469,6 +679,8 @@ def _apply_quality_rules(draft: NewsDraft, raw_article: dict) -> NewsDraft:
     cta_url, cta_label = _normalize_cta(draft.cta_url, draft.cta_label, raw_article.get("outbound_links"))
     slug = (draft.slug or slugify(titulo))[:220]
     confianca = _normalize_confidence(draft.confianca or "0.40")
+    seo_title = _normalize_seo_title(titulo, draft.seo_title)
+    meta_description = _normalize_meta_description(resumo, conteudo, draft.meta_description)
     quality_flags: list[str] = []
 
     if len(titulo) < 18:
@@ -492,6 +704,11 @@ def _apply_quality_rules(draft: NewsDraft, raw_article: dict) -> NewsDraft:
         "topico": topico,
         "tags": tags,
     }
+    metadata["seo"] = {
+        "title": seo_title,
+        "meta_description": meta_description,
+        "keywords": tags,
+    }
     if cta_url:
         metadata["offer_cta"] = {
             "url": cta_url,
@@ -511,6 +728,8 @@ def _apply_quality_rules(draft: NewsDraft, raw_article: dict) -> NewsDraft:
         cta_label=cta_label,
         slug=slug,
         confianca=confianca,
+        seo_title=seo_title,
+        meta_description=meta_description,
         imagem_url=draft.imagem_url,
         imagem_ilustrativa=draft.imagem_ilustrativa,
         imagem_prompt=draft.imagem_prompt or _build_cover_prompt(titulo, resumo, categoria),
@@ -528,15 +747,25 @@ def _rewrite_with_openai_schema(source_name: str, raw_article: dict) -> NewsDraf
                     {
                         "type": "input_text",
                         "text": (
-                            "Voce e editor chefe senior de um portal premium de milhas, cartoes e viagens em portugues do Brasil. "
-                            "Reescreva a materia como um jornalista profissional, com narrativa clara, contexto util e linguagem editorial premium. "
-                            "Nao invente fatos. Se um dado nao estiver claro, omita. "
-                            "Preserve com exatidao porcentagens, datas, prazos, programas, aeroportos, companhias, valores e condicoes quando estiverem na fonte. "
-                            "Se houver promocao com prazo, destaque isso no resumo ou no corpo de forma natural. "
-                            "Nao exponha a fonte no corpo do texto. "
-                            "Classifique a noticia em uma categoria canonica do portal e em um topico editorial interno. "
-                            "Se houver links externos relevantes de promocao ou acao oficial, escolha o melhor CTA e retorne esse link. "
-                            "Nunca use links de redes sociais, compartilhamento ou navegacao."
+                            "Você é editor-chefe sênior de um portal premium de milhas, cartões e viagens em português do Brasil. "
+                            "Reescreva a matéria como um jornalista profissional de alto nível, com texto completo, preciso, elegante e útil para o leitor. "
+                            "Entregue uma narrativa madura, clara e informativa, com abertura forte, contexto, desdobramentos práticos e fechamento objetivo. "
+                            "Prefira de 4 a 7 parágrafos bem escritos quando o material permitir, sem enrolação e sem tom robótico. "
+                            "Não invente fatos. Se um dado não estiver claro, omita. "
+                            "Preserve com exatidão porcentagens, datas, prazos, programas, aeroportos, companhias, valores e condições quando estiverem na fonte. "
+                            "Se houver promoção com prazo, destaque isso no resumo ou no corpo de forma natural. "
+                            "Se houver regra, restrição, público elegível, limite de uso ou observação importante, inclua isso de forma editorial. "
+                            "Destaque o que muda na prática para o leitor e, quando houver, o valor real da oportunidade ou do risco. "
+                            "Não exponha a fonte no corpo do texto. "
+                            "Crie também um seo_title claro, forte e natural para busca, sem clickbait exagerado, e uma meta_description objetiva, informativa e com boa intenção de busca em até 160 caracteres. "
+                            "Classifique a notícia em uma categoria canônica do portal e em um tópico editorial interno. "
+                            "Se houver links externos relevantes de promoção ou ação oficial, escolha o melhor CTA e retorne esse link. "
+                            "Nunca use links de redes sociais, compartilhamento ou navegação. "
+                            "Antes de responder, revise todo o texto para garantir ortografia correta, acentuação correta, concordância natural e fluidez real em PT-BR. "
+                            "Corrija qualquer erro de português antes de devolver o JSON final. "
+                            "Ao criar o campo imagem_prompt, descreva uma capa editorial premium que mantenha a mesma ideia central do assunto e possa usar marcas, produtos e companhias reais citadas na noticia. "
+                            "Ela pode lembrar a mesma campanha ou contexto visual, mas precisa mudar enquadramento, composicao, perspectiva, crop, paleta secundaria, luz e pequenos detalhes para não virar cópia da imagem de referência. "
+                            "A imagem precisa parecer uma nova variação editorial do tema, não a mesma arte promocional do site de origem."
                         ),
                     }
                 ],
@@ -600,6 +829,8 @@ def _rewrite_with_openai_schema(source_name: str, raw_article: dict) -> NewsDraf
                         "cta_label": {"type": "string"},
                         "slug": {"type": "string"},
                         "confianca": {"type": "number"},
+                        "seo_title": {"type": "string"},
+                        "meta_description": {"type": "string"},
                         "imagem_prompt": {"type": "string"},
                     },
                     "required": [
@@ -613,6 +844,8 @@ def _rewrite_with_openai_schema(source_name: str, raw_article: dict) -> NewsDraf
                         "cta_label",
                         "slug",
                         "confianca",
+                        "seo_title",
+                        "meta_description",
                         "imagem_prompt",
                     ],
                 },
@@ -633,6 +866,8 @@ def _rewrite_with_openai_schema(source_name: str, raw_article: dict) -> NewsDraf
         cta_label=parsed.get("cta_label") or "",
         slug=(parsed.get("slug") or slugify(parsed.get("titulo") or raw_article["titulo_extraido"]))[:220],
         confianca=Decimal(str(parsed.get("confianca", "0.50"))),
+        seo_title=parsed.get("seo_title") or "",
+        meta_description=parsed.get("meta_description") or "",
         imagem_url=raw_article.get("imagem_url") or "",
         imagem_prompt=parsed.get("imagem_prompt") or "",
         metadata={"provider": "openai_schema", "raw_response": parsed},
@@ -649,11 +884,17 @@ def _rewrite_with_openai(source_name: str, raw_article: dict) -> NewsDraft:
                     {
                         "type": "input_text",
                         "text": (
-                            "Voce reescreve noticias para um portal sobre milhas. "
-                            "Responda em JSON com os campos: titulo, resumo, conteudo, categoria, topico, tags, cta_url, cta_label, slug, confianca, imagem_prompt. "
-                            "Mantenha referencia factual, sem inventar dados. "
-                            "Preserve datas, prazos, percentuais, valores, programas e condicoes exatamente quando existirem. "
-                            "Slug em minusculo com hifens. Confianca vai de 0.0 a 1.0."
+                            "Você reescreve notícias para um portal premium sobre milhas, cartões e viagens. "
+                            "Responda em JSON com os campos: titulo, resumo, conteudo, categoria, topico, tags, cta_url, cta_label, slug, confianca, seo_title, meta_description, imagem_prompt. "
+                            "Mantenha referência factual, sem inventar dados. "
+                            "Escreva como um editor experiente, com narrativa mais completa, contexto prático e boa densidade informativa. "
+                            "Preserve datas, prazos, percentuais, valores, programas e condições exatamente quando existirem. "
+                            "Crie seo_title claro e competitivo para busca, sem clickbait, e meta_description objetiva com boa intenção de busca em até 160 caracteres. "
+                            "Slug em minúsculo com hífens. Confianca vai de 0.0 a 1.0. "
+                            "Antes de responder, revise todo o texto para garantir ortografia correta, acentuação correta, concordância natural e fluidez real em PT-BR. "
+                            "Corrija qualquer erro de português antes de devolver o JSON final. "
+                            "No imagem_prompt, proponha uma capa editorial premium que mantenha a mesma ideia central da noticia e possa usar marcas, produtos e logos reais citados no tema. "
+                            "Não copie a arte da fonte: mude composicao, enquadramento, paleta secundaria, proporcao dos elementos e pequenos detalhes para gerar uma variacao própria."
                         ),
                     }
                 ],
@@ -697,6 +938,8 @@ def _rewrite_with_openai(source_name: str, raw_article: dict) -> NewsDraft:
         cta_label=parsed.get("cta_label") or "",
         slug=(parsed.get("slug") or slugify(parsed.get("titulo") or raw_article["titulo_extraido"]))[:220],
         confianca=Decimal(str(parsed.get("confianca", "0.50"))),
+        seo_title=parsed.get("seo_title") or "",
+        meta_description=parsed.get("meta_description") or "",
         imagem_url=raw_article.get("imagem_url") or "",
         imagem_prompt=parsed.get("imagem_prompt") or "",
         metadata={"provider": "openai", "raw_response": parsed},
@@ -722,6 +965,8 @@ def _fallback_rewrite(raw_article: dict) -> NewsDraft:
         cta_label="",
         slug=slug,
         confianca=confidence,
+        seo_title=title,
+        meta_description=summary,
         imagem_url=raw_article.get("imagem_url") or "",
         imagem_prompt=_build_cover_prompt(title, summary, categoria),
         metadata={"provider": "fallback"},
@@ -747,8 +992,8 @@ def _render_svg_cover(title: str, category: str) -> bytes:
       <defs>
         <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stop-color="#0f172a"/>
-          <stop offset="60%" stop-color="#1d4ed8"/>
-          <stop offset="100%" stop-color="#7c3aed"/>
+          <stop offset="60%" stop-color="#ff6b6b"/>
+          <stop offset="100%" stop-color="#f5a623"/>
         </linearGradient>
       </defs>
       <rect width="1600" height="900" fill="url(#bg)"/>
@@ -767,33 +1012,46 @@ def _save_generated_file(name: str, content: bytes) -> str:
     return storage_path
 
 
-def _generate_ai_cover(prompt: str) -> tuple[str | None, bool]:
+def _generate_ai_cover(prompt: str, reference_image_url: str = "") -> tuple[str | None, bool]:
     try:
-        response_json = _openai_request(
-            {
-                "model": DEFAULT_IMAGE_MODEL,
-                "input": prompt,
-                "tools": [{"type": "image_generation"}],
-            }
-        )
-        for item in response_json.get("output", []) or []:
-            if item.get("type") == "image_generation_call" and item.get("result"):
-                image_bytes = base64.b64decode(item["result"])
-                file_name = f"portal/noticias/generated/{timezone.now():%Y%m%d%H%M%S}_{hashlib.sha1(prompt.encode('utf-8')).hexdigest()[:10]}.png"
-                return _save_generated_file(file_name, image_bytes), True
+        if reference_image_url:
+            try:
+                response_json = _openai_image_edit_request(prompt, reference_image_url)
+            except Exception:
+                response_json = _openai_image_generation_request(prompt)
+        else:
+            response_json = _openai_image_generation_request(prompt)
+
+        image_bytes = _extract_generated_image_bytes(response_json)
+        if image_bytes:
+            file_name = f"portal/noticias/generated/{timezone.now():%Y%m%d%H%M%S}_{hashlib.sha1(prompt.encode('utf-8')).hexdigest()[:10]}.png"
+            return _save_generated_file(file_name, image_bytes), True
     except Exception:
         return None, False
     return None, False
 
 
 def ensure_cover_for_news(draft: NewsDraft) -> tuple[str | None, bool]:
-    if draft.imagem_url:
+    has_source_image = bool(draft.imagem_url)
+    force_original_cover = _env_flag("PORTAL_FORCE_AI_IMAGES")
+    use_source_reference = _env_flag("PORTAL_USE_SOURCE_IMAGE_REFERENCE", "1")
+
+    if has_source_image and not force_original_cover:
         return None, False
-    if ENABLE_AI_IMAGES and os.environ.get("OPENAI_API_KEY"):
+
+    if _env_flag("PORTAL_GENERATE_AI_IMAGES") and os.environ.get("OPENAI_API_KEY"):
         prompt = draft.imagem_prompt or _build_cover_prompt(draft.titulo, draft.resumo, draft.categoria)
-        storage_path, generated = _generate_ai_cover(prompt)
+        reference_prompt = _build_cover_reference_prompt(draft.titulo, draft.resumo, draft.categoria)
+        reference_image_url = draft.imagem_url if has_source_image and force_original_cover and use_source_reference else ""
+        storage_path, generated = _generate_ai_cover(reference_prompt if reference_image_url else prompt, reference_image_url=reference_image_url)
+        if not storage_path and reference_image_url:
+            storage_path, generated = _generate_ai_cover(prompt)
         if storage_path:
             return storage_path, generated
+
+    if has_source_image:
+        return None, False
+
     file_name = f"portal/noticias/generated/{timezone.now():%Y%m%d%H%M%S}_{draft.slug[:50]}.svg"
     return _save_generated_file(file_name, _render_svg_cover(draft.titulo, draft.categoria)), True
 

@@ -1,20 +1,20 @@
 :root {
-  --wizard-bg: #101828;
-  --wizard-surface: #1e2939;
-  --wizard-surface-2: #0f1728;
-  --wizard-border: #364153;
-  --wizard-border-2: #4b5565;
-  --wizard-text: #ffffff;
-  --wizard-text-soft: #d1d5dc;
-  --wizard-text-muted: #99a1af;
-  --wizard-text-dim: #6a7282;
-  --wizard-primary: #155dfc;
-  --wizard-success: #00c950;
+  --wizard-bg: #f4f7fb;
+  --wizard-surface: #ffffff;
+  --wizard-surface-2: #f8fafc;
+  --wizard-border: #dbe3ee;
+  --wizard-border-2: #d2dce8;
+  --wizard-text: #0f1b2d;
+  --wizard-text-soft: #425466;
+  --wizard-text-muted: #708198;
+  --wizard-text-dim: #8c9aae;
+  --wizard-primary: #ff6b6b;
+  --wizard-success: #f5a623;
   --wizard-danger: #ef4444;
-  --wizard-orange: #ff6900;
+  --wizard-orange: #d98c11;
   --wizard-red: #fb2c36;
-  --wizard-blue: #2b7fff;
-  --wizard-purple: #a855f7;
+  --wizard-blue: #ff6b6b;
+  --wizard-purple: #f5a623;
 }
 
 .emission-page {
@@ -62,18 +62,18 @@
 }
 
 .wizard-note {
-  border: 1px solid rgba(59, 130, 246, 0.35);
-  background: rgba(30, 41, 59, 0.92);
+  border: 1px solid rgba(255, 107, 107, 0.22);
+  background: rgba(255, 107, 107, 0.08);
   border-radius: 14px;
   padding: 20px 22px;
-  color: #dbeafe;
+  color: #9f4f4f;
 }
 
 .wizard-note__title {
   margin: 0 0 6px;
   font-size: 16px;
   font-weight: 700;
-  color: #eff6ff;
+  color: var(--wizard-text);
 }
 
 .wizard-note__text {
@@ -173,7 +173,7 @@
 .wizard-stepper__item.is-active .wizard-stepper__dot {
   background: var(--wizard-primary);
   color: #fff;
-  box-shadow: 0 0 0 6px rgba(21, 93, 252, 0.16);
+  box-shadow: 0 0 0 6px rgba(255, 107, 107, 0.16);
 }
 
 .wizard-stepper__item.is-active .wizard-stepper__copy strong,
@@ -319,7 +319,7 @@
 .emission-page textarea:focus {
   outline: none;
   border-color: var(--wizard-primary);
-  box-shadow: 0 0 0 3px rgba(21, 93, 252, 0.18);
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.18);
 }
 
 .choice-grid {
@@ -355,7 +355,7 @@
 
 .choice-card.is-active {
   border-color: var(--wizard-primary);
-  box-shadow: 0 0 0 2px rgba(21, 93, 252, 0.16);
+  box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.16);
 }
 
 .choice-card__icon {
@@ -635,7 +635,7 @@
 }
 
 .passenger-card__badge--adulto {
-  background: rgba(21, 93, 252, 0.22);
+  background: rgba(255, 107, 107, 0.16);
 }
 
 .passenger-card__badge--crianca {

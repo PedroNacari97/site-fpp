@@ -18,9 +18,12 @@
       <h2 class="superadmin-hero__title">Configuracoes institucionais</h2>
       <p class="superadmin-hero__subtitle">Os dados preenchidos aqui alimentam os rodapes de cotacoes, emissoes, PDFs e pontos de contato da empresa dentro da operacao.</p>
     </div>
+    <div class="superadmin-hero__actions">
+      <a href="{% url 'admin_empresa_textos' %}" class="btn btn--outline">Textos de cotacao e emissao</a>
+    </div>
   </section>
 
-  <form method="post" class="superadmin-form">
+  <form method="post" enctype="multipart/form-data" class="superadmin-form">
     {% csrf_token %}
 
     {% if form.non_field_errors %}
@@ -105,6 +108,48 @@
             {% for error in form.descricao_rodape.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
           </div>
         </div>
+
+        <div class="superadmin-card__head superadmin-card__head--spaced">
+          <div>
+            <p class="superadmin-card__eyebrow">Identidade visual</p>
+            <h3 class="superadmin-card__title superadmin-card__title--md">Logo dos documentos</h3>
+          </div>
+        </div>
+
+        <div class="company-brand-card">
+          <div class="company-brand-preview">
+            {% if empresa.logo_documentos_url %}
+            <img src="{{ empresa.logo_documentos_url }}" alt="{{ empresa.nome }}">
+            {% else %}
+            <img src="{% static 'portal/img/ncfly-wordmark.svg' %}" alt="NC Fly">
+            {% endif %}
+          </div>
+
+          <div class="company-brand-copy">
+            <div class="superadmin-field">
+              <label class="superadmin-label" for="{{ form.logo_documentos.id_for_label }}">{{ form.logo_documentos.label }}</label>
+              {{ form.logo_documentos }}
+              <p class="superadmin-helper">Envie um PNG horizontal com fundo transparente. Recomendado 1200x400px e ate 150KB.</p>
+              {% for error in form.logo_documentos.errors %}<div class="superadmin-field__error">{{ error }}</div>{% endfor %}
+            </div>
+
+            {% if empresa.logo_documentos %}
+            <label class="company-brand-checkline" for="{{ form.remover_logo_documentos.id_for_label }}">
+              {{ form.remover_logo_documentos }}
+              <span>Remover a logo atual e voltar para a marca padrao da NC Fly.</span>
+            </label>
+            {% endif %}
+
+            <label class="company-brand-checkline" for="{{ form.ocultar_logo_documentos.id_for_label }}">
+              {{ form.ocultar_logo_documentos }}
+              <span>Ocultar a logo principal nos previews e PDFs.</span>
+            </label>
+
+            <p class="company-brand-note">
+              Se nenhuma logo for enviada, o sistema usa a marca da NC Fly por padrao. Ao usar logo propria ou ocultar a logo principal, a NC Fly pode aparecer como marca d'agua discreta no rodape.
+            </p>
+          </div>
+        </div>
       </section>
 
       <aside class="superadmin-card superadmin-card--sidebar">
@@ -138,6 +183,11 @@
         <div class="superadmin-sidebar-note">
           <span class="superadmin-sidebar-note__label">O que sera atualizado</span>
           <p>Telefone, e-mail e website da empresa passam a aparecer automaticamente nas visualizacoes e PDFs de emissao e cotacao.</p>
+        </div>
+
+        <div class="superadmin-sidebar-note">
+          <span class="superadmin-sidebar-note__label">Textos variaveis</span>
+          <p>Observacoes, orientacoes e descricoes da cotacao e da emissao agora podem ser ajustadas na area "Textos de cotacao e emissao".</p>
         </div>
       </aside>
     </div>

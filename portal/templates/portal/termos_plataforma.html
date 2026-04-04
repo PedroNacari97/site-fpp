@@ -1,0 +1,81 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ seo_title|default:"Termos da Plataforma | NC Fly" }}{% endblock %}
+{% block content %}
+<div class="portal-static-page">
+    <section class="portal-static-page__shell">
+        <header class="portal-static-page__hero">
+            <nav class="portal-static-page__breadcrumbs">
+                <a href="{% url 'login_custom' %}">Login</a>
+                <span>/</span>
+                <span>Termos da Plataforma</span>
+            </nav>
+            <span class="news-pill news-pill--primary">{{ page_eyebrow }}</span>
+            <h1>Termos da Plataforma</h1>
+            <p>{{ page_intro }}</p>
+            {% if documento_versao %}
+                <p class="portal-static-page__updated">Versao {{ documento_versao }}{% if documento_vigencia %} • vigente desde {{ documento_vigencia|br_date_long }}{% endif %}.</p>
+            {% endif %}
+        </header>
+
+        <section class="portal-static-page__section">
+            <h2>1. Objeto</h2>
+            <p>Estes termos regulam especificamente o acesso e o uso da plataforma autenticada da NC Fly, incluindo login, painel, administra&ccedil;&atilde;o, opera&ccedil;&otilde;es internas, controles empresariais, emiss&otilde;es, cota&ccedil;&otilde;es, alertas, auditoria e demais recursos restritos.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>2. Elegibilidade e perfis de acesso</h2>
+            <p>O acesso &agrave; plataforma depende de perfil autorizado, empresa vinculada e credenciais v&aacute;lidas. Cada usu&aacute;rio deve atuar apenas dentro do escopo de permiss&atilde;o que lhe foi concedido. O uso por terceiros n&atilde;o autorizados, o compartilhamento de credenciais e a tentativa de amplia&ccedil;&atilde;o indevida de acesso s&atilde;o proibidos.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>3. Credenciais, sess&atilde;o e seguran&ccedil;a</h2>
+            <ul class="portal-static-page__list">
+                <li>O usu&aacute;rio deve manter confidencialidade sobre senha, c&oacute;digos de verifica&ccedil;&atilde;o, dispositivos e sess&atilde;o.</li>
+                <li>A plataforma pode impor mecanismos adicionais de seguran&ccedil;a, como bloqueio tempor&aacute;rio, expira&ccedil;&atilde;o de sess&atilde;o, autentica&ccedil;&atilde;o adicional e restri&ccedil;&atilde;o por perfil.</li>
+                <li>Suspeitas de incidente, perda de credencial, acesso at&iacute;pico ou uso indevido devem ser comunicadas imediatamente.</li>
+            </ul>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>4. Responsabilidade pelo uso operacional</h2>
+            <p>O usu&aacute;rio autenticado &eacute; respons&aacute;vel pela corre&ccedil;&atilde;o das informa&ccedil;&otilde;es que inserir, alterar, aprovar, publicar ou utilizar na opera&ccedil;&atilde;o, observadas as compet&ecirc;ncias internas da empresa e o escopo do contrato aplic&aacute;vel. Registros operacionais podem gerar efeito em relat&oacute;rios, controles, cota&ccedil;&otilde;es, emiss&otilde;es, alertas, hist&oacute;rico e auditoria.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>5. Dados de terceiros e dever de legitimidade</h2>
+            <p>Ao inserir dados de clientes, passageiros, parceiros ou demais terceiros na plataforma, o usu&aacute;rio declara que atua em contexto leg&iacute;timo, com fundamento contratual, operacional ou legal compat&iacute;vel com a finalidade do sistema. O uso da plataforma n&atilde;o autoriza tratamento indevido, excesso de coleta, compartilhamento n&atilde;o autorizado ou inser&ccedil;&atilde;o de dados em desacordo com a legisla&ccedil;&atilde;o aplic&aacute;vel.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>6. Monitoramento, logs e auditoria</h2>
+            <p>A plataforma pode manter registros de login, a&ccedil;&otilde;es executadas, altera&ccedil;&otilde;es relevantes, tentativas de acesso, eventos de seguran&ccedil;a, aprova&ccedil;&otilde;es e trilhas de auditoria para fins de seguran&ccedil;a, suporte, governan&ccedil;a, investiga&ccedil;&atilde;o e prova.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>7. Restri&ccedil;&otilde;es de uso</h2>
+            <ul class="portal-static-page__list">
+                <li>&Eacute; vedado tentar acessar dados, contas, empresas, fluxos ou registros sem permiss&atilde;o.</li>
+                <li>&Eacute; vedado contornar medidas de seguran&ccedil;a, automatizar de forma abusiva, extrair bases de dados ou explorar vulnerabilidades.</li>
+                <li>&Eacute; vedado utilizar a plataforma para fraude, uso il&iacute;cito, concorr&ecirc;ncia desleal, scraping indevido, engenharia reversa ou atividade incompat&iacute;vel com a finalidade contratada.</li>
+            </ul>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>8. Suspens&atilde;o, bloqueio e encerramento</h2>
+            <p>A NC Fly pode restringir, bloquear ou encerrar acessos quando identificar viola&ccedil;&atilde;o destes termos, risco de seguran&ccedil;a, uso indevido, necessidade t&eacute;cnica, determina&ccedil;&atilde;o legal ou encerramento da rela&ccedil;&atilde;o contratual aplic&aacute;vel, observadas as condi&ccedil;&otilde;es do caso concreto.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>9. Documentos complementares</h2>
+            <p>O uso da plataforma autenticada deve ser interpretado em conjunto com o <a href="{% url 'portal_privacidade_plataforma' %}">Aviso de Privacidade da Plataforma</a>, o <a href="{% url 'portal_dpa_plataforma' %}">DPA / Aditivo de Tratamento de Dados</a>, a <a href="{% url 'portal_seguranca_plataforma' %}">Politica de Seguranca</a>, a <a href="{% url 'portal_privacidade' %}">Pol&iacute;tica de Privacidade do portal p&uacute;blico</a> e, quando aplic&aacute;vel, os contratos e regras operacionais espec&iacute;ficas da rela&ccedil;&atilde;o comercial.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>10. Legisla&ccedil;&atilde;o aplic&aacute;vel</h2>
+            <p>Estes termos devem ser interpretados segundo a legisla&ccedil;&atilde;o brasileira aplic&aacute;vel, especialmente a Lei Geral de Prote&ccedil;&atilde;o de Dados, o Marco Civil da Internet, o C&oacute;digo de Defesa do Consumidor, o Decreto do com&eacute;rcio eletr&ocirc;nico e a disciplina contratual pertinente ao servi&ccedil;o utilizado.</p>
+            <p class="portal-static-page__updated">Atualizado em {{ page_updated_at|br_date_long }}.</p>
+        </section>
+    </section>
+</div>
+{% endblock %}

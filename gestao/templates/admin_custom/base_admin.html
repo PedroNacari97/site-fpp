@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="{% static 'painel_cliente/css/components/buttons.css' %}">
     <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
     <link rel="stylesheet" href="{% static 'gestao/css/admin-theme.css' %}">
+    <link rel="stylesheet" href="{% static 'gestao/css/theme-overrides.css' %}">
     <style>
         .page-shell table, .page-shell .data-table, main table { width: 100%; }
         .page-shell thead tr, main thead tr { background: var(--color-surface-muted); color: var(--color-muted); text-transform: uppercase; font-size: .75rem; }
@@ -32,16 +33,18 @@
     </style>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="admin-body dark-mode h-full font-sans antialiased">
+<body class="admin-body h-full font-sans antialiased" data-default-theme="light">
 <div class="admin-shell">
     <div class="admin-sidebar-overlay" data-sidebar-overlay></div>
 
     <aside class="admin-sidebar" data-sidebar aria-hidden="true">
         <div class="admin-sidebar__head">
-            <a href="{% url 'admin_dashboard' %}" class="admin-sidebar__brand" aria-label="NC Fly">
-                <div class="admin-sidebar__logo"></div>
+            <a href="{% url 'admin_dashboard' %}" class="admin-sidebar__brand" aria-label="{{ app_branding.alt }}">
+                <div class="admin-sidebar__logo">
+                    <img src="{{ app_branding.logo_url }}" alt="{{ app_branding.alt }}">
+                </div>
                 <div class="admin-sidebar__brand-copy">
-                    <span class="admin-sidebar__brand-title">NC Fly</span>
+                    <span class="admin-sidebar__brand-title">{% if app_branding.has_custom_logo %}{{ app_branding.name }}{% else %}NC Fly{% endif %}</span>
                 </div>
             </a>
             <button type="button" class="admin-sidebar__close inline-flex lg:hidden" aria-label="Fechar menu" data-sidebar-close>
@@ -70,6 +73,10 @@
                     <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM21 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
                     <span class="admin-sidebar__label">Usuarios Administrativos</span>
                 </a>
+                <a href="{% url 'admin_site_monitoramento' %}" class="admin-sidebar__link {% if menu_ativo == 'site_monitoramento' %}is-active{% endif %}" data-sidebar-link title="Monitoramento do Site">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10M18 18h2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><circle cx="19" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Site</span>
+                </a>
                 <details class="admin-sidebar__group" {% if menu_ativo == 'aeroportos' or menu_ativo == 'companhias' or menu_ativo == 'programas' %}open{% endif %}>
                     <summary class="admin-sidebar__summary" title="Catalogos">
                         <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
@@ -96,6 +103,10 @@
                 <a href="{% url 'admin_alertas_passagens' %}" class="admin-sidebar__link {% if menu_ativo == 'alertas' %}is-active{% endif %}" data-sidebar-link title="Alertas de Passagens">
                     <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.29 3.86l-7.5 13A1 1 0 0 0 3.65 18h16.7a1 1 0 0 0 .86-1.5l-7.5-13a1 1 0 0 0-1.72 0Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
                     <span class="admin-sidebar__label">Alertas de Passagens</span>
+                </a>
+                <a href="{% url 'admin_governanca_plataforma' %}" class="admin-sidebar__link {% if menu_ativo == 'governanca' %}is-active{% endif %}" data-sidebar-link title="Governanca da Plataforma">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3 8.5-8 10-5-1.5-8-5-8-10V7l8-4ZM9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Governanca</span>
                 </a>
                 <a href="{% url 'admin_auditoria' %}" class="admin-sidebar__link {% if menu_ativo == 'auditoria' %}is-active{% endif %}" data-sidebar-link title="Auditorias">
                     <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V10M12 20V4M18 20v-7M4 20h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
@@ -175,10 +186,25 @@
                 </a>
                 {% with perfil=request.user.cliente_gestao.perfil %}
                     {% if perfil == 'admin' or request.user.is_superuser %}
-                        <a href="{% url 'admin_empresa_configuracoes' %}" class="admin-sidebar__link {% if menu_ativo == 'empresa_config' %}is-active{% endif %}" data-sidebar-link title="Minha Empresa">
-                            <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13M2 20h20M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                            <span class="admin-sidebar__label">Minha Empresa</span>
-                        </a>
+                        <details class="admin-sidebar__group" {% if menu_ativo == 'empresa_config' or menu_ativo == 'empresa_textos' %}open{% endif %}>
+                            <summary class="admin-sidebar__summary" title="Minha Empresa">
+                                <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v13M2 20h20M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                                <span class="admin-sidebar__label">Minha Empresa</span>
+                                <span class="admin-sidebar__summary-caret">
+                                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+                                </span>
+                            </summary>
+                            <div class="admin-sidebar__group-body">
+                                <a href="{% url 'admin_empresa_configuracoes' %}" class="admin-sidebar__sublink {% if menu_ativo == 'empresa_config' %}is-active{% endif %}" data-sidebar-link title="Dados da empresa">
+                                    <span class="admin-sidebar__dot"></span>
+                                    <span class="admin-sidebar__label">Dados da empresa</span>
+                                </a>
+                                <a href="{% url 'admin_empresa_textos' %}" class="admin-sidebar__sublink {% if menu_ativo == 'empresa_textos' %}is-active{% endif %}" data-sidebar-link title="Textos de cotacao e emissao">
+                                    <span class="admin-sidebar__dot"></span>
+                                    <span class="admin-sidebar__label">Textos de cotacao e emissao</span>
+                                </a>
+                            </div>
+                        </details>
                         <a href="{% url 'user_list' %}" class="admin-sidebar__link {% if menu_ativo == 'usuarios' %}is-active{% endif %}" data-sidebar-link title="Usuarios Administrativos">
                             <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM21 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
                             <span class="admin-sidebar__label">Usuários Administrativos</span>
@@ -197,6 +223,12 @@
                 <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
                 <span class="admin-sidebar__label">Logout</span>
             </a>
+            <div class="admin-sidebar__legal">
+                <a href="{% url 'portal_termos_plataforma' %}">Termos da Plataforma</a>
+                <a href="{% url 'portal_privacidade_plataforma' %}">Privacidade da Plataforma</a>
+                <a href="{% url 'portal_dpa_plataforma' %}">DPA da Plataforma</a>
+                <a href="{% url 'portal_seguranca_plataforma' %}">Politica de Seguranca</a>
+            </div>
         </div>
     </aside>
 
@@ -216,20 +248,20 @@
                 </div>
                 <div class="admin-topbar__actions">
                     <div class="hidden flex-wrap items-center gap-2 lg:flex">{% block header_actions %}{% endblock %}</div>
-                    <div class="admin-topbar__notifications" data-notification-root>
+                    <div class="admin-topbar__notifications" data-notification-root data-notification-mark-url="{% url 'admin_marcar_notificacao_lida' %}">
                         <button type="button" class="admin-topbar__icon-button admin-topbar__notification-button" aria-label="Notificações" aria-expanded="false" data-notification-toggle>
                             <svg viewBox="0 0 24 24" aria-hidden="true">
                                 <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0a3 3 0 0 1-6 0m6 0H9" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" />
                             </svg>
                             {% if admin_notifications_unread_count %}
-                                <span class="admin-topbar__notification-badge">{{ admin_notifications_unread_count }}</span>
+                                <span class="admin-topbar__notification-badge" data-notification-badge>{{ admin_notifications_unread_count }}</span>
                             {% endif %}
                         </button>
                         <section class="admin-notifications-panel" data-notification-panel hidden>
                             <div class="admin-notifications-panel__header">
                                 <div>
                                     <h2 class="admin-notifications-panel__title">Notificações</h2>
-                                    <p class="admin-notifications-panel__subtitle">{{ admin_notifications_unread_count }} não lida(s)</p>
+                                    <p class="admin-notifications-panel__subtitle" data-notification-subtitle>{{ admin_notifications_unread_count }} não lida(s)</p>
                                 </div>
                                 <button type="button" class="admin-notifications-panel__close" aria-label="Fechar notificações" data-notification-close>
                                     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -237,27 +269,35 @@
                                     </svg>
                                 </button>
                             </div>
-                            <div class="admin-notifications-panel__list">
+                            <div class="admin-notifications-panel__list" data-notification-list>
                                 {% for item in admin_notifications %}
-                                    <a href="{{ item.url|default:'#' }}" class="admin-notifications-panel__item {% if item.unread %}is-unread{% endif %}">
-                                        <div class="admin-notifications-panel__item-head">
-                                            <div class="admin-notifications-panel__item-title-wrap">
-                                                <span class="admin-notifications-panel__dot"></span>
-                                                <h3 class="admin-notifications-panel__item-title">{{ item.title }}</h3>
+                                    <article class="admin-notifications-panel__item {% if item.unread %}is-unread{% endif %}" data-notification-item data-notification-key="{{ item.key }}">
+                                        <a href="{{ item.url|default:'#' }}" class="admin-notifications-panel__item-link">
+                                            <div class="admin-notifications-panel__item-head">
+                                                <div class="admin-notifications-panel__item-title-wrap">
+                                                    <span class="admin-notifications-panel__dot"></span>
+                                                    <h3 class="admin-notifications-panel__item-title">{{ item.title }}</h3>
+                                                </div>
+                                                <span class="admin-notifications-panel__badge admin-notifications-panel__badge--{{ item.badge_tone }}">{{ item.badge_label }}</span>
                                             </div>
-                                            <span class="admin-notifications-panel__badge admin-notifications-panel__badge--{{ item.badge_tone }}">{{ item.badge_label }}</span>
+                                            <p class="admin-notifications-panel__item-text">{{ item.description }}</p>
+                                            <p class="admin-notifications-panel__item-time">{{ item.time_label }}</p>
+                                        </a>
+                                        <div class="admin-notifications-panel__item-actions">
+                                            {% if item.url %}
+                                                <a href="{{ item.url }}" class="admin-notifications-panel__item-action-link">Abrir</a>
+                                            {% endif %}
+                                            <button type="button" class="admin-notifications-panel__mark-read" data-notification-mark-read>Marcar como lida</button>
                                         </div>
-                                        <p class="admin-notifications-panel__item-text">{{ item.description }}</p>
-                                        <p class="admin-notifications-panel__item-time">{{ item.time_label }}</p>
-                                    </a>
+                                    </article>
                                 {% empty %}
-                                    <div class="admin-notifications-panel__empty">Sem notificações operacionais no momento.</div>
+                                    <div class="admin-notifications-panel__empty" data-notification-empty>Sem notificações operacionais no momento.</div>
                                 {% endfor %}
                             </div>
                             <a href="{% url 'admin_alertas_passagens' %}" class="admin-notifications-panel__footer">Abrir Alertas de Passagens</a>
                         </section>
                     </div>
-                    <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600"></div>
+                    <div class="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[hsl(var(--accent))]"></div>
                     <div class="hidden text-sm md:block">
                         <div class="admin-topbar__user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
                         <div class="admin-topbar__user-role">{% if request.user.is_superuser %}Superusuário{% else %}Operação{% endif %}</div>

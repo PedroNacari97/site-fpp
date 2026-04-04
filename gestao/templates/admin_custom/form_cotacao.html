@@ -13,7 +13,7 @@
     <form method="post" class="emission-form-shell quote-form-shell" novalidate data-is-new="{% if form.instance.pk %}0{% else %}1{% endif %}">
         {% csrf_token %}
 
-        <header class="quote-page-hero">
+        <header class="emission-hero quote-page-hero">
             <div class="quote-page-hero__copy">
                 <div class="quote-page-hero__eyebrow">
                     <span>Nova Cotacao de Voo</span>
@@ -42,9 +42,9 @@
         </div>
         {% endif %}
 
-        <div class="quote-layout">
-            <div class="quote-main">
-                <section class="quote-section-card quote-section-card--client">
+        <div class="wizard-layout quote-layout">
+            <div class="wizard-main quote-main">
+                <section class="wizard-card quote-section-card quote-section-card--client">
                     <header class="quote-section-head quote-section-head--client">
                         <div class="quote-section-head__badge">CL</div>
                         <div>
@@ -66,9 +66,9 @@
                                 <p class="quote-helper">Habilitado apos selecionar o tipo.</p>
                             </div>
                             <div>
-                                <label class="quote-label" for="{{ form.programa.id_for_label }}">Programa de milhas <span class="required-asterisk">*</span></label>
+                                <label class="quote-label" for="{{ form.programa.id_for_label }}">Programa de milhas</label>
                                 {{ form.programa }}
-                                <p class="quote-helper">Programa vinculado ao cliente ou a conta.</p>
+                                <p class="quote-helper">Opcional. Use quando a cotacao ja estiver vinculada a um programa.</p>
                             </div>
                         </div>
 
@@ -84,7 +84,7 @@
                     </div>
                 </section>
 
-                <section class="quote-section-card quote-section-card--flight">
+                <section class="wizard-card quote-section-card quote-section-card--flight">
                     <header class="quote-section-head quote-section-head--flight">
                         <div class="quote-section-head__badge">VO</div>
                         <div>
@@ -164,10 +164,34 @@
                                         <input type="checkbox" id="ida-tem-escala" name="ida_tem_escala">
                                         <span>Possui escala na ida?</span>
                                     </label>
+                                    <label class="quote-toggle" for="ida-tem-fuso">
+                                        <input type="checkbox" id="ida-tem-fuso">
+                                        <span>Existe diferenca de fuso na ida?</span>
+                                    </label>
                                     <label class="quote-toggle" for="possui-volta">
                                         <input type="checkbox" id="possui-volta">
                                         <span>Possui voo de volta?</span>
                                     </label>
+                                </div>
+                            </div>
+
+                            <div class="quote-grid quote-grid--three">
+                                <div>
+                                    <label class="quote-label" for="{{ form.duracao_voo_ida_minutos.id_for_label }}">Tempo de voo da ida</label>
+                                    {{ form.duracao_voo_ida_minutos }}
+                                    <p class="quote-helper">Use HH:MM para calcular automaticamente o horario de chegada.</p>
+                                </div>
+                                <div id="ida-fuso-wrapper" class="quote-field-collapsible">
+                                    <label class="quote-label" for="{{ form.fuso_horario_ida.id_for_label }}">Diferenca de fuso da ida</label>
+                                    {{ form.fuso_horario_ida }}
+                                    <p class="quote-helper">Exemplo: +1 se o destino estiver uma hora a frente.</p>
+                                </div>
+                                <div>
+                                    <label class="quote-label">Chegada prevista</label>
+                                    <div class="quote-arrival-card">
+                                        <strong id="route-preview-arrival-ida">--</strong>
+                                        <small>Calculado com base na partida, duracao e fuso.</small>
+                                    </div>
                                 </div>
                             </div>
 
@@ -204,6 +228,30 @@
                                         <input type="checkbox" id="volta-tem-escala" name="volta_tem_escala">
                                         <span>Possui escala na volta?</span>
                                     </label>
+                                    <label class="quote-toggle" for="volta-tem-fuso">
+                                        <input type="checkbox" id="volta-tem-fuso">
+                                        <span>Existe diferenca de fuso na volta?</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="quote-grid quote-grid--three">
+                                <div>
+                                    <label class="quote-label" for="{{ form.duracao_voo_volta_minutos.id_for_label }}">Tempo de voo da volta</label>
+                                    {{ form.duracao_voo_volta_minutos }}
+                                    <p class="quote-helper">Preencha quando a proposta incluir retorno.</p>
+                                </div>
+                                <div id="volta-fuso-wrapper" class="quote-field-collapsible">
+                                    <label class="quote-label" for="{{ form.fuso_horario_volta.id_for_label }}">Diferenca de fuso da volta</label>
+                                    {{ form.fuso_horario_volta }}
+                                    <p class="quote-helper">Use sinal negativo se o destino voltar no horario local.</p>
+                                </div>
+                                <div>
+                                    <label class="quote-label">Chegada prevista</label>
+                                    <div class="quote-arrival-card">
+                                        <strong id="route-preview-arrival-volta">--</strong>
+                                        <small>Calculado automaticamente quando houver volta.</small>
+                                    </div>
                                 </div>
                             </div>
 
@@ -223,7 +271,7 @@
                     </div>
                 </section>
 
-                <section class="quote-section-card quote-section-card--passengers">
+                <section class="wizard-card quote-section-card quote-section-card--passengers">
                     <header class="quote-section-head quote-section-head--passengers">
                         <div class="quote-section-head__badge">PA</div>
                         <div>
@@ -246,7 +294,7 @@
                     </div>
                 </section>
 
-                <section class="quote-section-card quote-section-card--values">
+                <section class="wizard-card quote-section-card quote-section-card--values">
                     <header class="quote-section-head quote-section-head--values">
                         <div class="quote-section-head__badge">$</div>
                         <div>
@@ -258,10 +306,14 @@
                     <div class="quote-section-card__body quote-section-card__body--stacked">
                         <div class="quote-value-group">
                             <h3 class="quote-value-group__title">Valores base</h3>
+                            <p class="quote-inline-note quote-inline-note--highlight">
+                                Informe os valores por passageiro. Os totais estimados abaixo multiplicam automaticamente pela quantidade de passageiros.
+                            </p>
                             <div class="quote-grid quote-grid--three">
                                 <div>
-                                    <label class="quote-label" for="{{ form.valor_passagem.id_for_label }}">Valor da passagem (R$) <span class="required-asterisk">*</span></label>
+                                    <label class="quote-label" for="{{ form.valor_passagem.id_for_label }}">Valor de referencia (R$) <span class="required-asterisk">*</span></label>
                                     {{ form.valor_passagem }}
+                                    <p class="quote-helper">Use o valor de mercado por pessoa para comparar a proposta.</p>
                                 </div>
                                 <div>
                                     <label class="quote-label" for="{{ form.milhas.id_for_label }}">Pontos / milhas</label>
@@ -278,14 +330,14 @@
                             <h3 class="quote-value-group__title">Taxas e encargos</h3>
                             <div class="quote-grid quote-grid--four">
                                 <div>
-                                    <label class="quote-label" for="{{ form.taxas.id_for_label }}">Taxas (R$) <span class="required-asterisk">*</span></label>
+                                    <label class="quote-label" for="{{ form.taxas.id_for_label }}">Taxa de embarque (R$) <span class="required-asterisk">*</span></label>
                                     {{ form.taxas }}
                                 </div>
-                                <div>
+                                <div id="parcelado-config-wrapper">
                                     <label class="quote-label" for="{{ form.parcelas.id_for_label }}">Parcelas s/ juros</label>
                                     {{ form.parcelas }}
                                 </div>
-                                <div>
+                                <div id="juros-config-wrapper">
                                     <label class="quote-label" for="{{ form.juros.id_for_label }}">Juros (%)</label>
                                     {{ form.juros }}
                                 </div>
@@ -293,25 +345,36 @@
                                     <label class="quote-label" for="{{ form.desconto.id_for_label }}">Desconto (%)</label>
                                     {{ form.desconto }}
                                 </div>
+                                <div class="quote-choice-panel">
+                                    <label class="quote-toggle" for="{{ form.mostrar_valor_parcelado.id_for_label }}">
+                                        {{ form.mostrar_valor_parcelado }}
+                                        <span>Exibir opcao parcelada na proposta</span>
+                                    </label>
+                                    <p class="quote-helper">Se desativar, o visualizar cotacao e o PDF mostrarao apenas o valor a vista.</p>
+                                </div>
                             </div>
                         </div>
 
                         <div class="quote-finance-grid">
                             <div class="quote-finance-card">
-                                <span>Base estimada</span>
+                                <span>Valor encontrado total</span>
                                 <strong id="preview-base">R$ 0,00</strong>
+                                <small id="preview-base-detail">R$ 0,00 por pessoa</small>
                             </div>
-                            <div class="quote-finance-card">
-                                <span>Parcelado estimado</span>
+                            <div class="quote-finance-card" id="preview-parcelado-card">
+                                <span>Parcelado total estimado</span>
                                 <strong id="preview-parcelado">R$ 0,00</strong>
+                                <small id="preview-parcelado-detail">R$ 0,00 por pessoa</small>
                             </div>
                             <div class="quote-finance-card">
-                                <span>A vista estimado</span>
+                                <span>Valor total</span>
                                 <strong id="preview-vista">R$ 0,00</strong>
+                                <small id="preview-vista-detail">R$ 0,00 por pessoa</small>
                             </div>
                             <div class="quote-finance-card">
-                                <span>Economia estimada</span>
+                                <span>Taxa de embarque total</span>
                                 <strong id="preview-economia">R$ 0,00</strong>
+                                <small id="preview-economia-detail">R$ 0,00 por pessoa</small>
                             </div>
                         </div>
 
@@ -338,8 +401,8 @@
                 </section>
             </div>
 
-            <aside class="quote-sidebar">
-                <div class="quote-summary-card">
+            <aside class="wizard-sidebar quote-sidebar">
+                <div class="wizard-sidebar__card quote-summary-card">
                     <header class="quote-summary-card__head">
                         <div class="quote-summary-card__badge">RS</div>
                         <div>
@@ -374,12 +437,13 @@
                         <section class="quote-summary-block">
                             <span class="quote-summary-block__label">Valores</span>
                             <div class="quote-summary-values">
-                                <div><span>Passagem:</span><strong id="summary-valor-passagem">R$ 0,00</strong></div>
-                                <div><span>Taxas:</span><strong id="summary-valor-taxas">R$ 0,00</strong></div>
+                                <div><span>Valor de referencia total:</span><strong id="summary-valor-passagem">R$ 0,00</strong></div>
+                                <div><span>Taxa de embarque total:</span><strong id="summary-valor-taxas">R$ 0,00</strong></div>
                                 <div><span>Milhas:</span><strong id="summary-valor-milhas">0</strong></div>
-                                <div><span>Total:</span><strong id="summary-valor-total" class="quote-summary-values__total">R$ 0,00</strong></div>
+                                <div><span>Valor total:</span><strong id="summary-valor-total" class="quote-summary-values__total">R$ 0,00</strong></div>
                             </div>
                             <p id="resumo-passageiros" class="quote-summary-block__muted">0 passageiro(s)</p>
+                            <p id="resumo-rateio" class="quote-summary-block__muted">Valores por pessoa ainda nao informados.</p>
                         </section>
 
                         <section class="quote-summary-block">
@@ -398,7 +462,7 @@
                         </section>
 
                         <div class="quote-summary-actions">
-                            <button class="btn quote-summary-actions__submit" type="submit">{% if form.instance.pk %}Salvar alteracoes{% else %}Salvar cotacao{% endif %}</button>
+                            <button class="btn btn-primary quote-summary-actions__submit" type="submit">{% if form.instance.pk %}Salvar alteracoes{% else %}Salvar cotacao{% endif %}</button>
                             <a href="{% url 'admin_cotacoes_voo' %}" class="quote-summary-actions__cancel">Cancelar</a>
                         </div>
                     </div>

@@ -11,3 +11,5 @@ from .movimentacoes import *
 from .auditoria import *
 from .empresas import *
 from .alertas import *
+from .governanca import *
+from .site_monitoramento import *

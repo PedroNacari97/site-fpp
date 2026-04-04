@@ -1,0 +1,240 @@
+{% extends "portal/base_public.html" %}
+{% load static portal_extras %}
+{% block title %}{{ seo_title|default:"Solicitar apresenta&ccedil;&atilde;o | Plataforma NC Fly" }}{% endblock %}
+
+{% block extra_scripts %}
+<script defer src="{% static 'portal/js/plataforma_contato.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="portal-lead-page" data-lead-page>
+    <section class="portal-lead-hero">
+        <div class="portal-lead-hero__copy">
+            <span class="news-kicker news-kicker--light">{{ page_eyebrow|portal_text }}</span>
+            <h1>Vamos entender se a plataforma encaixa na sua operação.</h1>
+            <p>{{ page_intro|portal_text }}</p>
+            <ul class="portal-lead-hero__list">
+                {% for item in lead_highlights %}
+                <li>{{ item|portal_text }}</li>
+                {% endfor %}
+            </ul>
+            <div class="portal-lead-hero__actions">
+                <a
+                    href="{% url 'portal_plataforma_saas' %}"
+                    class="portal-button portal-button--light"
+                    data-analytics-event="click_cta_saas"
+                    data-analytics-category="engagement"
+                    data-analytics-label="lead_back_to_saas"
+                    data-analytics-section="saas_contact_hero"
+                >
+                    Ver a plataforma
+                </a>
+                <a
+                    href="#lead-form-card"
+                    class="portal-button portal-button--light-outline"
+                    data-analytics-event="click_cta_saas"
+                    data-analytics-category="conversion"
+                    data-analytics-label="lead_scroll_form"
+                    data-analytics-section="saas_contact_hero"
+                >
+                    Solicitar contato
+                </a>
+            </div>
+        </div>
+        <div class="portal-lead-hero__panel">
+            <article class="portal-lead-hero__panel-card">
+                <small>O que você recebe</small>
+                <strong>Uma conversa comercial objetiva sobre a plataforma e seu encaixe na operação.</strong>
+                <p>Mostramos como a plataforma ajuda a organizar cotações, emissões, clientes, alertas e fidelidade.</p>
+            </article>
+            <div class="portal-lead-hero__panel-grid">
+                {% for benefit in lead_benefits %}
+                <article class="{% if forloop.last %}portal-lead-hero__panel-item portal-lead-hero__panel-item--wide{% else %}portal-lead-hero__panel-item{% endif %}">
+                    <strong>{{ benefit.title|portal_text }}</strong>
+                    <p>{{ benefit.description|portal_text }}</p>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {% if messages %}
+    <section class="portal-lead-messages">
+        {% for message in messages %}
+        <div class="portal-lead-message portal-lead-message--{{ message.tags|default:'info' }}">{{ message }}</div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <section class="portal-lead-grid">
+        <div class="portal-lead-content">
+            <div class="portal-lead-content__block">
+                <span class="news-kicker">Como funciona</span>
+                <h2>Como avaliamos a aderência da sua operação</h2>
+                <div class="portal-lead-steps">
+                    {% for step in lead_steps %}
+                    <article class="portal-lead-step">
+                        <strong>0{{ forloop.counter }}</strong>
+                        <div>
+                            <h3>{{ step.title|portal_text }}</h3>
+                            <p>{{ step.description|portal_text }}</p>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="portal-lead-content__block portal-lead-content__block--soft">
+                <span class="news-kicker">Importante</span>
+                <h2>Esta página é apenas comercial.</h2>
+                <p>{{ lead_acceptance_summary|portal_text }}</p>
+                <p>Ela não cria login automaticamente e serve apenas para iniciar a conversa com a NC Fly.</p>
+            </div>
+        </div>
+
+        <aside class="portal-lead-form-card" id="lead-form-card">
+            <span class="news-kicker">Solicitar apresentação</span>
+            <h2>Conte seu contexto operacional</h2>
+            <p>Com essas informações, a equipe da NC Fly responde com mais contexto e conduz melhor a conversa comercial.</p>
+
+            {% if lead_form.non_field_errors %}
+            <div class="portal-lead-errors">
+                {% for error in lead_form.non_field_errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" class="portal-lead-form" novalidate data-lead-form>
+                {% csrf_token %}
+                {{ lead_form.lead_terms_accept }}
+
+                <div class="portal-lead-form__grid">
+                    <div class="portal-lead-field">
+                        <label for="{{ lead_form.nome_completo.id_for_label }}">{{ lead_form.nome_completo.label }}</label>
+                        {{ lead_form.nome_completo }}
+                        {% if lead_form.nome_completo.errors %}<small>{{ lead_form.nome_completo.errors|join:", " }}</small>{% endif %}
+                    </div>
+                    <div class="portal-lead-field">
+                        <label for="{{ lead_form.empresa.id_for_label }}">{{ lead_form.empresa.label }}</label>
+                        {{ lead_form.empresa }}
+                        {% if lead_form.empresa.errors %}<small>{{ lead_form.empresa.errors|join:", " }}</small>{% endif %}
+                    </div>
+                    <div class="portal-lead-field">
+                        <label for="{{ lead_form.email.id_for_label }}">{{ lead_form.email.label }}</label>
+                        {{ lead_form.email }}
+                        {% if lead_form.email.errors %}<small>{{ lead_form.email.errors|join:", " }}</small>{% endif %}
+                    </div>
+                    <div class="portal-lead-field">
+                        <label for="{{ lead_form.telefone.id_for_label }}">{{ lead_form.telefone.label }}</label>
+                        {{ lead_form.telefone }}
+                        {% if lead_form.telefone.errors %}<small>{{ lead_form.telefone.errors|join:", " }}</small>{% endif %}
+                    </div>
+                    <div class="portal-lead-field">
+                        <label for="{{ lead_form.cargo.id_for_label }}">{{ lead_form.cargo.label }}</label>
+                        {{ lead_form.cargo }}
+                        {% if lead_form.cargo.errors %}<small>{{ lead_form.cargo.errors|join:", " }}</small>{% endif %}
+                    </div>
+                    <div class="portal-lead-field">
+                        <label for="{{ lead_form.equipe_tamanho.id_for_label }}">{{ lead_form.equipe_tamanho.label }}</label>
+                        {{ lead_form.equipe_tamanho }}
+                        {% if lead_form.equipe_tamanho.errors %}<small>{{ lead_form.equipe_tamanho.errors|join:", " }}</small>{% endif %}
+                    </div>
+                </div>
+
+                <div class="portal-lead-field">
+                    <label for="{{ lead_form.mensagem.id_for_label }}">{{ lead_form.mensagem.label }}</label>
+                    {{ lead_form.mensagem }}
+                    {% if lead_form.mensagem.errors %}<small>{{ lead_form.mensagem.errors|join:", " }}</small>{% endif %}
+                </div>
+
+                <div class="portal-lead-consent">
+                    <div>
+                        <strong>Confirmação de contato</strong>
+                        <p data-lead-consent-status>Leitura e aceite pendentes.</p>
+                        {% if lead_form.lead_terms_accept.errors %}
+                        <small>{{ lead_form.lead_terms_accept.errors|join:", " }}</small>
+                        {% endif %}
+                    </div>
+                    <button
+                        type="button"
+                        class="portal-button portal-button--ghost"
+                        data-lead-open-modal
+                        data-analytics-event="click_cta_saas"
+                        data-analytics-category="engagement"
+                        data-analytics-label="open_lead_terms"
+                        data-analytics-section="saas_contact_form"
+                    >
+                        Ler confirmação
+                    </button>
+                </div>
+
+                <button
+                    type="submit"
+                    class="portal-button portal-button--primary portal-lead-form__submit"
+                    data-analytics-event="click_cta_saas"
+                    data-analytics-category="conversion"
+                    data-analytics-label="submit_lead_form"
+                    data-analytics-section="saas_contact_form"
+                >
+                    Solicitar contato
+                </button>
+                <small class="portal-lead-form__note">Esta solicitação não cria login automaticamente.</small>
+            </form>
+        </aside>
+    </section>
+</div>
+
+<div class="portal-lead-modal is-hidden" data-lead-modal aria-hidden="true">
+    <div class="portal-lead-modal__backdrop" data-lead-close></div>
+    <div class="portal-lead-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="portal-lead-modal-title">
+        <div class="portal-lead-modal__header">
+            <div>
+                <span class="news-pill news-pill--primary">Aceite</span>
+                <h2 id="portal-lead-modal-title">Confirmação resumida para solicitar contato</h2>
+            </div>
+            <button type="button" class="portal-icon-button" aria-label="Fechar" data-lead-close data-lead-close-button disabled>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="portal-lead-modal__body" data-lead-scroll-area>
+            <article>
+                <h3>1. Finalidade do contato</h3>
+                <p>Seus dados serão usados pela NC Fly para responder esta solicitação comercial, entender o contexto da sua empresa e apresentar a plataforma de forma adequada ao seu processo.</p>
+            </article>
+            <article>
+                <h3>2. Dados enviados</h3>
+                <p>Seremos capazes de ver os dados que você preencher neste formulário, como nome, empresa, e-mail, telefone, cargo, tamanho da equipe e a mensagem contextual enviada por você.</p>
+            </article>
+            <article>
+                <h3>3. Retorno comercial</h3>
+                <p>A equipe pode entrar em contato por e-mail, telefone, WhatsApp ou outro canal informado por você para seguir com a conversa comercial sobre a plataforma.</p>
+            </article>
+            <article>
+                <h3>4. Privacidade</h3>
+                <p>Os dados desta solicitação não criam acesso à área logada e não são usados para abrir conta automaticamente. Eles ficam vinculados a este pedido de contato e ao fluxo comercial correspondente.</p>
+            </article>
+            <article>
+                <h3>5. Registro do aceite</h3>
+                <p>Versão do termo: {{ lead_consent_version }}. Ao confirmar, a NC Fly registra data e hora do aceite, IP e identificação técnica básica do navegador.</p>
+            </article>
+            <p class="portal-lead-modal__scroll-note" data-lead-scroll-status>Role até o final para liberar o checkbox de aceite.</p>
+        </div>
+        <div class="portal-lead-modal__footer">
+            <label class="portal-lead-modal__checkbox">
+                <input type="checkbox" data-lead-confirm-checkbox disabled>
+                <span>Li o resumo acima e autorizo o contato comercial da NC Fly.</span>
+            </label>
+            <div class="portal-lead-modal__actions">
+                <button type="button" class="portal-button portal-button--primary" data-lead-confirm disabled>Confirmar aceite</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+{% include "portal/partials/saas_footer.html" %}
+{% endblock %}

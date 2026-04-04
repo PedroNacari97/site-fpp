@@ -55,25 +55,25 @@ DISPLAY_LABELS = {
 }
 
 MOJIBAKE_REPLACEMENTS = {
-    "Ã¡": "á",
-    "Ã¢": "â",
-    "Ã£": "ã",
-    "Ã©": "é",
-    "Ãª": "ê",
-    "Ã­": "í",
-    "Ã³": "ó",
-    "Ã´": "ô",
-    "Ãµ": "õ",
-    "Ãº": "ú",
-    "Ã§": "ç",
-    "Ã ": "à",
-    "Â°": "°",
-    "â€¢": "•",
-    "â€“": "–",
-    "â€”": "—",
-    "â€™": "'",
-    "â€œ": '"',
-    "â€": '"',
+    "ÃƒÂ¡": "á",
+    "ÃƒÂ¢": "â",
+    "ÃƒÂ£": "ã",
+    "ÃƒÂ©": "é",
+    "ÃƒÂª": "ê",
+    "ÃƒÂ­": "í",
+    "ÃƒÂ³": "ó",
+    "ÃƒÂ´": "ô",
+    "ÃƒÂµ": "õ",
+    "ÃƒÂº": "ú",
+    "ÃƒÂ§": "ç",
+    "Ãƒ ": "à",
+    "Ã‚Â°": "°",
+    "Ã¢â‚¬Â¢": "•",
+    "Ã¢â‚¬â€œ": "–",
+    "Ã¢â‚¬â€": "—",
+    "Ã¢â‚¬â„¢": "'",
+    "Ã¢â‚¬Å“": '"',
+    "Ã¢â‚¬Â": '"',
 }
 
 WORD_REPLACEMENTS = (
@@ -101,7 +101,7 @@ def _to_local(value):
     return value
 
 
-def _repair_portuguese_text(value):
+def repair_portuguese_text(value):
     text = str(value or "").strip()
     if not text:
         return ""
@@ -119,8 +119,7 @@ def _repair_portuguese_text(value):
             return replacement
 
         text = re.sub(pattern, _replace, text, flags=re.IGNORECASE)
-    text = re.sub(r"\s+", " ", text).strip()
-    return text
+    return re.sub(r"\s+", " ", text).strip()
 
 
 @register.filter
@@ -143,4 +142,4 @@ def br_datetime_short(value):
 
 @register.filter
 def portal_text(value):
-    return _repair_portuguese_text(value)
+    return repair_portuguese_text(value)

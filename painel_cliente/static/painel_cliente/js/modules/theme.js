@@ -1,10 +1,17 @@
-const isLoginPage = () => {
-  const path = window.location.pathname.toLowerCase();
-  return document.body.classList.contains("login-page") || path.includes("login");
-};
-
 const applyTheme = () => {
-  document.body.classList.toggle("dark-mode", !isLoginPage());
+  const explicitTheme = (document.body.dataset.defaultTheme || "").toLowerCase().trim();
+
+  if (explicitTheme === "dark") {
+    document.body.classList.add("dark-mode");
+    return;
+  }
+
+  if (explicitTheme === "light") {
+    document.body.classList.remove("dark-mode");
+    return;
+  }
+
+  document.body.classList.remove("dark-mode");
 };
 
 export const initThemeToggle = () => {

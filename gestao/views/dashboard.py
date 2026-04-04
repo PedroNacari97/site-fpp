@@ -1,4 +1,5 @@
 ﻿from datetime import timedelta
+import json
 from decimal import Decimal
 
 from django.contrib.auth.decorators import login_required
@@ -7,6 +8,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 
 from ..models import (
     Cliente,
@@ -23,12 +25,13 @@ from ..models import (
 from ..services.dashboard import (
     build_operational_dashboard_context,
     build_operational_notifications,
+    mark_operational_notification_as_read,
     _current_management_filters,
     _management_filter_list,
     _management_filter_value,
 )
 from ..value_utils import build_valor_milheiro_map, get_valor_referencia_from_map
-from .permissions import require_admin_or_operator
+from .permissions import get_request_empresa, require_admin_or_operator
 
 
 def _default_metrics(total_titulares):
@@ -53,7 +56,7 @@ def _default_metrics(total_titulares):
     }
 
 
-def build_dashboard_metrics(view_type="clientes", entity_id=None):
+def build_dashboard_metrics(view_type="clientes", entity_id=None, empresa=None):
     clientes_qs = Cliente.objects.filter(perfil="cliente", ativo=True)
     contas_qs = ContaAdministrada.objects.filter(ativo=True)
     parceiros_qs = EmissorParceiro.objects.filter(ativo=True)
@@ -64,6 +67,18 @@ def build_dashboard_metrics(view_type="clientes", entity_id=None):
     emissoes = EmissaoPassagem.objects.all()
     hoteis = EmissaoHotel.objects.all()
     parceiros_cards = []
+
+    if empresa is not None:
+        clientes_qs = clientes_qs.filter(empresa=empresa)
+        contas_qs = contas_qs.filter(empresa=empresa)
+        parceiros_qs = parceiros_qs.filter(empresa=empresa)
+        contas = contas.filter(Q(cliente__empresa=empresa) | Q(conta_administrada__empresa=empresa))
+        emissoes = emissoes.filter(
+            Q(cliente__empresa=empresa)
+            | Q(conta_administrada__empresa=empresa)
+            | Q(emissor_parceiro__empresa=empresa)
+        )
+        hoteis = hoteis.filter(cliente__empresa=empresa)
 
     if view_type == "clientes":
         contas = contas.filter(cliente__perfil="cliente", cliente__ativo=True, conta_administrada__isnull=True)
@@ -496,6 +511,51 @@ def api_dashboard(request):
         return permission_denied
     view_type = request.GET.get("view", "clientes")
     entity_id = request.GET.get("cliente_id") if view_type == "clientes" else request.GET.get("conta_id") if view_type == "contas" else request.GET.get("emissor_id")
-    data = build_dashboard_metrics(view_type, entity_id)
+    data = build_dashboard_metrics(view_type, entity_id, empresa=get_request_empresa(request))
     return JsonResponse(data)
+
+
+@login_required
+@require_POST
+def marcar_notificacao_lida(request):
+    if (permission_denied := require_admin_or_operator(request)):
+        return permission_denied
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"ok": False, "error": "Payload invalido."}, status=400)
+
+    notification_key = (payload.get("key") or "").strip()
+    if not notification_key:
+        return JsonResponse({"ok": False, "error": "Notificacao invalida."}, status=400)
+
+    empresa = get_request_empresa(request)
+    notifications = build_operational_notifications(
+        user=request.user,
+        empresa=empresa,
+        limit=20,
+    )
+    notification = next(
+        (item for item in notifications if item.get("key") == notification_key),
+        None,
+    )
+    if notification is None:
+        return JsonResponse({"ok": False, "error": "Notificacao nao encontrada."}, status=404)
+
+    mark_operational_notification_as_read(
+        user=request.user,
+        key=notification_key,
+        empresa=empresa,
+        notification=notification,
+    )
+
+    unread_count = len(
+        build_operational_notifications(
+            user=request.user,
+            empresa=empresa,
+            limit=20,
+        )
+    )
+    return JsonResponse({"ok": True, "unread_count": unread_count})
 

@@ -1,15 +1,15 @@
 :root {
-  --loyalty-bg: #0f1419;
-  --loyalty-surface: #1a2332;
-  --loyalty-surface-2: #111924;
-  --loyalty-border: #1e2939;
-  --loyalty-border-soft: #364153;
-  --loyalty-text: #ffffff;
-  --loyalty-text-soft: #d1d5dc;
-  --loyalty-text-muted: #99a1af;
-  --loyalty-blue: #155dfc;
-  --loyalty-green: #05df72;
-  --loyalty-yellow: #ffb020;
+  --loyalty-bg: #f4f7fb;
+  --loyalty-surface: #ffffff;
+  --loyalty-surface-2: #f8fafc;
+  --loyalty-border: #dbe3ee;
+  --loyalty-border-soft: #d2dce8;
+  --loyalty-text: #0f1b2d;
+  --loyalty-text-soft: #425466;
+  --loyalty-text-muted: #708198;
+  --loyalty-blue: #ff6b6b;
+  --loyalty-green: #f5a623;
+  --loyalty-yellow: #f5a623;
   --loyalty-red: #ff6467;
 }
 
@@ -92,7 +92,7 @@
 
 .loyalty-accounts__button {
   border: 1px solid var(--loyalty-blue);
-  background: var(--loyalty-blue);
+  background: linear-gradient(135deg, var(--loyalty-blue), var(--loyalty-yellow));
   color: #fff;
 }
 

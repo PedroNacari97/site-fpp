@@ -1,0 +1,367 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Monitoramento do Site{% endblock %}
+{% block header_title %}Monitoramento do Site{% endblock %}
+{% block header_subtitle %}<span>Leitura central do portal publico, leads, noticias, alertas e movimentacao editorial.</span>{% endblock %}
+{% block header_actions %}
+<a href="{% url 'portal_home' %}" class="btn btn--outline btn--sm">Abrir home</a>
+<a href="{% url 'portal_alertas' %}" class="btn btn--outline btn--sm">Abrir alertas</a>
+{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/superadmin_figma.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="superadmin-page">
+  <section class="superadmin-hero">
+    <div>
+      <p class="superadmin-hero__eyebrow">Super Admin</p>
+      <h2 class="superadmin-hero__title">Panorama do site e da captacao</h2>
+      <p class="superadmin-hero__subtitle">Acompanhe trafego first-party, cliques, leads, publicacao de noticias, sincronizacoes editoriais e alertas publicos sem sair da camada global da NC Fly.</p>
+    </div>
+  </section>
+
+  <form method="get" class="superadmin-card superadmin-filter-card">
+    <div class="superadmin-card__head">
+      <div>
+        <p class="superadmin-card__eyebrow">Periodo</p>
+        <h3 class="superadmin-card__title superadmin-card__title--md">Filtro de analise</h3>
+      </div>
+      <span class="superadmin-card__meta">{{ period_label }}</span>
+    </div>
+    <div class="superadmin-filter-grid">
+      <div class="superadmin-field">
+        <label class="superadmin-label" for="id_inicio">Data inicial</label>
+        <input id="id_inicio" type="date" name="inicio" value="{{ period_start }}">
+      </div>
+      <div class="superadmin-field">
+        <label class="superadmin-label" for="id_fim">Data final</label>
+        <input id="id_fim" type="date" name="fim" value="{{ period_end }}">
+      </div>
+      <div class="superadmin-sidebar-note superadmin-sidebar-note--compact">
+        <span class="superadmin-sidebar-note__label">Leitura</span>
+        <p>{{ period_days }} dia(s) selecionados para comparar acessos, cliques, leads e publicacao.</p>
+      </div>
+      <div class="superadmin-form__actions superadmin-form__actions--inline">
+        <a href="{% url 'admin_site_monitoramento' %}" class="btn btn--outline">Limpar</a>
+        <button type="submit" class="btn">Aplicar filtro</button>
+      </div>
+    </div>
+  </form>
+
+  <section class="superadmin-kpis superadmin-kpis--five">
+    {% for item in kpis %}
+      <article class="superadmin-kpi">
+        <span class="superadmin-kpi__label">{{ item.label }}</span>
+        <strong class="superadmin-kpi__value">{{ item.value }}</strong>
+        <p class="superadmin-helper" style="margin-top: 10px;">{{ item.description }}</p>
+      </article>
+    {% endfor %}
+  </section>
+
+  <section class="superadmin-note-grid">
+    {% for item in overview_notes %}
+      <div class="superadmin-sidebar-note">
+        <span class="superadmin-sidebar-note__label">{{ item.label }}</span>
+        <strong class="superadmin-sidebar-note__value">{{ item.value }}</strong>
+        <p>{{ item.description }}</p>
+      </div>
+    {% endfor %}
+  </section>
+
+  <section class="superadmin-grid-two">
+    <article class="superadmin-card">
+      <div class="superadmin-card__head">
+        <div>
+          <p class="superadmin-card__eyebrow">Portal publico</p>
+          <h3 class="superadmin-card__title superadmin-card__title--md">Paginas com mais views</h3>
+        </div>
+        <span class="superadmin-card__meta">{{ top_pages|length }} linha(s)</span>
+      </div>
+      {% if top_pages %}
+        <div class="superadmin-table-wrap">
+          <table class="superadmin-table">
+            <thead>
+              <tr>
+                <th>Pagina</th>
+                <th>Secao</th>
+                <th>Views</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in top_pages %}
+                <tr>
+                  <td>
+                    {% if item.path %}
+                      <a href="{{ item.path }}" class="superadmin-table__link" target="_blank" rel="noopener">{{ item.label }}</a>
+                      <span class="superadmin-table__subcopy">{{ item.path }}</span>
+                    {% else %}
+                      <strong>{{ item.label }}</strong>
+                    {% endif %}
+                  </td>
+                  <td>{{ item.section }}</td>
+                  <td><strong>{{ item.total }}</strong></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="superadmin-empty">Ainda nao ha pageviews first-party dentro do periodo selecionado.</div>
+      {% endif %}
+    </article>
+
+    <article class="superadmin-card">
+      <div class="superadmin-card__head">
+        <div>
+          <p class="superadmin-card__eyebrow">Interacao</p>
+          <h3 class="superadmin-card__title superadmin-card__title--md">Eventos de clique</h3>
+        </div>
+        <span class="superadmin-card__meta">{{ top_clicks|length }} evento(s)</span>
+      </div>
+      {% if top_clicks %}
+        <div class="superadmin-table-wrap">
+          <table class="superadmin-table">
+            <thead>
+              <tr>
+                <th>Evento</th>
+                <th>Secao</th>
+                <th>Cliques</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in top_clicks %}
+                <tr>
+                  <td><strong>{{ item.label }}</strong></td>
+                  <td>{{ item.section }}</td>
+                  <td><strong>{{ item.total }}</strong></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="superadmin-empty">Ainda nao ha eventos de clique registrados neste periodo.</div>
+      {% endif %}
+    </article>
+  </section>
+
+  <section class="superadmin-grid-two">
+    <article class="superadmin-card">
+      <div class="superadmin-card__head">
+        <div>
+          <p class="superadmin-card__eyebrow">Noticias</p>
+          <h3 class="superadmin-card__title superadmin-card__title--md">Materias com mais leitura</h3>
+        </div>
+        <span class="superadmin-card__meta">{{ news_total_all_time }} publicada(s)</span>
+      </div>
+      {% if top_articles %}
+        <div class="superadmin-table-wrap">
+          <table class="superadmin-table">
+            <thead>
+              <tr>
+                <th>Materia</th>
+                <th>Categoria</th>
+                <th>Views</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in top_articles %}
+                <tr>
+                  <td>
+                    <a href="{{ item.url }}" class="superadmin-table__link" target="_blank" rel="noopener">{{ item.title }}</a>
+                    <span class="superadmin-table__subcopy">{{ item.topic }}</span>
+                  </td>
+                  <td>{{ item.category }}</td>
+                  <td><strong>{{ item.total }}</strong></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="superadmin-empty">Sem leituras por noticia no periodo filtrado.</div>
+      {% endif %}
+    </article>
+
+    <article class="superadmin-card">
+      <div class="superadmin-card__head">
+        <div>
+          <p class="superadmin-card__eyebrow">Leads</p>
+          <h3 class="superadmin-card__title superadmin-card__title--md">Status da captacao</h3>
+        </div>
+        <span class="superadmin-card__meta">{{ leads_total_all_time }} lead(s) no total</span>
+      </div>
+      <div class="superadmin-stat-list">
+        {% for item in lead_status_items %}
+          <div class="superadmin-stat-list__item">
+            <div class="superadmin-stat-list__label-wrap">
+              <span class="superadmin-stat-list__label">{{ item.label }}</span>
+            </div>
+            <div class="superadmin-stat-list__value-wrap">
+              <span class="superadmin-tag superadmin-tag--{{ item.tone }}">{{ item.value }}</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="superadmin-card__head superadmin-card__head--spaced">
+        <div>
+          <p class="superadmin-card__eyebrow">Recente</p>
+          <h3 class="superadmin-card__title superadmin-card__title--md">Ultimos interessados</h3>
+        </div>
+        <span class="superadmin-card__meta">{{ recent_leads|length }} registro(s)</span>
+      </div>
+      {% if recent_leads %}
+        <div class="superadmin-table-wrap">
+          <table class="superadmin-table">
+            <thead>
+              <tr>
+                <th>Lead</th>
+                <th>Status</th>
+                <th>Contato</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in recent_leads %}
+                <tr>
+                  <td>
+                    <div class="superadmin-company superadmin-company--compact">
+                      <strong>{{ item.nome_completo }}</strong>
+                      <span>{{ item.empresa|default:"Sem empresa" }}</span>
+                    </div>
+                  </td>
+                  <td><span class="superadmin-tag superadmin-tag--{{ item.status_tone }}">{{ item.status }}</span></td>
+                  <td>
+                    <div class="superadmin-company superadmin-company--compact">
+                      <strong>{{ item.email }}</strong>
+                      <span>{{ item.telefone|default:"Sem telefone" }}</span>
+                    </div>
+                  </td>
+                  <td>{{ item.criado_em|date:"d/m/Y H:i" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="superadmin-empty">Nenhum lead captado ate agora.</div>
+      {% endif %}
+    </article>
+  </section>
+
+  <section class="superadmin-grid-two">
+    <article class="superadmin-card">
+      <div class="superadmin-card__head">
+        <div>
+          <p class="superadmin-card__eyebrow">Editorial</p>
+          <h3 class="superadmin-card__title superadmin-card__title--md">Jobs e publicacoes</h3>
+        </div>
+        <span class="superadmin-card__meta">{{ jobs_total_period }} job(s) no periodo</span>
+      </div>
+      {% if recent_jobs %}
+        <div class="superadmin-table-wrap">
+          <table class="superadmin-table">
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Status</th>
+                <th>Horario</th>
+                <th>Volume</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in recent_jobs %}
+                <tr>
+                  <td><strong>{{ item.job_name }}</strong></td>
+                  <td><span class="superadmin-tag superadmin-tag--{{ item.status_tone }}">{{ item.status }}</span></td>
+                  <td>{{ item.horario|date:"d/m/Y H:i" }}</td>
+                  <td>{{ item.quantidade_processada }} processada(s) / {{ item.quantidade_publicada }} publicada(s)</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="superadmin-empty">Nenhum job editorial registrado.</div>
+      {% endif %}
+
+      <div class="superadmin-card__head superadmin-card__head--spaced">
+        <div>
+          <p class="superadmin-card__eyebrow">Home publica</p>
+          <h3 class="superadmin-card__title superadmin-card__title--md">Noticias mais recentes</h3>
+        </div>
+        <span class="superadmin-card__meta">{{ recent_news|length }} item(ns)</span>
+      </div>
+      {% if recent_news %}
+        <div class="superadmin-table-wrap">
+          <table class="superadmin-table">
+            <thead>
+              <tr>
+                <th>Noticia</th>
+                <th>Categoria</th>
+                <th>Publicada</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in recent_news %}
+                <tr>
+                  <td>
+                    <a href="{{ item.get_absolute_url }}" class="superadmin-table__link" target="_blank" rel="noopener">{{ item.titulo }}</a>
+                    <span class="superadmin-table__subcopy">{{ item.topico|default:"Sem topico" }}</span>
+                  </td>
+                  <td>{{ item.categoria|default:"Sem categoria" }}</td>
+                  <td>{{ item.publicada_em|date:"d/m/Y H:i" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="superadmin-empty">Nenhuma noticia publicada no portal.</div>
+      {% endif %}
+    </article>
+
+    <article class="superadmin-card">
+      <div class="superadmin-card__head">
+        <div>
+          <p class="superadmin-card__eyebrow">Alertas publicos</p>
+          <h3 class="superadmin-card__title superadmin-card__title--md">Situacao atual da vitrine</h3>
+        </div>
+        <span class="superadmin-card__meta">{{ alerts_created_period }} criado(s) no periodo</span>
+      </div>
+      {% if recent_alerts %}
+        <div class="superadmin-table-wrap">
+          <table class="superadmin-table">
+            <thead>
+              <tr>
+                <th>Rota</th>
+                <th>Programa</th>
+                <th>Companhia</th>
+                <th>Criado em</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in recent_alerts %}
+                <tr>
+                  <td>
+                    <a href="{{ item.url }}" class="superadmin-table__link" target="_blank" rel="noopener">{{ item.rota }}</a>
+                    <span class="superadmin-table__subcopy">{{ item.titulo }}</span>
+                  </td>
+                  <td>{{ item.programa }}</td>
+                  <td>{{ item.companhia }}</td>
+                  <td>{{ item.criado_em|date:"d/m/Y H:i" }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="superadmin-empty">Nenhum alerta publico visivel neste momento.</div>
+      {% endif %}
+    </article>
+  </section>
+</div>
+{% endblock %}

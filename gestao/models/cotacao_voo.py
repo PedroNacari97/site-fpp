@@ -39,6 +39,10 @@ class CotacaoVoo(models.Model):
     )
     data_ida = models.DateTimeField()
     data_volta = models.DateTimeField(null=True, blank=True)
+    duracao_voo_ida_minutos = models.PositiveIntegerField(default=0)
+    fuso_horario_ida = models.SmallIntegerField(default=0)
+    duracao_voo_volta_minutos = models.PositiveIntegerField(default=0)
+    fuso_horario_volta = models.SmallIntegerField(default=0)
     programa = models.ForeignKey(
         ProgramaFidelidade, on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -52,6 +56,7 @@ class CotacaoVoo(models.Model):
     parcelas = models.IntegerField(default=1)
     juros = models.DecimalField(max_digits=5, decimal_places=2, default=1.00)
     desconto = models.DecimalField(max_digits=5, decimal_places=2, default=1.00)
+    mostrar_valor_parcelado = models.BooleanField(default=True)
     valor_parcelado = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     valor_vista = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     validade = models.DateField(null=True, blank=True)

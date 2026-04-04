@@ -1,0 +1,57 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ seo_title|default:"Seguranca da Plataforma | NC Fly" }}{% endblock %}
+{% block content %}
+<div class="portal-static-page">
+    <section class="portal-static-page__shell">
+        <header class="portal-static-page__hero">
+            <nav class="portal-static-page__breadcrumbs">
+                <a href="{% url 'login_custom' %}">Login</a>
+                <span>/</span>
+                <span>Seguranca da Plataforma</span>
+            </nav>
+            <span class="news-pill news-pill--primary">{{ page_eyebrow }}</span>
+            <h1>Politica de Seguranca e Uso Aceitavel</h1>
+            <p>{{ page_intro }}</p>
+            {% if documento_versao %}
+                <p class="portal-static-page__updated">Versao {{ documento_versao }}{% if documento_vigencia %} • vigente desde {{ documento_vigencia|br_date_long }}{% endif %}.</p>
+            {% endif %}
+        </header>
+
+        <section class="portal-static-page__section">
+            <h2>1. Principios</h2>
+            <p>A plataforma NC Fly adota principios de minimo privilegio, segregacao por empresa, trilha de auditoria, autenticacao, protecao de sessao, controle de acesso por perfil e medidas razoaveis de seguranca tecnica e administrativa proporcionais ao risco e ao contexto da operacao.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>2. Responsabilidades do usuario autenticado</h2>
+            <ul class="portal-static-page__list">
+                <li>Manter sigilo de senha, codigos de verificacao e dispositivos utilizados no acesso.</li>
+                <li>Evitar compartilhamento de credenciais, contas ou sessoes com terceiros.</li>
+                <li>Registrar somente dados necessarios e agir dentro do perfil autorizado.</li>
+                <li>Comunicar suspeitas de incidente, uso indevido, exposicao de dados ou comportamento anormal.</li>
+            </ul>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>3. Uso vedado</h2>
+            <ul class="portal-static-page__list">
+                <li>Tentar acessar dados, empresas, clientes, contas, emissoes ou cotacoes sem permissao.</li>
+                <li>Executar scraping, automacao abusiva, engenharia reversa, exploracao de vulnerabilidades ou qualquer tentativa de contornar controles de seguranca.</li>
+                <li>Inserir dados falsos, ilicitos, excessivos ou incompatíveis com a finalidade da plataforma.</li>
+            </ul>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>4. Controles operacionais</h2>
+            <p>A plataforma pode aplicar expiracao por inatividade, encerramento de sessao concorrente, MFA em perfis criticos, bloqueio por tentativas excessivas, isolamento por empresa, logs de seguranca, controles de acesso a rotas e outras medidas compativeis com o risco operacional.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>5. Incidentes e resposta</h2>
+            <p>Eventos relevantes podem gerar registro tecnico, trilha de auditoria, notificacao interna, analise de impacto, medidas de contencao e comunicacoes adicionais conforme a criticidade do incidente, a legislacao aplicavel e a relacao contratual entre as partes.</p>
+            <p class="portal-static-page__updated">Atualizado em {{ page_updated_at|br_date_long }}.</p>
+        </section>
+    </section>
+</div>
+{% endblock %}
