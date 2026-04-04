@@ -21,6 +21,7 @@ from ..services.alerta_upsert import create_or_update_alerta
 from ..services.telegram_alertas import (
     get_telegram_alertas_config,
     process_telegram_alert_update,
+    telegram_send_message,
 )
 from .permissions import require_admin_or_operator
 
@@ -546,6 +547,22 @@ def alerta_passagem_detalhe(request, alerta_id):
     )
 
 
+_NEWS_COMMAND_RE = re.compile(r"^atualizar\s*(\d+)?$", re.IGNORECASE)
+
+
+def _parse_news_command(text):
+    match = _NEWS_COMMAND_RE.match((text or "").strip())
+    if match:
+        limit = int(match.group(1)) if match.group(1) else 10
+        return max(1, min(limit, 50))
+    return None
+
+
+def _extract_chat_id(payload):
+    msg = payload.get("message") or payload.get("channel_post") or {}
+    return (msg.get("chat") or {}).get("id")
+
+
 @csrf_exempt
 def telegram_alertas_webhook(request):
     if request.method != "POST":
@@ -562,6 +579,27 @@ def telegram_alertas_webhook(request):
         payload = json.loads(request.body.decode("utf-8") or "{}")
     except Exception:
         return JsonResponse({"ok": False, "error": "invalid_json"}, status=400)
+
+    msg = payload.get("message") or payload.get("channel_post") or {}
+    raw_text = (msg.get("text") or "").strip()
+    chat_id = _extract_chat_id(payload)
+
+    news_limit = _parse_news_command(raw_text)
+    if news_limit is not None:
+        try:
+            from io import StringIO
+            from django.core.management import call_command
+            out = StringIO()
+            call_command("sync_home_news", limit=news_limit, stdout=out)
+            result = out.getvalue().strip() or f"Sync concluido: {news_limit} artigos processados."
+        except Exception as exc:
+            result = f"Erro ao sincronizar noticias: {exc}"
+        if chat_id:
+            try:
+                telegram_send_message(chat_id, result)
+            except Exception:
+                pass
+        return JsonResponse({"ok": True, "outcome": "news_sync", "message": result})
 
     try:
         event, outcome = process_telegram_alert_update(payload)

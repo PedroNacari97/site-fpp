@@ -162,6 +162,18 @@ def telegram_get_updates(limit=20, timeout=0):
     return payload.get("result") or []
 
 
+def telegram_send_message(chat_id, text):
+    import requests
+
+    response = requests.post(
+        build_telegram_api_url("sendMessage"),
+        json={"chat_id": chat_id, "text": text},
+        timeout=10,
+    )
+    response.raise_for_status()
+    return response.json()
+
+
 def telegram_set_webhook(webhook_url):
     import requests
 
