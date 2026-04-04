@@ -4,6 +4,7 @@ import unicodedata
 from django.contrib import messages
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.defaultfilters import slugify
@@ -744,11 +745,20 @@ def _build_article_seo(request, noticia, categoria_slug):
 
 
 def _get_published_news():
-    return list(
+    cached = cache.get("portal_published_news")
+    if cached is not None:
+        return cached
+    result = list(
         NoticiaPublicada.objects.filter(status="published")
         .select_related("fonte")
         .order_by("-publicada_em")
     )
+    cache.set("portal_published_news", result, 180)
+    return result
+
+
+def invalidate_news_cache():
+    cache.delete("portal_published_news")
 
 
 def _filter_news_by_query(noticias, search_query):
@@ -901,6 +911,7 @@ def _build_category_page_context(categoria_slug, selected_topic_slug=""):
 
 
 def home_publica(request):
+    from collections import defaultdict
     search_query = (request.GET.get("q") or "").strip()
     noticias = _filter_news_by_query(_get_published_news(), search_query)
     is_searching = bool(search_query)
@@ -911,6 +922,26 @@ def home_publica(request):
         grade = limited_noticias[:12]
     else:
         grade = limited_noticias[4:10] if len(limited_noticias) > 4 else limited_noticias[1:7]
+
+    # Agrupar noticias por categoria para a home
+    noticias_por_categoria = defaultdict(list)
+    for noticia in noticias:
+        slug = _category_slug_from_label(noticia.categoria)
+        if slug:
+            noticias_por_categoria[slug].append(noticia)
+
+    secoes_categoria = []
+    for slug, config in CATEGORY_CONFIGS.items():
+        arts = noticias_por_categoria.get(slug, [])[:4]
+        if arts:
+            secoes_categoria.append({
+                "slug": slug,
+                "label": config["label"],
+                "card_class": config["card_class"],
+                "icon_variant": config["icon_variant"],
+                "noticias": arts,
+            })
+
     context = {
         "destaque": destaque,
         "alertas_home": alertas_home,
@@ -921,6 +952,7 @@ def home_publica(request):
         "search_query": search_query,
         "is_searching": is_searching,
         "search_results_total": len(noticias),
+        "secoes_categoria": secoes_categoria,
     }
     if is_searching:
         context.update(_build_home_search_seo(request, search_query))

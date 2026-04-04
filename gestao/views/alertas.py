@@ -611,14 +611,33 @@ def telegram_alertas_webhook(request):
 
     news_limit = _parse_news_command(raw_text)
     if news_limit is not None:
+        from portal.services.news_sync_service import sync_news_progressive
+        from portal.views import invalidate_news_cache
+
+        published_count = 0
+
+        def _on_published(noticia):
+            nonlocal published_count
+            published_count += 1
+            if chat_id:
+                try:
+                    url = noticia.get_absolute_url()
+                    telegram_send_message(
+                        chat_id,
+                        f"✅ {published_count}. {noticia.titulo}\n{noticia.categoria}\nhttps://www.ncfly.com.br{url}"
+                    )
+                except Exception:
+                    pass
+
         try:
-            from io import StringIO
-            from django.core.management import call_command
-            out = StringIO()
-            call_command("sync_home_news", limit=news_limit, stdout=out)
-            result = out.getvalue().strip() or f"Sync concluido: {news_limit} artigos processados."
+            processed, published, errors = sync_news_progressive(limit=news_limit, on_published=_on_published)
+            invalidate_news_cache()
+            result = f"Sync concluído: {processed} processadas, {published} publicadas."
+            if errors:
+                result += f" ({len(errors)} erros)"
         except Exception as exc:
-            result = f"Erro ao sincronizar noticias: {exc}"
+            result = f"Erro ao sincronizar: {exc}"
+
         if chat_id:
             try:
                 telegram_send_message(chat_id, result)

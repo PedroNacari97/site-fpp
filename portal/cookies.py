@@ -23,24 +23,25 @@ def normalize_cookie_preferences(preferences: dict | None) -> dict[str, bool]:
 def get_cookie_preferences_from_request(request) -> dict[str, bool]:
     raw_value = request.COOKIES.get(settings.PORTAL_COOKIE_CONSENT_COOKIE_NAME, "")
     if not raw_value:
-        return {}
+        return dict(DEFAULT_COOKIE_PREFERENCES)  # aceito tudo por padrão
 
     try:
         parsed = json.loads(unquote(raw_value))
     except (TypeError, ValueError, json.JSONDecodeError):
-        return {}
+        return dict(DEFAULT_COOKIE_PREFERENCES)
 
     if not isinstance(parsed, dict):
-        return {}
+        return dict(DEFAULT_COOKIE_PREFERENCES)
 
     if parsed.get("version") != settings.PORTAL_COOKIE_CONSENT_VERSION:
-        return {}
+        return dict(DEFAULT_COOKIE_PREFERENCES)
 
     return normalize_cookie_preferences(parsed)
 
 
 def has_cookie_preferences(request) -> bool:
-    return bool(get_cookie_preferences_from_request(request))
+    raw_value = request.COOKIES.get(settings.PORTAL_COOKIE_CONSENT_COOKIE_NAME, "")
+    return bool(raw_value)
 
 
 def analytics_cookies_allowed(request) -> bool:

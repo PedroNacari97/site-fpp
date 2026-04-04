@@ -315,6 +315,13 @@ MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT", BASE_DIR / "media"))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "ncfly-portal",
+    }
+}
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
