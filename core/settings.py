@@ -67,6 +67,7 @@ CSRF_TRUSTED_ORIGINS = _env_list(
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+PREPEND_WWW = _env_bool("PREPEND_WWW", False)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
