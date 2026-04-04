@@ -371,6 +371,28 @@ document.addEventListener("DOMContentLoaded", () => {
       updateCarousel();
     });
 
+    // Prevent click-through after mouse drag on carousel links
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let isDragging = false;
+    carousel.addEventListener("pointerdown", (e) => {
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      isDragging = false;
+    }, { passive: true });
+    carousel.addEventListener("pointermove", (e) => {
+      if (Math.abs(e.clientX - dragStartX) > 5 || Math.abs(e.clientY - dragStartY) > 5) {
+        isDragging = true;
+      }
+    }, { passive: true });
+    carousel.addEventListener("click", (e) => {
+      if (isDragging) {
+        e.preventDefault();
+        e.stopPropagation();
+        isDragging = false;
+      }
+    }, true);
+
     window.addEventListener("resize", recalcCarousel, { passive: true });
     recalcCarousel();
   });

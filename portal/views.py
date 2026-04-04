@@ -67,19 +67,6 @@ CATEGORY_CONFIGS = {
         "aliases": ("hoteis e resorts", "hotel", "hoteis", "resorts", "resort", "hospedagem"),
         "load_more_label": "Carregar mais notícias",
     },
-    "promocoes": {
-        "label": "Promoções",
-        "hero_title": "Promoções",
-        "hero_description": "Fique por dentro das melhores promoções de milhas, hotéis, cartões de crédito e muito mais. Não perca nenhuma oportunidade.",
-        "hero_class": "portal-category-hero--promo",
-        "icon_variant": "promo",
-        "card_class": "news-category-card--green",
-        "aliases": ("promocoes", "promocao", "oferta", "desconto", "bonus", "sale"),
-        "load_more_label": "Carregar mais promoções",
-        "cta_title": "Não perca nenhuma promoção!",
-        "cta_description": "Cadastre-se e receba alertas instantâneos das melhores ofertas.",
-        "cta_button": "Criar conta grátis",
-    },
 }
 
 SEO_MAX_DESCRIPTION_LENGTH = 160
