@@ -1,5 +1,6 @@
 import json
 import re
+import threading
 from datetime import date, timedelta
 from urllib.parse import urlencode
 
@@ -558,6 +559,42 @@ def _parse_news_command(text):
     return None
 
 
+def _run_news_sync_background(news_limit, chat_id):
+    """Executa o sync de notícias em background para não bloquear o webhook."""
+    from portal.services.news_sync_service import sync_news_progressive
+    from portal.views import invalidate_news_cache
+
+    published_count = 0
+
+    def _on_published(noticia):
+        nonlocal published_count
+        published_count += 1
+        if chat_id:
+            try:
+                url = noticia.get_absolute_url()
+                telegram_send_message(
+                    chat_id,
+                    f"✅ {published_count}. {noticia.titulo}\n{noticia.categoria}\nhttps://www.ncfly.com.br{url}"
+                )
+            except Exception:
+                pass
+
+    try:
+        processed, published, errors = sync_news_progressive(limit=news_limit, on_published=_on_published)
+        invalidate_news_cache()
+        result = f"Sync concluído: {processed} processadas, {published} publicadas."
+        if errors:
+            result += f" ({len(errors)} erros)"
+    except Exception as exc:
+        result = f"Erro ao sincronizar: {exc}"
+
+    if chat_id:
+        try:
+            telegram_send_message(chat_id, result)
+        except Exception:
+            pass
+
+
 def _extract_chat_id(payload):
     msg = payload.get("message") or payload.get("channel_post") or {}
     return (msg.get("chat") or {}).get("id")
@@ -611,9 +648,6 @@ def telegram_alertas_webhook(request):
 
     news_limit = _parse_news_command(raw_text)
     if news_limit is not None:
-        from portal.services.news_sync_service import sync_news_progressive
-        from portal.views import invalidate_news_cache
-
         if chat_id:
             try:
                 telegram_send_message(
@@ -624,36 +658,16 @@ def telegram_alertas_webhook(request):
             except Exception:
                 pass
 
-        published_count = 0
+        # Roda em background para retornar 200 imediatamente ao Telegram
+        # (evita retries do Telegram por timeout)
+        thread = threading.Thread(
+            target=_run_news_sync_background,
+            args=(news_limit, chat_id),
+            daemon=True,
+        )
+        thread.start()
 
-        def _on_published(noticia):
-            nonlocal published_count
-            published_count += 1
-            if chat_id:
-                try:
-                    url = noticia.get_absolute_url()
-                    telegram_send_message(
-                        chat_id,
-                        f"✅ {published_count}. {noticia.titulo}\n{noticia.categoria}\nhttps://www.ncfly.com.br{url}"
-                    )
-                except Exception:
-                    pass
-
-        try:
-            processed, published, errors = sync_news_progressive(limit=news_limit, on_published=_on_published)
-            invalidate_news_cache()
-            result = f"Sync concluído: {processed} processadas, {published} publicadas."
-            if errors:
-                result += f" ({len(errors)} erros)"
-        except Exception as exc:
-            result = f"Erro ao sincronizar: {exc}"
-
-        if chat_id:
-            try:
-                telegram_send_message(chat_id, result)
-            except Exception:
-                pass
-        return JsonResponse({"ok": True, "outcome": "news_sync", "message": result})
+        return JsonResponse({"ok": True, "outcome": "news_sync_started"})
 
     try:
         event, outcome = process_telegram_alert_update(payload)
