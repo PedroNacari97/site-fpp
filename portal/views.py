@@ -753,7 +753,7 @@ def _get_published_news():
         .select_related("fonte")
         .order_by("-publicada_em")
     )
-    cache.set("portal_published_news", result, 180)
+    cache.set("portal_published_news", result, 72000)
     return result
 
 

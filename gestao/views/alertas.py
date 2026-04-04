@@ -614,6 +614,16 @@ def telegram_alertas_webhook(request):
         from portal.services.news_sync_service import sync_news_progressive
         from portal.views import invalidate_news_cache
 
+        if chat_id:
+            try:
+                telegram_send_message(
+                    chat_id,
+                    f"🔍 Recebi! Vou buscar {news_limit} notícia(s) agora.\n"
+                    f"Vou te avisando conforme cada uma for publicada no site. Aguarde..."
+                )
+            except Exception:
+                pass
+
         published_count = 0
 
         def _on_published(noticia):

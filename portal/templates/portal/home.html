@@ -226,6 +226,39 @@
             {% endif %}
         </section>
 
+        {% if secoes_categoria and not is_searching %}
+        {% for secao in secoes_categoria %}
+        <section class="news-latest-block">
+            <header class="news-section-bar">
+                <h2>{{ secao.label }}</h2>
+                <a href="{% url 'portal_categoria' secao.slug %}" class="news-section-bar__link">
+                    Ver mais <span aria-hidden="true">&rarr;</span>
+                </a>
+            </header>
+            <div class="news-quick-grid">
+                {% for noticia in secao.noticias %}
+                <article class="news-card">
+                    {% if noticia.imagem_exibicao %}
+                    <a href="{{ noticia.get_absolute_url }}" class="news-card__image">
+                        <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
+                    </a>
+                    {% endif %}
+                    <div class="news-card__body">
+                        <span class="news-pill news-pill--muted">{{ noticia.categoria|default:"Notícias"|portal_text }}</span>
+                        <h3><a href="{{ noticia.get_absolute_url }}">{{ noticia.titulo|portal_text }}</a></h3>
+                        <p>{{ noticia.resumo|portal_text|truncatechars:100 }}</p>
+                        <div class="news-meta">
+                            <span>Reda&ccedil;&atilde;o NC Fly</span>
+                            <span>{{ noticia.publicada_em|br_date_long }}</span>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+        {% endif %}
+
         <section class="news-platform-spotlight">
             <div class="news-platform-spotlight__copy">
                 <span class="news-kicker">Plataforma NC Fly</span>

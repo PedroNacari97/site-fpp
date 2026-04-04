@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.cookie = `${cookieName}=${encodeURIComponent(payload)}; path=/; max-age=${maxAge}; SameSite=Lax`;
   };
 
-  const currentPreferences = () => readPreferences() || { essential: true, analytics: false };
+  const currentPreferences = () => readPreferences() || { essential: true, analytics: true };
 
   const syncCookieInputs = () => {
     const preferences = currentPreferences();
