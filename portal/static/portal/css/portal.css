@@ -3852,6 +3852,131 @@ img {
   }
 }
 
+/* ── Topbar dropdown ─────────────────────────────────────── */
+.portal-topbar__dropdown {
+  position: relative;
+}
+
+.portal-topbar__dropdown-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  gap: 6px;
+}
+
+.portal-topbar__dropdown-caret {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--muted);
+  transition: transform 0.18s ease;
+  margin-top: -2px;
+}
+
+.portal-topbar__dropdown.is-open .portal-topbar__dropdown-caret {
+  transform: rotate(180deg);
+}
+
+.portal-topbar__dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 50;
+  min-width: 200px;
+  padding: 8px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 20px 48px rgba(15, 27, 45, 0.12);
+}
+
+.portal-topbar__dropdown.is-open .portal-topbar__dropdown-menu {
+  display: grid;
+  gap: 2px;
+}
+
+.portal-topbar__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  text-decoration: none;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.portal-topbar__dropdown-item:hover {
+  background: #fff3e6;
+  color: #ff6b00;
+}
+
+.portal-topbar__dropdown-item.is-active {
+  background: #fff3e6;
+  color: #ff6b00;
+}
+
+/* ── Scroll hint — gradiente lateral ─────────────────────── */
+.scroll-hint-wrap {
+  position: relative;
+}
+
+.scroll-hint-wrap::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 48px;
+  background: linear-gradient(to right, transparent, rgba(255, 248, 244, 0.92));
+  border-radius: 0 16px 16px 0;
+}
+
+.scroll-hint-wrap--dark::after {
+  background: linear-gradient(to right, transparent, rgba(18, 28, 48, 0.95));
+}
+
+/* ── Alertas semelhantes: horizontal desktop/mobile ──────── */
+.news-alerts-similar__scroll {
+  display: flex !important;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 16px;
+  grid-template-columns: unset !important;
+  padding-bottom: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 107, 107, 0.45) rgba(255, 107, 107, 0.1);
+}
+.news-alerts-similar__scroll::-webkit-scrollbar { height: 4px; }
+.news-alerts-similar__scroll::-webkit-scrollbar-track { background: rgba(255, 107, 107, 0.1); border-radius: 4px; }
+.news-alerts-similar__scroll::-webkit-scrollbar-thumb { background: rgba(255, 107, 107, 0.45); border-radius: 4px; }
+.news-alerts-similar__scroll .news-alert-card {
+  flex: 0 0 280px;
+}
+
+/* ── Plataforma window body: scroll horizontal ───────────── */
+.portal-saas-hero__window-body--scroll {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.3) rgba(255,255,255,0.08);
+  padding-bottom: 6px;
+}
+.portal-saas-hero__window-body--scroll::-webkit-scrollbar { height: 3px; }
+.portal-saas-hero__window-body--scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.08); border-radius: 4px; }
+.portal-saas-hero__window-body--scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+.portal-saas-hero__window-body--scroll article {
+  flex: 0 0 220px;
+}
+
 /* ── Scrollbar visível nos containers horizontais ─────────── */
 .news-categories-grid,
 .news-home-frame .news-quick-grid,

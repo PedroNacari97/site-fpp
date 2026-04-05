@@ -1,6 +1,6 @@
 <footer class="portal-footer portal-footer--home">
     <div class="portal-footer__panel">
-        <div class="portal-footer__panel-inner portal-footer__panel-inner--home">
+        <div class="portal-footer__panel-inner portal-footer__panel-inner--home scroll-hint-wrap scroll-hint-wrap--dark">
             <div class="portal-footer__brand-block portal-footer__brand-block--home">
                 <a href="{% url 'portal_home' %}" class="portal-footer__title-link">NC Fly News</a>
                 <p>Seu portal de milhas, pontos e viagens com as melhores ofertas e not&iacute;cias.</p>
@@ -9,6 +9,7 @@
             <div class="portal-footer__column portal-footer__column--home">
                 <h3>Categorias</h3>
                 <a href="{% url 'portal_categoria' 'milhas-e-pontos' %}">Milhas &amp; Pontos</a>
+                <a href="{% url 'portal_categoria' 'cartoes-credito' %}">Cart&otilde;es de Cr&eacute;dito</a>
                 <a href="{% url 'portal_categoria' 'hoteis-resorts' %}">Hot&eacute;is &amp; Resorts</a>
             </div>
 

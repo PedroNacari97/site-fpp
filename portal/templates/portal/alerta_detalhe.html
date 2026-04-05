@@ -167,7 +167,8 @@
                 <p>Outras oportunidades de emiss&atilde;o para acompanhar agora.</p>
             </div>
         </header>
-        <div id="similar-alerts-grid" class="news-alerts-home__grid news-alerts-home__grid--listing">
+        <div class="scroll-hint-wrap">
+        <div id="similar-alerts-grid" class="news-alerts-home__grid news-alerts-home__grid--listing news-alerts-similar__scroll">
             {% for alerta in similar_alerts %}
             <a
                 href="{{ alerta.url }}"
@@ -221,6 +222,7 @@
                 </div>
             </a>
             {% endfor %}
+        </div>
         </div>
         {% if similar_alerts|length > 3 %}
         <div class="portal-category-loadmore">

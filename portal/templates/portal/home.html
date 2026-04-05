@@ -179,6 +179,7 @@
                 <h2>{% if is_searching %}Resultados da busca{% else %}&Uacute;ltimas not&iacute;cias{% endif %}</h2>
             </header>
             {% if noticias_grade %}
+            <div class="scroll-hint-wrap">
             <div class="news-quick-grid">
                 {% for noticia in noticias_grade %}
                 <article class="news-card">
@@ -225,6 +226,7 @@
                 </article>
                 {% endfor %}
             </div>
+            </div>
             {% else %}
             <div class="news-empty__card">
                 {% if is_searching %}
@@ -245,6 +247,7 @@
                     Ver mais <span aria-hidden="true">&rarr;</span>
                 </a>
             </header>
+            <div class="scroll-hint-wrap">
             <div class="news-quick-grid">
                 {% for noticia in secao.noticias %}
                 <article class="news-card">
@@ -264,6 +267,7 @@
                     </div>
                 </article>
                 {% endfor %}
+            </div>
             </div>
         </section>
         {% endfor %}
@@ -329,6 +333,7 @@
                     <p>Encontre as melhores ofertas por categoria</p>
                 </div>
             </header>
+            <div class="scroll-hint-wrap">
             <div class="news-categories-grid">
                 {% for item in explore_categories %}
                 <a
@@ -367,6 +372,7 @@
                     </span>
                 </a>
                 {% endfor %}
+            </div>
             </div>
         </section>
     </section>

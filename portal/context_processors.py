@@ -16,6 +16,7 @@ def portal_public_settings(request):
     cookie_preferences = normalize_cookie_preferences(raw_cookie_preferences)
     category_nav_labels = {
         "milhas-e-pontos": "Milhas",
+        "cartoes-credito": "Cartões",
         "hoteis-resorts": "Hotéis",
     }
     return {

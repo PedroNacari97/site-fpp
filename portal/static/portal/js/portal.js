@@ -131,6 +131,34 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Dropdown de categorias no header
+  document.querySelectorAll("[data-topbar-dropdown]").forEach((dropdown) => {
+    const toggle = dropdown.querySelector("[data-dropdown-toggle]");
+    if (!toggle) return;
+
+    const open = () => {
+      dropdown.classList.add("is-open");
+      toggle.setAttribute("aria-expanded", "true");
+    };
+    const close = () => {
+      dropdown.classList.remove("is-open");
+      toggle.setAttribute("aria-expanded", "false");
+    };
+
+    toggle.addEventListener("click", (e) => {
+      e.stopPropagation();
+      dropdown.classList.contains("is-open") ? close() : open();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!dropdown.contains(e.target)) close();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") close();
+    });
+  });
+
   document.querySelectorAll("[data-topbar-search]").forEach((form) => {
     const toggle = form.querySelector("[data-search-toggle]");
     const input = form.querySelector("[data-search-input]");

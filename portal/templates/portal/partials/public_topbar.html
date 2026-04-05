@@ -24,35 +24,38 @@
                     </span>
                     <span>Alertas</span>
                 </a>
-                {% for category in public_nav_categories %}
-                <a
-                    href="{{ category.url }}"
-                    class="portal-topbar__nav-link portal-topbar__nav-link--category {% if request.resolver_match.url_name == 'portal_categoria' and request.resolver_match.kwargs.categoria_slug == category.slug %}is-active{% endif %}"
-                >
-                    <span class="portal-topbar__nav-icon" aria-hidden="true">
-                        {% if category.icon_variant == "miles" %}
-                        <svg viewBox="0 0 24 24">
-                            <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-                        </svg>
-                        {% elif category.icon_variant == "cards" %}
-                        <svg viewBox="0 0 24 24">
-                            <rect x="4" y="6" width="16" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"></rect>
-                            <path d="M4 10h16" fill="none" stroke="currentColor" stroke-width="1.8"></path>
-                        </svg>
-                        {% elif category.icon_variant == "hotels" %}
-                        <svg viewBox="0 0 24 24">
-                            <path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-                        </svg>
-                        {% else %}
-                        <svg viewBox="0 0 24 24">
-                            <path d="m5 15 4-4 3 3 7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-                            <path d="M19 7h-5v5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-                        </svg>
-                        {% endif %}
-                    </span>
-                    <span>{{ category.nav_label }}</span>
-                </a>
-                {% endfor %}
+                <div class="portal-topbar__dropdown{% if request.resolver_match.url_name == 'portal_categoria' %} is-active{% endif %}" data-topbar-dropdown>
+                    <button type="button" class="portal-topbar__nav-link portal-topbar__dropdown-toggle" aria-expanded="false" aria-haspopup="true" data-dropdown-toggle>
+                        <span class="portal-topbar__nav-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+                            </svg>
+                        </span>
+                        <span>Categorias</span>
+                        <span class="portal-topbar__dropdown-caret" aria-hidden="true">&#8964;</span>
+                    </button>
+                    <div class="portal-topbar__dropdown-menu" data-dropdown-menu>
+                        {% for category in public_nav_categories %}
+                        <a
+                            href="{{ category.url }}"
+                            class="portal-topbar__dropdown-item{% if request.resolver_match.url_name == 'portal_categoria' and request.resolver_match.kwargs.categoria_slug == category.slug %} is-active{% endif %}"
+                        >
+                            <span class="portal-topbar__nav-icon" aria-hidden="true">
+                                {% if category.icon_variant == "miles" %}
+                                <svg viewBox="0 0 24 24"><path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                                {% elif category.icon_variant == "cards" %}
+                                <svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"></rect><path d="M4 10h16" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg>
+                                {% elif category.icon_variant == "hotels" %}
+                                <svg viewBox="0 0 24 24"><path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                                {% else %}
+                                <svg viewBox="0 0 24 24"><path d="m5 15 4-4 3 3 7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path><path d="M19 7h-5v5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                                {% endif %}
+                            </span>
+                            {{ category.label }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
                 <a href="{% url 'portal_plataforma_saas' %}" class="portal-topbar__nav-link {% if request.resolver_match.url_name == 'portal_plataforma_saas' %}is-active{% endif %}">
                     <span class="portal-topbar__nav-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24">
