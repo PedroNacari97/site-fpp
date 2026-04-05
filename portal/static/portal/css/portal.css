@@ -3938,7 +3938,7 @@ img {
   color: #ff6b00;
 }
 
-/* ── Scroll hint — gradiente lateral ─────────────────────── */
+/* ── Scroll hint — gradiente lateral + indicador ─────────── */
 .scroll-hint-wrap {
   position: relative;
 }
@@ -3953,6 +3953,12 @@ img {
   width: 48px;
   background: linear-gradient(to right, transparent, rgba(255, 248, 244, 0.92));
   border-radius: 0 16px 16px 0;
+}
+
+/* Indicador de scroll sempre visível (barra laranja decorativa) */
+.scroll-hint-wrap > [class*="grid"],
+.scroll-hint-wrap > [class*="quick"] {
+  padding-bottom: 14px;
 }
 
 .scroll-hint-wrap--dark::after {
@@ -3987,15 +3993,17 @@ img {
   -webkit-overflow-scrolling: touch;
   gap: 12px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.3) rgba(255,255,255,0.08);
+  scrollbar-color: rgba(255,255,255,0.5) rgba(255,255,255,0.12);
   padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
 }
-.portal-saas-hero__window-body--scroll::-webkit-scrollbar { height: 4px; }
-.portal-saas-hero__window-body--scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.08); border-radius: 4px; }
-.portal-saas-hero__window-body--scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.5); border-radius: 4px; }
+.portal-saas-hero__window-body--scroll::-webkit-scrollbar { height: 5px; }
+.portal-saas-hero__window-body--scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.12); border-radius: 4px; }
+.portal-saas-hero__window-body--scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.55); border-radius: 4px; }
 .portal-saas-hero__window-body--scroll article {
   flex: 0 0 240px;
   min-width: 0;
+  scroll-snap-align: start;
 }
 
 /* ── Scrollbar visível nos containers horizontais ─────────── */
@@ -4301,11 +4309,16 @@ img {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     gap: 12px;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
     grid-template-columns: unset;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 107, 107, 0.6) rgba(255, 107, 107, 0.15);
   }
+  .portal-saas-flow::-webkit-scrollbar { height: 5px; }
+  .portal-saas-flow::-webkit-scrollbar-track { background: rgba(255, 107, 107, 0.15); border-radius: 4px; }
+  .portal-saas-flow::-webkit-scrollbar-thumb { background: rgba(255, 107, 107, 0.6); border-radius: 4px; }
   .portal-saas-flow .portal-saas-flow__step {
-    flex: 0 0 72vw;
+    flex: 0 0 75vw;
     max-width: 280px;
     min-width: 0;
   }
@@ -4333,12 +4346,41 @@ img {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     gap: 12px;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 107, 107, 0.6) rgba(255, 107, 107, 0.15);
   }
+  .portal-saas-modules::-webkit-scrollbar,
+  .portal-saas-list-grid::-webkit-scrollbar { height: 5px; }
+  .portal-saas-modules::-webkit-scrollbar-track,
+  .portal-saas-list-grid::-webkit-scrollbar-track { background: rgba(255, 107, 107, 0.15); border-radius: 4px; }
+  .portal-saas-modules::-webkit-scrollbar-thumb,
+  .portal-saas-list-grid::-webkit-scrollbar-thumb { background: rgba(255, 107, 107, 0.6); border-radius: 4px; }
   .portal-saas-modules > *,
   .portal-saas-list-grid > * {
     flex: 0 0 78vw;
     max-width: 300px;
+  }
+
+  /* Home spotlight grid (Cotações/Alertas/Clientes/Controle): scroll horizontal */
+  .news-platform-spotlight__grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 10px;
+    padding-bottom: 12px;
+    grid-template-columns: unset;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 107, 107, 0.6) rgba(255, 107, 107, 0.15);
+  }
+  .news-platform-spotlight__grid::-webkit-scrollbar { height: 5px; }
+  .news-platform-spotlight__grid::-webkit-scrollbar-track { background: rgba(255, 107, 107, 0.15); border-radius: 4px; }
+  .news-platform-spotlight__grid::-webkit-scrollbar-thumb { background: rgba(255, 107, 107, 0.6); border-radius: 4px; }
+  .news-platform-spotlight__grid article {
+    flex: 0 0 65vw;
+    max-width: 220px;
+    min-width: 0;
   }
 
   /* Carousel alertas */
@@ -4453,5 +4495,19 @@ img {
     flex: 0 0 72vw;
     max-width: 260px;
     min-height: 0;
+  }
+
+  /* ── Indicador de scroll sempre visível no mobile ────────
+     Containers com scroll recebem barra laranja decorativa
+     via box-shadow na parte inferior, sempre visível.        */
+  .news-categories-strip .news-categories-grid,
+  .news-home-frame .news-quick-grid,
+  .portal-saas-modules,
+  .portal-saas-list-grid,
+  .portal-saas-flow,
+  .news-platform-spotlight__grid,
+  .news-alerts-similar__scroll {
+    box-shadow: 0 4px 0 0 rgba(255, 107, 107, 0.18),
+                inset 0 -4px 0 0 rgba(255, 107, 107, 0.12);
   }
 }
