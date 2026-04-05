@@ -164,43 +164,78 @@
         <header class="news-section-bar news-section-bar--stacked">
             <div>
                 <h2>Alertas semelhantes</h2>
-                        <p>Outras oportunidades de emiss&atilde;o para acompanhar agora.</p>
+                <p>Outras oportunidades de emiss&atilde;o para acompanhar agora.</p>
             </div>
         </header>
-        <div class="news-alerts-home__grid">
+        <div id="similar-alerts-grid" class="news-alerts-home__grid news-alerts-home__grid--listing">
             {% for alerta in similar_alerts %}
             <a
                 href="{{ alerta.url }}"
-                class="news-alert-card"
+                class="news-alert-card news-alert-card--listing{% if forloop.counter > 3 %} is-hidden{% endif %}"
+                {% if forloop.counter > 3 %}data-load-more-item{% endif %}
                 data-analytics-event="click_alerta_semelhante"
                 data-analytics-category="content"
                 data-analytics-label="{{ alerta.origem_codigo }}-{{ alerta.destino_codigo }}"
                 data-analytics-section="alert_similar"
             >
-                    <div class="news-alert-card__route news-alert-card__route--compact">
-                        <div>
-                            <strong>{{ alerta.origem_codigo }}</strong>
-                            <span>{{ alerta.origem_cidade|portal_text }}</span>
-                        </div>
-                        <div class="news-alert-card__route-line" aria-hidden="true">
-                            <span></span>
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M3 12h18M15 6l6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-                            </svg>
-                            <span></span>
-                        </div>
-                        <div class="news-alert-card__destination">
-                            <strong>{{ alerta.destino_codigo }}</strong>
-                            <span>{{ alerta.destino_cidade|portal_text }}</span>
-                        </div>
+                <div class="news-alert-card__top">
+                    <span class="news-alert-card__plane" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                    </span>
+                    {% if alerta.validade_label %}
+                    <span class="news-alert-card__validity">{{ alerta.validade_label|portal_text }}</span>
+                    {% endif %}
+                </div>
+                <div class="news-alert-card__route">
+                    <div>
+                        <strong>{{ alerta.origem_codigo }}</strong>
+                        <span>{{ alerta.origem_cidade|portal_text }}</span>
                     </div>
-                    <div class="news-alert-card__price-box">
-                        <small>{{ alerta.miles_kicker|portal_text }}</small>
-                        <strong>{{ alerta.miles_label|portal_text }}</strong>
+                    <div class="news-alert-card__route-line" aria-hidden="true">
+                        <span></span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 12h18M15 6l6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                        <span></span>
                     </div>
-                </a>
+                    <div class="news-alert-card__destination">
+                        <strong>{{ alerta.destino_codigo }}</strong>
+                        <span>{{ alerta.destino_cidade|portal_text }}</span>
+                    </div>
+                </div>
+                <div class="news-alert-card__meta">
+                    <span class="news-alert-card__meta-badge">
+                        <small>Programa</small>
+                        <strong>{{ alerta.programa|portal_text }}</strong>
+                    </span>
+                    <span class="news-alert-card__meta-badge">
+                        <small>Companhia</small>
+                        <strong>{{ alerta.companhia|portal_text }}</strong>
+                    </span>
+                </div>
+                <div class="news-alert-card__price-box">
+                    <small>{{ alerta.miles_kicker|portal_text }}</small>
+                    <strong>{{ alerta.miles_label|portal_text }}</strong>
+                </div>
+            </a>
             {% endfor %}
         </div>
+        {% if similar_alerts|length > 3 %}
+        <div class="portal-category-loadmore">
+            <button
+                type="button"
+                class="portal-button portal-button--light"
+                data-load-more-button
+                data-load-more-target="similar-alerts-grid"
+                data-batch-size="3"
+                data-label-default="Ver mais alertas"
+            >
+                Ver mais alertas
+            </button>
+        </div>
+        {% endif %}
     </section>
     {% endif %}
 </div>

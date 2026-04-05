@@ -51,7 +51,7 @@ class PlataformaLeadForm(forms.ModelForm):
             "email": forms.EmailInput(
                 attrs={
                     "class": "portal-lead-field__input",
-                    "placeholder": "voce@empresa.com",
+                    "placeholder": "seu@email.com",
                     "autocomplete": "email",
                 }
             ),
@@ -116,7 +116,7 @@ class PlataformaQuickLeadForm(forms.Form):
         widget=forms.EmailInput(
             attrs={
                 "class": "portal-lead-field__input",
-                "placeholder": "voce@empresa.com",
+                "placeholder": "seu@email.com",
                 "autocomplete": "email",
             }
         ),

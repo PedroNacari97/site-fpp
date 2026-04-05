@@ -3852,16 +3852,115 @@ img {
   }
 }
 
+/* ── Scrollbar visível nos containers horizontais ─────────── */
+.news-categories-grid,
+.news-home-frame .news-quick-grid,
+.news-platform-spotlight__grid,
+.portal-saas-modules,
+.portal-saas-flow,
+.portal-saas-list-grid {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 107, 107, 0.45) rgba(255, 107, 107, 0.1);
+}
+.news-categories-grid::-webkit-scrollbar,
+.news-home-frame .news-quick-grid::-webkit-scrollbar,
+.news-platform-spotlight__grid::-webkit-scrollbar,
+.portal-saas-modules::-webkit-scrollbar,
+.portal-saas-flow::-webkit-scrollbar,
+.portal-saas-list-grid::-webkit-scrollbar {
+  height: 4px;
+}
+.news-categories-grid::-webkit-scrollbar-track,
+.news-home-frame .news-quick-grid::-webkit-scrollbar-track,
+.news-platform-spotlight__grid::-webkit-scrollbar-track,
+.portal-saas-modules::-webkit-scrollbar-track,
+.portal-saas-flow::-webkit-scrollbar-track,
+.portal-saas-list-grid::-webkit-scrollbar-track {
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 4px;
+}
+.news-categories-grid::-webkit-scrollbar-thumb,
+.news-home-frame .news-quick-grid::-webkit-scrollbar-thumb,
+.news-platform-spotlight__grid::-webkit-scrollbar-thumb,
+.portal-saas-modules::-webkit-scrollbar-thumb,
+.portal-saas-flow::-webkit-scrollbar-thumb,
+.portal-saas-list-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 107, 107, 0.45);
+  border-radius: 4px;
+}
+
+/* ── "Em resumo" horizontal cards ────────────────────────── */
+.portal-saas-legal-card {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.3) rgba(255,255,255,0.08);
+  padding-bottom: 6px;
+}
+.portal-saas-legal-card::-webkit-scrollbar { height: 3px; }
+.portal-saas-legal-card::-webkit-scrollbar-track { background: rgba(255,255,255,0.08); border-radius: 4px; }
+.portal-saas-legal-card::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+.portal-saas-legal-card__item {
+  flex: 0 0 220px;
+  border-top: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0 0 0 14px;
+}
+.portal-saas-legal-card__item:first-of-type {
+  padding-top: 0;
+  border-top: 0;
+  border-left: 0;
+  padding-left: 0;
+}
+
+/* ── Modal de lead melhorado ──────────────────────────────── */
+.portal-lead-form-card {
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 24px 56px rgba(15, 27, 45, 0.1);
+}
+
+/* ── Footer compacto — scrollável no mobile ───────────────── */
 /* ── Mobile layout fixes ──────────────────────────────────── */
 @media (max-width: 760px) {
-  /* Footer home: 2 colunas (brand escondido, Categorias + Sobre) */
+  /* Footer home: linha única horizontal com scroll */
   .portal-footer--home:not(.portal-footer--saas) .portal-footer__panel-inner {
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 24px;
+    padding: 14px 16px 12px;
+    scrollbar-width: none;
+  }
+  .portal-footer--home:not(.portal-footer--saas) .portal-footer__panel-inner::-webkit-scrollbar {
+    display: none;
+  }
+  .portal-footer--home:not(.portal-footer--saas) .portal-footer__panel-inner > * {
+    flex: 0 0 auto;
+    min-width: 130px;
   }
 
-  /* Footer saas: 2 colunas no mobile */
+  /* Footer saas: mesma abordagem */
   .portal-footer__panel-inner--saas {
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 24px;
+    padding: 14px 16px 12px;
+    scrollbar-width: none;
+  }
+  .portal-footer__panel-inner--saas::-webkit-scrollbar {
+    display: none;
+  }
+  .portal-footer__panel-inner--saas > * {
+    flex: 0 0 auto;
+    min-width: 130px;
   }
 
   /* Alertas - grid listagem: 1 coluna */
