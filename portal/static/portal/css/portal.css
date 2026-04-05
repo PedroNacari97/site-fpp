@@ -675,6 +675,15 @@ img {
 .news-detail-shell {
   display: grid;
   gap: 28px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.news-home-shell > *,
+.portal-saas-page > *,
+.portal-alerts-page > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .portal-static-page__shell {
@@ -4087,6 +4096,37 @@ img {
   /* Clip de overflow: impede qualquer grid item largo de expandir o documento */
   .portal-main {
     overflow-x: hidden;
+  }
+
+  /* Garante que nenhum container filho exceda a largura do portal-main */
+  .news-home-frame,
+  .news-home-shell,
+  .news-detail-frame,
+  .portal-category-page,
+  .portal-saas-page,
+  .portal-alerts-page,
+  .portal-alert-detail {
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Elementos com largura mínima fixa: forçar 1 coluna no mobile */
+  .news-platform-spotlight,
+  .portal-saas-hero,
+  .news-featured__main--horizontal {
+    grid-template-columns: 1fr;
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* Filhos do spotlight: nunca excedem o pai */
+  .news-platform-spotlight > *,
+  .portal-saas-hero > *,
+  .news-featured__main--horizontal > * {
+    min-width: 0;
+    max-width: 100%;
   }
 
 
