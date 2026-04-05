@@ -4084,6 +4084,11 @@ img {
     width: min(100%, calc(100% - 28px));
   }
 
+  /* Clip de overflow: impede qualquer grid item largo de expandir o documento */
+  .portal-main {
+    overflow-x: hidden;
+  }
+
 
   /* Topbar */
   .portal-topbar__inner {
