@@ -30,12 +30,22 @@ def sync_news_progressive(limit: int = 10, on_published=None):
     published = 0
     errors = []
 
+    # URLs que já têm notícia publicada — filtrar antes de processar
+    already_published_urls = set(
+        MateriaBruta.objects.filter(
+            noticiapublicada__status="published"
+        ).values_list("url_original", flat=True)
+    )
+
     queryset = Fonte.objects.filter(ativa=True)
     try:
         for source in queryset:
             fetcher = get_fetcher_for_source(source)
             try:
-                entries = fetcher.list_entries(source)[:limit]
+                # Busca candidatos e filtra URLs já publicadas antes de fatiar pelo limit
+                all_entries = fetcher.list_entries(source)
+                fresh_entries = [e for e in all_entries if e.url not in already_published_urls]
+                entries = fresh_entries[:limit]
             except Exception as exc:
                 errors.append(f"[{source.nome}] erro ao listar: {exc}")
                 continue
@@ -153,18 +163,34 @@ DEFAULT_SOURCES = [
     {
         "nome": "Passageiro de Primeira",
         "url": "https://passageirodeprimeira.com/",
-        "ativa": False,
+        "ativa": True,
         "tipo_coleta": "html",
-        "categoria_padrao": "Milhas",
+        "categoria_padrao": "Milhas e Pontos",
         "parser_key": "passageirodeprimeira",
+    },
+    {
+        "nome": "Passageiro de Primeira RSS",
+        "url": "https://passageirodeprimeira.com/feed/",
+        "ativa": True,
+        "tipo_coleta": "rss",
+        "categoria_padrao": "Milhas e Pontos",
+        "parser_key": "rss",
     },
     {
         "nome": "Melhores Cartoes",
         "url": "https://www.melhorescartoes.com.br/",
         "ativa": True,
         "tipo_coleta": "html",
-        "categoria_padrao": "Cartoes",
+        "categoria_padrao": "Cartões de Crédito",
         "parser_key": "melhorescartoes",
+    },
+    {
+        "nome": "Melhores Cartoes RSS",
+        "url": "https://www.melhorescartoes.com.br/feed/",
+        "ativa": True,
+        "tipo_coleta": "rss",
+        "categoria_padrao": "Cartões de Crédito",
+        "parser_key": "rss",
     },
 ]
 

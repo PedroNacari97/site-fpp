@@ -9,6 +9,8 @@ FETCHER_MAP = {
     "rss": RssFetcher,
     "passageirodeprimeira": PassageiroDePrimeiraFetcher,
     "melhorescartoes": MelhoresCartoesFetcher,
+    # parser_key aliases
+    "feed": RssFetcher,
 }
 
 
