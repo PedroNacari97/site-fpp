@@ -1,0 +1,26 @@
+[
+  {
+    "model": "portal.fonte",
+    "pk": 2,
+    "fields": {
+      "nome": "Melhores Cartoes",
+      "url": "https://www.melhorescartoes.com.br/",
+      "ativa": true,
+      "tipo_coleta": "html",
+      "categoria_padrao": "Cartoes",
+      "parser_key": "melhorescartoes"
+    }
+  },
+  {
+    "model": "portal.fonte",
+    "pk": 1,
+    "fields": {
+      "nome": "Passageiro de Primeira",
+      "url": "https://passageirodeprimeira.com/",
+      "ativa": false,
+      "tipo_coleta": "html",
+      "categoria_padrao": "Milhas",
+      "parser_key": "passageirodeprimeira"
+    }
+  }
+]

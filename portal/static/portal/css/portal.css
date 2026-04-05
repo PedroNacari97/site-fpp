@@ -3922,6 +3922,8 @@ img {
 /* ── Scroll hint — gradiente lateral ─────────────────────── */
 .scroll-hint-wrap {
   position: relative;
+  /* clip only the right gradient overlay, not the scroll content */
+  overflow-x: clip;
 }
 
 .scroll-hint-wrap::after {

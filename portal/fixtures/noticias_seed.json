@@ -1,0 +1,1189 @@
+[
+  {
+    "model": "portal.noticiapublicada",
+    "pk": 1,
+    "fields": {
+      "materia_bruta": 1,
+      "fonte": 2,
+      "titulo": "Magalu libera 9 cupons com até R$ 200 de desconto em compras no app e em produtos selecionados",
+      "resumo": "O Magalu está com 9 cupons de desconto ativos, com abatimento de até R$ 200. Há ofertas válidas no app para compras acima de R$ 200, R$ 1.000, R$ 1.600, R$ 1.700 e R$ 2.100, além de códigos para produtos selecionados. Os cupons têm limite de ativações e podem acabar a qualquer mo",
+      "conteudo": "O Magalu está com uma nova leva de cupons de desconto que pode reduzir em até R$ 200 o valor final da compra. A ação reúne nove códigos diferentes, com ofertas voltadas tanto para compras feitas no aplicativo quanto para itens selecionados, o que amplia as chances de encontrar algum abatimento útil em categorias de maior tíquete, como móveis, TVs e ar-condicionado.\n\nEntre os cupons informados, há descontos de R$ 200 para compras acima de R$ 2.100 em produtos vendidos e entregues pelo Magalu, de R$ 150 para pedidos acima de R$ 1.600 nas mesmas condições e de R$ 100 para compras acima de R$ 1.000. Também aparece um segundo cupom de R$ 200 para compras acima de R$ 1.700 no app, além de um código de R$ 30 para pedidos acima de R$ 200 em produtos vendidos e entregues pelo Magalu.\n\nA campanha ainda inclui um cupom de R$ 100 para compras acima de R$ 1.000 em produtos vendidos por lojas parceiras, ponto importante para quem costuma comprar no marketplace da varejista. Além disso, o site lista três códigos extras com desconto de R$ 200, R$ 150 e R$ 100 em produtos selecionados, sem detalhar no material base quais itens entram em cada faixa promocional.\n\nNa prática, a oportunidade tende a fazer mais sentido para quem já estava planejando uma compra de valor mais alto e consegue encaixar o pedido exatamente nas regras de valor mínimo e canal de uso. Também vale atenção ao fato de que parte dos cupons é exclusiva para o app, enquanto outros dependem de produtos específicos ou da origem da venda, como itens vendidos e entregues pelo Magalu ou anunciados por parceiros.\n\nO ponto de atenção é a disponibilidade. Segundo a oferta, os cupons têm limite de ativações e podem se esgotar a qualquer momento, o que torna a checagem imediata essencial antes de finalizar a compra. Para aumentar as chances de aproveitar, o ideal é abrir o aplicativo, testar o código correspondente ao seu carrinho e conferir se o produto atende às condições da promoção antes do pagamento.",
+      "slug": "magalu-libera-9-cupons-com-ate-r-200-de-desconto-em-compras-no-app-e-em-produtos-selecionados",
+      "categoria": "Promoções",
+      "topico": "Cartões e Cashback",
+      "tags_json": [
+        "Promoções",
+        "Cartões e Cashback",
+        "Magalu",
+        "Magazine Luiza",
+        "cupom de desconto"
+      ],
+      "imagem": "portal/noticias/generated/20260404205447_13be2d5bc5.png",
+      "imagem_url": "https://www.melhorescartoes.com.br/wp-content/uploads/2025/06/cupom-magalu-capa.jpg",
+      "imagem_ilustrativa": true,
+      "url_fonte": "https://www.melhorescartoes.com.br/cupom-magalu-ate-200-off-17h-04abr26.html",
+      "status": "published",
+      "confianca": "0.90",
+      "publicada_em": "2026-04-04T20:13:55+00:00",
+      "metadata_json": {
+        "provider": "openai_schema",
+        "raw_response": {
+          "titulo": "Magalu libera 9 cupons com até R$ 200 de desconto em compras no app e em produtos selecionados",
+          "resumo": "O Magalu está com 9 cupons de desconto ativos, com abatimento de até R$ 200. Há ofertas válidas no app para compras acima de R$ 200, R$ 1.000, R$ 1.600, R$ 1.700 e R$ 2.100, além de códigos para produtos selecionados. Os cupons têm limite de ativações e podem acabar a qualquer momento.",
+          "conteudo": "O Magalu está com uma nova leva de cupons de desconto que pode reduzir em até R$ 200 o valor final da compra. A ação reúne nove códigos diferentes, com ofertas voltadas tanto para compras feitas no aplicativo quanto para itens selecionados, o que amplia as chances de encontrar algum abatimento útil em categorias de maior tíquete, como móveis, TVs e ar-condicionado.\n\nEntre os cupons informados, há descontos de R$ 200 para compras acima de R$ 2.100 em produtos vendidos e entregues pelo Magalu, de R$ 150 para pedidos acima de R$ 1.600 nas mesmas condições e de R$ 100 para compras acima de R$ 1.000. Também aparece um segundo cupom de R$ 200 para compras acima de R$ 1.700 no app, além de um código de R$ 30 para pedidos acima de R$ 200 em produtos vendidos e entregues pelo Magalu.\n\nA campanha ainda inclui um cupom de R$ 100 para compras acima de R$ 1.000 em produtos vendidos por lojas parceiras, ponto importante para quem costuma comprar no marketplace da varejista. Além disso, o site lista três códigos extras com desconto de R$ 200, R$ 150 e R$ 100 em produtos selecionados, sem detalhar no material base quais itens entram em cada faixa promocional.\n\nNa prática, a oportunidade tende a fazer mais sentido para quem já estava planejando uma compra de valor mais alto e consegue encaixar o pedido exatamente nas regras de valor mínimo e canal de uso. Também vale atenção ao fato de que parte dos cupons é exclusiva para o app, enquanto outros dependem de produtos específicos ou da origem da venda, como itens vendidos e entregues pelo Magalu ou anunciados por parceiros.\n\nO ponto de atenção é a disponibilidade. Segundo a oferta, os cupons têm limite de ativações e podem se esgotar a qualquer momento, o que torna a checagem imediata essencial antes de finalizar a compra. Para aumentar as chances de aproveitar, o ideal é abrir o aplicativo, testar o código correspondente ao seu carrinho e conferir se o produto atende às condições da promoção antes do pagamento.",
+          "categoria": "Promocoes",
+          "topico": "Cartoes e Cashback",
+          "tags": [
+            "Magalu",
+            "Magazine Luiza",
+            "cupom de desconto",
+            "desconto no app",
+            "ofertas relâmpago"
+          ],
+          "cta_url": "https://www.magazineluiza.com.br/?promoter_id=4780900&partner_id=3440",
+          "cta_label": "Acessar a página do Magalu",
+          "slug": "cupom-magalu-ate-200-off-compras-04abr26",
+          "confianca": 0.9,
+          "seo_title": "Cupom Magalu: 9 códigos dão até R$ 200 de desconto em compras no app",
+          "meta_description": "Magalu libera 9 cupons com até R$ 200 OFF em compras no app e em produtos selecionados. Veja as faixas de valor e as regras.",
+          "imagem_prompt": "Capa editorial premium sobre promoção do Magalu: cena de compra online em smartphone com o aplicativo do Magazine Luiza aberto, etiquetas visuais de desconto de R$ 200, R$ 150 e R$ 100 aparecendo de forma elegante, ao fundo ambiente doméstico moderno com TV, móvel e ar-condicionado sugerindo categorias da oferta. Composição nova, ângulo em perspectiva 3/4, luz natural suave com contraste premium, paleta azul-magenta com detalhes em branco e amarelo, visual jornalístico sofisticado, sem replicar peça promocional original."
+        },
+        "editorial_classification": {
+          "categoria": "Promoções",
+          "topico": "Cartões e Cashback",
+          "tags": [
+            "Promoções",
+            "Cartões e Cashback",
+            "Magalu",
+            "Magazine Luiza",
+            "cupom de desconto"
+          ]
+        },
+        "seo": {
+          "title": "Cupom Magalu: 9 códigos dão até R$ 200 de desconto em compras no app",
+          "meta_description": "Magalu libera 9 cupons com até R$ 200 OFF em compras no app e em produtos selecionados. Veja as faixas de valor e as regras.",
+          "keywords": [
+            "Promoções",
+            "Cartões e Cashback",
+            "Magalu",
+            "Magazine Luiza",
+            "cupom de desconto"
+          ]
+        },
+        "offer_cta": {
+          "url": "https://www.magazineluiza.com.br/?promoter_id=4780900&amp;partner_id=3440",
+          "label": "Clique aqui"
+        },
+        "story_fingerprint": "5bb0372733a4c3ea3f2067abd017aa71cab858bf",
+        "cover_source": "ai_generated",
+        "source_references": [
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-magalu-ate-200-off-17h-04abr26.html",
+            "title": "Cupom Magalu: ganhe até R$ 200 de desconto em compras – são 9 códigos para aproveitar!"
+          }
+        ]
+      },
+      "criada_em": "2026-04-04T20:54:47.710491+00:00",
+      "atualizada_em": "2026-04-04T20:54:47.710506+00:00"
+    }
+  },
+  {
+    "model": "portal.noticiapublicada",
+    "pk": 2,
+    "fields": {
+      "materia_bruta": 2,
+      "fonte": 2,
+      "titulo": "Amazon libera cupom de R$ 150 OFF para compras acima de R$ 1.499",
+      "resumo": "A Amazon está com um novo cupom que concede R$ 150 de desconto em compras a partir de R$ 1.499. A oferta tem limite de uso e pode se esgotar a qualquer momento.",
+      "conteudo": "A Amazon voltou a liberar um cupom de alto valor para quem pretende fazer compras maiores neste sábado, 4 de abril. A oferta garante R$ 150 de desconto em pedidos a partir de R$ 1.499, uma condição que pode valer a pena especialmente para quem já estava planejando adquirir eletrônicos, itens para casa ou produtos de ticket mais alto.\n\nNa prática, o abatimento representa cerca de 10% sobre o valor mínimo exigido para uso do cupom. Como de costume nesse tipo de ação, o desconto é por tempo limitado e também está sujeito a limite de utilizações, o que significa que pode desaparecer antes do fim do dia mesmo sem aviso prévio.\n\nPara aproveitar, o caminho é acessar a página de ofertas da Amazon, copiar o cupom disponível e aplicá-lo no fechamento da compra, desde que o carrinho atinja ao menos R$ 1.499. Antes de concluir o pedido, vale conferir se o desconto foi efetivamente aplicado, já que a elegibilidade pode variar conforme os produtos selecionados e a disponibilidade da campanha no momento da compra.\n\nHá ainda uma forma de ampliar a economia: quem pagar com o cartão Amazon pode obter até 5% de cashback, reduzindo o custo final da compra. Além disso, consumidores que ainda não assinam o Amazon Prime podem testar o serviço gratuitamente por 30 dias, o que pode destravar benefícios adicionais como frete mais vantajoso, dependendo dos itens escolhidos.\n\nComo se trata de uma oferta relâmpago e com limite de uso, a recomendação é não deixar para mais tarde se a compra já estiver nos planos. Em promoções desse tipo, os melhores cupons costumam esgotar rapidamente.",
+      "slug": "amazon-libera-cupom-de-r-150-off-para-compras-acima-de-r-1499",
+      "categoria": "Promoções",
+      "topico": "Cartões e Cashback",
+      "tags_json": [
+        "Promoções",
+        "Cartões e Cashback",
+        "Amazon",
+        "cupom de desconto",
+        "cashback"
+      ],
+      "imagem": "portal/noticias/generated/20260404205531_f2aa0e737e.png",
+      "imagem_url": "https://www.melhorescartoes.com.br/wp-content/uploads/2025/04/amazon-capa-01.jpg",
+      "imagem_ilustrativa": true,
+      "url_fonte": "https://www.melhorescartoes.com.br/cupom-amazon-17h-04abr26.html",
+      "status": "published",
+      "confianca": "0.90",
+      "publicada_em": "2026-04-04T20:02:24+00:00",
+      "metadata_json": {
+        "provider": "openai_schema",
+        "raw_response": {
+          "titulo": "Amazon libera cupom de R$ 150 OFF para compras acima de R$ 1.499",
+          "resumo": "A Amazon está com um novo cupom que concede R$ 150 de desconto em compras a partir de R$ 1.499. A oferta tem limite de uso e pode se esgotar a qualquer momento.",
+          "conteudo": "A Amazon voltou a liberar um cupom de alto valor para quem pretende fazer compras maiores neste sábado, 4 de abril. A oferta garante R$ 150 de desconto em pedidos a partir de R$ 1.499, uma condição que pode valer a pena especialmente para quem já estava planejando adquirir eletrônicos, itens para casa ou produtos de ticket mais alto.\n\nNa prática, o abatimento representa cerca de 10% sobre o valor mínimo exigido para uso do cupom. Como de costume nesse tipo de ação, o desconto é por tempo limitado e também está sujeito a limite de utilizações, o que significa que pode desaparecer antes do fim do dia mesmo sem aviso prévio.\n\nPara aproveitar, o caminho é acessar a página de ofertas da Amazon, copiar o cupom disponível e aplicá-lo no fechamento da compra, desde que o carrinho atinja ao menos R$ 1.499. Antes de concluir o pedido, vale conferir se o desconto foi efetivamente aplicado, já que a elegibilidade pode variar conforme os produtos selecionados e a disponibilidade da campanha no momento da compra.\n\nHá ainda uma forma de ampliar a economia: quem pagar com o cartão Amazon pode obter até 5% de cashback, reduzindo o custo final da compra. Além disso, consumidores que ainda não assinam o Amazon Prime podem testar o serviço gratuitamente por 30 dias, o que pode destravar benefícios adicionais como frete mais vantajoso, dependendo dos itens escolhidos.\n\nComo se trata de uma oferta relâmpago e com limite de uso, a recomendação é não deixar para mais tarde se a compra já estiver nos planos. Em promoções desse tipo, os melhores cupons costumam esgotar rapidamente.",
+          "categoria": "Promocoes",
+          "topico": "Cartoes e Cashback",
+          "tags": [
+            "Amazon",
+            "cupom de desconto",
+            "cashback",
+            "Amazon Prime",
+            "cartão Amazon"
+          ],
+          "cta_url": "https://www.amazon.com.br/events/ofertasmensais?tag=melhoresdes01-20",
+          "cta_label": "Ver oferta e copiar o cupom na Amazon",
+          "slug": "amazon-cupom-rs-150-off-compras-acima-de-rs-1499-abril-2026",
+          "confianca": 0.9,
+          "seo_title": "Amazon tem cupom de R$ 150 OFF em compras acima de R$ 1.499",
+          "meta_description": "Amazon libera cupom de R$ 150 OFF para compras acima de R$ 1.499. Oferta tem limite de uso e pode acabar a qualquer momento.",
+          "imagem_prompt": "Capa editorial premium sobre promoção da Amazon no Brasil, mostrando uma cena de compras online em desktop e smartphone com identidade visual inspirada na Amazon, caixa de entrega aberta sobre mesa elegante, etiqueta destacando 'R$ 150 OFF' e referência sutil a compras acima de R$ 1.499, composição moderna e jornalística, enquadramento em perspectiva 3/4, luz natural sofisticada, paleta com preto, amarelo, branco e azul acinzentado, elementos de e-commerce e economia, visual realista, marcas reais permitidas, sem parecer banner publicitário, com nova composição e detalhes originais."
+        },
+        "editorial_classification": {
+          "categoria": "Promoções",
+          "topico": "Cartões e Cashback",
+          "tags": [
+            "Promoções",
+            "Cartões e Cashback",
+            "Amazon",
+            "cupom de desconto",
+            "cashback"
+          ]
+        },
+        "seo": {
+          "title": "Amazon tem cupom de R$ 150 OFF em compras acima de R$ 1.499",
+          "meta_description": "Amazon libera cupom de R$ 150 OFF para compras acima de R$ 1.499. Oferta tem limite de uso e pode acabar a qualquer momento.",
+          "keywords": [
+            "Promoções",
+            "Cartões e Cashback",
+            "Amazon",
+            "cupom de desconto",
+            "cashback"
+          ]
+        },
+        "offer_cta": {
+          "url": "https://www.amazon.com.br/events/ofertasmensais?tag=melhoresdes01-20",
+          "label": "Ver oferta e copiar o cupom na Amazon"
+        },
+        "story_fingerprint": "1ce5b8ff8b103585c61154e101fb0d4852f9e99a",
+        "cover_source": "ai_generated",
+        "source_references": [
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-amazon-17h-04abr26.html",
+            "title": "há 51 minutos Novo cupom! Aproveite R$ 150 OFF na Amazon em compras a partir de R$ 1.499"
+          },
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-amazon-14h-04abr26.html",
+            "title": "há 4 horas Muito bom! Ganhe até R$ 150 de desconto em compras na Amazon"
+          },
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-amazon-10h-04abr26.html",
+            "title": "há 8 horas Cupom Amazon! Ganhe R$ 200 OFF em compras a partir de R$ 1.999"
+          },
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-amazon-14h-03abr26.html",
+            "title": "há 1 dia Novo cupom Amazon! Ganhe R$ 100 OFF em compras a partir de R$ 999"
+          }
+        ]
+      },
+      "criada_em": "2026-04-04T20:55:31.044267+00:00",
+      "atualizada_em": "2026-04-04T21:02:42.946009+00:00"
+    }
+  },
+  {
+    "model": "portal.noticiapublicada",
+    "pk": 3,
+    "fields": {
+      "materia_bruta": 3,
+      "fonte": 2,
+      "titulo": "Shopee libera dois novos cupons no 4.4 com até R$ 200 de desconto; oferta pode acabar rápido",
+      "resumo": "A Shopee lançou neste sábado (4) dois novos cupons da campanha 4.4: um dá R$ 200 de desconto em compras acima de R$ 1.200 em qualquer loja, e o outro oferece R$ 180 off em pedidos a partir de R$ 999 em categorias de tecnologia. Como há limite de ativações, os códigos podem se esg",
+      "conteudo": "A Shopee colocou no ar neste sábado (4) dois novos cupons de desconto da campanha 4.4, com abatimentos que chegam a R$ 200. A ação pode ser uma boa oportunidade para quem já estava planejando compras de maior valor, mas exige agilidade: os cupons têm limite de ativações e podem desaparecer em poucos minutos.\n\nO principal destaque é o cupom de R$ 200 OFF para pedidos acima de R$ 1.200, válido em todas as lojas da plataforma. Já o segundo código concede R$ 180 de desconto em compras a partir de R$ 999, mas apenas para itens de tecnologia. Entre as categorias elegíveis estão smartphones, computadores, equipamentos de áudio, jogos e games, eletrodomésticos, eletroportáteis, câmeras e drones.\n\nNa prática, a oferta faz mais sentido para quem já tinha intenção de comprar produtos nessas faixas de preço, especialmente eletrônicos e itens de maior ticket médio. Como o desconto mínimo depende de um valor elevado no carrinho, a promoção tende a ser mais vantajosa para compras planejadas do que para aquisições por impulso.\n\nPara aproveitar, o processo é simples: basta copiar o código promocional, acessar o site ou o aplicativo da Shopee, ativar o cupom e concluir o pedido dentro das regras da campanha. Como a disponibilidade é limitada, vale conferir rapidamente se o benefício ainda aparece na conta antes de finalizar a compra.\n\nEm promoções desse tipo, o ponto mais importante é checar se o produto desejado realmente se enquadra nas categorias participantes e se o valor final, já com o desconto aplicado, continua competitivo em relação a outras lojas. Ainda assim, para quem encontrar o item certo e conseguir ativar a oferta a tempo, os novos cupons do 4.4 podem render uma economia relevante.",
+      "slug": "shopee-libera-dois-novos-cupons-no-44-com-ate-r-200-de-desconto-oferta-pode-acabar-rapido",
+      "categoria": "Promoções",
+      "topico": "Ofertas Relâmpago",
+      "tags_json": [
+        "Promoções",
+        "Ofertas Relâmpago",
+        "Shopee",
+        "cupom de desconto",
+        "promoção 4.4"
+      ],
+      "imagem": "portal/noticias/generated/20260404205611_384b9d739d.png",
+      "imagem_url": "https://www.melhorescartoes.com.br/wp-content/uploads/2024/11/shopee-capa-01.jpg",
+      "imagem_ilustrativa": true,
+      "url_fonte": "https://www.melhorescartoes.com.br/cupom-shopee-180-off-04abr26.html",
+      "status": "published",
+      "confianca": "0.95",
+      "publicada_em": "2026-04-04T18:24:25+00:00",
+      "metadata_json": {
+        "provider": "openai_schema",
+        "raw_response": {
+          "titulo": "Shopee libera dois novos cupons no 4.4 com até R$ 200 de desconto; oferta pode acabar rápido",
+          "resumo": "A Shopee lançou neste sábado (4) dois novos cupons da campanha 4.4: um dá R$ 200 de desconto em compras acima de R$ 1.200 em qualquer loja, e o outro oferece R$ 180 off em pedidos a partir de R$ 999 em categorias de tecnologia. Como há limite de ativações, os códigos podem se esgotar rapidamente.",
+          "conteudo": "A Shopee colocou no ar neste sábado (4) dois novos cupons de desconto da campanha 4.4, com abatimentos que chegam a R$ 200. A ação pode ser uma boa oportunidade para quem já estava planejando compras de maior valor, mas exige agilidade: os cupons têm limite de ativações e podem desaparecer em poucos minutos.\n\nO principal destaque é o cupom de R$ 200 OFF para pedidos acima de R$ 1.200, válido em todas as lojas da plataforma. Já o segundo código concede R$ 180 de desconto em compras a partir de R$ 999, mas apenas para itens de tecnologia. Entre as categorias elegíveis estão smartphones, computadores, equipamentos de áudio, jogos e games, eletrodomésticos, eletroportáteis, câmeras e drones.\n\nNa prática, a oferta faz mais sentido para quem já tinha intenção de comprar produtos nessas faixas de preço, especialmente eletrônicos e itens de maior ticket médio. Como o desconto mínimo depende de um valor elevado no carrinho, a promoção tende a ser mais vantajosa para compras planejadas do que para aquisições por impulso.\n\nPara aproveitar, o processo é simples: basta copiar o código promocional, acessar o site ou o aplicativo da Shopee, ativar o cupom e concluir o pedido dentro das regras da campanha. Como a disponibilidade é limitada, vale conferir rapidamente se o benefício ainda aparece na conta antes de finalizar a compra.\n\nEm promoções desse tipo, o ponto mais importante é checar se o produto desejado realmente se enquadra nas categorias participantes e se o valor final, já com o desconto aplicado, continua competitivo em relação a outras lojas. Ainda assim, para quem encontrar o item certo e conseguir ativar a oferta a tempo, os novos cupons do 4.4 podem render uma economia relevante.",
+          "categoria": "Promocoes",
+          "topico": "Ofertas Relampago",
+          "tags": [
+            "Shopee",
+            "cupom de desconto",
+            "promoção 4.4",
+            "desconto em compras",
+            "tecnologia"
+          ],
+          "cta_url": "https://s.shopee.com.br/16AxKpZJL?utm_source=an_18100610009&utm_medium=affiliates&utm_content=----&utm_campaign=-",
+          "cta_label": "Ver cupons e acessar a Shopee",
+          "slug": "shopee-cupom-200-off-180-off-04abr26",
+          "confianca": 0.95,
+          "seo_title": "Shopee libera cupons de até R$ 200 de desconto na campanha 4.4",
+          "meta_description": "Shopee lança 2 cupons no 4.4, com até R$ 200 de desconto. Oferta tem limite de ativações e pode acabar rapidamente.",
+          "imagem_prompt": "Capa editorial premium sobre promoção da Shopee 4.4, mostrando smartphone com aplicativo da Shopee aberto e carrinho de compras digital, etiquetas de desconto em destaque com textos visuais como 'R$ 200 OFF' e 'R$ 180 OFF', ambiente moderno de e-commerce, elementos de tecnologia como notebook, fones, câmera e caixa de eletroportáteis ao fundo, estética jornalística sofisticada, nova composição em perspectiva diagonal, iluminação quente com contraste elegante, paleta em laranja, branco e cinza grafite, visual realista e refinado, sem parecer peça publicitária oficial, com marcas reais citadas no contexto"
+        },
+        "editorial_classification": {
+          "categoria": "Promoções",
+          "topico": "Ofertas Relâmpago",
+          "tags": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Shopee",
+            "cupom de desconto",
+            "promoção 4.4"
+          ]
+        },
+        "seo": {
+          "title": "Shopee libera cupons de até R$ 200 de desconto na campanha 4.4",
+          "meta_description": "Shopee lança 2 cupons no 4.4, com até R$ 200 de desconto. Oferta tem limite de ativações e pode acabar rapidamente.",
+          "keywords": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Shopee",
+            "cupom de desconto",
+            "promoção 4.4"
+          ]
+        },
+        "offer_cta": {
+          "url": "https://s.shopee.com.br/16AxKpZJL?utm_source=an_18100610009&amp;utm_medium=affiliates&amp;utm_content=----&amp;utm_campaign=-",
+          "label": "Copiar e ir à loja"
+        },
+        "story_fingerprint": "14c0fca18945335d17ae1ed74a6028823cdbcd1d",
+        "cover_source": "ai_generated",
+        "source_references": [
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-shopee-180-off-04abr26.html",
+            "title": "há 2 horas Bom demais! Cupom Shopee oferece até R$ 200 de desconto em compras – são 2 novos códigos!"
+          }
+        ]
+      },
+      "criada_em": "2026-04-04T20:56:11.633271+00:00",
+      "atualizada_em": "2026-04-04T20:56:11.633286+00:00"
+    }
+  },
+  {
+    "model": "portal.noticiapublicada",
+    "pk": 4,
+    "fields": {
+      "materia_bruta": 4,
+      "fonte": 2,
+      "titulo": "Amazon libera cupom de R$ 70 OFF para compras acima de R$ 699 neste sábado",
+      "resumo": "A Amazon está oferecendo R$ 70 de desconto em pedidos a partir de R$ 699. O cupom vale para todos os clientes até as 16h deste sábado (4) ou até atingir o limite de ativações.",
+      "conteudo": "A Amazon lançou neste sábado (4) um novo cupom de desconto que garante R$ 70 OFF em compras a partir de R$ 699. A oferta é válida para todos os clientes e pode ser uma boa oportunidade para reduzir o valor final de pedidos mais altos, especialmente em categorias com preços menos promocionais no dia a dia.\n\nNa prática, o desconto equivale a pouco mais de 10% sobre o valor mínimo exigido para uso do cupom. Para aproveitar, é necessário acessar o site ou o app da Amazon, adicionar os produtos ao carrinho e aplicar o código promocional no fechamento da compra. Como de praxe nesse tipo de ação, o benefício depende do funcionamento do cupom no momento da finalização.\n\nHá, porém, duas condições importantes: a campanha é válida apenas até as 16h deste sábado ou até que seja atingido o limite de ativações estabelecido pela varejista. Isso significa que o cupom pode deixar de funcionar antes do horário final, mesmo dentro do prazo divulgado.\n\nPara quem busca maximizar a economia, a compra pode ficar ainda mais vantajosa com o cartão Amazon, que oferece até 5% de cashback, segundo as condições do produto. Nesse cenário, o abatimento do cupom somado ao retorno em cashback ajuda a reduzir ainda mais o custo efetivo da compra.\n\nAntes de concluir o pedido, vale conferir se o desconto foi aplicado corretamente no resumo da compra e se o valor mínimo de R$ 699 foi mantido após eventuais ajustes no carrinho. Em ofertas relâmpago como esta, agir rápido costuma ser decisivo para garantir o benefício.",
+      "slug": "amazon-libera-cupom-de-r-70-off-para-compras-acima-de-r-699-neste-sabado",
+      "categoria": "Promoções",
+      "topico": "Ofertas Relâmpago",
+      "tags_json": [
+        "Promoções",
+        "Ofertas Relâmpago",
+        "Amazon",
+        "cupom de desconto",
+        "R$ 70 OFF"
+      ],
+      "imagem": "portal/noticias/generated/20260404205654_93f1ec536b.png",
+      "imagem_url": "https://www.melhorescartoes.com.br/wp-content/uploads/2024/05/compras-desconto-amazon-capa-02.jpg",
+      "imagem_ilustrativa": true,
+      "url_fonte": "https://www.melhorescartoes.com.br/cupom-amazon-70-off-04abr26.html",
+      "status": "published",
+      "confianca": "0.95",
+      "publicada_em": "2026-04-04T18:08:37+00:00",
+      "metadata_json": {
+        "provider": "openai_schema",
+        "raw_response": {
+          "titulo": "Amazon libera cupom de R$ 70 OFF para compras acima de R$ 699 neste sábado",
+          "resumo": "A Amazon está oferecendo R$ 70 de desconto em pedidos a partir de R$ 699. O cupom vale para todos os clientes até as 16h deste sábado (4) ou até atingir o limite de ativações.",
+          "conteudo": "A Amazon lançou neste sábado (4) um novo cupom de desconto que garante R$ 70 OFF em compras a partir de R$ 699. A oferta é válida para todos os clientes e pode ser uma boa oportunidade para reduzir o valor final de pedidos mais altos, especialmente em categorias com preços menos promocionais no dia a dia.\n\nNa prática, o desconto equivale a pouco mais de 10% sobre o valor mínimo exigido para uso do cupom. Para aproveitar, é necessário acessar o site ou o app da Amazon, adicionar os produtos ao carrinho e aplicar o código promocional no fechamento da compra. Como de praxe nesse tipo de ação, o benefício depende do funcionamento do cupom no momento da finalização.\n\nHá, porém, duas condições importantes: a campanha é válida apenas até as 16h deste sábado ou até que seja atingido o limite de ativações estabelecido pela varejista. Isso significa que o cupom pode deixar de funcionar antes do horário final, mesmo dentro do prazo divulgado.\n\nPara quem busca maximizar a economia, a compra pode ficar ainda mais vantajosa com o cartão Amazon, que oferece até 5% de cashback, segundo as condições do produto. Nesse cenário, o abatimento do cupom somado ao retorno em cashback ajuda a reduzir ainda mais o custo efetivo da compra.\n\nAntes de concluir o pedido, vale conferir se o desconto foi aplicado corretamente no resumo da compra e se o valor mínimo de R$ 699 foi mantido após eventuais ajustes no carrinho. Em ofertas relâmpago como esta, agir rápido costuma ser decisivo para garantir o benefício.",
+          "categoria": "Promocoes",
+          "topico": "Ofertas Relampago",
+          "tags": [
+            "Amazon",
+            "cupom de desconto",
+            "R$ 70 OFF",
+            "oferta relâmpago",
+            "cashback"
+          ],
+          "cta_url": "https://www.amazon.com.br/events/ofertasmensais?tag=melhoresdes01-20",
+          "cta_label": "Acessar oferta na Amazon",
+          "slug": "amazon-cupom-70-off-compras-acima-699-04abr26",
+          "confianca": 0.95,
+          "seo_title": "Amazon oferece cupom de R$ 70 OFF em compras acima de R$ 699 hoje",
+          "meta_description": "Amazon libera cupom de R$ 70 OFF para compras a partir de R$ 699, válido até as 16h deste sábado ou até o limite de ativações.",
+          "imagem_prompt": "Capa editorial premium sobre promoção da Amazon no Brasil: carrinho de compras com caixas da Amazon e etiquetas de desconto em primeiro plano, interface de e-commerce em notebook ao fundo mostrando compra acima de R$ 699, selo visual destacando R$ 70 OFF, estética jornalística sofisticada, iluminação limpa de estúdio, composição diagonal dinâmica, perspectiva 3/4, paleta com azul escuro, laranja e branco, elementos sutis de cashback/cartão Amazon sem parecer peça publicitária oficial, visual realista e moderno"
+        },
+        "editorial_classification": {
+          "categoria": "Promoções",
+          "topico": "Ofertas Relâmpago",
+          "tags": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Amazon",
+            "cupom de desconto",
+            "R$ 70 OFF"
+          ]
+        },
+        "seo": {
+          "title": "Amazon oferece cupom de R$ 70 OFF em compras acima de R$ 699 hoje",
+          "meta_description": "Amazon libera cupom de R$ 70 OFF para compras a partir de R$ 699, válido até as 16h deste sábado ou até o limite de ativações.",
+          "keywords": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Amazon",
+            "cupom de desconto",
+            "R$ 70 OFF"
+          ]
+        },
+        "offer_cta": {
+          "url": "https://www.amazon.com.br/events/ofertasmensais?tag=melhoresdes01-20",
+          "label": "Acessar oferta na Amazon"
+        },
+        "story_fingerprint": "76ccafe0691ba4c1531642c47bb1e4399a4f7aec",
+        "cover_source": "ai_generated",
+        "source_references": [
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-amazon-70-off-04abr26.html",
+            "title": "há 3 horas Novo cupom! Amazon oferece R$ 70 OFF em compras a partir de R$ 699"
+          }
+        ]
+      },
+      "criada_em": "2026-04-04T20:56:54.113299+00:00",
+      "atualizada_em": "2026-04-04T20:56:54.113505+00:00"
+    }
+  },
+  {
+    "model": "portal.noticiapublicada",
+    "pk": 5,
+    "fields": {
+      "materia_bruta": 6,
+      "fonte": 2,
+      "titulo": "Mercado Livre libera novo cupom com 18% OFF em compras a partir de R$ 79",
+      "resumo": "O Mercado Livre está com um novo cupom que garante 18% de desconto em compras a partir de R$ 79, com abatimento máximo de R$ 60. A oferta vale até o fim deste sábado, 4 de abril, ou até o limite de ativações se esgotar antes.",
+      "conteudo": "O Mercado Livre voltou a liberar um cupom de desconto que pode render economia relevante para quem já estava planejando alguma compra de baixo ou médio valor. A oferta concede 18% OFF em pedidos a partir de R$ 79, com desconto limitado a R$ 60, e vale para quase todo o site.\n\nNa prática, o benefício é interessante sobretudo para compras em que o abatimento percentual consegue ser aproveitado quase por completo. Como o teto é de R$ 60, o cupom atinge seu melhor rendimento em pedidos de valor intermediário, desde que os produtos elegíveis estejam dentro das regras da campanha.\n\nSegundo as condições divulgadas, o cupom pode ser usado até o final do dia deste sábado, 4 de abril, ou antes disso, caso o limite de ativações seja atingido. Esse ponto é importante: como a disponibilidade é limitada, a oferta pode sair do ar sem aviso antes do encerramento do prazo.\n\nTambém vale atenção a uma regra prática que costuma passar despercebida: o valor do frete, se houver, não entra no cálculo do pedido mínimo para ativar o desconto. Em outras palavras, é preciso atingir os R$ 79 apenas com os itens do carrinho, sem considerar a entrega.\n\nPara quem pretende aproveitar, o caminho mais direto é acessar a página oficial de ofertas do Mercado Livre, verificar a elegibilidade dos produtos e aplicar o cupom antes da finalização da compra. Como se trata de uma ação relâmpago e com limite de uso, a recomendação é não deixar para a última hora.",
+      "slug": "mercado-livre-libera-novo-cupom-com-18-off-em-compras-a-partir-de-r-79",
+      "categoria": "Promoções",
+      "topico": "Ofertas Relâmpago",
+      "tags_json": [
+        "Promoções",
+        "Ofertas Relâmpago",
+        "Mercado Livre",
+        "cupom de desconto",
+        "desconto"
+      ],
+      "imagem": "portal/noticias/generated/20260404205752_fad36f2e6f.png",
+      "imagem_url": "https://www.melhorescartoes.com.br/wp-content/uploads/2026/04/itens-moda-mercado-livre-capa-02.jpg",
+      "imagem_ilustrativa": true,
+      "url_fonte": "https://www.melhorescartoes.com.br/cupom-mercado-livre-14h-04abr26.html",
+      "status": "published",
+      "confianca": "0.95",
+      "publicada_em": "2026-04-04T17:00:41+00:00",
+      "metadata_json": {
+        "provider": "openai_schema",
+        "raw_response": {
+          "titulo": "Mercado Livre libera novo cupom com 18% OFF em compras a partir de R$ 79",
+          "resumo": "O Mercado Livre está com um novo cupom que garante 18% de desconto em compras a partir de R$ 79, com abatimento máximo de R$ 60. A oferta vale até o fim deste sábado, 4 de abril, ou até o limite de ativações se esgotar antes.",
+          "conteudo": "O Mercado Livre voltou a liberar um cupom de desconto que pode render economia relevante para quem já estava planejando alguma compra de baixo ou médio valor. A oferta concede 18% OFF em pedidos a partir de R$ 79, com desconto limitado a R$ 60, e vale para quase todo o site.\n\nNa prática, o benefício é interessante sobretudo para compras em que o abatimento percentual consegue ser aproveitado quase por completo. Como o teto é de R$ 60, o cupom atinge seu melhor rendimento em pedidos de valor intermediário, desde que os produtos elegíveis estejam dentro das regras da campanha.\n\nSegundo as condições divulgadas, o cupom pode ser usado até o final do dia deste sábado, 4 de abril, ou antes disso, caso o limite de ativações seja atingido. Esse ponto é importante: como a disponibilidade é limitada, a oferta pode sair do ar sem aviso antes do encerramento do prazo.\n\nTambém vale atenção a uma regra prática que costuma passar despercebida: o valor do frete, se houver, não entra no cálculo do pedido mínimo para ativar o desconto. Em outras palavras, é preciso atingir os R$ 79 apenas com os itens do carrinho, sem considerar a entrega.\n\nPara quem pretende aproveitar, o caminho mais direto é acessar a página oficial de ofertas do Mercado Livre, verificar a elegibilidade dos produtos e aplicar o cupom antes da finalização da compra. Como se trata de uma ação relâmpago e com limite de uso, a recomendação é não deixar para a última hora.",
+          "categoria": "Promocoes",
+          "topico": "Ofertas Relampago",
+          "tags": [
+            "Mercado Livre",
+            "cupom de desconto",
+            "desconto",
+            "e-commerce",
+            "ofertas relâmpago"
+          ],
+          "cta_url": "https://www.mercadolivre.com.br/ofertas",
+          "cta_label": "Ver ofertas no Mercado Livre",
+          "slug": "mercado-livre-cupom-18-off-compras-a-partir-de-79-abril-2026",
+          "confianca": 0.95,
+          "seo_title": "Mercado Livre tem cupom de 18% OFF em compras a partir de R$ 79",
+          "meta_description": "Mercado Livre libera cupom com 18% OFF em compras a partir de R$ 79, com desconto máximo de R$ 60. Oferta vale até hoje ou enquanto durar.",
+          "imagem_prompt": "Capa editorial premium sobre promoção do Mercado Livre: cena de compras online em ambiente moderno, notebook e smartphone exibindo o site do Mercado Livre com selo visual de 18% OFF, sacolas e caixas de entrega discretas sobre a mesa, identidade amarela da marca em detalhes, composição nova em ângulo 3/4, iluminação sofisticada de fim de tarde, fundo desfocado de escritório doméstico, visual jornalístico elegante, realista e clean, sem reproduzir arte promocional original."
+        },
+        "editorial_classification": {
+          "categoria": "Promoções",
+          "topico": "Ofertas Relâmpago",
+          "tags": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Mercado Livre",
+            "cupom de desconto",
+            "desconto"
+          ]
+        },
+        "seo": {
+          "title": "Mercado Livre tem cupom de 18% OFF em compras a partir de R$ 79",
+          "meta_description": "Mercado Livre libera cupom com 18% OFF em compras a partir de R$ 79, com desconto máximo de R$ 60. Oferta vale até hoje ou enquanto durar.",
+          "keywords": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Mercado Livre",
+            "cupom de desconto",
+            "desconto"
+          ]
+        },
+        "offer_cta": {
+          "url": "https://www.mercadolivre.com.br/ofertas",
+          "label": "Ver ofertas no Mercado Livre"
+        },
+        "story_fingerprint": "f3c10a231b9ddb0f120934a54a1a89d621790e17",
+        "cover_source": "ai_generated",
+        "source_references": [
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-mercado-livre-14h-04abr26.html",
+            "title": "há 4 horas Mais desconto! Mercado Livre garante 18% OFF com novo cupom"
+          },
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-mercado-livre-10h20-03abr26.html",
+            "title": "há 1 dia Até R$ 50 de desconto! Aproveite o cupom Mercado Livre em compras a partir de R$ 79"
+          }
+        ]
+      },
+      "criada_em": "2026-04-04T20:57:52.970401+00:00",
+      "atualizada_em": "2026-04-04T21:03:33.891964+00:00"
+    }
+  },
+  {
+    "model": "portal.noticiapublicada",
+    "pk": 6,
+    "fields": {
+      "materia_bruta": 7,
+      "fonte": 2,
+      "titulo": "Mercado Livre libera cupom de 15% OFF com desconto de até R$ 50 em compras a partir de R$ 79",
+      "resumo": "O Mercado Livre disponibilizou neste sábado (4) um cupom de 15% de desconto, limitado a R$ 50, para compras a partir de R$ 79. A ação vale até o fim do dia ou até o limite de ativações, e os cupons podem se esgotar rapidamente.",
+      "conteudo": "O Mercado Livre colocou no ar neste sábado (4) um novo cupom de desconto que pode reduzir em 15% o valor da compra, com abatimento máximo de R$ 50. A oferta é válida para pedidos a partir de R$ 79 e pode ser usada em quase todo o site, o que amplia bastante as possibilidades para quem já estava com itens no carrinho.\n\nNa prática, o benefício funciona assim: ao atingir o valor mínimo exigido, o cliente consegue aplicar o cupom e garantir o desconto dentro do limite promocional. Como o teto é de R$ 50, o melhor aproveitamento acontece em compras de valor mais alto, desde que os produtos participantes estejam elegíveis.\n\nHá, porém, duas condições importantes. A primeira é o prazo: a campanha vale somente até o fim deste sábado ou até que o limite de ativações seja alcançado. A segunda é a regra de valor mínimo: o frete, quando houver, não entra no cálculo dos R$ 79 exigidos para liberar o cupom.\n\nEsse tipo de ação costuma ter alta procura e pode se encerrar antes do prazo previsto. Por isso, para quem pretende aproveitar, a recomendação é acessar a página de ofertas do Mercado Livre, verificar a elegibilidade dos produtos e concluir a compra o quanto antes.\n\nPara o consumidor, a oportunidade é especialmente interessante em compras planejadas de itens mais caros, já que o desconto máximo de R$ 50 pode gerar uma economia relevante no fechamento do pedido. Ainda assim, vale conferir o preço final com calma antes de pagar, porque promoções relâmpago desse tipo costumam ter disponibilidade limitada.",
+      "slug": "mercado-livre-libera-cupom-de-15-off-com-desconto-de-ate-r-50-em-compras-a-partir-de-r-79",
+      "categoria": "Promoções",
+      "topico": "Cartões e Cashback",
+      "tags_json": [
+        "Promoções",
+        "Cartões e Cashback",
+        "Mercado Livre",
+        "cupom de desconto",
+        "ofertas relâmpago"
+      ],
+      "imagem": "portal/noticias/generated/20260404205839_4c0da95fca.png",
+      "imagem_url": "https://www.melhorescartoes.com.br/wp-content/uploads/2025/09/mercado-livre-capa-07.jpg",
+      "imagem_ilustrativa": true,
+      "url_fonte": "https://www.melhorescartoes.com.br/cupom-mercado-livre-12h20-04abr26.html",
+      "status": "published",
+      "confianca": "0.92",
+      "publicada_em": "2026-04-04T15:23:38+00:00",
+      "metadata_json": {
+        "provider": "openai_schema",
+        "raw_response": {
+          "titulo": "Mercado Livre libera cupom de 15% OFF com desconto de até R$ 50 em compras a partir de R$ 79",
+          "resumo": "O Mercado Livre disponibilizou neste sábado (4) um cupom de 15% de desconto, limitado a R$ 50, para compras a partir de R$ 79. A ação vale até o fim do dia ou até o limite de ativações, e os cupons podem se esgotar rapidamente.",
+          "conteudo": "O Mercado Livre colocou no ar neste sábado (4) um novo cupom de desconto que pode reduzir em 15% o valor da compra, com abatimento máximo de R$ 50. A oferta é válida para pedidos a partir de R$ 79 e pode ser usada em quase todo o site, o que amplia bastante as possibilidades para quem já estava com itens no carrinho.\n\nNa prática, o benefício funciona assim: ao atingir o valor mínimo exigido, o cliente consegue aplicar o cupom e garantir o desconto dentro do limite promocional. Como o teto é de R$ 50, o melhor aproveitamento acontece em compras de valor mais alto, desde que os produtos participantes estejam elegíveis.\n\nHá, porém, duas condições importantes. A primeira é o prazo: a campanha vale somente até o fim deste sábado ou até que o limite de ativações seja alcançado. A segunda é a regra de valor mínimo: o frete, quando houver, não entra no cálculo dos R$ 79 exigidos para liberar o cupom.\n\nEsse tipo de ação costuma ter alta procura e pode se encerrar antes do prazo previsto. Por isso, para quem pretende aproveitar, a recomendação é acessar a página de ofertas do Mercado Livre, verificar a elegibilidade dos produtos e concluir a compra o quanto antes.\n\nPara o consumidor, a oportunidade é especialmente interessante em compras planejadas de itens mais caros, já que o desconto máximo de R$ 50 pode gerar uma economia relevante no fechamento do pedido. Ainda assim, vale conferir o preço final com calma antes de pagar, porque promoções relâmpago desse tipo costumam ter disponibilidade limitada.",
+          "categoria": "Promocoes",
+          "topico": "Cartoes e Cashback",
+          "tags": [
+            "Mercado Livre",
+            "cupom de desconto",
+            "ofertas relâmpago",
+            "desconto em compras",
+            "e-commerce"
+          ],
+          "cta_url": "https://www.mercadolivre.com.br/ofertas?matt_tool=50866442&forceInApp=true",
+          "cta_label": "Ver ofertas no Mercado Livre",
+          "slug": "mercado-livre-cupom-15-off-ate-50-reais-04-abr-2026",
+          "confianca": 0.92,
+          "seo_title": "Mercado Livre libera cupom de 15% OFF com até R$ 50 de desconto neste sábado",
+          "meta_description": "Mercado Livre tem cupom de 15% OFF com desconto de até R$ 50 em compras a partir de R$ 79. Oferta vale até hoje ou até acabar.",
+          "imagem_prompt": "Capa editorial premium sobre promoção do Mercado Livre: ambiente de compras online no Brasil, smartphone e notebook exibindo a identidade visual real do Mercado Livre e carrinho virtual com etiqueta de 15% OFF, destaque para economia de até R$ 50, composição elegante e jornalística, enquadramento em perspectiva 3/4 sobre mesa clara, elementos de embalagem e entrega discretos ao fundo, luz natural contrastada, paleta amarela com azul e cinza como cores secundárias, visual moderno, limpo e confiável, sem parecer banner promocional original."
+        },
+        "editorial_classification": {
+          "categoria": "Promoções",
+          "topico": "Cartões e Cashback",
+          "tags": [
+            "Promoções",
+            "Cartões e Cashback",
+            "Mercado Livre",
+            "cupom de desconto",
+            "ofertas relâmpago"
+          ]
+        },
+        "seo": {
+          "title": "Mercado Livre libera cupom de 15% OFF com até R$ 50 de desconto",
+          "meta_description": "Mercado Livre tem cupom de 15% OFF com desconto de até R$ 50 em compras a partir de R$ 79. Oferta vale até hoje ou até acabar.",
+          "keywords": [
+            "Promoções",
+            "Cartões e Cashback",
+            "Mercado Livre",
+            "cupom de desconto",
+            "ofertas relâmpago"
+          ]
+        },
+        "offer_cta": {
+          "url": "https://www.mercadolivre.com.br/ofertas?matt_tool=50866442&amp;forceInApp=true",
+          "label": "Acesse aqui"
+        },
+        "story_fingerprint": "31c79a609207a1785e4e60e112cc4ddf12de715a",
+        "cover_source": "ai_generated",
+        "source_references": [
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-mercado-livre-12h20-04abr26.html",
+            "title": "há 5 horas Ganhe até R$ 50 de desconto! Ative o novo cupom no cupom do Mercado Livre e aproveite!"
+          },
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-mercado-livre-11h40-04abr26.html",
+            "title": "há 6 horas Mercado Livre no 4/4! Aproveite o novo cupom e economize até R$ 80"
+          },
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-4-do-4-mercado-livre-ate-15-off-04abr26.html",
+            "title": "há 9 horas 3 novos códigos! Ganhe até 15% OFF em compras a partir de R$ 79 com cupom Mercado Livre"
+          }
+        ]
+      },
+      "criada_em": "2026-04-04T20:58:39.469412+00:00",
+      "atualizada_em": "2026-04-04T21:01:44.664832+00:00"
+    }
+  },
+  {
+    "model": "portal.noticiapublicada",
+    "pk": 7,
+    "fields": {
+      "materia_bruta": 8,
+      "fonte": 2,
+      "titulo": "Magalu libera cupons com até R$ 200 de desconto neste 4/4; benefícios podem acabar a qualquer momento",
+      "resumo": "O Magalu está com cupons de até R$ 200 OFF em compras pelo app e em produtos selecionados neste 4/4. As ativações são limitadas e os códigos podem se esgotar a qualquer momento.",
+      "conteudo": "O Magalu entrou no clima da data promocional de 4/4 com uma nova rodada de cupons de desconto que pode reduzir em até R$ 200 o valor da compra. A oferta atende diferentes faixas de gasto e inclui benefícios tanto para pedidos no aplicativo quanto para produtos selecionados no site, mas há um ponto importante: os cupons têm limite de ativações e podem acabar sem aviso.\n\nEntre os destaques, há um cupom de R$ 200 OFF para compras acima de R$ 1.700 em produtos vendidos e entregues pelo Magalu, com uso exclusivo no app. Também aparece uma oferta de R$ 100 OFF para compras acima de R$ 1.000 em produtos vendidos por lojas parceiras, igualmente válida no aplicativo. Na prática, são descontos mais interessantes para quem já estava planejando uma compra de maior valor e consegue encaixar o pedido nas regras da campanha.\n\nAlém disso, a varejista informa a disponibilidade de outros códigos ativos para produtos selecionados, com abatimentos de R$ 200, R$ 150 e R$ 100, além de um cupom de 10% OFF em compras acima de R$ 40 em produtos Ypê. Como nem todos os itens participam das mesmas condições, vale conferir a elegibilidade do produto antes de finalizar o carrinho para evitar frustração na aplicação do desconto.\n\nPara aproveitar, o caminho indicado é acessar a página da promoção, copiar o código correspondente e concluir a compra no app do Magalu quando essa for uma exigência da oferta. Esse detalhe é essencial, porque cupons válidos apenas no aplicativo normalmente não funcionam no site desktop ou mobile browser.\n\nPara o consumidor, o principal ganho está em combinar o cupom certo com uma compra que já faria, especialmente em categorias de tíquete mais alto, como eletrodomésticos, eletrônicos e móveis. Como se trata de uma ação com estoque promocional limitado, a recomendação é agir rápido e revisar atentamente vendedor, valor mínimo e canal de compra antes de concluir o pedido.",
+      "slug": "magalu-libera-cupons-com-ate-r-200-de-desconto-neste-44-beneficios-podem-acabar-a-qualquer-momento",
+      "categoria": "Promoções",
+      "topico": "Ofertas Relâmpago",
+      "tags_json": [
+        "Promoções",
+        "Ofertas Relâmpago",
+        "Magalu",
+        "Magazine Luiza",
+        "cupom de desconto"
+      ],
+      "imagem": "portal/noticias/generated/20260404205926_5594232ef3.png",
+      "imagem_url": "https://www.melhorescartoes.com.br/wp-content/uploads/2026/01/cupom-magalu-capa-2.jpg",
+      "imagem_ilustrativa": true,
+      "url_fonte": "https://www.melhorescartoes.com.br/cupom-magalu-ate-200-off-04abr26.html",
+      "status": "published",
+      "confianca": "0.92",
+      "publicada_em": "2026-04-04T15:12:48+00:00",
+      "metadata_json": {
+        "provider": "openai_schema",
+        "raw_response": {
+          "titulo": "Magalu libera cupons com até R$ 200 de desconto neste 4/4; benefícios podem acabar a qualquer momento",
+          "resumo": "O Magalu está com cupons de até R$ 200 OFF em compras pelo app e em produtos selecionados neste 4/4. As ativações são limitadas e os códigos podem se esgotar a qualquer momento.",
+          "conteudo": "O Magalu entrou no clima da data promocional de 4/4 com uma nova rodada de cupons de desconto que pode reduzir em até R$ 200 o valor da compra. A oferta atende diferentes faixas de gasto e inclui benefícios tanto para pedidos no aplicativo quanto para produtos selecionados no site, mas há um ponto importante: os cupons têm limite de ativações e podem acabar sem aviso.\n\nEntre os destaques, há um cupom de R$ 200 OFF para compras acima de R$ 1.700 em produtos vendidos e entregues pelo Magalu, com uso exclusivo no app. Também aparece uma oferta de R$ 100 OFF para compras acima de R$ 1.000 em produtos vendidos por lojas parceiras, igualmente válida no aplicativo. Na prática, são descontos mais interessantes para quem já estava planejando uma compra de maior valor e consegue encaixar o pedido nas regras da campanha.\n\nAlém disso, a varejista informa a disponibilidade de outros códigos ativos para produtos selecionados, com abatimentos de R$ 200, R$ 150 e R$ 100, além de um cupom de 10% OFF em compras acima de R$ 40 em produtos Ypê. Como nem todos os itens participam das mesmas condições, vale conferir a elegibilidade do produto antes de finalizar o carrinho para evitar frustração na aplicação do desconto.\n\nPara aproveitar, o caminho indicado é acessar a página da promoção, copiar o código correspondente e concluir a compra no app do Magalu quando essa for uma exigência da oferta. Esse detalhe é essencial, porque cupons válidos apenas no aplicativo normalmente não funcionam no site desktop ou mobile browser.\n\nPara o consumidor, o principal ganho está em combinar o cupom certo com uma compra que já faria, especialmente em categorias de tíquete mais alto, como eletrodomésticos, eletrônicos e móveis. Como se trata de uma ação com estoque promocional limitado, a recomendação é agir rápido e revisar atentamente vendedor, valor mínimo e canal de compra antes de concluir o pedido.",
+          "categoria": "Promocoes",
+          "topico": "Ofertas Relampago",
+          "tags": [
+            "Magalu",
+            "Magazine Luiza",
+            "cupom de desconto",
+            "varejo",
+            "ofertas relâmpago"
+          ],
+          "cta_url": "https://www.magazineluiza.com.br/?promoter_id=4780900&partner_id=3440",
+          "cta_label": "Ver cupons e ofertas no Magalu",
+          "slug": "magalu-cupons-ate-200-off-04-abr-2026",
+          "confianca": 0.92,
+          "seo_title": "Magalu tem cupons de até R$ 200 OFF em compras neste 4/4",
+          "meta_description": "Magalu libera cupons de até R$ 200 OFF no app e em produtos selecionados neste 4/4. Ativações são limitadas e podem acabar rápido.",
+          "imagem_prompt": "Capa editorial premium sobre promoção do Magalu no 4/4, mostrando smartphone com app do Magazine Luiza aberto, tags de desconto de R$ 200 OFF, R$ 150 OFF e R$ 100 OFF flutuando, ambiente de e-commerce moderno com caixas, eletrodomésticos e eletrônicos ao fundo, identidade visual azul do Magalu com paleta secundária em amarelo e branco, iluminação elegante de estúdio, composição em perspectiva diagonal, enquadramento fechado no celular e nos selos promocionais, visual jornalístico sofisticado e original, sem reproduzir peça publicitária existente."
+        },
+        "editorial_classification": {
+          "categoria": "Promoções",
+          "topico": "Ofertas Relâmpago",
+          "tags": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Magalu",
+            "Magazine Luiza",
+            "cupom de desconto"
+          ]
+        },
+        "seo": {
+          "title": "Magalu tem cupons de até R$ 200 OFF em compras neste 4/4",
+          "meta_description": "Magalu libera cupons de até R$ 200 OFF no app e em produtos selecionados neste 4/4. Ativações são limitadas e podem acabar rápido.",
+          "keywords": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Magalu",
+            "Magazine Luiza",
+            "cupom de desconto"
+          ]
+        },
+        "offer_cta": {
+          "url": "https://www.magazineluiza.com.br/?promoter_id=4780900&amp;partner_id=3440",
+          "label": "Clique aqui"
+        },
+        "story_fingerprint": "31d6aadc0512db05a125ee92f3dc5d514f5fee17",
+        "cover_source": "ai_generated",
+        "source_references": [
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-magalu-ate-200-off-04abr26.html",
+            "title": "há 6 horas Oportunidade! Garanta até R$ 200 OFF em compras no Magalu"
+          }
+        ]
+      },
+      "criada_em": "2026-04-04T20:59:26.361066+00:00",
+      "atualizada_em": "2026-04-04T20:59:26.361081+00:00"
+    }
+  },
+  {
+    "model": "portal.noticiapublicada",
+    "pk": 8,
+    "fields": {
+      "materia_bruta": 10,
+      "fonte": 2,
+      "titulo": "Cupom do Mercado Livre oferece 20% de desconto, mas ação já foi encerrada",
+      "resumo": "O Mercado Livre liberou neste 4 de abril um cupom de 20% OFF, limitado a R$ 60, para compras a partir de R$ 79. A oferta tinha validade até o fim do dia ou até atingir o limite de ativações e esgotou rapidamente.",
+      "conteudo": "O Mercado Livre voltou a chamar atenção neste sábado, 4 de abril, com um cupom de 20% de desconto no site e no aplicativo. A condição era atraente: abatimento limitado a R$ 60 em compras a partir de R$ 79, o que ajudava a reduzir com força o valor final de pedidos elegíveis. Como costuma acontecer nesse tipo de ação relâmpago, a oferta saiu do ar rapidamente após atingir o limite de usos.\n\nPelas regras divulgadas, o cupom valia até o fim do dia 4 de abril ou até o encerramento antecipado por esgotamento das ativações. Outro ponto importante é que o frete, quando cobrado, não entrava no cálculo do valor mínimo exigido para liberar o desconto. Na prática, isso significa que o carrinho precisava somar ao menos R$ 79 apenas em produtos.\n\nPara o consumidor, o maior valor da oportunidade estava justamente na combinação entre percentual alto e piso de compra relativamente baixo. Com limite de R$ 60 por uso, o melhor aproveitamento acontecia em pedidos de maior valor, desde que dentro das condições da campanha. Ainda assim, por ser uma promoção de disponibilidade restrita, quem deixou para tentar mais tarde encontrou a ação já encerrada.\n\nAlém do Mercado Livre, também foi mencionada uma oferta paralela na Amazon, com R$ 20 de desconto em compras a partir de R$ 200. Nesse caso, o benefício era mais modesto e exigia gasto mínimo mais alto, o que reduz o apelo em comparação com o cupom principal do dia.\n\nEsse tipo de promoção relâmpago reforça uma dinâmica cada vez mais comum no varejo online: descontos agressivos, porém com estoque ou número de ativações limitados. Para o leitor, a lição prática é simples: em ações desse perfil, a chance de sucesso costuma ser maior quando o carrinho já está montado e a finalização da compra pode ser feita imediatamente.",
+      "slug": "cupom-do-mercado-livre-oferece-20-de-desconto-mas-acao-ja-foi-encerrada",
+      "categoria": "Promoções",
+      "topico": "Ofertas Relâmpago",
+      "tags_json": [
+        "Promoções",
+        "Ofertas Relâmpago",
+        "Mercado Livre",
+        "cupom de desconto",
+        "varejo online"
+      ],
+      "imagem": "portal/noticias/generated/20260404210025_9cfa7dd15a.png",
+      "imagem_url": "https://www.melhorescartoes.com.br/wp-content/uploads/2025/03/mercado-livre-capa-02.jpg",
+      "imagem_ilustrativa": true,
+      "url_fonte": "https://www.melhorescartoes.com.br/cupom-mercado-livre-11h-04abr26.html",
+      "status": "published",
+      "confianca": "0.92",
+      "publicada_em": "2026-04-04T14:01:01+00:00",
+      "metadata_json": {
+        "provider": "openai_schema",
+        "raw_response": {
+          "titulo": "Cupom do Mercado Livre oferece 20% de desconto, mas ação já foi encerrada",
+          "resumo": "O Mercado Livre liberou neste 4 de abril um cupom de 20% OFF, limitado a R$ 60, para compras a partir de R$ 79. A oferta tinha validade até o fim do dia ou até atingir o limite de ativações e esgotou rapidamente.",
+          "conteudo": "O Mercado Livre voltou a chamar atenção neste sábado, 4 de abril, com um cupom de 20% de desconto no site e no aplicativo. A condição era atraente: abatimento limitado a R$ 60 em compras a partir de R$ 79, o que ajudava a reduzir com força o valor final de pedidos elegíveis. Como costuma acontecer nesse tipo de ação relâmpago, a oferta saiu do ar rapidamente após atingir o limite de usos.\n\nPelas regras divulgadas, o cupom valia até o fim do dia 4 de abril ou até o encerramento antecipado por esgotamento das ativações. Outro ponto importante é que o frete, quando cobrado, não entrava no cálculo do valor mínimo exigido para liberar o desconto. Na prática, isso significa que o carrinho precisava somar ao menos R$ 79 apenas em produtos.\n\nPara o consumidor, o maior valor da oportunidade estava justamente na combinação entre percentual alto e piso de compra relativamente baixo. Com limite de R$ 60 por uso, o melhor aproveitamento acontecia em pedidos de maior valor, desde que dentro das condições da campanha. Ainda assim, por ser uma promoção de disponibilidade restrita, quem deixou para tentar mais tarde encontrou a ação já encerrada.\n\nAlém do Mercado Livre, também foi mencionada uma oferta paralela na Amazon, com R$ 20 de desconto em compras a partir de R$ 200. Nesse caso, o benefício era mais modesto e exigia gasto mínimo mais alto, o que reduz o apelo em comparação com o cupom principal do dia.\n\nEsse tipo de promoção relâmpago reforça uma dinâmica cada vez mais comum no varejo online: descontos agressivos, porém com estoque ou número de ativações limitados. Para o leitor, a lição prática é simples: em ações desse perfil, a chance de sucesso costuma ser maior quando o carrinho já está montado e a finalização da compra pode ser feita imediatamente.",
+          "categoria": "Promocoes",
+          "topico": "Ofertas Relampago",
+          "tags": [
+            "Mercado Livre",
+            "cupom de desconto",
+            "varejo online",
+            "oferta relâmpago",
+            "Amazon"
+          ],
+          "cta_url": "https://www.mercadolivre.com.br/?matt_tool=50866442&forceInApp=true",
+          "cta_label": "Acessar o Mercado Livre",
+          "slug": "cupom-mercado-livre-20-off-04-abr-2026",
+          "confianca": 0.92,
+          "seo_title": "Cupom do Mercado Livre deu 20% de desconto em 4 de abril, mas esgotou rápido",
+          "meta_description": "Mercado Livre liberou cupom de 20% OFF, limitado a R$ 60, em compras a partir de R$ 79. Oferta relâmpago esgotou no mesmo dia.",
+          "imagem_prompt": "Capa editorial premium sobre promoção relâmpago do Mercado Livre: cena de e-commerce em desktop e smartphone mostrando carrinho de compras e destaque visual para '20% OFF' e 'até R$ 60', identidade visual inspirada no amarelo do Mercado Livre, ambiente moderno e sofisticado, composição em ângulo 3/4, luz natural com contraste suave, elementos de urgência como relógio discreto e botão de compra, sem replicar banner promocional original, com nova perspectiva, nova hierarquia visual e acabamento jornalístico de portal financeiro e de consumo."
+        },
+        "editorial_classification": {
+          "categoria": "Promoções",
+          "topico": "Ofertas Relâmpago",
+          "tags": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Mercado Livre",
+            "cupom de desconto",
+            "varejo online"
+          ]
+        },
+        "seo": {
+          "title": "Cupom do Mercado Livre deu 20% de desconto em 4 de abril, mas",
+          "meta_description": "Mercado Livre liberou cupom de 20% OFF, limitado a R$ 60, em compras a partir de R$ 79. Oferta relâmpago esgotou no mesmo dia.",
+          "keywords": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Mercado Livre",
+            "cupom de desconto",
+            "varejo online"
+          ]
+        },
+        "offer_cta": {
+          "url": "https://www.amazon.com.br/events/ofertasmensais/2/ref=pday_offers_programas?_encoding=UTF8&amp;pd_rd_w=55s34&amp;content-id=amzn1.sym.f90b513a-1bc5-44ef-ac43-9bff1a449a87&amp;pf_rd_p=f90b513a-1bc5-44ef-ac43-9bff1a449a87&amp;pf_rd_r=R3BR3452P336W18MXSV0&amp;pd_rd_wg=00fK7&amp;pd_rd_r=e2edb1d9-fbf6-4630-bf47-89258385ec0e&amp;tag=melhoresdes01-20",
+          "label": "Acesse aqui"
+        },
+        "story_fingerprint": "e05f9454a6c2fb1058a07f44760868d02e965087",
+        "cover_source": "ai_generated",
+        "source_references": [
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-mercado-livre-11h-04abr26.html",
+            "title": "há 7 horas Acaba rápido! Novo cupom no Mercado Livre garante 20% de desconto no site"
+          }
+        ]
+      },
+      "criada_em": "2026-04-04T21:00:25.946721+00:00",
+      "atualizada_em": "2026-04-04T21:00:25.946730+00:00"
+    }
+  },
+  {
+    "model": "portal.noticiapublicada",
+    "pk": 13,
+    "fields": {
+      "materia_bruta": 19,
+      "fonte": 2,
+      "titulo": "Banco do Brasil ou Caixa: qual banco tem os cartões de crédito mais vantajosos hoje",
+      "resumo": "Em uma comparação entre os principais cartões de crédito do Banco do Brasil e da Caixa, a Caixa saiu na frente na maior parte dos segmentos, com melhor combinação entre pontuação, benefícios e anuidade. O único empate relevante ficou no Visa Infinite intermediário, em que o BB co",
+      "conteudo": "Na disputa entre Banco do Brasil e Caixa pelos cartões de crédito mais atrativos, a Caixa aparece hoje como a opção mais vantajosa para a maioria dos perfis. A comparação entre os principais produtos dos dois bancos mostra uma vantagem consistente da Caixa em pontos ou cashback e, principalmente, no custo das anuidades. Na prática, isso significa que o cliente tende a encontrar no portfólio da Caixa cartões mais competitivos tanto na alta renda quanto nas faixas intermediária e de entrada.\n\nEntre os cartões premium, o destaque ficou com o Caixa Ícone Visa Infinite, apontado como o melhor da seleção. O produto combina 5 pontos por dólar em compras nacionais e 6 pontos por dólar em compras internacionais com acessos ilimitados às salas VIP dos programas LoungeKey e Dragon Pass/Visa Airport Companion, com direito a até 10 convidados. Outro diferencial é a exigência de acesso considerada mais factível dentro do segmento: ter relacionamento com o banco e ao menos R$ 100 mil de limite aprovado em outros cartões Caixa. Do lado do Banco do Brasil, o principal concorrente é o Altus Visa Infinite, disponível em versões distintas. O Altus tradicional é restrito a clientes Private com mais de R$ 3 milhões investidos no banco, enquanto o Altus Liv Visa Infinite exige investimentos acima de R$ 1 milhão, gastos médios acima de R$ 20 mil nos últimos seis meses ou renda mínima de R$ 30 mil. Também pesa contra o BB o custo: a anuidade do Altus é de R$ 1.800 por ano, e a do Altus Liv chega a R$ 3.600.\n\nNos duelos por bandeira, a Caixa também venceu com os cartões Elo Diners Club e Elo Nanquim. No Elo Diners Club, a vantagem veio de uma pontuação maior e de uma anuidade R$ 280 mais barata do que a do concorrente do Banco do Brasil. Ambos oferecem 4 acessos por ano via Priority Pass e isenção com gasto mínimo de R$ 10 mil na fatura, além de 2 vouchers anuais de R$ 150 para traslado ao aeroporto em viagens internacionais. Já no Elo Nanquim, a Caixa manteve a mesma pontuação da versão Visa Infinite e ainda superou o BB por cobrar uma anuidade R$ 228 menor, com regra de isenção mais branda: gastos a partir de R$ 8 mil por mês, contra R$ 10 mil no Banco do Brasil.\n\nO único empate de maior peso apareceu na comparação entre Caixa Visa Infinite e Ourocard Estilo Visa Infinite. Embora a Caixa tenha custo menor — R$ 828 de anuidade, com devolução de 100% do valor em crédito na fatura a partir de R$ 8 mil mensais — o Banco do Brasil entrega um benefício relevante para quem valoriza experiência em aeroportos: 4 acessos ao Dragon Pass/Visa Airport Companion, o dobro dos 2 acessos da Caixa. Em troca, o cliente paga mais, com anuidade de R$ 996 e necessidade de gasto de R$ 10 mil na fatura para isenção. Dependendo do uso, esses acessos extras podem compensar o custo adicional.\n\nNas faixas intermediária e de entrada, a Caixa também levou vantagem. Entre os Elo Grafite, o Ourocard Estilo Elo Grafite pontua ligeiramente mais, com 1,7 ponto por dólar ou 0,75% de cashback, ante 1,6 ponto por dólar do cartão da Caixa. Ainda assim, a diferença não compensou a anuidade de R$ 519 do BB, cerca de 25% acima da cobrada pela Caixa. O mesmo raciocínio vale para o Visa Platinum: a Caixa oferece 1,6 ponto por dólar e anuidade de R$ 414, enquanto o Ourocard Estilo Visa Platinum fica em 1,5 ponto por dólar ou 0,75% de cashback, com anuidade de R$ 546. Nos cartões de entrada, o cenário se repete. O Caixa Elo Mais e o Caixa Visa Gold custam R$ 207 por ano e podem ter 100% da tarifa devolvida com faturas acima de R$ 2.000, enquanto os equivalentes do Banco do Brasil cobram R$ 390 e R$ 408, respectivamente, com exigência de R$ 3 mil mensais para isenção.\n\nHá ainda um ponto importante para quem pensa além da anuidade. O Banco do Brasil pontua na Livelo, programa mais consolidado e com promoções de transferência bonificada mais frequentes ao longo do ano. Já os cartões da Caixa acumulam no UAU Caixa, que tende a ter menos ofertas recorrentes, embora tenha diferenciais específicos, como a parceria com a TAP Miles&GO na paridade 2:1. Em resumo, a Caixa hoje apresenta o portfólio mais competitivo em cartões de crédito, mas o Banco do Brasil ainda pode fazer sentido para quem valoriza o ecossistema da Livelo, busca melhor atendimento ou quer extrair valor de benefícios específicos, como acessos adicionais a salas VIP em alguns produtos.",
+      "slug": "banco-do-brasil-ou-caixa-qual-banco-tem-os-cartoes-de-credito-mais-vantajosos-hoje",
+      "categoria": "Cartões de Crédito",
+      "topico": "Lançamentos e Análises",
+      "tags_json": [
+        "Cartões de Crédito",
+        "Lançamentos e Análises",
+        "Banco do Brasil",
+        "Caixa",
+        "Visa Infinite"
+      ],
+      "imagem": "portal/noticias/generated/20260404210528_c55d7d0905.png",
+      "imagem_url": "https://www.melhorescartoes.com.br/wp-content/uploads/2026/03/caixa-x-banco-do-brasil-capa.jpg",
+      "imagem_ilustrativa": true,
+      "url_fonte": "https://www.melhorescartoes.com.br/melhores-cartoes-banco-brasil-caixa.html",
+      "status": "published",
+      "confianca": "0.94",
+      "publicada_em": "2026-04-04T13:00:28+00:00",
+      "metadata_json": {
+        "provider": "openai_schema",
+        "raw_response": {
+          "titulo": "Banco do Brasil ou Caixa: qual banco tem os cartões de crédito mais vantajosos hoje",
+          "resumo": "Em uma comparação entre os principais cartões de crédito do Banco do Brasil e da Caixa, a Caixa saiu na frente na maior parte dos segmentos, com melhor combinação entre pontuação, benefícios e anuidade. O único empate relevante ficou no Visa Infinite intermediário, em que o BB compensa parte do custo maior com mais acessos a salas VIP.",
+          "conteudo": "Na disputa entre Banco do Brasil e Caixa pelos cartões de crédito mais atrativos, a Caixa aparece hoje como a opção mais vantajosa para a maioria dos perfis. A comparação entre os principais produtos dos dois bancos mostra uma vantagem consistente da Caixa em pontos ou cashback e, principalmente, no custo das anuidades. Na prática, isso significa que o cliente tende a encontrar no portfólio da Caixa cartões mais competitivos tanto na alta renda quanto nas faixas intermediária e de entrada.\n\nEntre os cartões premium, o destaque ficou com o Caixa Ícone Visa Infinite, apontado como o melhor da seleção. O produto combina 5 pontos por dólar em compras nacionais e 6 pontos por dólar em compras internacionais com acessos ilimitados às salas VIP dos programas LoungeKey e Dragon Pass/Visa Airport Companion, com direito a até 10 convidados. Outro diferencial é a exigência de acesso considerada mais factível dentro do segmento: ter relacionamento com o banco e ao menos R$ 100 mil de limite aprovado em outros cartões Caixa. Do lado do Banco do Brasil, o principal concorrente é o Altus Visa Infinite, disponível em versões distintas. O Altus tradicional é restrito a clientes Private com mais de R$ 3 milhões investidos no banco, enquanto o Altus Liv Visa Infinite exige investimentos acima de R$ 1 milhão, gastos médios acima de R$ 20 mil nos últimos seis meses ou renda mínima de R$ 30 mil. Também pesa contra o BB o custo: a anuidade do Altus é de R$ 1.800 por ano, e a do Altus Liv chega a R$ 3.600.\n\nNos duelos por bandeira, a Caixa também venceu com os cartões Elo Diners Club e Elo Nanquim. No Elo Diners Club, a vantagem veio de uma pontuação maior e de uma anuidade R$ 280 mais barata do que a do concorrente do Banco do Brasil. Ambos oferecem 4 acessos por ano via Priority Pass e isenção com gasto mínimo de R$ 10 mil na fatura, além de 2 vouchers anuais de R$ 150 para traslado ao aeroporto em viagens internacionais. Já no Elo Nanquim, a Caixa manteve a mesma pontuação da versão Visa Infinite e ainda superou o BB por cobrar uma anuidade R$ 228 menor, com regra de isenção mais branda: gastos a partir de R$ 8 mil por mês, contra R$ 10 mil no Banco do Brasil.\n\nO único empate de maior peso apareceu na comparação entre Caixa Visa Infinite e Ourocard Estilo Visa Infinite. Embora a Caixa tenha custo menor — R$ 828 de anuidade, com devolução de 100% do valor em crédito na fatura a partir de R$ 8 mil mensais — o Banco do Brasil entrega um benefício relevante para quem valoriza experiência em aeroportos: 4 acessos ao Dragon Pass/Visa Airport Companion, o dobro dos 2 acessos da Caixa. Em troca, o cliente paga mais, com anuidade de R$ 996 e necessidade de gasto de R$ 10 mil na fatura para isenção. Dependendo do uso, esses acessos extras podem compensar o custo adicional.\n\nNas faixas intermediária e de entrada, a Caixa também levou vantagem. Entre os Elo Grafite, o Ourocard Estilo Elo Grafite pontua ligeiramente mais, com 1,7 ponto por dólar ou 0,75% de cashback, ante 1,6 ponto por dólar do cartão da Caixa. Ainda assim, a diferença não compensou a anuidade de R$ 519 do BB, cerca de 25% acima da cobrada pela Caixa. O mesmo raciocínio vale para o Visa Platinum: a Caixa oferece 1,6 ponto por dólar e anuidade de R$ 414, enquanto o Ourocard Estilo Visa Platinum fica em 1,5 ponto por dólar ou 0,75% de cashback, com anuidade de R$ 546. Nos cartões de entrada, o cenário se repete. O Caixa Elo Mais e o Caixa Visa Gold custam R$ 207 por ano e podem ter 100% da tarifa devolvida com faturas acima de R$ 2.000, enquanto os equivalentes do Banco do Brasil cobram R$ 390 e R$ 408, respectivamente, com exigência de R$ 3 mil mensais para isenção.\n\nHá ainda um ponto importante para quem pensa além da anuidade. O Banco do Brasil pontua na Livelo, programa mais consolidado e com promoções de transferência bonificada mais frequentes ao longo do ano. Já os cartões da Caixa acumulam no UAU Caixa, que tende a ter menos ofertas recorrentes, embora tenha diferenciais específicos, como a parceria com a TAP Miles&GO na paridade 2:1. Em resumo, a Caixa hoje apresenta o portfólio mais competitivo em cartões de crédito, mas o Banco do Brasil ainda pode fazer sentido para quem valoriza o ecossistema da Livelo, busca melhor atendimento ou quer extrair valor de benefícios específicos, como acessos adicionais a salas VIP em alguns produtos.",
+          "categoria": "Cartoes de Credito",
+          "topico": "Lancamentos e Analises",
+          "tags": [
+            "Banco do Brasil",
+            "Caixa",
+            "cartões de crédito",
+            "Visa Infinite",
+            "Elo Nanquim"
+          ],
+          "cta_url": "https://www.caixa.gov.br/voce/cartoes/credito/icone/Paginas/default.aspx",
+          "cta_label": "Conheça o Caixa Ícone Visa Infinite",
+          "slug": "banco-do-brasil-ou-caixa-melhores-cartoes-de-credito",
+          "confianca": 0.94,
+          "seo_title": "Banco do Brasil ou Caixa: qual banco oferece os melhores cartões de crédito",
+          "meta_description": "Comparativo mostra que a Caixa supera o Banco do Brasil na maioria dos cartões, com melhor pontuação, benefícios e anuidades mais baixas.",
+          "imagem_prompt": "Capa editorial premium sobre comparação de cartões de crédito entre Banco do Brasil e Caixa, com dois cartões reais inspirados no BB Altus Visa Infinite e no Caixa Ícone Visa Infinite em destaque sobre mesa sofisticada de viagem, passaporte, mala executiva e fundo sutil de aeroporto desfocado com lounge VIP ao fundo, composição diagonal moderna, iluminação elegante em tons azul e dourado, visual jornalístico refinado, perspectiva levemente aérea, profundidade de campo suave, sem copiar arte promocional original"
+        },
+        "editorial_classification": {
+          "categoria": "Cartões de Crédito",
+          "topico": "Lançamentos e Análises",
+          "tags": [
+            "Cartões de Crédito",
+            "Lançamentos e Análises",
+            "Banco do Brasil",
+            "Caixa",
+            "Visa Infinite"
+          ]
+        },
+        "seo": {
+          "title": "Banco do Brasil ou Caixa: qual banco oferece os melhores cartões de",
+          "meta_description": "Comparativo mostra que a Caixa supera o Banco do Brasil na maioria dos cartões, com melhor pontuação, benefícios e anuidades mais baixas.",
+          "keywords": [
+            "Cartões de Crédito",
+            "Lançamentos e Análises",
+            "Banco do Brasil",
+            "Caixa",
+            "Visa Infinite"
+          ]
+        },
+        "offer_cta": {
+          "url": "https://www.caixa.gov.br/voce/cartoes/credito/icone/Paginas/default.aspx",
+          "label": "Conheça o Caixa Ícone Visa Infinite"
+        },
+        "story_fingerprint": "90ab91b59b82969f21b26052d0e89f70de461358",
+        "cover_source": "ai_generated",
+        "source_references": [
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/melhores-cartoes-banco-brasil-caixa.html",
+            "title": "Banco do Brasil ou Caixa: qual banco oferece os melhores cartões de crédito?"
+          }
+        ]
+      },
+      "criada_em": "2026-04-04T21:05:28.148822+00:00",
+      "atualizada_em": "2026-04-04T21:05:28.148832+00:00"
+    }
+  },
+  {
+    "model": "portal.noticiapublicada",
+    "pk": 9,
+    "fields": {
+      "materia_bruta": 12,
+      "fonte": 2,
+      "titulo": "Shopee 4.4 libera cupons com até R$ 120 de desconto; oferta exclusiva de R$ 20 off tem limite de 200 usos",
+      "resumo": "A Shopee ativou cupons da campanha 4.4 com descontos de até R$ 120, incluindo um código exclusivo de R$ 20 off em compras acima de R$ 99. Os cupons têm limite de ativações e podem acabar a qualquer momento.",
+      "conteudo": "A Shopee colocou no ar sua campanha 4.4 com uma nova rodada de cupons de desconto que pode render até R$ 120 de abatimento nas compras. Entre as ofertas disponíveis, há um cupom exclusivo que concede R$ 20 de desconto em pedidos acima de R$ 99, uma oportunidade interessante para quem já pretendia comprar itens de menor valor e quer reduzir o custo final no carrinho.\n\nO código exclusivo tem uma condição importante: o limite é de 200 usos. Na prática, isso significa que a oferta pode se esgotar rapidamente, especialmente em uma data promocional de grande volume como a 4.4. Para aproveitar, é necessário copiar o código, acessar a página de ativação do cupom e concluir a compra dentro das regras exigidas pela campanha.\n\nAlém da oferta exclusiva, a Shopee também liberou um cupom de R$ 100 de desconto em compras acima de R$ 850 em produtos de tecnologia. A condição pode fazer sentido para quem busca itens como smartphones, câmeras, games e eletrodomésticos, desde que o valor final da compra compense e o produto já esteja com preço competitivo em relação a outros varejistas.\n\nA varejista informa ainda que há outros descontos ativos em sua página de cupons, incluindo até R$ 100 off para uso em qualquer loja do site e reduções de até R$ 120 em categorias específicas. Como costuma ocorrer nesse tipo de ação, os cupons possuem quantidade limitada de ativações, o que exige agilidade do consumidor para conseguir resgatar e aplicar o benefício antes do esgotamento.\n\nPara o leitor, o ponto principal é simples: a campanha pode gerar economia real, mas o valor do desconto só compensa se a compra já estiver planejada e o preço base for competitivo. Em promoções desse tipo, vale conferir o valor final do produto, as regras do cupom e a disponibilidade do benefício no momento do resgate.",
+      "slug": "shopee-44-libera-cupons-com-ate-r-120-de-desconto-oferta-exclusiva-de-r-20-off-tem-limite-de-200-usos",
+      "categoria": "Promoções",
+      "topico": "Ofertas Relâmpago",
+      "tags_json": [
+        "Promoções",
+        "Ofertas Relâmpago",
+        "Shopee",
+        "cupom de desconto",
+        "4.4"
+      ],
+      "imagem": "portal/noticias/generated/20260404210130_83948b3682.png",
+      "imagem_url": "https://www.melhorescartoes.com.br/wp-content/uploads/2026/03/shopee-4-do-4-2026-capa-1.jpg",
+      "imagem_ilustrativa": true,
+      "url_fonte": "https://www.melhorescartoes.com.br/cupom-4-do-4-shopee-ate-120-off-04abr26.html",
+      "status": "published",
+      "confianca": "0.91",
+      "publicada_em": "2026-04-04T12:30:54+00:00",
+      "metadata_json": {
+        "provider": "openai_schema",
+        "raw_response": {
+          "titulo": "Shopee 4.4 libera cupons com até R$ 120 de desconto; oferta exclusiva de R$ 20 off tem limite de 200 usos",
+          "resumo": "A Shopee ativou cupons da campanha 4.4 com descontos de até R$ 120, incluindo um código exclusivo de R$ 20 off em compras acima de R$ 99. Os cupons têm limite de ativações e podem acabar a qualquer momento.",
+          "conteudo": "A Shopee colocou no ar sua campanha 4.4 com uma nova rodada de cupons de desconto que pode render até R$ 120 de abatimento nas compras. Entre as ofertas disponíveis, há um cupom exclusivo que concede R$ 20 de desconto em pedidos acima de R$ 99, uma oportunidade interessante para quem já pretendia comprar itens de menor valor e quer reduzir o custo final no carrinho.\n\nO código exclusivo tem uma condição importante: o limite é de 200 usos. Na prática, isso significa que a oferta pode se esgotar rapidamente, especialmente em uma data promocional de grande volume como a 4.4. Para aproveitar, é necessário copiar o código, acessar a página de ativação do cupom e concluir a compra dentro das regras exigidas pela campanha.\n\nAlém da oferta exclusiva, a Shopee também liberou um cupom de R$ 100 de desconto em compras acima de R$ 850 em produtos de tecnologia. A condição pode fazer sentido para quem busca itens como smartphones, câmeras, games e eletrodomésticos, desde que o valor final da compra compense e o produto já esteja com preço competitivo em relação a outros varejistas.\n\nA varejista informa ainda que há outros descontos ativos em sua página de cupons, incluindo até R$ 100 off para uso em qualquer loja do site e reduções de até R$ 120 em categorias específicas. Como costuma ocorrer nesse tipo de ação, os cupons possuem quantidade limitada de ativações, o que exige agilidade do consumidor para conseguir resgatar e aplicar o benefício antes do esgotamento.\n\nPara o leitor, o ponto principal é simples: a campanha pode gerar economia real, mas o valor do desconto só compensa se a compra já estiver planejada e o preço base for competitivo. Em promoções desse tipo, vale conferir o valor final do produto, as regras do cupom e a disponibilidade do benefício no momento do resgate.",
+          "categoria": "Promocoes",
+          "topico": "Ofertas Relampago",
+          "tags": [
+            "Shopee",
+            "cupom de desconto",
+            "4.4",
+            "e-commerce",
+            "tecnologia"
+          ],
+          "cta_url": "https://s.shopee.com.br/16AxKpZJL?utm_source=an_18100610009&utm_medium=affiliates&utm_content=----&utm_campaign=-",
+          "cta_label": "Acessar a página de cupons da Shopee",
+          "slug": "shopee-4-4-cupons-ate-120-reais-desconto-04abr26",
+          "confianca": 0.91,
+          "seo_title": "Shopee 4.4 tem cupons com até R$ 120 de desconto e código de R$ 20 off",
+          "meta_description": "Shopee libera cupons 4.4 com até R$ 120 de desconto, incluindo R$ 20 off em compras acima de R$ 99. Benefícios têm limite de ativações.",
+          "imagem_prompt": "Capa editorial premium sobre a campanha 4.4 da Shopee, mostrando aplicativo da Shopee aberto em smartphone com cupons de desconto visíveis, sacolas de compras e caixas de e-commerce ao redor, elementos gráficos com números 4.4 em destaque, atmosfera de promoção relâmpago, paleta em laranja da Shopee com tons secundários em branco e cinza grafite, iluminação moderna e contrastada, enquadramento em perspectiva diagonal de mesa, composição sofisticada de revista de finanças e consumo, incluindo referência visual a produtos de tecnologia como smartphone, câmera e fone de ouvido, sem copiar peça promocional original"
+        },
+        "editorial_classification": {
+          "categoria": "Promoções",
+          "topico": "Ofertas Relâmpago",
+          "tags": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Shopee",
+            "cupom de desconto",
+            "4.4"
+          ]
+        },
+        "seo": {
+          "title": "Shopee 4.4 tem cupons com até R$ 120 de desconto e código de R$ 20",
+          "meta_description": "Shopee libera cupons 4.4 com até R$ 120 de desconto, incluindo R$ 20 off em compras acima de R$ 99. Benefícios têm limite de ativações.",
+          "keywords": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Shopee",
+            "cupom de desconto",
+            "4.4"
+          ]
+        },
+        "offer_cta": {
+          "url": "https://s.shopee.com.br/16AxKpZJL?utm_source=an_18100610009&amp;utm_medium=affiliates&amp;utm_content=----&amp;utm_campaign=-",
+          "label": "Copiar e ir à loja"
+        },
+        "story_fingerprint": "a36ae5f4fe51863fe9249cefa80fa54fb09e6bd5",
+        "cover_source": "ai_generated",
+        "source_references": [
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-4-do-4-shopee-ate-120-off-04abr26.html",
+            "title": "há 8 horas 4.4 Shopee: ganhe até R$ 120 de desconto em compras – tem cupom exclusivo!"
+          }
+        ]
+      },
+      "criada_em": "2026-04-04T21:01:30.516593+00:00",
+      "atualizada_em": "2026-04-04T21:01:30.516603+00:00"
+    }
+  },
+  {
+    "model": "portal.noticiapublicada",
+    "pk": 10,
+    "fields": {
+      "materia_bruta": 14,
+      "fonte": 2,
+      "titulo": "Mercado Livre libera cupom de 18% off para assinantes Meli+ em compras a partir de R$ 299",
+      "resumo": "O Mercado Livre disponibilizou neste 4.4 um cupom exclusivo para assinantes Meli+, com 18% de desconto em pedidos a partir de R$ 299 e abatimento máximo de R$ 90. A oferta, porém, tinha limite de ativações e já aparece como esgotada.",
+      "conteudo": "O Mercado Livre lançou neste sábado (4) um cupom exclusivo para assinantes Meli+ dentro da campanha 4.4, oferecendo 18% de desconto em compras a partir de R$ 299. O abatimento estava limitado a R$ 90 por pedido, o que tornava a ação especialmente interessante para compras de maior valor dentro da seleção de produtos participantes.\n\nNa prática, o benefício valia apenas para itens elegíveis da campanha. Para usar, era necessário acessar a página da oferta, entrar em um dos produtos participantes, ativar o cupom diretamente na página do item e concluir a compra com o desconto aplicado. Um ponto importante: o valor do frete, quando cobrado, não entrava no cálculo do pedido mínimo exigido para liberar o cupom.\n\nA promoção era restrita aos assinantes do Meli+, serviço de benefícios do Mercado Livre. Além dos cupons em datas promocionais, a assinatura inclui vantagens como rendimento turbinado nos Cofrinhos do Mercado Pago e descontos em serviços de streaming, segundo a comunicação da plataforma.\n\nComo acontece com frequência nesse tipo de campanha, a oferta tinha limite de ativações. Por isso, mesmo sem um horário oficial de encerramento divulgado no material, o cupom dependia de disponibilidade e podia se esgotar rapidamente — o que de fato ocorreu.\n\nPara o consumidor, a principal lição é acompanhar ações relâmpago do varejista com antecedência, especialmente em datas promocionais como o 4.4. Quando o desconto chega a 18% e o teto é de R$ 90, o ganho real pode ser relevante em categorias de maior tíquete, desde que o produto esteja na lista elegível e o cupom ainda esteja ativo.",
+      "slug": "mercado-livre-libera-cupom-de-18-off-para-assinantes-meli-em-compras-a-partir-de-r-299",
+      "categoria": "Promoções",
+      "topico": "Ofertas Relâmpago",
+      "tags_json": [
+        "Promoções",
+        "Ofertas Relâmpago",
+        "Mercado Livre",
+        "Meli+",
+        "cupom de desconto"
+      ],
+      "imagem": "portal/noticias/generated/20260404210230_c6fb7dc4d3.png",
+      "imagem_url": "https://www.melhorescartoes.com.br/wp-content/uploads/2025/09/mercado-livre-capa-05.jpg",
+      "imagem_ilustrativa": true,
+      "url_fonte": "https://www.melhorescartoes.com.br/cupom-mercado-livre-18-off-meli-mais-04abr26.html",
+      "status": "published",
+      "confianca": "0.95",
+      "publicada_em": "2026-04-04T11:31:26+00:00",
+      "metadata_json": {
+        "provider": "openai_schema",
+        "raw_response": {
+          "titulo": "Mercado Livre libera cupom de 18% off para assinantes Meli+ em compras a partir de R$ 299",
+          "resumo": "O Mercado Livre disponibilizou neste 4.4 um cupom exclusivo para assinantes Meli+, com 18% de desconto em pedidos a partir de R$ 299 e abatimento máximo de R$ 90. A oferta, porém, tinha limite de ativações e já aparece como esgotada.",
+          "conteudo": "O Mercado Livre lançou neste sábado (4) um cupom exclusivo para assinantes Meli+ dentro da campanha 4.4, oferecendo 18% de desconto em compras a partir de R$ 299. O abatimento estava limitado a R$ 90 por pedido, o que tornava a ação especialmente interessante para compras de maior valor dentro da seleção de produtos participantes.\n\nNa prática, o benefício valia apenas para itens elegíveis da campanha. Para usar, era necessário acessar a página da oferta, entrar em um dos produtos participantes, ativar o cupom diretamente na página do item e concluir a compra com o desconto aplicado. Um ponto importante: o valor do frete, quando cobrado, não entrava no cálculo do pedido mínimo exigido para liberar o cupom.\n\nA promoção era restrita aos assinantes do Meli+, serviço de benefícios do Mercado Livre. Além dos cupons em datas promocionais, a assinatura inclui vantagens como rendimento turbinado nos Cofrinhos do Mercado Pago e descontos em serviços de streaming, segundo a comunicação da plataforma.\n\nComo acontece com frequência nesse tipo de campanha, a oferta tinha limite de ativações. Por isso, mesmo sem um horário oficial de encerramento divulgado no material, o cupom dependia de disponibilidade e podia se esgotar rapidamente — o que de fato ocorreu.\n\nPara o consumidor, a principal lição é acompanhar ações relâmpago do varejista com antecedência, especialmente em datas promocionais como o 4.4. Quando o desconto chega a 18% e o teto é de R$ 90, o ganho real pode ser relevante em categorias de maior tíquete, desde que o produto esteja na lista elegível e o cupom ainda esteja ativo.",
+          "categoria": "Promocoes",
+          "topico": "Ofertas Relampago",
+          "tags": [
+            "Mercado Livre",
+            "Meli+",
+            "cupom de desconto",
+            "18% off",
+            "4.4"
+          ],
+          "cta_url": "https://lista.mercadolivre.com.br/_Container_lpsm-liquida-4-4-grandes-marcas-meli-mais?matt_tool=50866442&forceInApp=true",
+          "cta_label": "Ver produtos elegíveis da campanha",
+          "slug": "cupom-mercado-livre-18-off-meli-mais-04abr26",
+          "confianca": 0.95,
+          "seo_title": "Mercado Livre oferece 18% off para assinantes Meli+ em compras acima de R$ 299",
+          "meta_description": "Mercado Livre liberou cupom de 18% off para assinantes Meli+ em compras a partir de R$ 299, com desconto máximo de R$ 90.",
+          "imagem_prompt": "Capa editorial premium sobre promoção do Mercado Livre para assinantes Meli+: cena de e-commerce com smartphone exibindo app do Mercado Livre, selo Meli+, etiqueta de 18% OFF e carrinho de compras com caixas amarelas características da marca, composição em mesa moderna vista em ângulo 3/4, iluminação natural sofisticada, fundo desfocado de home office, paleta amarela e azul com tons secundários grafite, visual jornalístico elegante, sem copiar arte promocional original."
+        },
+        "editorial_classification": {
+          "categoria": "Promoções",
+          "topico": "Ofertas Relâmpago",
+          "tags": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Mercado Livre",
+            "Meli+",
+            "cupom de desconto"
+          ]
+        },
+        "seo": {
+          "title": "Mercado Livre oferece 18% off para assinantes Meli+ em compras",
+          "meta_description": "Mercado Livre liberou cupom de 18% off para assinantes Meli+ em compras a partir de R$ 299, com desconto máximo de R$ 90.",
+          "keywords": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Mercado Livre",
+            "Meli+",
+            "cupom de desconto"
+          ]
+        },
+        "offer_cta": {
+          "url": "https://lista.mercadolivre.com.br/_Container_lpsm-liquida-4-4-grandes-marcas-meli-mais?matt_tool=50866442&amp;forceInApp=true",
+          "label": "Copiar e ir à loja"
+        },
+        "story_fingerprint": "fb370033faf1eb8d978abaa4b86b0d0b150e7ff9",
+        "cover_source": "ai_generated",
+        "source_references": [
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-mercado-livre-18-off-meli-mais-04abr26.html",
+            "title": "há 9 horas Cupom Mercado Livre: ganhe 18% de desconto em compras a partir de R$ 299 – exclusivo Meli+!"
+          }
+        ]
+      },
+      "criada_em": "2026-04-04T21:02:30.143611+00:00",
+      "atualizada_em": "2026-04-04T21:02:30.143632+00:00"
+    }
+  },
+  {
+    "model": "portal.noticiapublicada",
+    "pk": 11,
+    "fields": {
+      "materia_bruta": 16,
+      "fonte": 2,
+      "titulo": "Magalu libera cupons com até R$ 200 de desconto em compras pelo app neste sábado",
+      "resumo": "O Magalu está com cupons de até R$ 200 de desconto válidos até 23h59 deste sábado (4), ou antes disso, caso atinjam o limite de ativações. A oferta exige valor mínimo de compra e, em alguns casos, vale apenas para itens vendidos e entregues pelo próprio Magalu.",
+      "conteudo": "O Magalu está oferecendo neste sábado (4) cupons de desconto de até R$ 200 para compras feitas pelo aplicativo. A ação é por tempo limitado e, segundo as condições divulgadas, os códigos podem expirar às 23h59 de hoje ou antes, caso o limite de usos seja atingido.\n\nNa prática, a promoção contempla diferentes faixas de gasto mínimo. Há cupom de R$ 200 OFF para pedidos acima de R$ 2.000 e cupom de R$ 100 OFF para compras a partir de R$ 1.000. Também aparecem outras ofertas ativas no site, incluindo R$ 200 OFF em compras acima de R$ 3.000 e R$ 200 OFF em compras acima de R$ 1.600, ambas restritas a produtos vendidos e entregues pelo Magalu.\n\nUm ponto importante é que os cupons podem ser aceitos tanto em produtos vendidos pelo próprio Magalu quanto por lojas parceiras, mas essa regra não vale para todos os códigos. Por isso, antes de fechar o pedido, o consumidor precisa verificar se o item escolhido se enquadra nas condições específicas de cada cupom.\n\nPara aproveitar, é necessário acessar a página da promoção, copiar o código disponível, abrir o aplicativo do Magalu e inserir o cupom na etapa final da compra. Como a campanha depende de estoque promocional ou de um número máximo de ativações, a chance de indisponibilidade antes do fim do dia é real — especialmente em itens de maior procura, como eletrônicos e TVs.\n\nPara o leitor, o principal ganho está em compras planejadas de maior valor, nas quais o desconto nominal pode trazer redução relevante no preço final. Ainda assim, vale comparar o preço do produto com outras lojas e observar se o valor mínimo exigido não leva a um gasto maior do que o necessário apenas para destravar o cupom.",
+      "slug": "magalu-libera-cupons-com-ate-r-200-de-desconto-em-compras-pelo-app-neste-sabado",
+      "categoria": "Promoções",
+      "topico": "Ofertas Relâmpago",
+      "tags_json": [
+        "Promoções",
+        "Ofertas Relâmpago",
+        "Magalu",
+        "cupom de desconto",
+        "app Magalu"
+      ],
+      "imagem": "portal/noticias/generated/20260404210321_20dad4798e.png",
+      "imagem_url": "https://www.melhorescartoes.com.br/wp-content/uploads/2026/01/magalu-capa-2026.jpg",
+      "imagem_ilustrativa": true,
+      "url_fonte": "https://www.melhorescartoes.com.br/cupom-magalu-ate-200-off-03abr26.html",
+      "status": "published",
+      "confianca": "0.92",
+      "publicada_em": "2026-04-03T16:40:20+00:00",
+      "metadata_json": {
+        "provider": "openai_schema",
+        "raw_response": {
+          "titulo": "Magalu libera cupons com até R$ 200 de desconto em compras pelo app neste sábado",
+          "resumo": "O Magalu está com cupons de até R$ 200 de desconto válidos até 23h59 deste sábado (4), ou antes disso, caso atinjam o limite de ativações. A oferta exige valor mínimo de compra e, em alguns casos, vale apenas para itens vendidos e entregues pelo próprio Magalu.",
+          "conteudo": "O Magalu está oferecendo neste sábado (4) cupons de desconto de até R$ 200 para compras feitas pelo aplicativo. A ação é por tempo limitado e, segundo as condições divulgadas, os códigos podem expirar às 23h59 de hoje ou antes, caso o limite de usos seja atingido.\n\nNa prática, a promoção contempla diferentes faixas de gasto mínimo. Há cupom de R$ 200 OFF para pedidos acima de R$ 2.000 e cupom de R$ 100 OFF para compras a partir de R$ 1.000. Também aparecem outras ofertas ativas no site, incluindo R$ 200 OFF em compras acima de R$ 3.000 e R$ 200 OFF em compras acima de R$ 1.600, ambas restritas a produtos vendidos e entregues pelo Magalu.\n\nUm ponto importante é que os cupons podem ser aceitos tanto em produtos vendidos pelo próprio Magalu quanto por lojas parceiras, mas essa regra não vale para todos os códigos. Por isso, antes de fechar o pedido, o consumidor precisa verificar se o item escolhido se enquadra nas condições específicas de cada cupom.\n\nPara aproveitar, é necessário acessar a página da promoção, copiar o código disponível, abrir o aplicativo do Magalu e inserir o cupom na etapa final da compra. Como a campanha depende de estoque promocional ou de um número máximo de ativações, a chance de indisponibilidade antes do fim do dia é real — especialmente em itens de maior procura, como eletrônicos e TVs.\n\nPara o leitor, o principal ganho está em compras planejadas de maior valor, nas quais o desconto nominal pode trazer redução relevante no preço final. Ainda assim, vale comparar o preço do produto com outras lojas e observar se o valor mínimo exigido não leva a um gasto maior do que o necessário apenas para destravar o cupom.",
+          "categoria": "Promocoes",
+          "topico": "Ofertas Relampago",
+          "tags": [
+            "Magalu",
+            "cupom de desconto",
+            "app Magalu",
+            "ofertas relâmpago",
+            "eletrônicos"
+          ],
+          "cta_url": "https://www.magazinevoce.com.br/magazinemelhoresdescontos/",
+          "cta_label": "Ver cupons e ofertas no Magalu",
+          "slug": "magalu-cupom-ate-200-off-04abr26",
+          "confianca": 0.92,
+          "seo_title": "Magalu tem cupons de até R$ 200 de desconto no app neste sábado",
+          "meta_description": "Magalu libera cupons de até R$ 200 OFF no app até 23h59 deste sábado, ou antes se esgotarem. Veja as faixas de compra e as regras.",
+          "imagem_prompt": "Capa editorial premium sobre promoção do Magalu: smartphone em primeiro plano com app do Magalu aberto na tela de checkout mostrando campo de cupom, ao lado caixas de produtos eletrônicos como TV e eletroportáteis, etiqueta visual de desconto 'até R$ 200 OFF', identidade visual inspirada no Magalu com azul predominante e amarelo como cor secundária, ambiente de compra online moderno, iluminação de estúdio suave, composição em perspectiva diagonal, enquadramento fechado e sofisticado, aparência jornalística e realista, usando marcas reais citadas no tema sem reproduzir peça promocional original."
+        },
+        "editorial_classification": {
+          "categoria": "Promoções",
+          "topico": "Ofertas Relâmpago",
+          "tags": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Magalu",
+            "cupom de desconto",
+            "app Magalu"
+          ]
+        },
+        "seo": {
+          "title": "Magalu tem cupons de até R$ 200 de desconto no app neste sábado",
+          "meta_description": "Magalu libera cupons de até R$ 200 OFF no app até 23h59 deste sábado, ou antes se esgotarem. Veja as faixas de compra e as regras.",
+          "keywords": [
+            "Promoções",
+            "Ofertas Relâmpago",
+            "Magalu",
+            "cupom de desconto",
+            "app Magalu"
+          ]
+        },
+        "offer_cta": {
+          "url": "https://www.magazinevoce.com.br/magazinemelhoresdescontos/",
+          "label": "Ver cupons e ofertas no Magalu"
+        },
+        "story_fingerprint": "8a8b67f70e39877c1836515905668fd8ceaf7cfa",
+        "cover_source": "ai_generated",
+        "source_references": [
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cupom-magalu-ate-200-off-03abr26.html",
+            "title": "há 1 dia Só hoje! Ganhe até R$ 200 de desconto com cupons no Magalu"
+          }
+        ]
+      },
+      "criada_em": "2026-04-04T21:03:21.245939+00:00",
+      "atualizada_em": "2026-04-04T21:03:21.245947+00:00"
+    }
+  },
+  {
+    "model": "portal.noticiapublicada",
+    "pk": 12,
+    "fields": {
+      "materia_bruta": 18,
+      "fonte": 2,
+      "titulo": "Inter oferece 4% de cashback em abastecimentos com Shell Box por tempo limitado",
+      "resumo": "Clientes do Inter podem receber 4% de cashback ao pagar abastecimentos com o Shell Box pelo app do banco. A oferta vale para qualquer combustível e o crédito costuma cair em até um dia após a confirmação do pagamento.",
+      "conteudo": "Quem vai aproveitar o feriado para pegar a estrada ganhou um incentivo extra para economizar no posto. O Inter está oferecendo 4% de cashback em abastecimentos pagos com o Shell Box dentro do aplicativo do banco, em uma ação por tempo limitado.\n\nDe acordo com a oferta, o benefício vale para qualquer tipo de combustível. Na prática, isso significa um retorno direto na conta para quem já costuma usar o ecossistema do Inter e abastece em postos Shell participantes da plataforma.\n\nApós o pagamento, o cashback é creditado na conta Inter. Segundo as condições divulgadas, esse repasse geralmente acontece em até um dia depois da confirmação da transação, o que torna o retorno relativamente rápido para o cliente.\n\nHá, porém, um ponto importante: nem todos os postos Shell aceitam pagamento via Shell Box. Antes de abastecer, vale consultar o mapa de unidades disponíveis no próprio aplicativo do Shell Box ou confirmar a aceitação com o frentista para evitar contratempos na hora de concluir a compra.\n\nPara quem já pretende abastecer nos próximos dias, a promoção pode representar uma economia simples e imediata, especialmente em viagens de feriado ou em abastecimentos de maior valor. Como a oferta foi anunciada sem prazo detalhado no material divulgado, o ideal é aproveitar enquanto a condição estiver ativa no app.",
+      "slug": "inter-oferece-4-de-cashback-em-abastecimentos-com-shell-box-por-tempo-limitado",
+      "categoria": "Promoções",
+      "topico": "Cartões e Cashback",
+      "tags_json": [
+        "Promoções",
+        "Cartões e Cashback",
+        "Inter",
+        "Shell Box",
+        "cashback"
+      ],
+      "imagem": "portal/noticias/generated/20260404210439_84b232603a.png",
+      "imagem_url": "https://www.melhorescartoes.com.br/wp-content/uploads/2024/08/shell-box-capa-03.jpg",
+      "imagem_ilustrativa": true,
+      "url_fonte": "https://www.melhorescartoes.com.br/cashback-shell-box-feriado-03abr26.html",
+      "status": "published",
+      "confianca": "0.81",
+      "publicada_em": "2026-04-03T12:36:02+00:00",
+      "metadata_json": {
+        "provider": "openai_schema",
+        "raw_response": {
+          "titulo": "Inter oferece 4% de cashback em abastecimentos com Shell Box por tempo limitado",
+          "resumo": "Clientes do Inter podem receber 4% de cashback ao pagar abastecimentos com o Shell Box pelo app do banco. A oferta vale para qualquer combustível e o crédito costuma cair em até um dia após a confirmação do pagamento.",
+          "conteudo": "Quem vai aproveitar o feriado para pegar a estrada ganhou um incentivo extra para economizar no posto. O Inter está oferecendo 4% de cashback em abastecimentos pagos com o Shell Box dentro do aplicativo do banco, em uma ação por tempo limitado.\n\nDe acordo com a oferta, o benefício vale para qualquer tipo de combustível. Na prática, isso significa um retorno direto na conta para quem já costuma usar o ecossistema do Inter e abastece em postos Shell participantes da plataforma.\n\nApós o pagamento, o cashback é creditado na conta Inter. Segundo as condições divulgadas, esse repasse geralmente acontece em até um dia depois da confirmação da transação, o que torna o retorno relativamente rápido para o cliente.\n\nHá, porém, um ponto importante: nem todos os postos Shell aceitam pagamento via Shell Box. Antes de abastecer, vale consultar o mapa de unidades disponíveis no próprio aplicativo do Shell Box ou confirmar a aceitação com o frentista para evitar contratempos na hora de concluir a compra.\n\nPara quem já pretende abastecer nos próximos dias, a promoção pode representar uma economia simples e imediata, especialmente em viagens de feriado ou em abastecimentos de maior valor. Como a oferta foi anunciada sem prazo detalhado no material divulgado, o ideal é aproveitar enquanto a condição estiver ativa no app.",
+          "categoria": "Promocoes",
+          "topico": "Cartoes e Cashback",
+          "tags": [
+            "Inter",
+            "Shell Box",
+            "cashback",
+            "abastecimento",
+            "postos Shell"
+          ],
+          "cta_url": "https://app.adjust.com/1n72ftar",
+          "cta_label": "Abrir o app do Inter",
+          "slug": "inter-4-cashback-shell-box-feriado-abril-2026",
+          "confianca": 0.81,
+          "seo_title": "Inter libera 4% de cashback no Shell Box para abastecer no feriado",
+          "meta_description": "Inter oferece 4% de cashback em abastecimentos pagos com Shell Box pelo app do banco, por tempo limitado.",
+          "imagem_prompt": "Capa editorial premium sobre cashback em combustível: carro moderno abastecendo em posto Shell ao entardecer de feriado, bomba de combustível em primeiro plano, celular na mão do motorista exibindo app do Inter integrado ao Shell Box, identidade visual realista com marcas Inter e Shell discretamente visíveis, enquadramento em perspectiva 3/4 lateral, foco no ato de pagar pelo celular, iluminação quente de fim de tarde, reflexos sutis no carro, paleta com amarelo, vermelho e laranja combinados com detalhes em branco e preto, composição jornalística limpa e sofisticada, aparência fotográfica de revista de economia e viagens."
+        },
+        "editorial_classification": {
+          "categoria": "Promoções",
+          "topico": "Cartões e Cashback",
+          "tags": [
+            "Promoções",
+            "Cartões e Cashback",
+            "Inter",
+            "Shell Box",
+            "cashback"
+          ]
+        },
+        "seo": {
+          "title": "Inter libera 4% de cashback no Shell Box para abastecer no feriado",
+          "meta_description": "Inter oferece 4% de cashback em abastecimentos pagos com Shell Box pelo app do banco, por tempo limitado.",
+          "keywords": [
+            "Promoções",
+            "Cartões e Cashback",
+            "Inter",
+            "Shell Box",
+            "cashback"
+          ]
+        },
+        "offer_cta": {
+          "url": "https://app.adjust.com/1n72ftar",
+          "label": "Abrir o app do Inter"
+        },
+        "story_fingerprint": "ddd506fa38f9c3a4951cfaa8edf661a4bd39a9f4",
+        "cover_source": "ai_generated",
+        "source_references": [
+          {
+            "source": "Melhores Cartoes",
+            "url": "https://www.melhorescartoes.com.br/cashback-shell-box-feriado-03abr26.html",
+            "title": "há 1 dia Feriado de tanque cheio! 4% de cashback ao abastecer com Shell Box"
+          }
+        ]
+      },
+      "criada_em": "2026-04-04T21:04:39.844434+00:00",
+      "atualizada_em": "2026-04-04T21:04:39.844469+00:00"
+    }
+  }
+]
