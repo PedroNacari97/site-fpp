@@ -3851,3 +3851,104 @@ img {
     padding: 20px;
   }
 }
+
+/* ── Mobile layout fixes ──────────────────────────────────── */
+@media (max-width: 760px) {
+  /* Footer home: 2 colunas (brand escondido, Categorias + Sobre) */
+  .portal-footer--home:not(.portal-footer--saas) .portal-footer__panel-inner {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Footer saas: 2 colunas no mobile */
+  .portal-footer__panel-inner--saas {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Alertas - grid listagem: 1 coluna */
+  .news-alerts-home__grid--listing {
+    grid-template-columns: 1fr;
+  }
+
+  /* Lead form saas: 1 coluna */
+  .portal-saas-lead {
+    grid-template-columns: 1fr;
+  }
+
+  /* Explore por categoria: scroll horizontal */
+  .news-categories-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 12px;
+    padding-bottom: 10px;
+    grid-template-columns: unset;
+  }
+  .news-categories-grid .news-category-card {
+    flex: 0 0 72vw;
+    max-width: 260px;
+    min-height: 0;
+    scroll-snap-align: start;
+  }
+
+  /* Últimas notícias e seções de categoria: scroll horizontal */
+  .news-home-frame .news-quick-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 12px;
+    padding-bottom: 10px;
+    grid-template-columns: unset;
+  }
+  .news-home-frame .news-quick-grid .news-card {
+    flex: 0 0 78vw;
+    max-width: 300px;
+    scroll-snap-align: start;
+  }
+
+  /* Platform spotlight grid: scroll horizontal */
+  .news-platform-spotlight__grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 12px;
+    padding-bottom: 10px;
+    grid-template-columns: unset;
+  }
+  .news-platform-spotlight__grid > article {
+    flex: 0 0 72vw;
+    max-width: 240px;
+    scroll-snap-align: start;
+  }
+
+  /* Plataforma - módulos, fluxo, benefícios: scroll horizontal */
+  .portal-saas-modules,
+  .portal-saas-flow,
+  .portal-saas-list-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 12px;
+    padding-bottom: 10px;
+    grid-template-columns: unset;
+  }
+  .portal-saas-modules > *,
+  .portal-saas-flow > *,
+  .portal-saas-list-grid > * {
+    flex: 0 0 78vw;
+    max-width: 300px;
+    scroll-snap-align: start;
+  }
+
+  /* Alertas detalhe - similares: 1 coluna */
+  .news-alerts-home--listing .news-alerts-home__grid {
+    grid-template-columns: 1fr;
+  }
+}

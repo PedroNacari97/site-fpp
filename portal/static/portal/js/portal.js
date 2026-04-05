@@ -393,6 +393,23 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }, true);
 
+    // Touch swipe on mobile
+    let touchStartX = 0;
+    viewport.addEventListener("touchstart", (e) => {
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    viewport.addEventListener("touchend", (e) => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) {
+          currentPage = Math.min(pageCount - 1, currentPage + 1);
+        } else {
+          currentPage = Math.max(0, currentPage - 1);
+        }
+        updateCarousel();
+      }
+    }, { passive: true });
+
     window.addEventListener("resize", recalcCarousel, { passive: true });
     recalcCarousel();
   });

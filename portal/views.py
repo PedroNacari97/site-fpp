@@ -47,16 +47,6 @@ CATEGORY_CONFIGS = {
         "aliases": ("milhas e pontos", "milhas", "pontos", "fidelidade"),
         "load_more_label": "Carregar mais notícias",
     },
-    "cartoes-credito": {
-        "label": "Cartões de Crédito",
-        "hero_title": "Cartões de Crédito",
-        "hero_description": "Reviews completos, comparativos, dicas para aprovação e tudo sobre os melhores cartões de crédito do mercado.",
-        "hero_class": "portal-category-hero--cards",
-        "icon_variant": "cards",
-        "card_class": "news-category-card--purple",
-        "aliases": ("cartoes de credito", "cartao", "cartoes", "credito", "visa", "mastercard", "amex"),
-        "load_more_label": "Carregar mais notícias",
-    },
     "hoteis-resorts": {
         "label": "Hotéis e Resorts",
         "hero_title": "Hotéis e Resorts",
@@ -910,7 +900,7 @@ def home_publica(request):
     else:
         grade = limited_noticias[1:7]
 
-    # Agrupar noticias por categoria para a home
+    # Agrupar notícias por categoria para a home
     noticias_por_categoria = defaultdict(list)
     for noticia in noticias:
         slug = _category_slug_from_label(noticia.categoria)
