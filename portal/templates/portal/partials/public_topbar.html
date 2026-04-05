@@ -52,6 +52,12 @@
                         <span class="portal-topbar__dropdown-caret" aria-hidden="true">&#8964;</span>
                     </button>
                     <div class="portal-topbar__dropdown-menu" data-dropdown-menu>
+                        <a href="{% url 'portal_alertas' %}" class="portal-topbar__dropdown-item{% if request.resolver_match.url_name == 'portal_alertas' or request.resolver_match.url_name == 'portal_alerta_detalhe' %} is-active{% endif %}">
+                            <span class="portal-topbar__nav-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M12 4a5 5 0 0 0-5 5v2.46c0 .53-.21 1.04-.59 1.41L5 14.29V16h14v-1.71l-1.41-1.42a1.99 1.99 0 0 1-.59-1.41V9a5 5 0 0 0-5-5Zm0 16a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 20Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                            </span>
+                            Alertas
+                        </a>
                         {% for category in public_nav_categories %}
                         <a href="{{ category.url }}" class="portal-topbar__dropdown-item{% if request.resolver_match.url_name == 'portal_categoria' and request.resolver_match.kwargs.categoria_slug == category.slug %} is-active{% endif %}">
                             <span class="portal-topbar__nav-icon" aria-hidden="true">
@@ -68,6 +74,12 @@
                             {{ category.label }}
                         </a>
                         {% endfor %}
+                        <a href="{% url 'portal_plataforma_saas' %}" class="portal-topbar__dropdown-item{% if request.resolver_match.url_name == 'portal_plataforma_saas' %} is-active{% endif %}">
+                            <span class="portal-topbar__nav-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M12 4 4 8l8 4 8-4-8-4ZM4 12l8 4 8-4M4 16l8 4 8-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                            </span>
+                            Plataforma
+                        </a>
                     </div>
                 </div>
                 <a href="{% url 'portal_plataforma_saas' %}" class="portal-topbar__nav-link {% if request.resolver_match.url_name == 'portal_plataforma_saas' %}is-active{% endif %}">
