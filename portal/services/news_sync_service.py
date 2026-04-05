@@ -33,7 +33,7 @@ def sync_news_progressive(limit: int = 10, on_published=None):
     # URLs que já têm notícia publicada — filtrar antes de processar
     already_published_urls = set(
         MateriaBruta.objects.filter(
-            noticiapublicada__status="published"
+            noticia_publicada__status="published"
         ).values_list("url_original", flat=True)
     )
 
