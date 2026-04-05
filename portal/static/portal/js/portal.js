@@ -385,9 +385,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       prevButton.disabled = currentPage <= 0;
       nextButton.disabled = currentPage >= pageCount - 1;
-      dotsHost.hidden = pageCount <= 1;
-      prevButton.hidden = pageCount <= 1;
-      nextButton.hidden = pageCount <= 1;
     };
 
     const recalcCarousel = () => {

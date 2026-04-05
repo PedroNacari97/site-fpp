@@ -917,8 +917,11 @@ def home_publica(request):
         if slug:
             noticias_por_categoria[slug].append(noticia)
 
+    HOME_SECOES_EXCLUIR = {"cartoes-credito"}
     secoes_categoria = []
     for slug, config in CATEGORY_CONFIGS.items():
+        if slug in HOME_SECOES_EXCLUIR:
+            continue
         arts = noticias_por_categoria.get(slug, [])[:4]
         if arts:
             secoes_categoria.append({

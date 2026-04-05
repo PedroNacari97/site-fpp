@@ -2775,18 +2775,18 @@ img {
 }
 
 .news-alerts-carousel__dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: rgba(245, 166, 35, 0.24);
+  background: rgba(245, 166, 35, 0.3);
   cursor: pointer;
+  transition: width 0.2s ease, background 0.2s ease;
 }
 
 .news-alerts-carousel__dot.is-active {
-  width: 12px;
-  height: 12px;
+  width: 22px;
   background: linear-gradient(135deg, var(--brand-coral), #f5428d);
 }
 
@@ -3400,7 +3400,6 @@ img {
   .portal-saas-lead,
   .portal-saas-hero,
   .portal-saas-two-column,
-  .portal-saas-flow,
   .portal-saas-modules,
   .portal-saas-faq,
   .portal-saas-list-grid,
@@ -3538,7 +3537,6 @@ img {
   .portal-static-page__grid,
   .portal-saas-hero,
   .portal-saas-two-column,
-  .portal-saas-flow,
   .portal-saas-modules,
   .portal-saas-faq,
   .portal-saas-list-grid,
@@ -3986,16 +3984,18 @@ img {
   flex-direction: row;
   flex-wrap: nowrap;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   gap: 12px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.3) rgba(255,255,255,0.08);
-  padding-bottom: 6px;
+  padding-bottom: 8px;
 }
-.portal-saas-hero__window-body--scroll::-webkit-scrollbar { height: 3px; }
+.portal-saas-hero__window-body--scroll::-webkit-scrollbar { height: 4px; }
 .portal-saas-hero__window-body--scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.08); border-radius: 4px; }
-.portal-saas-hero__window-body--scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+.portal-saas-hero__window-body--scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.5); border-radius: 4px; }
 .portal-saas-hero__window-body--scroll article {
-  flex: 0 0 220px;
+  flex: 0 0 240px;
+  min-width: 0;
 }
 
 /* ── Scrollbar visível nos containers horizontais ─────────── */
@@ -4281,7 +4281,6 @@ img {
   .portal-static-page__grid,
   .portal-saas-hero,
   .portal-saas-two-column,
-  .portal-saas-flow,
   .portal-saas-faq,
   .portal-saas-list-grid,
   .portal-saas-metrics,
@@ -4293,6 +4292,22 @@ img {
   .portal-alert-detail__hero,
   .portal-category-featured {
     grid-template-columns: 1fr;
+  }
+
+  /* Como funciona: scroll horizontal no mobile */
+  .portal-saas-flow {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px;
+    padding-bottom: 10px;
+    grid-template-columns: unset;
+  }
+  .portal-saas-flow .portal-saas-flow__step {
+    flex: 0 0 72vw;
+    max-width: 280px;
+    min-width: 0;
   }
 
   /* Seções de scroll horizontal (contidas em wrapper) */
