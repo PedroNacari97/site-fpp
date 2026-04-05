@@ -757,7 +757,6 @@ img {
 
 .news-home-frame {
   padding-bottom: 28px;
-  overflow-x: hidden;
 }
 
 .news-detail-frame {
@@ -4085,6 +4084,7 @@ img {
     width: min(100%, calc(100% - 28px));
   }
 
+
   /* Topbar */
   .portal-topbar__inner {
     min-height: 0;
@@ -4101,7 +4101,7 @@ img {
   .portal-topbar__nav {
     width: 100%;
     padding-bottom: 2px;
-    overflow: visible; /* permite dropdown absolutamente posicionado aparecer */
+    overflow: visible;
   }
   .portal-topbar__tools {
     width: 100%;
