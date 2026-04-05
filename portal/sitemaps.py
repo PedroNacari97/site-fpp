@@ -7,9 +7,7 @@ from .models import NoticiaPublicada
 
 CATEGORY_SLUGS = (
     "milhas-e-pontos",
-    "cartoes-credito",
     "hoteis-resorts",
-    "promocoes",
 )
 
 STATIC_ROUTE_NAMES = (
