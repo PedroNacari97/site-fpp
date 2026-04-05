@@ -131,6 +131,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Ler mais no artigo (mobile)
+  document.querySelectorAll("[data-article-readmore]").forEach((btn) => {
+    const section = btn.closest("[data-article-content]");
+    if (!section) return;
+    btn.addEventListener("click", () => {
+      section.setAttribute("data-expanded", "");
+    });
+  });
+
   // Dropdown de categorias no header
   document.querySelectorAll("[data-topbar-dropdown]").forEach((dropdown) => {
     const toggle = dropdown.querySelector("[data-dropdown-toggle]");

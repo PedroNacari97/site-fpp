@@ -79,8 +79,14 @@
                     <p>{{ noticia.resumo|portal_text }}</p>
                 </section>
 
-                <section class="news-detail-content">
-                    {{ noticia.conteudo|portal_text|linebreaks }}
+                <section class="news-detail-content" data-article-content>
+                    <div class="news-detail-content__preview" data-article-preview>
+                        {{ noticia.conteudo|portal_text|linebreaks }}
+                    </div>
+                    <button type="button" class="news-detail-content__readmore" data-article-readmore aria-expanded="false">
+                        Ler artigo completo
+                        <span aria-hidden="true">&#8964;</span>
+                    </button>
                 </section>
 
                 <section class="news-detail-tip">

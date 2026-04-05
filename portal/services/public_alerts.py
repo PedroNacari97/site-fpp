@@ -163,7 +163,7 @@ def list_visible_public_alerts(limit: int | None = None) -> list[AlertaViagem]:
     visible = [
         alerta
         for alerta in AlertaViagem.objects.filter(ativo=True).order_by("-criado_em")
-        if alerta.deve_aparecer_na_vitrine()
+        if alerta.deve_aparecer_na_vitrine() and alerta.valor_milhas
     ]
     return visible[:limit] if limit else visible
 
