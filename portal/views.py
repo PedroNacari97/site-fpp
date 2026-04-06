@@ -46,6 +46,9 @@ CATEGORY_CONFIGS = {
         "card_class": "news-category-card--blue",
         "aliases": ("milhas e pontos", "milhas", "pontos", "fidelidade"),
         "load_more_label": "Carregar mais notícias",
+        "cta_title": "Conheça a Plataforma NC Fly",
+        "cta_description": "Gerencie programas, acompanhe transferências e emita passagens com mais controle e agilidade.",
+        "cta_button": "Conhecer a plataforma",
     },
     "cartoes-credito": {
         "label": "Cartões de Crédito",
@@ -56,6 +59,9 @@ CATEGORY_CONFIGS = {
         "card_class": "news-category-card--purple",
         "aliases": ("cartoes de credito", "cartao", "cartoes", "credito", "visa", "mastercard", "amex"),
         "load_more_label": "Carregar mais notícias",
+        "cta_title": "Conheça a Plataforma NC Fly",
+        "cta_description": "A Plataforma NC Fly centraliza seus programas e facilita o controle das suas emissões.",
+        "cta_button": "Conhecer a plataforma",
     },
     "hoteis-resorts": {
         "label": "Hotéis e Resorts",
@@ -66,6 +72,9 @@ CATEGORY_CONFIGS = {
         "card_class": "news-category-card--orange",
         "aliases": ("hoteis e resorts", "hotel", "hoteis", "resorts", "resort", "hospedagem"),
         "load_more_label": "Carregar mais notícias",
+        "cta_title": "Conheça a Plataforma NC Fly",
+        "cta_description": "Com a Plataforma NC Fly você acompanha oportunidades de hospedagem e emite com mais eficiência.",
+        "cta_button": "Conhecer a plataforma",
     },
     "promocoes": {
         "label": "Promoções",
@@ -76,6 +85,9 @@ CATEGORY_CONFIGS = {
         "card_class": "news-category-card--orange",
         "aliases": ("promocoes", "promoções", "promocao", "promoção", "oferta", "ofertas", "desconto"),
         "load_more_label": "Carregar mais promoções",
+        "cta_title": "Conheça a Plataforma NC Fly",
+        "cta_description": "A Plataforma NC Fly monitora oportunidades em tempo real para você emitir na hora certa.",
+        "cta_button": "Conhecer a plataforma",
     },
     "viagens": {
         "label": "Viagens",
@@ -86,6 +98,9 @@ CATEGORY_CONFIGS = {
         "card_class": "news-category-card--blue",
         "aliases": ("viagens", "viagem", "turismo", "destino", "destinos", "roteiro"),
         "load_more_label": "Carregar mais notícias de viagens",
+        "cta_title": "Conheça a Plataforma NC Fly",
+        "cta_description": "A Plataforma NC Fly ajuda você a usar seus pontos para chegar mais longe gastando menos.",
+        "cta_button": "Conhecer a plataforma",
     },
 }
 
