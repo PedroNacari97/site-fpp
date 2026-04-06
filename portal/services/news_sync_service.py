@@ -1,5 +1,6 @@
 from __future__ import annotations
 import traceback
+from datetime import timedelta
 from django.utils import timezone
 from portal.models import Fonte, JobExecucao, MateriaBruta, NoticiaPublicada
 from portal.services.ai_pipeline import (
@@ -43,8 +44,13 @@ def sync_news_progressive(limit: int = 10, on_published=None):
             fetcher = get_fetcher_for_source(source)
             try:
                 # Busca candidatos e filtra URLs já publicadas antes de fatiar pelo limit
+                cutoff = timezone.now() - timedelta(days=3)
                 all_entries = fetcher.list_entries(source)
-                fresh_entries = [e for e in all_entries if e.url not in already_published_urls]
+                fresh_entries = [
+                    e for e in all_entries
+                    if e.url not in already_published_urls
+                    and (e.published_at is None or e.published_at >= cutoff)
+                ]
                 entries = fresh_entries[:limit]
             except Exception as exc:
                 errors.append(f"[{source.nome}] erro ao listar: {exc}")

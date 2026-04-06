@@ -172,12 +172,22 @@ def _markdown_to_html(text: str) -> str:
 @register.filter
 def portal_content(value):
     """Renderiza conteúdo de notícia: converte markdown simples e aplica linebreaks com HTML seguro."""
-    repaired = repair_portuguese_text(str(value or ""))
-    paragraphs = re.split(r"\n{2,}", repaired)
+    raw = str(value or "").strip()
+    if not raw:
+        return mark_safe("")
+    paragraphs = re.split(r"\n{2,}", raw)
     html_parts = []
     for para in paragraphs:
         lines = para.strip().split("\n")
-        converted_lines = [_markdown_to_html(line.strip()) for line in lines if line.strip()]
+        converted_lines = []
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            # repair só corrige mojibake e palavras — não colapsa newlines
+            line = repair_portuguese_text(line)
+            line = _markdown_to_html(line)
+            converted_lines.append(line)
         if converted_lines:
             html_parts.append("<p>" + "<br>".join(converted_lines) + "</p>")
     return mark_safe("\n".join(html_parts))
