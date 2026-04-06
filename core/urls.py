@@ -37,6 +37,7 @@ portal_sitemaps = {
 
 urlpatterns = [
     path("health/", healthcheck, name="healthcheck"),
+    path("ads.txt", portal_views.ads_txt, name="portal_ads_txt"),
     path("robots.txt", portal_views.robots_txt, name="portal_robots"),
     path("llms.txt", portal_views.llms_txt, name="portal_llms"),
     path("sitemap.xml", sitemap, {"sitemaps": portal_sitemaps}, name="portal_sitemap"),

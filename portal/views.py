@@ -1525,6 +1525,13 @@ def aceite_documentos_plataforma(request):
     return render(request, "portal/aceite_plataforma.html", context)
 
 
+def ads_txt(request):
+    return HttpResponse(
+        "google.com, pub-8670696864452622, DIRECT, f08c47fec0942fa0",
+        content_type="text/plain; charset=utf-8",
+    )
+
+
 def robots_txt(request):
     sitemap_url = _absolute_public_url(request, reverse("portal_sitemap"))
     response = "\n".join(
