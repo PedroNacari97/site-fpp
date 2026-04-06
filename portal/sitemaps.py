@@ -9,6 +9,8 @@ CATEGORY_SLUGS = (
     "milhas-e-pontos",
     "cartoes-credito",
     "hoteis-resorts",
+    "promocoes",
+    "viagens",
 )
 
 STATIC_ROUTE_NAMES = (
