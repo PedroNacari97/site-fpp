@@ -160,7 +160,7 @@ class PortalRoutesTest(TestCase):
         self.assertContains(response, "Limpar busca")
 
     def test_detalhe_noticia_carrega(self):
-        response = self.client.get(reverse("portal_noticia_detalhe", kwargs={"slug": self.noticia.slug}))
+        response = self.client.get(self.noticia.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.noticia.titulo)
         self.assertContains(response, self.noticia.topico)
@@ -228,6 +228,9 @@ class PortalRoutesTest(TestCase):
         self.assertEqual(reverse("portal_seguranca_plataforma"), "/plataforma/seguranca/")
         self.assertEqual(reverse("portal_aceite_plataforma"), "/plataforma/aceite/")
         self.assertEqual(reverse("portal_categoria", kwargs={"categoria_slug": "milhas-e-pontos"}), "/home/categorias/milhas-e-pontos/")
+        self.assertEqual(reverse("portal_noticia_detalhe", kwargs={"categoria_slug": "milhas-e-pontos", "slug": "teste"}), "/home/categorias/milhas-e-pontos/teste/")
+        self.assertEqual(reverse("portal_noticia_redirect", kwargs={"slug": "teste"}), "/home/noticias/teste/")
+        self.assertEqual(self.noticia.get_absolute_url(), "/home/categorias/milhas-e-pontos/noticia-teste-publicada/")
         self.assertEqual(reverse("login_custom"), "/login/")
         self.assertEqual(reverse("painel_dashboard"), "/painel/")
 
@@ -372,7 +375,7 @@ class PortalRoutesTest(TestCase):
         self.assertContains(response, 'data-lead-open-modal', html=False)
 
     def test_detalhe_usa_footer_principal(self):
-        response = self.client.get(reverse("portal_noticia_detalhe", kwargs={"slug": self.noticia.slug}))
+        response = self.client.get(self.noticia.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Pol")
         self.assertContains(response, "Termos de Uso")
@@ -386,7 +389,7 @@ class PortalRoutesTest(TestCase):
         self.assertContains(response, "Limpar busca")
 
     def test_detalhe_usa_footer_principal(self):
-        response = self.client.get(reverse("portal_noticia_detalhe", kwargs={"slug": self.noticia.slug}))
+        response = self.client.get(self.noticia.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Quem Somos")
         self.assertContains(response, "Pol&iacute;tica de Privacidade")
@@ -443,7 +446,7 @@ class PortalSeoTest(TestCase):
         self.assertContains(response, 'property="og:title"', html=False)
 
     def test_detalhe_renderiza_schema_e_canonical(self):
-        response = self.client.get(reverse("portal_noticia_detalhe", kwargs={"slug": self.noticia.slug}))
+        response = self.client.get(self.noticia.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "application/ld+json")
         self.assertContains(response, "NewsArticle")
@@ -522,7 +525,7 @@ class PortalAnalyticsTest(TestCase):
         self.assertContains(response, 'gtag("config", "G-TEST123456")')
 
     def test_detalhe_renderiza_marcacoes_de_analytics(self):
-        response = self.client.get(reverse("portal_noticia_detalhe", kwargs={"slug": self.noticia.slug}))
+        response = self.client.get(self.noticia.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'data-analytics-view="article"', html=False)
         self.assertContains(response, 'data-analytics-event="click_offer_link"', html=False)
@@ -695,7 +698,7 @@ class PortalArticleSeoMetadataTest(TestCase):
         )
 
     def test_detalhe_prioriza_metadados_seo_salvos(self):
-        response = self.client.get(reverse("portal_noticia_detalhe", kwargs={"slug": self.noticia.slug}))
+        response = self.client.get(self.noticia.get_absolute_url())
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "<title>Titulo SEO para Google | NC Fly News</title>", html=False)
         self.assertContains(response, 'content="Meta description otimizada para busca com foco claro no assunto principal da notícia."', html=False)

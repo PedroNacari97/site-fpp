@@ -1,7 +1,42 @@
+import unicodedata
+
 from django.db import models
 from django.template.defaultfilters import slugify
 from django.urls import reverse
 from django.utils import timezone
+
+
+_CATEGORIA_SLUG_MAP = {
+    "milhas": "milhas-e-pontos",
+    "milhas e pontos": "milhas-e-pontos",
+    "pontos": "milhas-e-pontos",
+    "fidelidade": "milhas-e-pontos",
+    "cartoes": "cartoes-credito",
+    "cartoes de credito": "cartoes-credito",
+    "cartao de credito": "cartoes-credito",
+    "credito": "cartoes-credito",
+    "hoteis": "hoteis-resorts",
+    "hoteis e resorts": "hoteis-resorts",
+    "resorts": "hoteis-resorts",
+    "hotel": "hoteis-resorts",
+    "promocoes": "promocoes",
+    "promocao": "promocoes",
+    "promocoes e ofertas": "promocoes",
+    "ofertas": "promocoes",
+    "viagens": "viagens",
+    "viagem": "viagens",
+    "turismo": "viagens",
+    "destinos": "viagens",
+    "destino": "viagens",
+    "roteiro": "viagens",
+    "roteiros": "viagens",
+}
+
+
+def _categoria_to_slug(categoria):
+    normalized = unicodedata.normalize("NFKD", categoria or "")
+    normalized = normalized.encode("ascii", "ignore").decode("ascii").lower().strip()
+    return _CATEGORIA_SLUG_MAP.get(normalized, "milhas-e-pontos")
 
 
 class Fonte(models.Model):
@@ -106,7 +141,8 @@ class NoticiaPublicada(models.Model):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse("portal_noticia_detalhe", kwargs={"slug": self.slug})
+        categoria_slug = _categoria_to_slug(self.categoria)
+        return reverse("portal_noticia_detalhe", kwargs={"categoria_slug": categoria_slug, "slug": self.slug})
 
     @property
     def imagem_exibicao(self):

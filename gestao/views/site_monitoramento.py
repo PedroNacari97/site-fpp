@@ -195,7 +195,7 @@ def _build_top_articles(queryset):
                 "category": row["article_category"] or "-",
                 "topic": row["article_topic"] or "-",
                 "total": row["total_sum"] or 0,
-                "url": reverse("portal_noticia_detalhe", kwargs={"slug": row["article_slug"]}),
+                "url": article.get_absolute_url() if article else reverse("portal_noticia_redirect", kwargs={"slug": row["article_slug"]}),
             }
         )
     return items
