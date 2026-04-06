@@ -1283,12 +1283,21 @@ def categoria_lista(request, categoria_slug):
     return render(request, "portal/categoria.html", context)
 
 
-def noticia_detalhe(request, slug):
+def noticia_redirect(request, slug):
+    noticia = get_object_or_404(NoticiaPublicada, slug=slug)
+    return redirect(noticia.get_absolute_url(), permanent=True)
+
+
+def noticia_detalhe(request, categoria_slug, slug):
     noticia = get_object_or_404(
         NoticiaPublicada.objects.select_related("fonte"),
         slug=slug,
         status="published",
     )
+    correct_categoria_slug = _category_slug_from_label(noticia.categoria) or "milhas-e-pontos"
+    if categoria_slug != correct_categoria_slug:
+        return redirect(noticia.get_absolute_url(), permanent=True)
+
     relacionadas_qs = (
         NoticiaPublicada.objects.filter(status="published")
         .exclude(pk=noticia.pk)
@@ -1303,16 +1312,15 @@ def noticia_detalhe(request, slug):
     if not relacionadas:
         relacionadas = relacionadas_qs.order_by("-publicada_em")[:4]
 
-    categoria_slug = _category_slug_from_label(noticia.categoria)
     context = {
         "noticia": noticia,
         "relacionadas": relacionadas,
         "tempo_leitura_minutos": _estimate_read_minutes(noticia.conteudo),
         "breadcrumbs_categoria": noticia.categoria or "Milhas e Pontos",
-        "categoria_url": reverse("portal_categoria", kwargs={"categoria_slug": categoria_slug}) if categoria_slug else None,
+        "categoria_url": reverse("portal_categoria", kwargs={"categoria_slug": categoria_slug}),
         "topico_url": (
             f"{reverse('portal_categoria', kwargs={'categoria_slug': categoria_slug})}?topico={slugify(noticia.topico)}"
-            if categoria_slug and noticia.topico
+            if noticia.topico
             else None
         ),
         "offer_cta": (noticia.metadata_json or {}).get("offer_cta", {}),
