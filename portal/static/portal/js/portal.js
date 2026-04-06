@@ -290,6 +290,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Mobile: expande cards 4-6 da home antes de carregar mais do servidor
+  const mobileExpandBtn = document.querySelector("[data-home-mobile-expand]");
+  if (mobileExpandBtn) {
+    const mobileWrap = document.getElementById("home-mobile-expand-wrap");
+    const grid = document.getElementById("home-latest-grid");
+    mobileExpandBtn.addEventListener("click", () => {
+      if (grid) grid.setAttribute("data-mobile-expanded", "");
+      if (mobileWrap) mobileWrap.remove();
+    });
+  }
+
   const buttons = document.querySelectorAll("[data-load-more-button]");
 
   buttons.forEach((button) => {

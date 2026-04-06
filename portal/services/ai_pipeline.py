@@ -201,6 +201,52 @@ TOPIC_RULES = {
             ),
         },
     },
+    "Viagens": {
+        "default": "Destinos e Roteiros",
+        "topics": {
+            "Destinos e Roteiros": (
+                "destino",
+                "roteiro",
+                "viagem",
+                "viagens",
+                "turismo",
+                "guia",
+            ),
+            "Passagens e Voos": (
+                "passagem",
+                "passagens",
+                "voo",
+                "voos",
+                "aereo",
+                "aeroporto",
+                "companhia aerea",
+            ),
+            "Hospedagem": (
+                "hotel",
+                "hoteis",
+                "resort",
+                "hospedagem",
+                "pousada",
+                "airbnb",
+            ),
+            "Dicas de Viagem": (
+                "dica",
+                "dicas",
+                "bagagem",
+                "seguro viagem",
+                "check-in",
+                "embarque",
+                "lounge",
+            ),
+            "Cruzeiros e Pacotes": (
+                "cruzeiro",
+                "pacote",
+                "pacotes",
+                "tour",
+                "excursao",
+            ),
+        },
+    },
 }
 
 KNOWN_TAGS = (
@@ -311,6 +357,11 @@ def _normalize_category(value: str) -> str:
         "promoções": "Promoções",
         "promocao": "Promoções",
         "promoção": "Promoções",
+        "viagens": "Viagens",
+        "viagem": "Viagens",
+        "turismo": "Viagens",
+        "destinos": "Viagens",
+        "destino": "Viagens",
     }
     return mapping.get(normalized, "Milhas e Pontos")
 
@@ -748,15 +799,18 @@ def _rewrite_with_openai_schema(source_name: str, raw_article: dict) -> NewsDraf
                         "type": "input_text",
                         "text": (
                             "Você é editor-chefe sênior de um portal premium de milhas, cartões e viagens em português do Brasil. "
-                            "Reescreva a matéria como um jornalista profissional de alto nível, com texto completo, preciso, elegante e útil para o leitor. "
-                            "Entregue uma narrativa madura, clara e informativa, com abertura forte, contexto, desdobramentos práticos e fechamento objetivo. "
+                            "Leia o conteúdo de referência, interprete as informações e redija um texto jornalístico completamente original com suas próprias palavras. "
+                            "Não copie trechos da fonte. Construa uma narrativa nova a partir do que você entendeu do assunto. "
+                            "Entregue um texto completo, preciso, elegante e útil para o leitor, com abertura forte, contexto, desdobramentos práticos e fechamento objetivo. "
                             "Prefira de 4 a 7 parágrafos bem escritos quando o material permitir, sem enrolação e sem tom robótico. "
                             "Não invente fatos. Se um dado não estiver claro, omita. "
                             "Preserve com exatidão porcentagens, datas, prazos, programas, aeroportos, companhias, valores e condições quando estiverem na fonte. "
                             "Se houver promoção com prazo, destaque isso no resumo ou no corpo de forma natural. "
                             "Se houver regra, restrição, público elegível, limite de uso ou observação importante, inclua isso de forma editorial. "
                             "Destaque o que muda na prática para o leitor e, quando houver, o valor real da oportunidade ou do risco. "
-                            "Não exponha a fonte no corpo do texto. "
+                            "Se citar outro site de referência no corpo do texto, use o nome completo do veículo e inclua o link no formato markdown: [Nome do Veículo](URL). "
+                            "NUNCA use traços isolados ' - ' no meio de frases como separador artificial. Escreva frases completas e naturais. "
+                            "NUNCA use asteriscos como marcação de texto (*palavra* ou **palavra**). Escreva o texto em prosa pura, sem markdown. "
                             "Crie também um seo_title claro, forte e natural para busca, sem clickbait exagerado, e uma meta_description objetiva, informativa e com boa intenção de busca em até 160 caracteres. "
                             "Classifique a notícia em uma categoria canônica do portal e em um tópico editorial interno. "
                             "Se houver links externos relevantes de promoção ou ação oficial, escolha o melhor CTA e retorne esse link. "
@@ -790,6 +844,7 @@ def _rewrite_with_openai_schema(source_name: str, raw_article: dict) -> NewsDraf
                             - Cartoes de Credito: Lancamentos e Analises; Bonus de Adesao; Salas VIP e Beneficios; Anuidade e Isencao; Aprovacao e Renda
                             - Hoteis e Resorts: Programas Hoteleiros; Hospedagem com Pontos; Resorts e Experiencias; Destinos e Guias; Promocoes de Hospedagem
                             - Promocoes: Transferencias e Bonus; Passagens Aereas; Hoteis e Resorts; Cartoes e Cashback; Ofertas Relampago
+                            - Viagens: Destinos e Roteiros; Passagens e Voos; Hospedagem; Dicas de Viagem; Cruzeiros e Pacotes
                             Texto base:
                             {raw_article.get('texto_base')}
                             """
@@ -817,6 +872,7 @@ def _rewrite_with_openai_schema(source_name: str, raw_article: dict) -> NewsDraf
                                 "Cartoes de Credito",
                                 "Hoteis e Resorts",
                                 "Promocoes",
+                                "Viagens",
                             ],
                         },
                         "topico": {"type": "string"},
@@ -886,11 +942,15 @@ def _rewrite_with_openai(source_name: str, raw_article: dict) -> NewsDraft:
                         "text": (
                             "Você reescreve notícias para um portal premium sobre milhas, cartões e viagens. "
                             "Responda em JSON com os campos: titulo, resumo, conteudo, categoria, topico, tags, cta_url, cta_label, slug, confianca, seo_title, meta_description, imagem_prompt. "
-                            "Mantenha referência factual, sem inventar dados. "
-                            "Escreva como um editor experiente, com narrativa mais completa, contexto prático e boa densidade informativa. "
+                            "Leia o conteúdo de referência, interprete as informações e redija um texto jornalístico completamente original com suas próprias palavras. Não copie trechos da fonte. "
+                            "Escreva como um editor experiente, com narrativa completa, contexto prático e boa densidade informativa. "
                             "Preserve datas, prazos, percentuais, valores, programas e condições exatamente quando existirem. "
+                            "Se citar outro veículo no texto, use o nome completo e inclua o link no formato markdown: [Nome do Veículo](URL). "
+                            "NUNCA use traços isolados ' - ' como separador artificial de frases. Escreva em prosa natural e fluente. "
+                            "NUNCA use asteriscos (*palavra* ou **palavra**). Escreva o texto em prosa pura, sem qualquer marcação markdown. "
                             "Crie seo_title claro e competitivo para busca, sem clickbait, e meta_description objetiva com boa intenção de busca em até 160 caracteres. "
                             "Slug em minúsculo com hífens. Confianca vai de 0.0 a 1.0. "
+                            "Categorias disponíveis: Milhas e Pontos, Cartoes de Credito, Hoteis e Resorts, Promocoes, Viagens. "
                             "Antes de responder, revise todo o texto para garantir ortografia correta, acentuação correta, concordância natural e fluidez real em PT-BR. "
                             "Corrija qualquer erro de português antes de devolver o JSON final. "
                             "No imagem_prompt, proponha uma capa editorial premium que mantenha a mesma ideia central da noticia e possa usar marcas, produtos e logos reais citados no tema. "

@@ -956,6 +956,81 @@ img {
   gap: 18px;
 }
 
+/* ── Hero da home ─────────────────────────────────────────── */
+.news-home-hero {
+  padding: 28px 32px;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 107, 107, 0.14), transparent 40%),
+    linear-gradient(135deg, #0f1b2d 0%, #152844 60%, #f5a623 100%);
+  color: #ffffff;
+}
+
+.news-home-hero__copy {
+  display: grid;
+  gap: 12px;
+  max-width: 680px;
+}
+
+.news-home-hero__copy h1 {
+  margin: 0;
+  font-size: clamp(22px, 2.4vw, 36px);
+  line-height: 1.15;
+  font-weight: 800;
+}
+
+.news-home-hero__copy p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.news-home-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+/* ── CTA da plataforma no final dos posts ─────────────────── */
+.news-detail-platform-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 28px;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 107, 107, 0.12), transparent 40%),
+    linear-gradient(135deg, #0f1b2d 0%, #152844 60%, #f5a623 100%);
+  color: #ffffff;
+}
+
+.news-detail-platform-cta__copy {
+  display: grid;
+  gap: 6px;
+}
+
+.news-detail-platform-cta__copy strong {
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.news-detail-platform-cta__copy p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Grid principal da home — 3 colunas desktop, 1 mobile */
+.news-home-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
 .news-categories-strip,
 .news-latest-block {
   display: grid;
@@ -1077,7 +1152,7 @@ img {
 
 .news-platform-spotlight {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 20px;
   padding: 22px;
   border-radius: 22px;
@@ -1171,8 +1246,8 @@ img {
 
 .news-platform-spotlight__grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
 
 .news-platform-spotlight__grid article {
@@ -1207,7 +1282,7 @@ img {
 
 .portal-saas-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 20px;
   padding: 30px;
   background:
@@ -1226,8 +1301,8 @@ img {
 
 .portal-saas-hero__copy h1 {
   margin: 0;
-  font-size: clamp(40px, 4.8vw, 68px);
-  line-height: 0.98;
+  font-size: clamp(24px, 2.8vw, 46px);
+  line-height: 1.08;
 }
 
 .portal-saas-hero__lead {
@@ -1297,8 +1372,8 @@ img {
 
 .portal-saas-hero__window-body strong {
   display: block;
-  margin-top: 8px;
-  font-size: 18px;
+  margin-top: 6px;
+  font-size: 15px;
   line-height: 1.35;
 }
 
@@ -2205,6 +2280,14 @@ img {
   background: linear-gradient(90deg, var(--brand-navy) 0%, var(--brand-amber) 100%);
 }
 
+.portal-category-hero--promos {
+  background: linear-gradient(90deg, #c0392b 0%, var(--brand-coral) 100%);
+}
+
+.portal-category-hero--viagens {
+  background: linear-gradient(90deg, #1a7a4a 0%, #27ae60 100%);
+}
+
 .portal-category-featured {
   display: grid;
   grid-template-columns: minmax(0, 2.1fr) minmax(260px, 1fr);
@@ -2296,6 +2379,11 @@ img {
 .portal-category-loadmore {
   display: flex;
   justify-content: center;
+}
+
+/* Botão que só existe no mobile — esconde no desktop */
+.portal-category-loadmore--mobile-only {
+  display: none;
 }
 
 .portal-category-filter-note {
@@ -3064,21 +3152,21 @@ img {
 
 .portal-alert-detail__hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.92fr);
-  gap: 26px;
-  padding: 34px;
-  border-radius: 34px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.92fr);
+  gap: 20px;
+  padding: 24px 28px;
+  border-radius: 24px;
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.16), transparent 26%),
     linear-gradient(135deg, #ff7a1b 0%, #ff5776 48%, #b53cf6 100%);
   color: #ffffff;
-  box-shadow: 0 28px 60px rgba(255, 107, 107, 0.2);
+  box-shadow: 0 18px 40px rgba(255, 107, 107, 0.18);
 }
 
 .portal-alert-detail__hero-copy {
   display: grid;
   align-content: start;
-  gap: 20px;
+  gap: 14px;
 }
 
 .portal-alert-detail__back-link {
@@ -3096,17 +3184,17 @@ img {
 }
 
 .portal-alert-detail__hero h1 {
-  max-width: 560px;
+  max-width: 520px;
   margin: 0;
-  font-size: clamp(40px, 5vw, 64px);
-  line-height: 0.98;
-  letter-spacing: -0.05em;
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
 }
 
 .portal-alert-detail__hero p {
   margin: 0;
   color: rgba(255, 255, 255, 0.88);
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.5;
 }
 
@@ -3114,28 +3202,28 @@ img {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: 16px;
-  margin-top: 4px;
-  padding: 28px 30px;
+  gap: 12px;
+  margin-top: 2px;
+  padding: 18px 22px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 26px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
 }
 
 .portal-alert-detail__route-card strong {
   display: block;
-  font-size: clamp(42px, 4.8vw, 58px);
+  font-size: clamp(32px, 3.8vw, 46px);
   line-height: 1;
   letter-spacing: -0.05em;
 }
 
 .portal-alert-detail__route-card span {
   display: block;
-  margin-top: 8px;
+  margin-top: 4px;
   color: rgba(255, 255, 255, 0.82);
-  font-size: 18px;
-  line-height: 1.45;
+  font-size: 15px;
+  line-height: 1.4;
 }
 
 .portal-alert-detail__route-card > div:last-child {
@@ -3411,6 +3499,7 @@ img {
   .portal-category-featured,
   .news-categories-grid,
   .news-quick-grid,
+  .news-home-grid,
   .portal-category-grid,
   .news-related__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3985,25 +4074,12 @@ img {
 }
 
 /* ── Plataforma window body: scroll horizontal ───────────── */
+/* desktop: vertical, sem scroll */
 .portal-saas-hero__window-body--scroll {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  gap: 12px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.5) rgba(255,255,255,0.12);
-  padding-bottom: 8px;
-  scroll-snap-type: x mandatory;
-}
-.portal-saas-hero__window-body--scroll::-webkit-scrollbar { height: 5px; }
-.portal-saas-hero__window-body--scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.12); border-radius: 4px; }
-.portal-saas-hero__window-body--scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.55); border-radius: 4px; }
-.portal-saas-hero__window-body--scroll article {
-  flex: 0 0 240px;
-  min-width: 0;
-  scroll-snap-align: start;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  overflow: visible;
 }
 
 /* ── Scrollbar visível nos containers horizontais ─────────── */
@@ -4293,13 +4369,33 @@ img {
   .portal-saas-list-grid,
   .portal-saas-metrics,
   .news-platform-spotlight,
-  .news-platform-spotlight__grid,
   .portal-alert-detail__content,
   .portal-alert-detail__dates-grid,
   .portal-alert-detail__benefits,
   .portal-alert-detail__hero,
   .portal-category-featured {
     grid-template-columns: 1fr;
+  }
+
+  /* Spotlight grid: scroll horizontal no mobile */
+  .news-platform-spotlight__grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 10px;
+    padding-bottom: 8px;
+    grid-template-columns: unset;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 107, 107, 0.5) rgba(255, 107, 107, 0.12);
+  }
+  .news-platform-spotlight__grid::-webkit-scrollbar { height: 4px; }
+  .news-platform-spotlight__grid::-webkit-scrollbar-track { background: rgba(255, 107, 107, 0.12); border-radius: 4px; }
+  .news-platform-spotlight__grid::-webkit-scrollbar-thumb { background: rgba(255, 107, 107, 0.5); border-radius: 4px; }
+  .news-platform-spotlight__grid article {
+    flex: 0 0 72vw;
+    max-width: 240px;
+    min-width: 0;
   }
 
   /* Como funciona: scroll horizontal no mobile */
@@ -4509,5 +4605,66 @@ img {
   .news-alerts-similar__scroll {
     box-shadow: 0 4px 0 0 rgba(255, 107, 107, 0.18),
                 inset 0 -4px 0 0 rgba(255, 107, 107, 0.12);
+  }
+
+  /* Home grid — 1 coluna no mobile */
+  .news-home-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Mobile: esconde cards visíveis a partir do 4º */
+  .news-home-grid [data-load-more-item]:not(.is-hidden):nth-child(n+4) {
+    display: none;
+  }
+  /* Quando o grid recebe data-mobile-expanded, mostra todos visíveis */
+  .news-home-grid[data-mobile-expanded] [data-load-more-item]:not(.is-hidden):nth-child(n+4) {
+    display: block;
+  }
+
+  /* Mobile: esconde resumo nos cards da home, só título */
+  .news-home-grid .news-card__body > p {
+    display: none;
+  }
+
+  /* Botão mobile-only: visível só em mobile */
+  .portal-category-loadmore--mobile-only {
+    display: flex;
+  }
+  /* Esconde botão server loadmore no mobile enquanto expand não foi clicado */
+  #home-loadmore-wrap {
+    display: none;
+  }
+  .news-home-grid[data-mobile-expanded] ~ #home-loadmore-wrap {
+    display: flex;
+  }
+
+  /* Hero e CTA da plataforma no mobile */
+  .news-home-hero {
+    padding: 22px 18px;
+  }
+
+  .news-home-hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .news-detail-platform-cta {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px 18px;
+  }
+
+  /* window do saas hero: vertical no mobile, sem scroll horizontal */
+  .portal-saas-hero__window-body--scroll {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    overflow: visible;
+  }
+
+  /* Corrige scroll em Android: carousel de alertas */
+  .news-alerts-carousel__viewport {
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 }

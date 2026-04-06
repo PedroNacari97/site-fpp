@@ -67,6 +67,26 @@ CATEGORY_CONFIGS = {
         "aliases": ("hoteis e resorts", "hotel", "hoteis", "resorts", "resort", "hospedagem"),
         "load_more_label": "Carregar mais notícias",
     },
+    "promocoes": {
+        "label": "Promoções",
+        "hero_title": "Promoções",
+        "hero_description": "As melhores promoções de milhas, passagens, cartões e hospedagens para você aproveitar agora.",
+        "hero_class": "portal-category-hero--promos",
+        "icon_variant": "promos",
+        "card_class": "news-category-card--orange",
+        "aliases": ("promocoes", "promoções", "promocao", "promoção", "oferta", "ofertas", "desconto"),
+        "load_more_label": "Carregar mais promoções",
+    },
+    "viagens": {
+        "label": "Viagens",
+        "hero_title": "Viagens",
+        "hero_description": "Destinos, roteiros, dicas de viagem e tudo que você precisa saber para planejar sua próxima aventura.",
+        "hero_class": "portal-category-hero--viagens",
+        "icon_variant": "travel",
+        "card_class": "news-category-card--blue",
+        "aliases": ("viagens", "viagem", "turismo", "destino", "destinos", "roteiro"),
+        "load_more_label": "Carregar mais notícias de viagens",
+    },
 }
 
 SEO_MAX_DESCRIPTION_LENGTH = 160
@@ -898,56 +918,32 @@ def _build_category_page_context(categoria_slug, selected_topic_slug=""):
 
 
 def home_publica(request):
-    from collections import defaultdict
     search_query = (request.GET.get("q") or "").strip()
     noticias = _filter_news_by_query(_get_published_news(), search_query)
     is_searching = bool(search_query)
-    limited_noticias = noticias[:18]
+    HOME_INITIAL = 6
+    HOME_BATCH = 6
+    HOME_MOBILE_INITIAL = 3
+    visible = noticias[:HOME_INITIAL]
+    hidden = noticias[HOME_INITIAL:]
+
     alertas_home = [] if is_searching else [build_public_alert_card(alerta) for alerta in list_visible_public_alerts(limit=15)]
-    destaque = None if is_searching else (limited_noticias[0] if limited_noticias else None)
-    if is_searching:
-        grade = limited_noticias[:12]
-    else:
-        grade = limited_noticias[1:7]
-
-    # Agrupar notícias por categoria para a home
-    noticias_por_categoria = defaultdict(list)
-    for noticia in noticias:
-        slug = _category_slug_from_label(noticia.categoria)
-        if slug:
-            noticias_por_categoria[slug].append(noticia)
-
-    HOME_SECOES_EXCLUIR = {"cartoes-credito"}
-    secoes_categoria = []
-    for slug, config in CATEGORY_CONFIGS.items():
-        if slug in HOME_SECOES_EXCLUIR:
-            continue
-        arts = noticias_por_categoria.get(slug, [])[:4]
-        if arts:
-            secoes_categoria.append({
-                "slug": slug,
-                "label": config["label"],
-                "card_class": config["card_class"],
-                "icon_variant": config["icon_variant"],
-                "noticias": arts,
-            })
 
     context = {
-        "destaque": destaque,
+        "noticias_visiveis": visible,
+        "noticias_ocultas": hidden,
         "alertas_home": alertas_home,
-        "noticias_grade": grade,
         "explore_categories": _build_explore_categories(),
         "publicadas_ate": timezone.localtime(),
-        "noticias_publicadas_total": len(limited_noticias),
         "search_query": search_query,
         "is_searching": is_searching,
         "search_results_total": len(noticias),
-        "secoes_categoria": secoes_categoria,
+        "home_batch": HOME_BATCH,
     }
     if is_searching:
         context.update(_build_home_search_seo(request, search_query))
     else:
-        context.update(_build_home_seo(request, destaque))
+        context.update(_build_home_seo(request, visible[0] if visible else None))
     track_page_view(
         request.path,
         request=request,

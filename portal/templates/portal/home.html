@@ -4,6 +4,25 @@
 {% block content %}
 <div class="news-home-frame">
     <section class="news-home-shell">
+        {% if not is_searching %}
+        <section class="news-home-hero">
+            <div class="news-home-hero__copy">
+                <h1>NC Fly &mdash; Milhas, viagens e a plataforma que organiza sua opera&ccedil;&atilde;o</h1>
+                <p>Acompanhe oportunidades em tempo real e transforme cota&ccedil;&otilde;es em emiss&otilde;es organizadas.</p>
+                <div class="news-home-hero__actions">
+                    <a href="{% url 'portal_alertas' %}" class="portal-button portal-button--primary"
+                        data-analytics-event="click_hero_alertas" data-analytics-category="conversion" data-analytics-section="home_hero">
+                        Ver alertas
+                    </a>
+                    <a href="{% url 'portal_plataforma_saas' %}" class="portal-button portal-button--ghost"
+                        data-analytics-event="click_hero_plataforma" data-analytics-category="conversion" data-analytics-section="home_hero">
+                        Conhecer a plataforma
+                    </a>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
         {% if is_searching %}
         <section class="news-search-state">
             <div class="news-search-state__copy">
@@ -15,52 +34,7 @@
         </section>
         {% endif %}
 
-        {% if destaque and not is_searching %}
-        <section class="news-featured">
-            <article class="news-featured__main news-featured__main--horizontal">
-                {% if destaque.imagem_exibicao %}
-                <a
-                    href="{{ destaque.get_absolute_url }}"
-                    class="news-featured__image"
-                    data-analytics-event="click_noticia_destaque"
-                    data-analytics-category="content"
-                    data-analytics-label="{{ destaque.titulo|portal_text }}"
-                    data-analytics-slug="{{ destaque.slug }}"
-                    data-analytics-article-category="{{ destaque.categoria|default:'Milhas e Pontos'|portal_text }}"
-                    data-analytics-article-topic="{{ destaque.topico|default:''|portal_text }}"
-                    data-analytics-section="home_featured"
-                >
-                    <img src="{{ destaque.imagem_exibicao }}" alt="{{ destaque.titulo }}">
-                </a>
-                {% endif %}
-                <div class="news-featured__body">
-                    <span class="news-pill news-pill--primary">{{ destaque.categoria|default:"Milhas e Pontos"|portal_text }}</span>
-                    {% if destaque.topico %}
-                    <span class="news-pill news-pill--topic">{{ destaque.topico|portal_text }}</span>
-                    {% endif %}
-                    <h2>
-                        <a
-                            href="{{ destaque.get_absolute_url }}"
-                            data-analytics-event="click_noticia_destaque"
-                            data-analytics-category="content"
-                            data-analytics-label="{{ destaque.titulo|portal_text }}"
-                            data-analytics-slug="{{ destaque.slug }}"
-                            data-analytics-article-category="{{ destaque.categoria|default:'Milhas e Pontos'|portal_text }}"
-                            data-analytics-article-topic="{{ destaque.topico|default:''|portal_text }}"
-                            data-analytics-section="home_featured"
-                        >
-                            {{ destaque.titulo|portal_text }}
-                        </a>
-                    </h2>
-                    <p>{{ destaque.resumo|portal_text }}</p>
-                    <div class="news-meta">
-                        <span>Reda&ccedil;&atilde;o NC Fly</span>
-                        <span>{{ destaque.publicada_em|br_date_long }}</span>
-                    </div>
-                </div>
-            </article>
-        </section>
-        {% elif not is_searching %}
+        {% if not is_searching and not noticias_visiveis %}
         <section class="news-empty">
             <div class="news-empty__card">
                 <h2>Nenhuma not&iacute;cia publicada ainda</h2>
@@ -178,11 +152,54 @@
             <header class="news-section-bar">
                 <h2>{% if is_searching %}Resultados da busca{% else %}&Uacute;ltimas not&iacute;cias{% endif %}</h2>
             </header>
-            {% if noticias_grade %}
-            <div class="scroll-hint-wrap">
-            <div class="news-quick-grid">
-                {% for noticia in noticias_grade %}
-                <article class="news-card">
+            {% if noticias_visiveis or noticias_ocultas %}
+            <div class="news-home-grid" id="home-latest-grid">
+                {% for noticia in noticias_visiveis %}
+                <article class="news-card" data-load-more-item>
+                    {% if noticia.imagem_exibicao %}
+                    <a
+                        href="{{ noticia.get_absolute_url }}"
+                        class="news-card__image"
+                        data-analytics-event="click_noticia_card"
+                        data-analytics-category="content"
+                        data-analytics-label="{{ noticia.titulo|portal_text }}"
+                        data-analytics-slug="{{ noticia.slug }}"
+                        data-analytics-article-category="{{ noticia.categoria|default:'Notícias'|portal_text }}"
+                        data-analytics-article-topic="{{ noticia.topico|default:''|portal_text }}"
+                        data-analytics-section="home_latest"
+                    >
+                        <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
+                    </a>
+                    {% endif %}
+                    <div class="news-card__body">
+                        <span class="news-pill news-pill--muted">{{ noticia.categoria|default:"Notícias"|portal_text }}</span>
+                        {% if noticia.topico %}
+                        <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
+                        {% endif %}
+                        <h3>
+                            <a
+                                href="{{ noticia.get_absolute_url }}"
+                                data-analytics-event="click_noticia_card"
+                                data-analytics-category="content"
+                                data-analytics-label="{{ noticia.titulo|portal_text }}"
+                                data-analytics-slug="{{ noticia.slug }}"
+                                data-analytics-article-category="{{ noticia.categoria|default:'Notícias'|portal_text }}"
+                                data-analytics-article-topic="{{ noticia.topico|default:''|portal_text }}"
+                                data-analytics-section="home_latest"
+                            >
+                                {{ noticia.titulo|portal_text }}
+                            </a>
+                        </h3>
+                        <p>{{ noticia.resumo|portal_text|truncatechars:100 }}</p>
+                        <div class="news-meta">
+                            <span>Reda&ccedil;&atilde;o NC Fly</span>
+                            <span>{{ noticia.publicada_em|br_date_long }}</span>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+                {% for noticia in noticias_ocultas %}
+                <article class="news-card is-hidden" data-load-more-item>
                     {% if noticia.imagem_exibicao %}
                     <a
                         href="{{ noticia.get_absolute_url }}"
@@ -226,7 +243,38 @@
                 </article>
                 {% endfor %}
             </div>
+            {# Botão mobile: expande os cards 4-6 antes de carregar mais do servidor #}
+            {% if noticias_visiveis|length > 3 %}
+            <div class="portal-category-loadmore portal-category-loadmore--mobile-only" id="home-mobile-expand-wrap">
+                <button
+                    type="button"
+                    class="portal-button portal-button--ghost"
+                    data-home-mobile-expand
+                    data-analytics-event="click_carregar_mais_noticias"
+                    data-analytics-category="engagement"
+                    data-analytics-label="home_mobile_expand"
+                >
+                    Carregar mais not&iacute;cias
+                </button>
             </div>
+            {% endif %}
+            {% if noticias_ocultas %}
+            <div class="portal-category-loadmore" id="home-loadmore-wrap">
+                <button
+                    type="button"
+                    class="portal-button portal-button--ghost"
+                    data-load-more-button
+                    data-load-more-target="home-latest-grid"
+                    data-batch-size="{{ home_batch }}"
+                    data-label-default="Carregar mais notícias"
+                    data-analytics-event="click_carregar_mais_noticias"
+                    data-analytics-category="engagement"
+                    data-analytics-label="home_latest"
+                >
+                    Carregar mais not&iacute;cias
+                </button>
+            </div>
+            {% endif %}
             {% else %}
             <div class="news-empty__card">
                 {% if is_searching %}
@@ -237,41 +285,6 @@
             </div>
             {% endif %}
         </section>
-
-        {% if secoes_categoria and not is_searching %}
-        {% for secao in secoes_categoria %}
-        <section class="news-latest-block">
-            <header class="news-section-bar">
-                <h2>{{ secao.label }}</h2>
-                <a href="{% url 'portal_categoria' secao.slug %}" class="news-section-bar__link">
-                    Ver mais <span aria-hidden="true">&rarr;</span>
-                </a>
-            </header>
-            <div class="scroll-hint-wrap">
-            <div class="news-quick-grid">
-                {% for noticia in secao.noticias %}
-                <article class="news-card">
-                    {% if noticia.imagem_exibicao %}
-                    <a href="{{ noticia.get_absolute_url }}" class="news-card__image">
-                        <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
-                    </a>
-                    {% endif %}
-                    <div class="news-card__body">
-                        <span class="news-pill news-pill--muted">{{ noticia.categoria|default:"Notícias"|portal_text }}</span>
-                        <h3><a href="{{ noticia.get_absolute_url }}">{{ noticia.titulo|portal_text }}</a></h3>
-                        <p>{{ noticia.resumo|portal_text|truncatechars:100 }}</p>
-                        <div class="news-meta">
-                            <span>Reda&ccedil;&atilde;o NC Fly</span>
-                            <span>{{ noticia.publicada_em|br_date_long }}</span>
-                        </div>
-                    </div>
-                </article>
-                {% endfor %}
-            </div>
-            </div>
-        </section>
-        {% endfor %}
-        {% endif %}
 
         <section class="news-platform-spotlight">
             <div class="news-platform-spotlight__copy">
@@ -357,6 +370,15 @@
                         {% elif item.icon_variant == "hotels" %}
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                        {% elif item.icon_variant == "promos" %}
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                        {% elif item.icon_variant == "travel" %}
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+                            <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
                         </svg>
                         {% else %}
                         <svg viewBox="0 0 24 24" aria-hidden="true">

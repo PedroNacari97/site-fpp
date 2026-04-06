@@ -81,7 +81,7 @@
 
                 <section class="news-detail-content" data-article-content>
                     <div class="news-detail-content__preview" data-article-preview>
-                        {{ noticia.conteudo|portal_text|linebreaks }}
+                        {{ noticia.conteudo|portal_content }}
                     </div>
                     <button type="button" class="news-detail-content__readmore" data-article-readmore aria-expanded="false">
                         Ler artigo completo
@@ -117,6 +117,23 @@
                     </a>
                 </section>
                 {% endif %}
+
+                <section class="news-detail-platform-cta">
+                    <div class="news-detail-platform-cta__copy">
+                        <strong>Quer emitir mais r&aacute;pido e sem retrabalho?</strong>
+                        <p>Conhe&ccedil;a a Plataforma NC Fly e organize cota&ccedil;&otilde;es, emiss&otilde;es e clientes em um &uacute;nico fluxo.</p>
+                    </div>
+                    <a
+                        href="{% url 'portal_plataforma_saas' %}"
+                        class="portal-button portal-button--primary"
+                        data-analytics-event="click_cta_plataforma_post"
+                        data-analytics-category="conversion"
+                        data-analytics-slug="{{ noticia.slug }}"
+                        data-analytics-section="article_cta"
+                    >
+                        Conhecer a plataforma
+                    </a>
+                </section>
 
                 <section class="news-detail-share">
                     <span>Compartilhe esta notícia:</span>

@@ -3,6 +3,8 @@ from datetime import date, datetime
 
 from django import template
 from django.utils import timezone
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
 
 
 register = template.Library()
@@ -33,6 +35,8 @@ DISPLAY_LABELS = {
     "Hoteis": "Hotéis",
     "Noticias": "Notícias",
     "Noticia": "Notícia",
+    "Viagens": "Viagens",
+    "Viagem": "Viagem",
     "Transferencias Bonificadas": "Transferências Bonificadas",
     "Transferencias e Bonus": "Transferências e Bônus",
     "Programas de Fidelidade": "Programas de Fidelidade",
@@ -48,6 +52,10 @@ DISPLAY_LABELS = {
     "Hospedagem com Pontos": "Hospedagem com Pontos",
     "Resorts e Experiencias": "Resorts e Experiências",
     "Destinos e Guias": "Destinos e Guias",
+    "Destinos e Roteiros": "Destinos e Roteiros",
+    "Passagens e Voos": "Passagens e Voos",
+    "Dicas de Viagem": "Dicas de Viagem",
+    "Cruzeiros e Pacotes": "Cruzeiros e Pacotes",
     "Promocoes de Hospedagem": "Promoções de Hospedagem",
     "Passagens Aereas": "Passagens Aéreas",
     "Cartoes e Cashback": "Cartões e Cashback",
@@ -143,3 +151,33 @@ def br_datetime_short(value):
 @register.filter
 def portal_text(value):
     return repair_portuguese_text(value)
+
+
+def _markdown_to_html(text: str) -> str:
+    """Converte markdown simples (negrito, links) para HTML seguro."""
+    # Converte **texto** e *texto* para <strong>
+    text = re.sub(r"\*\*(.+?)\*\*", lambda m: f"<strong>{escape(m.group(1))}</strong>", text)
+    text = re.sub(r"\*(.+?)\*", lambda m: f"<strong>{escape(m.group(1))}</strong>", text)
+    # Converte [texto](url) para <a> com rel seguro
+    def _link(m):
+        label = escape(m.group(1))
+        url = m.group(2).strip()
+        if not url.startswith(("http://", "https://")):
+            return escape(m.group(0))
+        return f'<a href="{escape(url)}" target="_blank" rel="noopener noreferrer">{label}</a>'
+    text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", _link, text)
+    return text
+
+
+@register.filter
+def portal_content(value):
+    """Renderiza conteúdo de notícia: converte markdown simples e aplica linebreaks com HTML seguro."""
+    repaired = repair_portuguese_text(str(value or ""))
+    paragraphs = re.split(r"\n{2,}", repaired)
+    html_parts = []
+    for para in paragraphs:
+        lines = para.strip().split("\n")
+        converted_lines = [_markdown_to_html(line.strip()) for line in lines if line.strip()]
+        if converted_lines:
+            html_parts.append("<p>" + "<br>".join(converted_lines) + "</p>")
+    return mark_safe("\n".join(html_parts))
