@@ -14,5 +14,6 @@ urlpatterns = [
     path("politica-de-privacidade/", views.politica_privacidade, name="portal_privacidade"),
     path("termos-de-uso/", views.termos_de_uso, name="portal_termos"),
     path("categorias/<slug:categoria_slug>/", views.categoria_lista, name="portal_categoria"),
-    path("noticias/<slug:slug>/", views.noticia_detalhe, name="portal_noticia_detalhe"),
+    path("categorias/<slug:categoria_slug>/<slug:slug>/", views.noticia_detalhe, name="portal_noticia_detalhe"),
+    path("noticias/<slug:slug>/", views.noticia_redirect, name="portal_noticia_redirect"),
 ]
