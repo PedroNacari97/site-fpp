@@ -337,31 +337,39 @@ def _extract_response_text(response_json: dict) -> str:
 
 
 def _normalize_category(value: str) -> str:
-    normalized = (value or "").strip().lower()
+    # Normaliza sem acentos para comparação robusta
+    raw = (value or "").strip()
+    normalized = _normalize_lookup(raw)
     mapping = {
+        # Milhas e Pontos
         "milhas": "Milhas e Pontos",
         "milhas e pontos": "Milhas e Pontos",
         "pontos": "Milhas e Pontos",
         "fidelidade": "Milhas e Pontos",
+        # Cartões de Crédito
         "cartoes": "Cartões de Crédito",
         "cartoes de credito": "Cartões de Crédito",
-        "cartões": "Cartões de Crédito",
-        "cartões de crédito": "Cartões de Crédito",
+        "cartoes de credito": "Cartões de Crédito",
+        "cartao de credito": "Cartões de Crédito",
         "credito": "Cartões de Crédito",
+        # Hotéis e Resorts
         "hoteis": "Hotéis e Resorts",
-        "hotéis": "Hotéis e Resorts",
         "hoteis e resorts": "Hotéis e Resorts",
-        "hotéis e resorts": "Hotéis e Resorts",
         "resorts": "Hotéis e Resorts",
+        "hotel": "Hotéis e Resorts",
+        # Promoções
         "promocoes": "Promoções",
-        "promoções": "Promoções",
         "promocao": "Promoções",
-        "promoção": "Promoções",
+        "promocoes e ofertas": "Promoções",
+        "ofertas": "Promoções",
+        # Viagens
         "viagens": "Viagens",
         "viagem": "Viagens",
         "turismo": "Viagens",
         "destinos": "Viagens",
         "destino": "Viagens",
+        "roteiro": "Viagens",
+        "roteiros": "Viagens",
     }
     return mapping.get(normalized, "Milhas e Pontos")
 
@@ -815,7 +823,13 @@ def _rewrite_with_openai_schema(source_name: str, raw_article: dict) -> NewsDraf
                             "Nos campos titulo, resumo, seo_title e meta_description NUNCA use asteriscos — escreva em texto puro. "
                             "Crie um seo_title que inclua a palavra-chave principal de forma natural, seja claro e direto para buscadores, sem clickbait exagerado. "
                             "Crie uma meta_description objetiva e informativa com boa intenção de busca em até 160 caracteres, que complemente o seo_title sem repetir as mesmas palavras. "
-                            "Classifique a notícia em uma categoria canônica do portal e em um tópico editorial interno. "
+                            "Classifique a notícia em uma categoria canônica do portal seguindo estas regras: "
+                            "use 'Milhas e Pontos' para transferências, programas de fidelidade, emissão de passagens e compra/venda de pontos; "
+                            "use 'Cartoes de Credito' para análises, lançamentos, bônus de adesão, anuidade e aprovação de cartões; "
+                            "use 'Hoteis e Resorts' para programas hoteleiros, hospedagem com pontos e promoções de hotel; "
+                            "use 'Promocoes' para ofertas relâmpago, bônus temporários de transferência, cashback e passagens em promoção; "
+                            "use 'Viagens' para destinos, roteiros, dicas de viagem, cruzeiros e pacotes turísticos. "
+                            "Classifique também em um tópico editorial interno compatível com a categoria escolhida. "
                             "Se houver links externos relevantes de promoção ou ação oficial, escolha o melhor CTA e retorne esse link. "
                             "Nunca use links de redes sociais, compartilhamento ou navegação. "
                             "Antes de responder, revise todo o texto para garantir ortografia correta, acentuação correta, concordância natural e fluidez real em PT-BR. "
@@ -956,7 +970,12 @@ def _rewrite_with_openai(source_name: str, raw_article: dict) -> NewsDraft:
                             "Crie um seo_title que inclua a palavra-chave principal de forma natural, seja claro e direto para buscadores, sem clickbait. "
                             "Crie uma meta_description objetiva com boa intenção de busca em até 160 caracteres, que complemente o seo_title sem repetir as mesmas palavras. "
                             "Slug em minúsculo com hífens. Confianca vai de 0.0 a 1.0. "
-                            "Categorias disponíveis: Milhas e Pontos, Cartoes de Credito, Hoteis e Resorts, Promocoes, Viagens. "
+                            "Categorias disponíveis e quando usar cada uma: "
+                            "'Milhas e Pontos' para transferências, programas de fidelidade, emissão e resgate de passagens; "
+                            "'Cartoes de Credito' para análises, lançamentos, bônus de adesão, anuidade e aprovação de cartões; "
+                            "'Hoteis e Resorts' para programas hoteleiros, hospedagem com pontos e promoções de hotel; "
+                            "'Promocoes' para ofertas relâmpago, bônus temporários, cashback e passagens em promoção; "
+                            "'Viagens' para destinos, roteiros, dicas de viagem, cruzeiros e pacotes turísticos. "
                             "Antes de responder, revise todo o texto para garantir ortografia correta, acentuação correta, concordância natural e fluidez real em PT-BR. "
                             "Corrija qualquer erro de português antes de devolver o JSON final. "
                             "No imagem_prompt, proponha uma capa editorial premium que mantenha a mesma ideia central da noticia e possa usar marcas, produtos e logos reais citados no tema. "
