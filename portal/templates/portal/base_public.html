@@ -106,10 +106,6 @@
                 {% block content %}{% endblock %}
             </main>
 
-            {% block footer %}
-            {% include "portal/partials/home_footer.html" %}
-            {% endblock %}
-
             <!-- Acima do rodapé — só desktop -->
             <div class="portal-ad-footer portal-ad-desktop-only">
                 <ins class="adsbygoogle"
@@ -133,6 +129,10 @@
             <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </aside>
     </div>
+
+    {% block footer %}
+    {% include "portal/partials/home_footer.html" %}
+    {% endblock %}
 
     <div class="portal-cookie-banner{% if portal_cookie_consent_exists %} is-hidden{% endif %}" data-cookie-banner>
         <div class="portal-cookie-banner__content">
