@@ -283,6 +283,49 @@
     </div>
     {% endif %}
 
+    {% if outras_noticias %}
+    <section class="portal-category-outras">
+        <header class="news-section-bar news-section-bar--stacked">
+            <div>
+                <h2>Outras not&iacute;cias</h2>
+                <p>Confira tamb&eacute;m o que est&aacute; acontecendo em outras categorias.</p>
+            </div>
+        </header>
+        <div class="portal-category-grid portal-category-grid--outras">
+            {% for noticia in outras_noticias %}
+            <article class="news-card">
+                {% if noticia.imagem_exibicao %}
+                <a href="{{ noticia.get_absolute_url }}" class="news-card__image"
+                    data-analytics-event="click_noticia_outras"
+                    data-analytics-category="content"
+                    data-analytics-label="{{ noticia.titulo|portal_text }}"
+                    data-analytics-section="category_outras">
+                    <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
+                </a>
+                {% endif %}
+                <div class="news-card__body">
+                    <span class="news-pill news-pill--muted">{{ noticia.categoria|portal_text }}</span>
+                    <h3>
+                        <a href="{{ noticia.get_absolute_url }}"
+                            data-analytics-event="click_noticia_outras"
+                            data-analytics-category="content"
+                            data-analytics-label="{{ noticia.titulo|portal_text }}"
+                            data-analytics-section="category_outras">
+                            {{ noticia.titulo|portal_text }}
+                        </a>
+                    </h3>
+                    <p>{{ noticia.resumo|portal_text|truncatechars:100 }}</p>
+                    <div class="news-meta">
+                        <span>Reda&ccedil;&atilde;o NC Fly</span>
+                        <span>{{ noticia.publicada_em|br_date_long }}</span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     {% if categoria_config.cta_title %}
     <section class="portal-category-cta">
         <div>

@@ -2434,6 +2434,15 @@ img {
   font-size: 14px;
 }
 
+.portal-category-outras {
+  display: grid;
+  gap: 16px;
+}
+
+.portal-category-grid--outras {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .portal-category-cta {
   display: flex;
   align-items: center;
@@ -3546,6 +3555,7 @@ img {
   .news-quick-grid,
   .news-home-grid,
   .portal-category-grid,
+  .portal-category-grid--outras,
   .news-related__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -3663,7 +3673,8 @@ img {
   .portal-category-section__grid,
   .news-quick-grid,
   .portal-category-grid,
-.news-related__grid {
+  .portal-category-grid--outras,
+  .news-related__grid {
     grid-template-columns: 1fr;
   }
 

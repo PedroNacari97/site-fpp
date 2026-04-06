@@ -902,6 +902,7 @@ def _build_category_page_context(categoria_slug, selected_topic_slug=""):
     visible_count = (1 if featured else 0) + len(sidebar_cards) + len(grid_cards)
     hidden_cards = active_pool[visible_count:] if selected_topic else matching[visible_count:]
     remaining_count = max(active_total - visible_count, 0)
+    outras_noticias = fallback[:3]
     return {
         "categoria_slug": categoria_slug,
         "categoria_config": config,
@@ -914,6 +915,7 @@ def _build_category_page_context(categoria_slug, selected_topic_slug=""):
         "topico_ativo": selected_topic,
         "remaining_count": remaining_count,
         "show_load_more": remaining_count > 0,
+        "outras_noticias": outras_noticias,
     }
 
 
