@@ -80,22 +80,59 @@
 >
     {% include "portal/partials/public_topbar.html" %}
 
-    <main class="portal-main">
-        {% if messages %}
-        <div class="portal-flash-stack">
-            {% for message in messages %}
-            <div class="portal-flash portal-flash--{{ message.tags|default:'info' }}">
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-        {% block content %}{% endblock %}
-    </main>
+    <div class="portal-ads-layout">
+        <!-- Lateral esquerda — só desktop -->
+        <aside class="portal-ad-sidebar portal-ad-sidebar--left portal-ad-desktop-only">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-8670696864452622"
+                 data-ad-slot="3291393849"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </aside>
 
-    {% block footer %}
-    {% include "portal/partials/home_footer.html" %}
-    {% endblock %}
+        <div class="portal-ads-layout__center">
+            <main class="portal-main">
+                {% if messages %}
+                <div class="portal-flash-stack">
+                    {% for message in messages %}
+                    <div class="portal-flash portal-flash--{{ message.tags|default:'info' }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% block content %}{% endblock %}
+            </main>
+
+            {% block footer %}
+            {% include "portal/partials/home_footer.html" %}
+            {% endblock %}
+
+            <!-- Acima do rodapé — só desktop -->
+            <div class="portal-ad-footer portal-ad-desktop-only">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-8670696864452622"
+                     data-ad-slot="3012921192"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            </div>
+        </div>
+
+        <!-- Lateral direita — só desktop -->
+        <aside class="portal-ad-sidebar portal-ad-sidebar--right portal-ad-desktop-only">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-8670696864452622"
+                 data-ad-slot="4326002864"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </aside>
+    </div>
 
     <div class="portal-cookie-banner{% if portal_cookie_consent_exists %} is-hidden{% endif %}" data-cookie-banner>
         <div class="portal-cookie-banner__content">

@@ -69,6 +69,43 @@ img {
   margin: 0 auto;
 }
 
+/* ── Layout com anúncios laterais ─────────────────────────── */
+.portal-ads-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.portal-ads-layout__center {
+  flex: 1;
+  min-width: 0;
+}
+
+.portal-ad-sidebar {
+  width: 160px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 80px;
+  padding: 8px 4px;
+}
+
+.portal-ad-footer {
+  width: min(1120px, calc(100% - 40px));
+  margin: 16px auto 0;
+  padding: 0 0 16px;
+}
+
+/* Esconde anúncios em mobile/tablet */
+.portal-ad-desktop-only {
+  display: none;
+}
+
+@media (min-width: 1440px) {
+  .portal-ad-desktop-only {
+    display: block;
+  }
+}
+
 .portal-flash-stack {
   display: grid;
   gap: 10px;
