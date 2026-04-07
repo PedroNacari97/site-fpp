@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ':*)",
+      "Bash(curl -s http://127.0.0.1:8000/home/ -H \"Host: 127.0.0.1\")",
+      "Bash(railway version:*)",
+      "Bash(python -c \"from django.core.management.utils import get_random_secret_key; print\\(get_random_secret_key\\(\\)\\)\")"
+    ]
+  }
+}

@@ -169,21 +169,36 @@ def emissao_cliente_contexto(request, cliente_id):
         ativo=True,
     )
     passageiros = PassageiroFrequente.objects.filter(cliente=cliente).order_by("nome")
+    cliente_nome = cliente.usuario.get_full_name() or cliente.usuario.username
+    cliente_cpf = cliente.cpf or ""
+    titular_entry = {
+        "id": f"titular_{cliente.id}",
+        "nome": cliente_nome,
+        "cpf": cliente_cpf,
+        "cpf_masked": _mask_cpf(cliente_cpf),
+        "rg": "",
+        "passaporte": "",
+        "passaporte_validade": "",
+        "data_nascimento": cliente.data_nascimento.isoformat() if getattr(cliente, "data_nascimento", None) else "",
+        "is_titular": True,
+    }
+    passageiros_list = [titular_entry] + [
+        {
+            "id": item.id,
+            "nome": item.nome,
+            "cpf_masked": _mask_cpf(item.cpf),
+            "is_titular": False,
+        }
+        for item in passageiros
+    ]
     return JsonResponse(
         {
             "cliente": {
                 "id": cliente.id,
-                "nome": cliente.usuario.get_full_name() or cliente.usuario.username,
-                "cpf": cliente.cpf or "",
+                "nome": cliente_nome,
+                "cpf": cliente_cpf,
             },
-            "passageiros_frequentes": [
-                {
-                    "id": item.id,
-                    "nome": item.nome,
-                    "cpf_masked": _mask_cpf(item.cpf),
-                }
-                for item in passageiros
-            ],
+            "passageiros_frequentes": passageiros_list,
         }
     )
 
@@ -422,7 +437,7 @@ def _build_emissao_initial_from_cotacao(cotacao):
         "qtd_adultos": cotacao.qtd_passageiros or 1,
         "qtd_criancas": 0,
         "qtd_bebes": 0,
-        "valor_referencia": cotacao.valor_passagem,
+        "valor_referencia": cotacao.valor_referencia_manual if cotacao.valor_referencia_manual not in (None, "") else cotacao.valor_passagem,
         "valor_taxas": cotacao.taxas,
         "pontos_utilizados": cotacao.milhas,
         "valor_referencia_pontos": valor_referencia_pontos,
@@ -621,7 +636,7 @@ def nova_emissao(request):
         return redirect("admin_editar_emissao", cotacao.emissao_id)
     escalas_por_tipo = {"ida": [], "volta": []}
     if request.method == "POST":
-        form = EmissaoPassagemForm(request.POST, empresa=empresa)
+        form = EmissaoPassagemForm(request.POST, request.FILES, empresa=empresa)
         escalas_payload = _build_escalas_from_request(request)
         escalas_por_tipo = _format_escalas(escalas_payload)
         passageiros_json = _build_passageiros_json_for_context(request.POST)
@@ -808,7 +823,7 @@ def editar_emissao(request, emissao_id):
         emissao.escalas.values("aeroporto_id", "duracao", "cidade", "tipo", "ordem")
     )
     if request.method == "POST":
-        form = EmissaoPassagemForm(request.POST, instance=emissao, empresa=empresa)
+        form = EmissaoPassagemForm(request.POST, request.FILES, instance=emissao, empresa=empresa)
         escalas_payload = _build_escalas_from_request(request)
         escalas_por_tipo = _format_escalas(escalas_payload)
         if form.is_valid():

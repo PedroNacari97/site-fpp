@@ -64,17 +64,14 @@ def _parse_duration_to_minutes(value):
     if not raw_value:
         return 0
     try:
-        hours_str, minutes_str = raw_value.split(":", 1)
-        hours = int(hours_str)
-        minutes = int(minutes_str)
-    except (TypeError, ValueError):
+        parts = raw_value.split(":")
+        hours = int(parts[0])
+        minutes = int(parts[1])
+    except (TypeError, ValueError, IndexError):
         raise forms.ValidationError("Informe o tempo de voo no formato HH:MM.")
     if hours < 0 or minutes < 0 or minutes > 59:
         raise forms.ValidationError("Informe um tempo de voo valido.")
-    total_minutes = (hours * 60) + minutes
-    if total_minutes <= 0:
-        raise forms.ValidationError("Informe um tempo de voo maior que zero.")
-    return total_minutes
+    return (hours * 60) + minutes
 
 
 def _format_duration_from_minutes(value):
@@ -549,6 +546,9 @@ class EmissaoPassagemForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         empresa = kwargs.pop("empresa", None)
         super().__init__(*args, **kwargs)
+        _dt_formats = ['%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M']
+        self.fields['data_ida'].input_formats = _dt_formats
+        self.fields['data_volta'].input_formats = _dt_formats
         for f in [
             'qtd_adultos',
             'qtd_criancas',
@@ -695,10 +695,11 @@ class EmissaoPassagemForm(forms.ModelForm):
             'milhas_do_cliente',
             'lucro',
             'hotel_vinculado',
+            'comprovante_pagamento',
         ]
         widgets = {
-            'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
             'valor_referencia_pontos': forms.NumberInput(attrs={'step': '0.01', 'readonly': 'readonly'}),
             'valor_milheiro_parceiro': forms.NumberInput(attrs={'step': '0.01'}),
             'valor_venda_final': forms.NumberInput(attrs={'step': '0.01'}),
@@ -1025,6 +1026,9 @@ class CotacaoVooForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         empresa = kwargs.pop("empresa", None)
         super().__init__(*args, **kwargs)
+        _dt_formats = ['%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M']
+        self.fields['data_ida'].input_formats = _dt_formats
+        self.fields['data_volta'].input_formats = _dt_formats
         self.fields['companhia_aerea'].choices = [
             ("", "Selecione a companhia")
         ] + [(c.nome, c.nome) for c in CompanhiaAerea.objects.all()]
@@ -1043,10 +1047,10 @@ class CotacaoVooForm(forms.ModelForm):
         self.fields["origem"].empty_label = "Selecione o aeroporto de origem"
         self.fields["destino"].empty_label = "Selecione o aeroporto de destino"
         self.fields["programa"].required = False
-        self.fields["duracao_voo_ida_minutos"].initial = _format_duration_from_minutes(
+        self.initial["duracao_voo_ida_minutos"] = _format_duration_from_minutes(
             getattr(self.instance, "duracao_voo_ida_minutos", 0)
         )
-        self.fields["duracao_voo_volta_minutos"].initial = _format_duration_from_minutes(
+        self.initial["duracao_voo_volta_minutos"] = _format_duration_from_minutes(
             getattr(self.instance, "duracao_voo_volta_minutos", 0)
         )
 
@@ -1137,6 +1141,7 @@ class CotacaoVooForm(forms.ModelForm):
             'classe',
             'observacoes',
             'valor_passagem',
+            'valor_referencia_manual',
             'taxas',
             'milhas',
             'valor_milheiro',
@@ -1148,26 +1153,21 @@ class CotacaoVooForm(forms.ModelForm):
             'status',
         ]
         labels = {
-            'parcelas': 'Numero de parcelas sem juros',
-            'duracao_voo_ida_minutos': 'Tempo de voo da ida',
-            'fuso_horario_ida': 'Diferenca de fuso na ida',
-            'duracao_voo_volta_minutos': 'Tempo de voo da volta',
-            'fuso_horario_volta': 'Diferenca de fuso na volta',
-        }
-        labels = {
             'parcelas': 'Número de parcelas sem juros',
+            'valor_referencia_manual': 'Valor de referência manual (R$)',
         }
         widgets = {
-            'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'data_ida': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'data_volta': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
             'validade': forms.DateInput(attrs={'type': 'date'}),
+            'valor_referencia_manual': forms.NumberInput(attrs={'step': '0.01', 'placeholder': 'Ex: 2500.00'}),
         }
 
 
 class CalculadoraCotacaoForm(forms.Form):
     valor_passagem = forms.DecimalField(max_digits=10, decimal_places=2)
     taxas = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0)
-    milhas = forms.IntegerField(required=False, initial=0)
+    milhas = forms.DecimalField(max_digits=12, decimal_places=2, required=False, initial=0)
     valor_milheiro = forms.DecimalField(max_digits=10, decimal_places=2, required=False, initial=0)
     parcelas = forms.IntegerField(required=False, initial=1)
     juros = forms.DecimalField(max_digits=5, decimal_places=2, required=False, initial=1)

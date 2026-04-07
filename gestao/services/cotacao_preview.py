@@ -196,7 +196,7 @@ def get_cotacao_titular_info(cotacao):
     }
 
 
-def build_cotacao_preview_context(cotacao):
+def build_cotacao_preview_context(cotacao, *, for_pdf=False):
     cotacao.calcular_valores()
     titular = get_cotacao_titular_info(cotacao)
     empresa = get_empresa_from_operational_record(cotacao)
@@ -309,7 +309,7 @@ def build_cotacao_preview_context(cotacao):
             "cotacao_hint_economia",
             "Diferenca entre a referencia e a proposta",
         ),
-        "empresa_contato": build_empresa_contact_context(empresa),
+        "empresa_contato": build_empresa_contact_context(empresa, for_pdf=for_pdf),
         "observacao_importante": observacao_importante,
         "condicoes_gerais": condicoes_gerais,
     }

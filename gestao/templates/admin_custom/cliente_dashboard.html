@@ -144,8 +144,27 @@
         <article class="detail-client__passenger-column">
           <h3 class="detail-client__section-label">Lista de passageiros</h3>
           <div class="detail-client__passenger-list">
+            {# Titular do cliente sempre aparece primeiro #}
+            <article class="detail-client__passenger-card detail-client__passenger-card--titular">
+              <div class="detail-client__passenger-card-head">
+                <div class="detail-client__passenger-card-main">
+                  <div class="detail-client__passenger-avatar detail-client__passenger-avatar--{{ titular_card.avatar_tone }}">{{ titular_card.initials }}</div>
+                  <div class="detail-client__passenger-identity">
+                    <strong>{{ titular_card.nome }}</strong>
+                    <span>{{ titular_card.tipo_label }}</span>
+                  </div>
+                </div>
+                <span class="detail-client__titular-badge">Titular</span>
+              </div>
+              <div class="detail-client__passenger-meta">
+                <div><span>CPF:</span><strong>{{ titular_card.cpf }}</strong></div>
+                <div><span>Nascimento:</span><strong>{{ titular_card.data_nascimento }}</strong></div>
+                <div><span>Relação:</span><strong>{{ titular_card.relacao }}</strong></div>
+              </div>
+            </article>
+
             {% for item in passenger_cards %}
-              <article class="detail-client__passenger-card">
+              <article class="detail-client__passenger-card" id="passenger-card-{{ item.id }}">
                 <div class="detail-client__passenger-card-head">
                   <div class="detail-client__passenger-card-main">
                     <div class="detail-client__passenger-avatar detail-client__passenger-avatar--{{ item.avatar_tone }}">{{ item.initials }}</div>
@@ -154,23 +173,80 @@
                       <span>{{ item.tipo_label }}</span>
                     </div>
                   </div>
-                  <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="passageiro_id" value="{{ item.id }}">
-                    <button type="submit" name="action" value="delete_passageiro" class="detail-client__remove-button" onclick="return confirm('Remover passageiro frequente?');">Remover</button>
-                  </form>
+                  <div class="detail-client__passenger-actions">
+                    <button type="button" class="detail-client__edit-button" onclick="togglePassengerEdit({{ item.id }})">Editar</button>
+                    <form method="post" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="passageiro_id" value="{{ item.id }}">
+                      <button type="submit" name="action" value="delete_passageiro" class="detail-client__remove-button" onclick="return confirm('Remover passageiro frequente?');">Remover</button>
+                    </form>
+                  </div>
                 </div>
                 <div class="detail-client__passenger-meta">
                   <div><span>CPF:</span><strong>{{ item.cpf }}</strong></div>
                   <div><span>Nascimento:</span><strong>{{ item.data_nascimento }}</strong></div>
                   <div><span>Relacao:</span><strong>{{ item.relacao }}</strong></div>
                 </div>
+                {# Formulário de edição inline #}
+                <div id="passenger-edit-{{ item.id }}" class="detail-client__passenger-edit-form" style="display:none;">
+                  <form method="post" class="detail-client__passenger-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="edit_passageiro">
+                    <input type="hidden" name="passageiro_id" value="{{ item.id }}">
+                    <div class="detail-client__form-span-full">
+                      <label>Nome</label>
+                      <input type="text" name="nome" value="{{ item.nome }}" required>
+                    </div>
+                    <div>
+                      <label>Tipo</label>
+                      <select name="tipo">
+                        <option value="adulto" {% if item.tipo == "adulto" %}selected{% endif %}>Adulto</option>
+                        <option value="crianca" {% if item.tipo == "crianca" %}selected{% endif %}>Criança</option>
+                        <option value="adolescente" {% if item.tipo == "adolescente" %}selected{% endif %}>Adolescente</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label>CPF</label>
+                      <input type="text" name="cpf" value="{{ item.cpf_raw }}">
+                    </div>
+                    <div>
+                      <label>RG</label>
+                      <input type="text" name="rg" value="{{ item.rg }}">
+                    </div>
+                    <div>
+                      <label>Passaporte</label>
+                      <input type="text" name="passaporte" value="{{ item.passaporte }}">
+                    </div>
+                    <div>
+                      <label>Validade passaporte</label>
+                      <input type="date" name="passaporte_validade" value="{{ item.passaporte_validade }}">
+                    </div>
+                    <div>
+                      <label>Nascimento</label>
+                      <input type="date" name="data_nascimento" value="{{ item.data_nascimento_raw }}">
+                    </div>
+                    <div class="detail-client__form-span-full">
+                      <label>Relação</label>
+                      <input type="text" name="relacao" value="{% if item.relacao != '--' %}{{ item.relacao }}{% endif %}">
+                    </div>
+                    <div class="detail-client__form-span-full" style="display:flex;gap:8px;">
+                      <button type="submit" class="detail-client__button">Salvar</button>
+                      <button type="button" class="detail-client__button detail-client__button--ghost" onclick="togglePassengerEdit({{ item.id }})">Cancelar</button>
+                    </div>
+                  </form>
+                </div>
               </article>
             {% empty %}
-              <div class="detail-client__empty">Nenhum passageiro frequente cadastrado.</div>
+              <div class="detail-client__empty">Nenhum passageiro frequente cadastrado ainda.</div>
             {% endfor %}
           </div>
         </article>
+        <script>
+        function togglePassengerEdit(id) {
+          var form = document.getElementById('passenger-edit-' + id);
+          form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+        </script>
       </div>
     </section>
 

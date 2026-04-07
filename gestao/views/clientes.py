@@ -396,23 +396,54 @@ def visualizar_cliente(request, cliente_id):
         "teal",
         "amber",
     )
+
+    def _format_cpf(cpf_raw):
+        digits = "".join(filter(str.isdigit, cpf_raw or ""))
+        if len(digits) == 11:
+            return f"{digits[:3]}.{digits[3:6]}.{digits[6:9]}-{digits[9:]}"
+        return cpf_raw or "--"
+
+    def _initials(nome):
+        parts = [p[0].upper() for p in (nome or "").split()[:2] if p]
+        return "".join(parts) or (nome or "?")[:2].upper()
+
+    # Build titular card from the client itself
+    titular_nome = cliente.usuario.get_full_name() or cliente.usuario.username
+    titular_card = {
+        "id": None,
+        "is_titular": True,
+        "nome": titular_nome,
+        "tipo_label": "Titular (cliente)",
+        "tipo": "",
+        "cpf": _format_cpf(cliente.cpf or ""),
+        "cpf_raw": cliente.cpf or "",
+        "rg": "",
+        "passaporte": "",
+        "passaporte_validade": "",
+        "data_nascimento": cliente.data_nascimento.strftime("%d/%m/%Y") if getattr(cliente, "data_nascimento", None) else "--",
+        "data_nascimento_raw": cliente.data_nascimento.strftime("%Y-%m-%d") if getattr(cliente, "data_nascimento", None) else "",
+        "relacao": "Titular",
+        "initials": _initials(titular_nome),
+        "avatar_tone": "orange",
+    }
+
     for index, passageiro in enumerate(passageiros):
-        cpf_digits = "".join(filter(str.isdigit, passageiro.cpf or ""))
-        if len(cpf_digits) == 11:
-            cpf_display = f"{cpf_digits[:3]}.{cpf_digits[3:6]}.{cpf_digits[6:9]}-{cpf_digits[9:]}"
-        else:
-            cpf_display = passageiro.cpf or "--"
-        parts = [part[0].upper() for part in passageiro.nome.split()[:2] if part]
-        initials = "".join(parts) or passageiro.nome[:2].upper()
         passenger_cards.append(
             {
                 "id": passageiro.id,
+                "is_titular": False,
                 "nome": passageiro.nome,
                 "tipo_label": type_labels.get(passageiro.tipo, passageiro.tipo),
-                "cpf": cpf_display,
+                "tipo": passageiro.tipo or "",
+                "cpf": _format_cpf(passageiro.cpf or ""),
+                "cpf_raw": passageiro.cpf or "",
+                "rg": passageiro.rg or "",
+                "passaporte": passageiro.passaporte or "",
+                "passaporte_validade": passageiro.passaporte_validade.strftime("%Y-%m-%d") if getattr(passageiro, "passaporte_validade", None) else "",
                 "data_nascimento": passageiro.data_nascimento.strftime("%d/%m/%Y") if passageiro.data_nascimento else "--",
+                "data_nascimento_raw": passageiro.data_nascimento.strftime("%Y-%m-%d") if passageiro.data_nascimento else "",
                 "relacao": passageiro.relacao or "--",
-                "initials": initials,
+                "initials": _initials(passageiro.nome),
                 "avatar_tone": avatar_gradients[index % len(avatar_gradients)],
             }
         )
@@ -599,6 +630,7 @@ def visualizar_cliente(request, cliente_id):
             "cliente_obj": cliente,
             "passageiros_frequentes": passageiros,
             "passenger_cards": passenger_cards,
+            "titular_card": titular_card,
             "passageiro_form": passageiro_form,
             "passageiro_form_prefix": "passageiro-frequente",
             "interesses_viagem": interesses_viagem,

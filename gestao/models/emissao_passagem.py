@@ -119,6 +119,12 @@ class EmissaoPassagem(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     detalhes = models.TextField(blank=True)
+    comprovante_pagamento = models.FileField(
+        upload_to="emissoes/comprovantes/",
+        null=True,
+        blank=True,
+        verbose_name="Comprovante de pagamento",
+    )
 
     def clean(self):
         super().clean()
@@ -155,7 +161,7 @@ class EmissaoPassagem(models.Model):
             else (Decimal(valor_final_cliente or 0) if valor_final_cliente not in (None, "") else None)
         )
         if valor_cliente is not None:
-            self.economia_obtida = valor_cliente - Decimal(self.valor_referencia or 0)
+            self.economia_obtida = Decimal(self.valor_referencia or 0) - valor_cliente
         else:
             self.economia_obtida = None
         super().save(*args, **kwargs)

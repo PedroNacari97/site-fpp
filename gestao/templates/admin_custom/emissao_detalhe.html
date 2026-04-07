@@ -88,6 +88,18 @@
     <p class="helper-text mt-3">*Taxas de embarque/companhia aérea.</p>
   </section>
 
+  {% if emissao.comprovante_pagamento %}
+  <section class="surface-card">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Documentos</p>
+        <h2 class="section-title">Comprovante de pagamento</h2>
+      </div>
+      <a href="{{ emissao.comprovante_pagamento.url }}" target="_blank" rel="noopener" class="btn btn--outline">Abrir comprovante</a>
+    </div>
+  </section>
+  {% endif %}
+
   <section class="surface-card">
     <div class="section-heading">
       <div>

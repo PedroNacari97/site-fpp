@@ -69,7 +69,6 @@ def editar_emissor_parceiro(request, emissor_id):
         form = EmissorParceiroForm(request.POST, instance=emissor, empresa=empresa)
         if form.is_valid():
             form.save()
-            form.save_m2m()
             return redirect("admin_emissores_parceiros")
     else:
         form = EmissorParceiroForm(instance=emissor, empresa=empresa)

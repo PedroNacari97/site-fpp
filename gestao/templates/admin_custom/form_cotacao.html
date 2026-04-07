@@ -324,15 +324,29 @@
                                     {{ form.valor_milheiro }}
                                 </div>
                             </div>
+                            <div class="quote-grid quote-grid--single" style="margin-top:0.75rem;">
+                                <div>
+                                    <label class="quote-label" for="{{ form.valor_referencia_manual.id_for_label }}">Valor de referencia manual (R$)</label>
+                                    {{ form.valor_referencia_manual }}
+                                    <p class="quote-helper">Opcional. Se preenchido, sobrescreve o valor calculado pelas milhas como referencia da cotacao.</p>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="quote-value-group">
-                            <h3 class="quote-value-group__title">Taxas e encargos</h3>
+                            <h3 class="quote-value-group__title">Taxa de embarque</h3>
                             <div class="quote-grid quote-grid--four">
                                 <div>
                                     <label class="quote-label" for="{{ form.taxas.id_for_label }}">Taxa de embarque (R$) <span class="required-asterisk">*</span></label>
                                     {{ form.taxas }}
+                                    <p class="quote-helper">Taxas da companhia aerea e aeroporto por passageiro.</p>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="quote-value-group">
+                            <h3 class="quote-value-group__title">Parcelamento e descontos</h3>
+                            <div class="quote-grid quote-grid--four">
                                 <div id="parcelado-config-wrapper">
                                     <label class="quote-label" for="{{ form.parcelas.id_for_label }}">Parcelas s/ juros</label>
                                     {{ form.parcelas }}

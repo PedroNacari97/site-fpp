@@ -374,8 +374,8 @@
     const taxas = toNumber(refs.taxas?.value);
     const milhas = toNumber(refs.milhas?.value);
     const valorMilheiro = toNumber(refs.valorMilheiro?.value);
-    const juros = toNumber(refs.juros?.value || 1);
-    const desconto = toNumber(refs.desconto?.value || 1);
+    const juros = toNumber(refs.juros?.value || 0);
+    const desconto = toNumber(refs.desconto?.value || 0);
     const mostrarValorParcelado = refs.mostrarValorParcelado?.checked ?? true;
     const clienteLabel =
       refs.tipoTitular?.value === "administrada"
@@ -387,8 +387,8 @@
     const taxasUnit = taxas;
     const valorEncontradoUnit = (milhas / 1000) * valorMilheiro;
     const baseUnit = valorEncontradoUnit + taxasUnit;
-    const parceladoUnit = baseUnit * (juros || 1);
-    const vistaUnit = parceladoUnit * (desconto || 1);
+    const parceladoUnit = baseUnit * (1 + (juros || 0) / 100);
+    const vistaUnit = parceladoUnit * (1 - (desconto || 0) / 100);
     const economiaUnit = passagemUnit - vistaUnit;
     const passagemTotal = passagemUnit * factor;
     const taxasTotal = taxasUnit * factor;
@@ -449,8 +449,8 @@
     if (refs.previewParceladoCard) refs.previewParceladoCard.classList.toggle("quote-hidden", !mostrarValorParcelado);
     if (refs.previewVista) refs.previewVista.textContent = formatCurrency(vistaTotal);
     if (refs.previewVistaDetail) refs.previewVistaDetail.textContent = `${formatCurrency(vistaUnit)} por pessoa${qtdPassageirosNum ? ` x ${qtdPassageirosNum} = ${formatCurrency(vistaTotal)}` : ""}`;
-    if (refs.previewEconomia) refs.previewEconomia.textContent = formatCurrency(taxasTotal);
-    if (refs.previewEconomiaDetail) refs.previewEconomiaDetail.textContent = `${formatCurrency(taxasUnit)} por pessoa${qtdPassageirosNum ? ` x ${qtdPassageirosNum} = ${formatCurrency(taxasTotal)}` : ""}`;
+    if (refs.previewEconomia) refs.previewEconomia.textContent = formatCurrency(economiaTotal);
+    if (refs.previewEconomiaDetail) refs.previewEconomiaDetail.textContent = `${formatCurrency(economiaUnit)} por pessoa${qtdPassageirosNum ? ` x ${qtdPassageirosNum} = ${formatCurrency(economiaTotal)}` : ""}`;
     if (refs.parcelasConfigWrapper) refs.parcelasConfigWrapper.classList.toggle("quote-hidden", !mostrarValorParcelado);
     if (refs.jurosConfigWrapper) refs.jurosConfigWrapper.classList.toggle("quote-hidden", !mostrarValorParcelado);
 

@@ -4,9 +4,9 @@
   --border: hsl(var(--border));
   --muted: hsl(var(--muted-foreground));
   --heading: hsl(var(--foreground));
-  --primary: hsl(var(--primary));
+  --admin-primary: hsl(var(--primary));
   --primary-strong: hsl(0 96% 66%);
-  --accent: hsl(var(--accent));
+  --admin-accent: hsl(var(--accent));
   --success: hsl(var(--success));
   --warning: hsl(var(--warning));
   --danger: hsl(var(--destructive));
@@ -39,9 +39,9 @@ body.dark-mode {
   --border: hsl(var(--border));
   --muted: hsl(var(--muted-foreground));
   --heading: hsl(var(--foreground));
-  --primary: hsl(var(--primary));
+  --admin-primary: hsl(var(--primary));
   --primary-strong: hsl(var(--primary));
-  --accent: hsl(var(--accent));
+  --admin-accent: hsl(var(--accent));
   --success: hsl(var(--success));
   --warning: hsl(var(--warning));
   --danger: hsl(var(--destructive));
@@ -160,13 +160,13 @@ main > section {
 }
 
 a {
-  color: var(--primary);
+  color: var(--admin-primary);
   text-decoration: none;
   font-weight: 600;
 }
 
 a:hover {
-  color: var(--accent);
+  color: var(--admin-accent);
 }
 
 .page-shell {
@@ -290,7 +290,7 @@ a:hover {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-accent) 100%);
   color: hsl(var(--primary-foreground));
   box-shadow: 0 14px 28px hsl(var(--primary) / 0.2);
 }
@@ -331,7 +331,7 @@ a:hover {
   padding: 0 14px;
   border-radius: 6px;
   font-size: 12px;
-  color: var(--primary);
+  color: var(--admin-primary);
 }
 
 .eyebrow {
@@ -441,9 +441,9 @@ a:hover {
 }
 
 .chip.is-active {
-  background: var(--primary);
+  background: var(--admin-primary);
   color: hsl(var(--primary-foreground));
-  border-color: var(--primary);
+  border-color: var(--admin-primary);
 }
 
 .alert-card-grid {

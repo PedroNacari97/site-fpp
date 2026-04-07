@@ -1,0 +1,1702 @@
+{
+  "exported_at": "2026-04-01",
+  "branch": "layout-v2",
+  "source_db": "E:\\SITE FPP\\db.sqlite3",
+  "counts": {
+    "aeroportos": 212,
+    "programas_fidelidade": 13,
+    "companhias_aereas": 17
+  },
+  "aeroportos": [
+    {
+      "id": 160,
+      "sigla": "ADD",
+      "nome": "Addis Ababa (Bole)",
+      "cidade": "Addis Ababa (Bole)",
+      "estado": "N/A"
+    },
+    {
+      "id": 138,
+      "sigla": "AEP",
+      "nome": "Buenos Aires (Aeroparque Jorge Newbery)",
+      "cidade": "Buenos Aires (Aeroparque Jorge Newbery)",
+      "estado": "N/A"
+    },
+    {
+      "id": 178,
+      "sigla": "AJU",
+      "nome": "Aracaju (Santa Maria)",
+      "cidade": "Aracaju (Santa Maria)",
+      "estado": "N/A"
+    },
+    {
+      "id": 90,
+      "sigla": "AKL",
+      "nome": "Auckland",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 14,
+      "sigla": "AMS",
+      "nome": "Amsterdã",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 106,
+      "sigla": "ARN",
+      "nome": "Aeroporto de Stockholm (Arlanda)",
+      "cidade": "Stockholm (Arlanda)",
+      "estado": ""
+    },
+    {
+      "id": 53,
+      "sigla": "ATH",
+      "nome": "Atenas",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 1,
+      "sigla": "ATL",
+      "nome": "Atlanta",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 192,
+      "sigla": "ATM",
+      "nome": "Altamira (Altamira Airport)",
+      "cidade": "Altamira (Altamira Airport)",
+      "estado": "N/A"
+    },
+    {
+      "id": 94,
+      "sigla": "AUH",
+      "nome": "Abu Dhabi",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 39,
+      "sigla": "AYT",
+      "nome": "Antalya",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 25,
+      "sigla": "BCN",
+      "nome": "Barcelona",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 207,
+      "sigla": "BDL",
+      "nome": "Hartford (Bradley International)",
+      "cidade": "Hartford (Bradley International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 142,
+      "sigla": "BEL",
+      "nome": "Belém (Val-de-Cans)",
+      "cidade": "Belém (Val-de-Cans)",
+      "estado": "N/A"
+    },
+    {
+      "id": 209,
+      "sigla": "BHM",
+      "nome": "Birmingham (Birmingham–Shuttlesworth)",
+      "cidade": "Birmingham (Birmingham–Shuttlesworth)",
+      "estado": "N/A"
+    },
+    {
+      "id": 148,
+      "sigla": "BHX",
+      "nome": "Birmingham (Birmingham Airport)",
+      "cidade": "Birmingham (Birmingham Airport)",
+      "estado": "N/A"
+    },
+    {
+      "id": 48,
+      "sigla": "BKK",
+      "nome": "Bangkok (Suvarnabhumi)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 79,
+      "sigla": "BLR",
+      "nome": "Bangalore",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 86,
+      "sigla": "BNA",
+      "nome": "Nashville",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 164,
+      "sigla": "BNE",
+      "nome": "Brisbane (Brisbane Airport)",
+      "cidade": "Brisbane (Brisbane Airport)",
+      "estado": "N/A"
+    },
+    {
+      "id": 32,
+      "sigla": "BOG",
+      "nome": "Bogotá",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 28,
+      "sigla": "BOM",
+      "nome": "Mumbai",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 30,
+      "sigla": "BOS",
+      "nome": "Boston",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 175,
+      "sigla": "BPS",
+      "nome": "Porto Seguro (Porto Seguro)",
+      "cidade": "Porto Seguro (Porto Seguro)",
+      "estado": "N/A"
+    },
+    {
+      "id": 88,
+      "sigla": "BRU",
+      "nome": "Bruxelas",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 117,
+      "sigla": "BSB",
+      "nome": "Aeroporto de Brasilia (Presidente Juscelino Kubitschek)",
+      "cidade": "Brasilia (Presidente Juscelino Kubitschek)",
+      "estado": ""
+    },
+    {
+      "id": 151,
+      "sigla": "BUD",
+      "nome": "Budapest (Ferenc Liszt)",
+      "cidade": "Budapest (Ferenc Liszt)",
+      "estado": "N/A"
+    },
+    {
+      "id": 203,
+      "sigla": "BUF",
+      "nome": "Buffalo (Niagara International)",
+      "cidade": "Buffalo (Niagara International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 120,
+      "sigla": "BUR",
+      "nome": "Aeroporto de Los Angeles (Hollywood Burbank)",
+      "cidade": "Los Angeles (Hollywood Burbank)",
+      "estado": ""
+    },
+    {
+      "id": 183,
+      "sigla": "BVB",
+      "nome": "Boa Vista (Atlas Brasil Cantanhede)",
+      "cidade": "Boa Vista (Atlas Brasil Cantanhede)",
+      "estado": "N/A"
+    },
+    {
+      "id": 57,
+      "sigla": "BWI",
+      "nome": "Baltimore",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 70,
+      "sigla": "CAI",
+      "nome": "Cairo",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 12,
+      "sigla": "CAN",
+      "nome": "Guangzhou",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 125,
+      "sigla": "CCS",
+      "nome": "Aeroporto de Caracas (Simón Bolívar)",
+      "cidade": "Caracas (Simón Bolívar)",
+      "estado": ""
+    },
+    {
+      "id": 11,
+      "sigla": "CDG",
+      "nome": "Paris (Charles de Gaulle)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 181,
+      "sigla": "CGB",
+      "nome": "Cuiabá (Marechal Rondon)",
+      "cidade": "Cuiabá (Marechal Rondon)",
+      "estado": "N/A"
+    },
+    {
+      "id": 116,
+      "sigla": "CGH",
+      "nome": "Aeroporto de São Paulo (Congonhas)",
+      "cidade": "São Paulo (Congonhas)",
+      "estado": ""
+    },
+    {
+      "id": 27,
+      "sigla": "CGK",
+      "nome": "Jacarta",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 180,
+      "sigla": "CGR",
+      "nome": "Campo Grande (Campo Grande International)",
+      "cidade": "Campo Grande (Campo Grande International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 166,
+      "sigla": "CHC",
+      "nome": "Christchurch (Christchurch International)",
+      "cidade": "Christchurch (Christchurch International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 153,
+      "sigla": "CIA",
+      "nome": "Rome (Ciampino)",
+      "cidade": "Rome (Ciampino)",
+      "estado": "N/A"
+    },
+    {
+      "id": 43,
+      "sigla": "CJU",
+      "nome": "Jeju",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 78,
+      "sigla": "CKG",
+      "nome": "Chongqing",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 199,
+      "sigla": "CLE",
+      "nome": "Cleveland (Hopkins International)",
+      "cidade": "Cleveland (Hopkins International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 122,
+      "sigla": "CLT",
+      "nome": "Aeroporto de Charlotte (Douglas)",
+      "cidade": "Charlotte (Douglas)",
+      "estado": ""
+    },
+    {
+      "id": 196,
+      "sigla": "CMH",
+      "nome": "Columbus (John Glenn Columbus International)",
+      "cidade": "Columbus (John Glenn Columbus International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 112,
+      "sigla": "CMN",
+      "nome": "Aeroporto de Casablanca (Mohammed V)",
+      "cidade": "Casablanca (Mohammed V)",
+      "estado": ""
+    },
+    {
+      "id": 118,
+      "sigla": "CNF",
+      "nome": "Aeroporto de Belo Horizonte (Confins)",
+      "cidade": "Belo Horizonte (Confins)",
+      "estado": ""
+    },
+    {
+      "id": 64,
+      "sigla": "CPH",
+      "nome": "Copenhague",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 110,
+      "sigla": "CPT",
+      "nome": "Aeroporto de Cape Town (Cape Town International)",
+      "cidade": "Cape Town (Cape Town International)",
+      "estado": ""
+    },
+    {
+      "id": 87,
+      "sigla": "CSX",
+      "nome": "Changsha",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 156,
+      "sigla": "CTS",
+      "nome": "Sapporo (New Chitose)",
+      "cidade": "Sapporo (New Chitose)",
+      "estado": "N/A"
+    },
+    {
+      "id": 63,
+      "sigla": "CTU",
+      "nome": "Chengdu",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 41,
+      "sigla": "CUN",
+      "nome": "Cancún",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 133,
+      "sigla": "CVG",
+      "nome": "Cincinnati (Northern Kentucky)",
+      "cidade": "Cincinnati (Northern Kentucky)",
+      "estado": "N/A"
+    },
+    {
+      "id": 102,
+      "sigla": "CWB",
+      "nome": "Curitiba",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 131,
+      "sigla": "DAL",
+      "nome": "Dallas (Love Field)",
+      "cidade": "Dallas (Love Field)",
+      "estado": "N/A"
+    },
+    {
+      "id": 76,
+      "sigla": "DCA",
+      "nome": "Washington D.C. (Reagan)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 10,
+      "sigla": "DEL",
+      "nome": "Delhi",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 6,
+      "sigla": "DEN",
+      "nome": "Denver",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 3,
+      "sigla": "DFW",
+      "nome": "Dallas/Fort Worth",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 154,
+      "sigla": "DME",
+      "nome": "Moscow (Domodedovo)",
+      "cidade": "Moscow (Domodedovo)",
+      "estado": "N/A"
+    },
+    {
+      "id": 71,
+      "sigla": "DMK",
+      "nome": "Bangkok (Don Mueang)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 31,
+      "sigla": "DOH",
+      "nome": "Doha",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 211,
+      "sigla": "DSM",
+      "nome": "Des Moines (Des Moines International)",
+      "cidade": "Des Moines (Des Moines International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 50,
+      "sigla": "DTW",
+      "nome": "Detroit",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 83,
+      "sigla": "DUB",
+      "nome": "Dublin",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 163,
+      "sigla": "DUR",
+      "nome": "Durban (King Shaka)",
+      "cidade": "Durban (King Shaka)",
+      "estado": "N/A"
+    },
+    {
+      "id": 114,
+      "sigla": "DWC",
+      "nome": "Aeroporto de Dubai (Al Maktoum)",
+      "cidade": "Dubai (Al Maktoum)",
+      "estado": ""
+    },
+    {
+      "id": 2,
+      "sigla": "DXB",
+      "nome": "Dubai",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 146,
+      "sigla": "EDI",
+      "nome": "Edinburgh (Edinburgh Airport)",
+      "cidade": "Edinburgh (Edinburgh Airport)",
+      "estado": "N/A"
+    },
+    {
+      "id": 23,
+      "sigla": "EWR",
+      "nome": "Newark",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 97,
+      "sigla": "EZE",
+      "nome": "Buenos Aires (Ezeiza)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 44,
+      "sigla": "FCO",
+      "nome": "Roma (Fiumicino)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 36,
+      "sigla": "FLL",
+      "nome": "Fort Lauderdale",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 119,
+      "sigla": "FOR",
+      "nome": "Aeroporto de Fortaleza (Pinto Martins)",
+      "cidade": "Fortaleza (Pinto Martins)",
+      "estado": ""
+    },
+    {
+      "id": 16,
+      "sigla": "FRA",
+      "nome": "Frankfurt",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 155,
+      "sigla": "FUK",
+      "nome": "Fukuoka (Fukuoka Airport)",
+      "cidade": "Fukuoka (Fukuoka Airport)",
+      "estado": "N/A"
+    },
+    {
+      "id": 136,
+      "sigla": "GDL",
+      "nome": "Guadalajara (Miguel Hidalgo)",
+      "cidade": "Guadalajara (Miguel Hidalgo)",
+      "estado": "N/A"
+    },
+    {
+      "id": 195,
+      "sigla": "GEG",
+      "nome": "Spokane (Spokane International)",
+      "cidade": "Spokane (Spokane International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 147,
+      "sigla": "GLA",
+      "nome": "Glasgow (Glasgow International)",
+      "cidade": "Glasgow (Glasgow International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 158,
+      "sigla": "GMP",
+      "nome": "Seoul (Gimpo)",
+      "cidade": "Seoul (Gimpo)",
+      "estado": "N/A"
+    },
+    {
+      "id": 33,
+      "sigla": "GRU",
+      "nome": "São Paulo (Guarulhos)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 128,
+      "sigla": "GUA",
+      "nome": "Aeroporto de Guatemala City (La Aurora)",
+      "cidade": "Guatemala City (La Aurora)",
+      "estado": ""
+    },
+    {
+      "id": 144,
+      "sigla": "GYN",
+      "nome": "Goiânia (Santa Genoveva)",
+      "cidade": "Goiânia (Santa Genoveva)",
+      "estado": "N/A"
+    },
+    {
+      "id": 145,
+      "sigla": "HAM",
+      "nome": "Hamburg (Hamburg Airport)",
+      "cidade": "Hamburg (Hamburg Airport)",
+      "estado": "N/A"
+    },
+    {
+      "id": 93,
+      "sigla": "HEL",
+      "nome": "Helsinque",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 51,
+      "sigla": "HGH",
+      "nome": "Hangzhou",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 52,
+      "sigla": "HKG",
+      "nome": "Hong Kong",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 5,
+      "sigla": "HND",
+      "nome": "Tóquio (Haneda)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 67,
+      "sigla": "HYD",
+      "nome": "Hyderabad",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 75,
+      "sigla": "IAD",
+      "nome": "Washington D.C. (Dulles)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 26,
+      "sigla": "IAH",
+      "nome": "Houston (Bush)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 20,
+      "sigla": "ICN",
+      "nome": "Seul (Incheon)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 174,
+      "sigla": "IGU",
+      "nome": "Foz do Iguaçu (Cataratas)",
+      "cidade": "Foz do Iguaçu (Cataratas)",
+      "estado": "N/A"
+    },
+    {
+      "id": 186,
+      "sigla": "IMP",
+      "nome": "Imperatriz (Prefeito Renato Moreira)",
+      "cidade": "Imperatriz (Prefeito Renato Moreira)",
+      "estado": "N/A"
+    },
+    {
+      "id": 201,
+      "sigla": "IND",
+      "nome": "Indianapolis (Indianapolis International)",
+      "cidade": "Indianapolis (Indianapolis International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 189,
+      "sigla": "IOS",
+      "nome": "Ilhéus (Jorge Amado)",
+      "cidade": "Ilhéus (Jorge Amado)",
+      "estado": "N/A"
+    },
+    {
+      "id": 7,
+      "sigla": "IST",
+      "nome": "Istambul",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 210,
+      "sigla": "JAX",
+      "nome": "Jacksonville (Jacksonville International)",
+      "cidade": "Jacksonville (Jacksonville International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 188,
+      "sigla": "JDO",
+      "nome": "Juazeiro do Norte (Orlando Bezerra de Menezes)",
+      "cidade": "Juazeiro do Norte (Orlando Bezerra de Menezes)",
+      "estado": "N/A"
+    },
+    {
+      "id": 37,
+      "sigla": "JED",
+      "nome": "Jeddah",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 13,
+      "sigla": "JFK",
+      "nome": "Nova York (JFK)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 111,
+      "sigla": "JNB",
+      "nome": "Aeroporto de Johannesburg (O.R. Tambo)",
+      "cidade": "Johannesburg (O.R. Tambo)",
+      "estado": ""
+    },
+    {
+      "id": 172,
+      "sigla": "JOI",
+      "nome": "Joinville (Lauro Carneiro de Loyola)",
+      "cidade": "Joinville (Lauro Carneiro de Loyola)",
+      "estado": "N/A"
+    },
+    {
+      "id": 68,
+      "sigla": "KIX",
+      "nome": "Osaka (Kansai)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 80,
+      "sigla": "KUL",
+      "nome": "Kuala Lumpur",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 73,
+      "sigla": "KWE",
+      "nome": "Guiyang",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 113,
+      "sigla": "KWI",
+      "nome": "Aeroporto de Kuwait City (Kuwait International)",
+      "cidade": "Kuwait City (Kuwait International)",
+      "estado": ""
+    },
+    {
+      "id": 19,
+      "sigla": "LAS",
+      "nome": "Las Vegas",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 8,
+      "sigla": "LAX",
+      "nome": "Los Angeles",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 108,
+      "sigla": "LED",
+      "nome": "Aeroporto de Saint Petersburg (Pulkovo)",
+      "cidade": "Saint Petersburg (Pulkovo)",
+      "estado": ""
+    },
+    {
+      "id": 47,
+      "sigla": "LGA",
+      "nome": "Nova York (LaGuardia)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 35,
+      "sigla": "LGW",
+      "nome": "Londres (Gatwick)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 4,
+      "sigla": "LHR",
+      "nome": "Londres (Heathrow)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 95,
+      "sigla": "LIM",
+      "nome": "Lima",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 152,
+      "sigla": "LIN",
+      "nome": "Milan (Linate)",
+      "cidade": "Milan (Linate)",
+      "estado": "N/A"
+    },
+    {
+      "id": 65,
+      "sigla": "LIS",
+      "nome": "Lisboa",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 162,
+      "sigla": "LOS",
+      "nome": "Lagos (Murtala Muhammed)",
+      "cidade": "Lagos (Murtala Muhammed)",
+      "estado": "N/A"
+    },
+    {
+      "id": 159,
+      "sigla": "MAA",
+      "nome": "Chennai (Chennai International)",
+      "cidade": "Chennai (Chennai International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 191,
+      "sigla": "MAB",
+      "nome": "Marabá (João Correa da Rocha)",
+      "cidade": "Marabá (João Correa da Rocha)",
+      "estado": "N/A"
+    },
+    {
+      "id": 15,
+      "sigla": "MAD",
+      "nome": "Madrid",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 69,
+      "sigla": "MAN",
+      "nome": "Manchester",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 141,
+      "sigla": "MAO",
+      "nome": "Manaus (Eduardo Gomes)",
+      "cidade": "Manaus (Eduardo Gomes)",
+      "estado": "N/A"
+    },
+    {
+      "id": 197,
+      "sigla": "MCI",
+      "nome": "Kansas City (Kansas City International)",
+      "cidade": "Kansas City (Kansas City International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 18,
+      "sigla": "MCO",
+      "nome": "Orlando",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 184,
+      "sigla": "MCP",
+      "nome": "Macapá (Alberto Alcolumbre)",
+      "cidade": "Macapá (Alberto Alcolumbre)",
+      "estado": "N/A"
+    },
+    {
+      "id": 173,
+      "sigla": "MCZ",
+      "nome": "Maceió (Zumbi dos Palmares)",
+      "cidade": "Maceió (Zumbi dos Palmares)",
+      "estado": "N/A"
+    },
+    {
+      "id": 100,
+      "sigla": "MDE",
+      "nome": "Medellín",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 54,
+      "sigla": "MEL",
+      "nome": "Melbourne",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 208,
+      "sigla": "MEM",
+      "nome": "Memphis (Memphis International)",
+      "cidade": "Memphis (Memphis International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 99,
+      "sigla": "MEX",
+      "nome": "Cidade do México",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 129,
+      "sigla": "MGA",
+      "nome": "Aeroporto de Managua (Augusto C. Sandino)",
+      "cidade": "Managua (Augusto C. Sandino)",
+      "estado": ""
+    },
+    {
+      "id": 212,
+      "sigla": "MHT",
+      "nome": "Manchester (Manchester–Boston Regional)",
+      "cidade": "Manchester (Manchester–Boston Regional)",
+      "estado": "N/A"
+    },
+    {
+      "id": 124,
+      "sigla": "MIA",
+      "nome": "Aeroporto de Miami (Miami International)",
+      "cidade": "Miami (Miami International)",
+      "estado": ""
+    },
+    {
+      "id": 205,
+      "sigla": "MKE",
+      "nome": "Milwaukee (General Mitchell)",
+      "cidade": "Milwaukee (General Mitchell)",
+      "estado": "N/A"
+    },
+    {
+      "id": 42,
+      "sigla": "MNL",
+      "nome": "Manila",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 193,
+      "sigla": "MOC",
+      "nome": "Montes Claros (Mário Ribeiro)",
+      "cidade": "Montes Claros (Mário Ribeiro)",
+      "estado": "N/A"
+    },
+    {
+      "id": 40,
+      "sigla": "MSP",
+      "nome": "Minneapolis",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 202,
+      "sigla": "MSY",
+      "nome": "New Orleans (Louis Armstrong)",
+      "cidade": "New Orleans (Louis Armstrong)",
+      "estado": "N/A"
+    },
+    {
+      "id": 137,
+      "sigla": "MTY",
+      "nome": "Monterrey (General Mariano Escobedo)",
+      "cidade": "Monterrey (General Mariano Escobedo)",
+      "estado": "N/A"
+    },
+    {
+      "id": 38,
+      "sigla": "MUC",
+      "nome": "Munique",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 139,
+      "sigla": "MVD",
+      "nome": "Montevideo (Carrasco)",
+      "cidade": "Montevideo (Carrasco)",
+      "estado": "N/A"
+    },
+    {
+      "id": 74,
+      "sigla": "MXP",
+      "nome": "Milão (Malpensa)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 167,
+      "sigla": "NAN",
+      "nome": "Nadi (Nadi International)",
+      "cidade": "Nadi (Nadi International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 179,
+      "sigla": "NAT",
+      "nome": "Natal (Governador Aluizio Alves)",
+      "cidade": "Natal (Governador Aluizio Alves)",
+      "estado": "N/A"
+    },
+    {
+      "id": 161,
+      "sigla": "NBO",
+      "nome": "Nairobi (Jomo Kenyatta)",
+      "cidade": "Nairobi (Jomo Kenyatta)",
+      "estado": "N/A"
+    },
+    {
+      "id": 84,
+      "sigla": "NKG",
+      "nome": "Nanjing",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 60,
+      "sigla": "NRT",
+      "nome": "Tóquio (Narita)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 206,
+      "sigla": "OMA",
+      "nome": "Omaha (Eppley Airfield)",
+      "cidade": "Omaha (Eppley Airfield)",
+      "estado": "N/A"
+    },
+    {
+      "id": 190,
+      "sigla": "OPS",
+      "nome": "Sinop (Presidente João Figueiredo)",
+      "cidade": "Sinop (Presidente João Figueiredo)",
+      "estado": "N/A"
+    },
+    {
+      "id": 9,
+      "sigla": "ORD",
+      "nome": "Chicago (O’Hare)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 45,
+      "sigla": "ORY",
+      "nome": "Paris (Orly)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 89,
+      "sigla": "OSL",
+      "nome": "Oslo",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 132,
+      "sigla": "PDX",
+      "nome": "Portland (Portland International)",
+      "cidade": "Portland (Portland International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 104,
+      "sigla": "PEK",
+      "nome": "Aeroporto de Beijing (Capital)",
+      "cidade": "Beijing (Capital)",
+      "estado": ""
+    },
+    {
+      "id": 165,
+      "sigla": "PER",
+      "nome": "Perth (Perth Airport)",
+      "cidade": "Perth (Perth Airport)",
+      "estado": "N/A"
+    },
+    {
+      "id": 121,
+      "sigla": "PHL",
+      "nome": "Aeroporto de Philadelphia (Philadelphia International)",
+      "cidade": "Philadelphia (Philadelphia International)",
+      "estado": ""
+    },
+    {
+      "id": 22,
+      "sigla": "PHX",
+      "nome": "Phoenix",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 157,
+      "sigla": "PKX",
+      "nome": "Beijing (Daxing)",
+      "cidade": "Beijing (Daxing)",
+      "estado": "N/A"
+    },
+    {
+      "id": 182,
+      "sigla": "PMW",
+      "nome": "Palmas (Brigadeiro Lysias Rodrigues)",
+      "cidade": "Palmas (Brigadeiro Lysias Rodrigues)",
+      "estado": "N/A"
+    },
+    {
+      "id": 187,
+      "sigla": "PNZ",
+      "nome": "Petrolina (Senador Nilo Coelho)",
+      "cidade": "Petrolina (Senador Nilo Coelho)",
+      "estado": "N/A"
+    },
+    {
+      "id": 103,
+      "sigla": "POA",
+      "nome": "Porto Alegre",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 168,
+      "sigla": "PPT",
+      "nome": "Papeete (Faa'a International)",
+      "cidade": "Papeete (Faa'a International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 149,
+      "sigla": "PRG",
+      "nome": "Prague (Václav Havel)",
+      "cidade": "Prague (Václav Havel)",
+      "estado": "N/A"
+    },
+    {
+      "id": 96,
+      "sigla": "PTY",
+      "nome": "Panamá",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 21,
+      "sigla": "PVG",
+      "nome": "Xangai (Pudong)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 185,
+      "sigla": "PVH",
+      "nome": "Porto Velho (Governador Jorge Teixeira)",
+      "cidade": "Porto Velho (Governador Jorge Teixeira)",
+      "estado": "N/A"
+    },
+    {
+      "id": 171,
+      "sigla": "RAO",
+      "nome": "Ribeirão Preto (Leite Lopes)",
+      "cidade": "Ribeirão Preto (Leite Lopes)",
+      "estado": "N/A"
+    },
+    {
+      "id": 101,
+      "sigla": "REC",
+      "nome": "Recife",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 194,
+      "sigla": "RNO",
+      "nome": "Reno (Reno-Tahoe International)",
+      "cidade": "Reno (Reno-Tahoe International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 81,
+      "sigla": "RUH",
+      "nome": "Riyadh",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 127,
+      "sigla": "SAL",
+      "nome": "Aeroporto de San Salvador (Monseñor Romero)",
+      "cidade": "San Salvador (Monseñor Romero)",
+      "estado": ""
+    },
+    {
+      "id": 61,
+      "sigla": "SAN",
+      "nome": "San Diego",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 109,
+      "sigla": "SAW",
+      "nome": "Aeroporto de Istanbul (Sabiha Gokcen)",
+      "cidade": "Istanbul (Sabiha Gokcen)",
+      "estado": ""
+    },
+    {
+      "id": 91,
+      "sigla": "SCL",
+      "nome": "Santiago",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 130,
+      "sigla": "SEA",
+      "nome": "Seattle (Seattle-Tacoma)",
+      "cidade": "Seattle (Seattle-Tacoma)",
+      "estado": "N/A"
+    },
+    {
+      "id": 24,
+      "sigla": "SFO",
+      "nome": "São Francisco",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 34,
+      "sigla": "SGN",
+      "nome": "Ho Chi Minh City",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 77,
+      "sigla": "SHA",
+      "nome": "Xangai (Hongqiao)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 17,
+      "sigla": "SIN",
+      "nome": "Singapura (Changi)",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 126,
+      "sigla": "SJO",
+      "nome": "Aeroporto de San Jose (Juan Santamaria)",
+      "cidade": "San Jose (Juan Santamaria)",
+      "estado": ""
+    },
+    {
+      "id": 58,
+      "sigla": "SLC",
+      "nome": "Salt Lake City",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 176,
+      "sigla": "SLZ",
+      "nome": "São Luís (Marechal Cunha Machado)",
+      "cidade": "São Luís (Marechal Cunha Machado)",
+      "estado": "N/A"
+    },
+    {
+      "id": 200,
+      "sigla": "SMF",
+      "nome": "Sacramento (Sacramento International)",
+      "cidade": "Sacramento (Sacramento International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 140,
+      "sigla": "SSA",
+      "nome": "Salvador (Deputado Luís Eduardo Magalhães)",
+      "cidade": "Salvador (Deputado Luís Eduardo Magalhães)",
+      "estado": "N/A"
+    },
+    {
+      "id": 198,
+      "sigla": "STL",
+      "nome": "St. Louis (Lambert–St. Louis International)",
+      "cidade": "St. Louis (Lambert–St. Louis International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 107,
+      "sigla": "SVO",
+      "nome": "Aeroporto de Moscow (Sheremetyevo)",
+      "cidade": "Moscow (Sheremetyevo)",
+      "estado": ""
+    },
+    {
+      "id": 46,
+      "sigla": "SYD",
+      "nome": "Sydney",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 49,
+      "sigla": "SZX",
+      "nome": "Shenzhen",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 59,
+      "sigla": "TAO",
+      "nome": "Qingdao",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 177,
+      "sigla": "THE",
+      "nome": "Teresina (Senador Petrônio Portella)",
+      "cidade": "Teresina (Senador Petrônio Portella)",
+      "estado": "N/A"
+    },
+    {
+      "id": 92,
+      "sigla": "TLV",
+      "nome": "Tel Aviv",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 123,
+      "sigla": "TPA",
+      "nome": "Aeroporto de Tampa (Tampa International)",
+      "cidade": "Tampa (Tampa International)",
+      "estado": ""
+    },
+    {
+      "id": 55,
+      "sigla": "TPE",
+      "nome": "Taipei",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 204,
+      "sigla": "TUS",
+      "nome": "Tucson (Tucson International)",
+      "cidade": "Tucson (Tucson International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 170,
+      "sigla": "UDI",
+      "nome": "Uberlândia (Ten. Cel. Av. César Bombonato)",
+      "cidade": "Uberlândia (Ten. Cel. Av. César Bombonato)",
+      "estado": "N/A"
+    },
+    {
+      "id": 98,
+      "sigla": "UIO",
+      "nome": "Quito",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 62,
+      "sigla": "URC",
+      "nome": "Urumqi",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 169,
+      "sigla": "VCP",
+      "nome": "Campinas (Viracopos)",
+      "cidade": "Campinas (Viracopos)",
+      "estado": "N/A"
+    },
+    {
+      "id": 105,
+      "sigla": "VIE",
+      "nome": "Aeroporto de Vienna (Schwechat)",
+      "cidade": "Vienna (Schwechat)",
+      "estado": ""
+    },
+    {
+      "id": 143,
+      "sigla": "VIX",
+      "nome": "Vitória (Eurico de Aguiar Salles)",
+      "cidade": "Vitória (Eurico de Aguiar Salles)",
+      "estado": "N/A"
+    },
+    {
+      "id": 150,
+      "sigla": "WAW",
+      "nome": "Warsaw (Chopin)",
+      "cidade": "Warsaw (Chopin)",
+      "estado": "N/A"
+    },
+    {
+      "id": 115,
+      "sigla": "WLG",
+      "nome": "Aeroporto de Wellington (Wellington International)",
+      "cidade": "Wellington (Wellington International)",
+      "estado": ""
+    },
+    {
+      "id": 85,
+      "sigla": "WUH",
+      "nome": "Wuhan",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 66,
+      "sigla": "XMN",
+      "nome": "Xiamen",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 134,
+      "sigla": "YTZ",
+      "nome": "Toronto (Billy Bishop)",
+      "cidade": "Toronto (Billy Bishop)",
+      "estado": "N/A"
+    },
+    {
+      "id": 72,
+      "sigla": "YUL",
+      "nome": "Montreal",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 82,
+      "sigla": "YVR",
+      "nome": "Vancouver",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 135,
+      "sigla": "YYC",
+      "nome": "Calgary (Calgary International)",
+      "cidade": "Calgary (Calgary International)",
+      "estado": "N/A"
+    },
+    {
+      "id": 29,
+      "sigla": "YYZ",
+      "nome": "Toronto",
+      "cidade": "",
+      "estado": ""
+    },
+    {
+      "id": 56,
+      "sigla": "ZRH",
+      "nome": "Zurique",
+      "cidade": "",
+      "estado": ""
+    }
+  ],
+  "programas_fidelidade": [
+    {
+      "id": 11,
+      "nome": "AAdvantage",
+      "descricao": "Programa da American Airlines",
+      "preco_medio_milheiro": 0,
+      "tipo": "principal",
+      "programa_base_id": null,
+      "quantidade_cpfs_disponiveis": null
+    },
+    {
+      "id": 16,
+      "nome": "Azul Pelo Mundo",
+      "descricao": "Programa da Azul Linhas Aéreas",
+      "preco_medio_milheiro": 14.5,
+      "tipo": "vinculado",
+      "programa_base_id": 9,
+      "quantidade_cpfs_disponiveis": null
+    },
+    {
+      "id": 5,
+      "nome": "Esfera",
+      "descricao": "Programa do Banco Santander",
+      "preco_medio_milheiro": 31.5,
+      "tipo": "principal",
+      "programa_base_id": null,
+      "quantidade_cpfs_disponiveis": null
+    },
+    {
+      "id": 12,
+      "nome": "Executive Club",
+      "descricao": "Programa da British Airways",
+      "preco_medio_milheiro": 0,
+      "tipo": "principal",
+      "programa_base_id": null,
+      "quantidade_cpfs_disponiveis": null
+    },
+    {
+      "id": 14,
+      "nome": "Iberia Plus",
+      "descricao": "Programa da Iberia",
+      "preco_medio_milheiro": 0,
+      "tipo": "principal",
+      "programa_base_id": null,
+      "quantidade_cpfs_disponiveis": null
+    },
+    {
+      "id": 10,
+      "nome": "Iupp",
+      "descricao": "Programa do Banco Itaú",
+      "preco_medio_milheiro": 0,
+      "tipo": "principal",
+      "programa_base_id": null,
+      "quantidade_cpfs_disponiveis": null
+    },
+    {
+      "id": 6,
+      "nome": "LATAM Pass",
+      "descricao": "Programa da LATAM Airlines",
+      "preco_medio_milheiro": 26.5,
+      "tipo": "principal",
+      "programa_base_id": null,
+      "quantidade_cpfs_disponiveis": null
+    },
+    {
+      "id": 4,
+      "nome": "Livelo",
+      "descricao": "Programa da Livelo",
+      "preco_medio_milheiro": 32,
+      "tipo": "principal",
+      "programa_base_id": null,
+      "quantidade_cpfs_disponiveis": null
+    },
+    {
+      "id": 13,
+      "nome": "MilleMiglia",
+      "descricao": "Programa da ITA Airways",
+      "preco_medio_milheiro": 0,
+      "tipo": "principal",
+      "programa_base_id": null,
+      "quantidade_cpfs_disponiveis": null
+    },
+    {
+      "id": 15,
+      "nome": "Privilege Club",
+      "descricao": "Programa da Qatar Airways",
+      "preco_medio_milheiro": 0,
+      "tipo": "principal",
+      "programa_base_id": null,
+      "quantidade_cpfs_disponiveis": null
+    },
+    {
+      "id": 7,
+      "nome": "Smiles",
+      "descricao": "Programa da GOL Linhas Aéreas",
+      "preco_medio_milheiro": 17,
+      "tipo": "principal",
+      "programa_base_id": null,
+      "quantidade_cpfs_disponiveis": null
+    },
+    {
+      "id": 8,
+      "nome": "TAP Miles&Go",
+      "descricao": "Programa da companhia TAP Portugal",
+      "preco_medio_milheiro": 0,
+      "tipo": "principal",
+      "programa_base_id": null,
+      "quantidade_cpfs_disponiveis": null
+    },
+    {
+      "id": 9,
+      "nome": "TudoAzul",
+      "descricao": "Programa da Azul Linhas Aéreas",
+      "preco_medio_milheiro": 17,
+      "tipo": "principal",
+      "programa_base_id": null,
+      "quantidade_cpfs_disponiveis": null
+    }
+  ],
+  "companhias_aereas": [
+    {
+      "id": 17,
+      "nome": "Aeroméxico",
+      "site_url": "https://aeromexico.com/es-mx/my-trips"
+    },
+    {
+      "id": 16,
+      "nome": "Air Europa",
+      "site_url": "https://www.aireuropa.com/br/pt/gestao-da-reserva"
+    },
+    {
+      "id": 6,
+      "nome": "Air France / KLM",
+      "site_url": "https://wwws.airfrance.com.br/en/trip"
+    },
+    {
+      "id": 7,
+      "nome": "American Airlines",
+      "site_url": "https://www.aa.com/homePage.do"
+    },
+    {
+      "id": 5,
+      "nome": "Azul",
+      "site_url": "https://www.voeazul.com.br/br/pt/minhas-viagens"
+    },
+    {
+      "id": 15,
+      "nome": "British Airways",
+      "site_url": "https://www.britishairways.com/travel/managebooking/public/pt_br/"
+    },
+    {
+      "id": 9,
+      "nome": "Copa Airlines",
+      "site_url": "https://www.copaair.com/es-gs/flight-status/"
+    },
+    {
+      "id": 8,
+      "nome": "Delta Air Lines",
+      "site_url": "https://www.delta.com/mytrips"
+    },
+    {
+      "id": 12,
+      "nome": "Emirates",
+      "site_url": "https://www.emirates.com/br/portuguese/manage-booking/"
+    },
+    {
+      "id": 4,
+      "nome": "Gol",
+      "site_url": "https://b2c.voegol.com.br/minhas-viagens/encontrar-viagem?_gl=1*178q11*_gcl_au*MzYxMTY1NTMuMTc1NDE1NzU0MQ.."
+    },
+    {
+      "id": 1,
+      "nome": "Iberia",
+      "site_url": "https://www.iberia.com/br/gesta-o-reservas/?language=pt&market=br&channel=COM#!/chktrp"
+    },
+    {
+      "id": 3,
+      "nome": "LATAM",
+      "site_url": "https://www.latamairlines.com/br/pt/minhas-viagens"
+    },
+    {
+      "id": 11,
+      "nome": "Lufthansa",
+      "site_url": "https://www.lufthansa.com/br/pt/as-minhas-reservas.html"
+    },
+    {
+      "id": 13,
+      "nome": "Qatar Airways",
+      "site_url": "https://www.qatarairways.com/pt-br/manage-booking.html"
+    },
+    {
+      "id": 2,
+      "nome": "SWISS",
+      "site_url": "https://www.swiss.com/br/pt/profile.html"
+    },
+    {
+      "id": 10,
+      "nome": "TAP Air Portugal",
+      "site_url": "https://www.flytap.com/pt-pt#special-anchor-my-travels"
+    },
+    {
+      "id": 14,
+      "nome": "Turkish Airlines",
+      "site_url": "https://www.turkishairlines.com/en-br/flights/manage-booking/"
+    }
+  ]
+}
