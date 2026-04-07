@@ -8,7 +8,7 @@
   --wizard-text-soft: #425466;
   --wizard-text-muted: #708198;
   --wizard-text-dim: #8c9aae;
-  --wizard-primary: #ff6b6b;
+  --wizard-primary: hsl(var(--primary));
   --wizard-success: #f5a623;
   --wizard-danger: #ef4444;
   --wizard-orange: #d98c11;
@@ -828,8 +828,7 @@
 }
 
 .wizard-sidebar {
-  position: sticky;
-  top: 24px;
+  position: static;
 }
 
 .wizard-sidebar__card {

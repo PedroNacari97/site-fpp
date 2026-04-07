@@ -411,7 +411,16 @@
       const quantity = Number(kind.field?.value || 0);
       for (let position = 0; position < quantity; position += 1) {
         const previous = seed[index] || {};
-        const options = ['<option value="">Preencher manualmente</option>', '<option value="__cliente__">Usar dados do cliente</option>', ...frequentes.map((item) => `<option value="${item.id}">${item.nome} • ${item.cpf}</option>`)].join("");
+        const titular = frequentes.find((item) => item.is_titular);
+        const naoTitulares = frequentes.filter((item) => !item.is_titular);
+        const titularOpt = titular
+          ? `<option value="__titular__">&#11088; ${titular.nome}${titular.cpf ? ` • ${titular.cpf}` : ""} (titular)</option>`
+          : '<option value="__cliente__">Usar dados do cliente</option>';
+        const options = [
+          '<option value="">Preencher manualmente</option>',
+          titularOpt,
+          ...naoTitulares.map((item) => `<option value="${item.id}">${item.nome} • ${item.cpf}</option>`),
+        ].join("");
         const card = document.createElement("div");
         card.className = "passenger-card passageiro-fields";
         card.innerHTML = `<div class="passenger-card__head"><span class="passenger-card__badge passenger-card__badge--${kind.key}">${kind.title} ${position + 1}</span><button type="button" class="passenger-card__remove" data-remove-kind="${kind.key}">Remover</button></div><div class="passenger-card__fields"><div><label class="wizard-label">${kind.title} ${position + 1} - Passageiro frequente</label><select name="passageiro-${index}-frequente" data-passageiro-frequente="${index}">${options}</select></div><div><label class="wizard-label">Nome completo</label><input type="text" name="passageiro-${index}-nome" value="${previous.nome || ""}" required></div><div><label class="wizard-label">CPF</label><input type="text" name="passageiro-${index}-cpf" value="${previous.cpf || ""}" required></div><div><label class="wizard-label">RG</label><input type="text" name="passageiro-${index}-rg" value="${previous.rg || ""}"></div><div><label class="wizard-label">Passaporte</label><input type="text" name="passageiro-${index}-passaporte" value="${previous.passaporte || ""}"></div><div><label class="wizard-label">Validade do passaporte</label><input type="date" name="passageiro-${index}-passaporte-validade" value="${previous.passaporte_validade || ""}"></div><div><label class="wizard-label">Data de nascimento</label><input type="date" name="passageiro-${index}-data-nascimento" value="${previous.data_nascimento || ""}" required></div><div><label class="wizard-label">Observacoes</label><textarea name="passageiro-${index}-observacoes" rows="3">${previous.observacoes || ""}</textarea></div></div><input type="hidden" name="passageiro-${index}-categoria" value="${previous.categoria || kind.key}">`;
@@ -430,29 +439,39 @@
     }));
     qsa("[data-passageiro-frequente]").forEach((select) => select.addEventListener("change", (event) => {
       const indexValue = event.currentTarget.dataset.passageiroFrequente;
-      const lista = context.passageirosFrequentes?.[parseInt(refs.cliente?.value || 0, 10)] || [];
-      const selected = lista.find((item) => String(item.id) === event.currentTarget.value);
-      const nome = form.querySelector(`[name="passageiro-${indexValue}-nome"]`);
-      const cpf = form.querySelector(`[name="passageiro-${indexValue}-cpf"]`);
-      const rg = form.querySelector(`[name="passageiro-${indexValue}-rg"]`);
-      const passaporte = form.querySelector(`[name="passageiro-${indexValue}-passaporte"]`);
-      const passaporteValidade = form.querySelector(`[name="passageiro-${indexValue}-passaporte-validade"]`);
-      const dataNascimento = form.querySelector(`[name="passageiro-${indexValue}-data-nascimento"]`);
-      if (event.currentTarget.value === "__cliente__") {
-        const cliente = context.clientesData?.[parseInt(refs.cliente?.value || 0, 10)] || {};
-        if (nome) nome.value = cliente.nome || "";
-        if (cpf) cpf.value = cliente.cpf || "";
-        if (rg) rg.value = "";
-        if (passaporte) passaporte.value = "";
-        if (passaporteValidade) passaporteValidade.value = "";
-        if (dataNascimento) dataNascimento.value = "";
-      } else if (selected) {
-        if (nome) nome.value = selected.nome || "";
-        if (cpf) cpf.value = selected.cpf || "";
-        if (rg) rg.value = selected.rg || "";
-        if (passaporte) passaporte.value = selected.passaporte || "";
-        if (passaporteValidade) passaporteValidade.value = selected.passaporte_validade || "";
-        if (dataNascimento) dataNascimento.value = selected.data_nascimento || "";
+      const selectedValue = event.currentTarget.value;
+      const clientContext = getCurrentClientContext();
+      if (selectedValue === "__titular__" || selectedValue === "__cliente__") {
+        const titularData = clientContext?.passageiros_frequentes?.find((item) => item.is_titular);
+        const nome = form.querySelector(`[name="passageiro-${indexValue}-nome"]`);
+        const cpf = form.querySelector(`[name="passageiro-${indexValue}-cpf"]`);
+        const rg = form.querySelector(`[name="passageiro-${indexValue}-rg"]`);
+        const passaporte = form.querySelector(`[name="passageiro-${indexValue}-passaporte"]`);
+        const passaporteValidade = form.querySelector(`[name="passageiro-${indexValue}-passaporte-validade"]`);
+        const dataNascimento = form.querySelector(`[name="passageiro-${indexValue}-data-nascimento"]`);
+        if (nome) nome.value = titularData?.nome || clientContext?.cliente?.nome || "";
+        if (cpf) cpf.value = titularData?.cpf || clientContext?.cliente?.cpf || "";
+        if (rg) rg.value = titularData?.rg || "";
+        if (passaporte) passaporte.value = titularData?.passaporte || "";
+        if (passaporteValidade) passaporteValidade.value = titularData?.passaporte_validade || "";
+        if (dataNascimento) dataNascimento.value = titularData?.data_nascimento || "";
+      } else if (selectedValue) {
+        const lista = context.passageirosFrequentes?.[parseInt(refs.cliente?.value || 0, 10)] || [];
+        const selected = lista.find((item) => String(item.id) === selectedValue);
+        if (selected) {
+          const nome = form.querySelector(`[name="passageiro-${indexValue}-nome"]`);
+          const cpf = form.querySelector(`[name="passageiro-${indexValue}-cpf"]`);
+          const rg = form.querySelector(`[name="passageiro-${indexValue}-rg"]`);
+          const passaporte = form.querySelector(`[name="passageiro-${indexValue}-passaporte"]`);
+          const passaporteValidade = form.querySelector(`[name="passageiro-${indexValue}-passaporte-validade"]`);
+          const dataNascimento = form.querySelector(`[name="passageiro-${indexValue}-data-nascimento"]`);
+          if (nome) nome.value = selected.nome || "";
+          if (cpf) cpf.value = selected.cpf || "";
+          if (rg) rg.value = selected.rg || "";
+          if (passaporte) passaporte.value = selected.passaporte || "";
+          if (passaporteValidade) passaporteValidade.value = selected.passaporte_validade || "";
+          if (dataNascimento) dataNascimento.value = selected.data_nascimento || "";
+        }
       }
       updateCpfLimite();
       saveDraft();
@@ -488,7 +507,16 @@
       const quantity = Number(kind.field?.value || 0);
       for (let position = 0; position < quantity; position += 1) {
         const previous = seed[index] || {};
-        const options = ['<option value="">Preencher manualmente</option>', '<option value="__cliente__">Usar dados do cliente</option>', ...frequentes.map((item) => `<option value="${item.id}">${item.nome}${item.cpf_masked ? ` • ${item.cpf_masked}` : ""}</option>`)].join("");
+        const titular = frequentes.find((item) => item.is_titular);
+        const naoTitulares = frequentes.filter((item) => !item.is_titular);
+        const titularOpt = titular
+          ? `<option value="__titular__">&#11088; ${titular.nome}${titular.cpf_masked ? ` • ${titular.cpf_masked}` : ""} (titular)</option>`
+          : '<option value="__cliente__">Usar dados do cliente</option>';
+        const options = [
+          '<option value="">Preencher manualmente</option>',
+          titularOpt,
+          ...naoTitulares.map((item) => `<option value="${item.id}">${item.nome}${item.cpf_masked ? ` • ${item.cpf_masked}` : ""}</option>`),
+        ].join("");
         const card = document.createElement("div");
         card.className = "passenger-card passageiro-fields";
         card.innerHTML = `<div class="passenger-card__head"><span class="passenger-card__badge passenger-card__badge--${kind.key}">${kind.title} ${position + 1}</span><button type="button" class="passenger-card__remove" data-remove-kind="${kind.key}">Remover</button></div><div class="passenger-card__fields"><div><label class="wizard-label">${kind.title} ${position + 1} - Passageiro frequente</label><select name="passageiro-${index}-frequente" data-passageiro-frequente="${index}">${options}</select></div><div><label class="wizard-label">Nome completo</label><input type="text" name="passageiro-${index}-nome" value="${previous.nome || ""}" required></div><div><label class="wizard-label">CPF</label><input type="text" name="passageiro-${index}-cpf" value="${previous.cpf || ""}" required></div><div><label class="wizard-label">RG</label><input type="text" name="passageiro-${index}-rg" value="${previous.rg || ""}"></div><div><label class="wizard-label">Passaporte</label><input type="text" name="passageiro-${index}-passaporte" value="${previous.passaporte || ""}"></div><div><label class="wizard-label">Validade do passaporte</label><input type="date" name="passageiro-${index}-passaporte-validade" value="${previous.passaporte_validade || ""}"></div><div><label class="wizard-label">Data de nascimento</label><input type="date" name="passageiro-${index}-data-nascimento" value="${previous.data_nascimento || ""}" required></div><div><label class="wizard-label">Observacoes</label><textarea name="passageiro-${index}-observacoes" rows="3">${previous.observacoes || ""}</textarea></div></div><input type="hidden" name="passageiro-${index}-categoria" value="${previous.categoria || kind.key}">`;
@@ -507,18 +535,20 @@
     }));
     qsa("[data-passageiro-frequente]").forEach((select) => select.addEventListener("change", async (event) => {
       const indexValue = event.currentTarget.dataset.passageiroFrequente;
-      if (event.currentTarget.value === "__cliente__") {
+      const selectedValue = event.currentTarget.value;
+      if (selectedValue === "__titular__" || selectedValue === "__cliente__") {
         const clienteContextPayload = await ensureClientContext(refs.cliente?.value);
+        const titularData = clienteContextPayload?.passageiros_frequentes?.find((item) => item.is_titular);
         fillPassengerFields(indexValue, {
-          nome: clienteContextPayload?.cliente?.nome || "",
-          cpf: clienteContextPayload?.cliente?.cpf || "",
-          rg: "",
-          passaporte: "",
-          passaporte_validade: "",
-          data_nascimento: "",
+          nome: titularData?.nome || clienteContextPayload?.cliente?.nome || "",
+          cpf: titularData?.cpf || clienteContextPayload?.cliente?.cpf || "",
+          rg: titularData?.rg || "",
+          passaporte: titularData?.passaporte || "",
+          passaporte_validade: titularData?.passaporte_validade || "",
+          data_nascimento: titularData?.data_nascimento || "",
         });
-      } else if (event.currentTarget.value) {
-        fillPassengerFields(indexValue, await ensurePassengerDetail(event.currentTarget.value));
+      } else if (selectedValue) {
+        fillPassengerFields(indexValue, await ensurePassengerDetail(selectedValue));
       }
       updateCpfLimite();
       saveDraft();

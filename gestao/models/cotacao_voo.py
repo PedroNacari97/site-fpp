@@ -51,14 +51,18 @@ class CotacaoVoo(models.Model):
     observacoes = models.TextField(blank=True)
     valor_passagem = models.DecimalField(max_digits=10, decimal_places=2)
     taxas = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    milhas = models.IntegerField(default=0)
+    milhas = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     valor_milheiro = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     parcelas = models.IntegerField(default=1)
-    juros = models.DecimalField(max_digits=5, decimal_places=2, default=1.00)
-    desconto = models.DecimalField(max_digits=5, decimal_places=2, default=1.00)
+    juros = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    desconto = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     mostrar_valor_parcelado = models.BooleanField(default=True)
     valor_parcelado = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     valor_vista = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    valor_referencia_manual = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Se preenchido, sobrescreve o valor de referencia calculado automaticamente."
+    )
     validade = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pendente")
     economia = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -72,13 +76,22 @@ class CotacaoVoo(models.Model):
         if not self.cliente:
             raise ValidationError({"cliente": "Selecione o cliente que irá viajar."})
 
+    @property
+    def economia_total(self):
+        if self.economia is None:
+            return None
+        return Decimal(self.economia) * (self.qtd_passageiros or 1)
+
     def calcular_valores(self):
         base = (Decimal(self.milhas) / Decimal('1000')) * Decimal(self.valor_milheiro) + Decimal(self.taxas)
-        parcelado = base * Decimal(self.juros)
-        avista = parcelado * Decimal(self.desconto)
+        juros_fator = 1 + Decimal(self.juros or 0) / Decimal('100')
+        desconto_fator = 1 - Decimal(self.desconto or 0) / Decimal('100')
+        parcelado = base * juros_fator
+        avista = parcelado * desconto_fator
         self.valor_parcelado = parcelado
         self.valor_vista = avista
-        self.economia = Decimal(self.valor_passagem) - avista
+        referencia = self.valor_referencia_manual if self.valor_referencia_manual not in (None, "") else Decimal(self.valor_passagem)
+        self.economia = referencia - avista
 
     def save(self, *args, **kwargs):
         self.calcular_valores()

@@ -1,0 +1,34 @@
+[
+{
+  "model": "portal.fonte",
+  "pk": 1,
+  "fields": {
+    "nome": "Passageiro de Primeira",
+    "url": "https://passageirodeprimeira.com/",
+    "ativa": false,
+    "tipo_coleta": "html",
+    "categoria_padrao": "Milhas",
+    "parser_key": "passageirodeprimeira",
+    "headers_json": {},
+    "confianca_minima": "0.70",
+    "criada_em": "2026-04-04T20:53:29.921Z",
+    "atualizada_em": "2026-04-04T20:53:29.921Z"
+  }
+},
+{
+  "model": "portal.fonte",
+  "pk": 2,
+  "fields": {
+    "nome": "Melhores Cartoes",
+    "url": "https://www.melhorescartoes.com.br/",
+    "ativa": true,
+    "tipo_coleta": "html",
+    "categoria_padrao": "Cartoes",
+    "parser_key": "melhorescartoes",
+    "headers_json": {},
+    "confianca_minima": "0.70",
+    "criada_em": "2026-04-04T20:53:29.936Z",
+    "atualizada_em": "2026-04-04T20:53:29.936Z"
+  }
+}
+]

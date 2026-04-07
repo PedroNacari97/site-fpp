@@ -8,7 +8,7 @@
 {% endblock %}
 {% block content %}
 <div class="emission-page">
-    <form method="post" class="emission-form-shell" novalidate>
+    <form method="post" enctype="multipart/form-data" class="emission-form-shell" novalidate>
         {% csrf_token %}
         {% if cotacao_conversion %}
         <input type="hidden" name="cotacao_id" value="{{ cotacao_conversion.id }}">
@@ -346,6 +346,19 @@
                         <div>
                             <label class="wizard-label" for="{{ form.detalhes.id_for_label }}">Observações</label>
                             {{ form.detalhes }}
+                        </div>
+                    </div>
+                    <div class="wizard-grid wizard-grid--double" style="margin-top:1.25rem;">
+                        <div>
+                            <label class="wizard-label" for="{{ form.comprovante_pagamento.id_for_label }}">Comprovante de pagamento</label>
+                            {% if form.instance.pk and form.instance.comprovante_pagamento %}
+                            <p class="wizard-helper" style="margin-bottom:0.4rem;">
+                                Arquivo atual:
+                                <a href="{{ form.instance.comprovante_pagamento.url }}" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:underline;">ver arquivo</a>
+                            </p>
+                            {% endif %}
+                            {{ form.comprovante_pagamento }}
+                            <p class="wizard-helper">PDF, imagem ou documento comprobatório do pagamento.</p>
                         </div>
                     </div>
                 </section>

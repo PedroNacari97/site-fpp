@@ -47,10 +47,12 @@ def calcular_lucro_emissao(emissao: EmissaoPassagem, custo_base: Decimal | float
 
 
 def calcular_economia(emissao: EmissaoPassagem, custo_total: Decimal | float) -> Decimal:
-    """Calcula a economia obtida seguindo as regras de valor final e custo total."""
+    """Calcula a economia obtida: valor_referencia - valor_pago_pelo_cliente.
+    Positivo significa que o cliente economizou em relação ao valor de mercado.
+    """
 
     if emissao.valor_venda_final not in (None, ""):
-        return Decimal(emissao.valor_venda_final or 0) - Decimal(emissao.valor_referencia or 0)
+        return Decimal(emissao.valor_referencia or 0) - Decimal(emissao.valor_venda_final or 0)
     return Decimal("0")
 
 

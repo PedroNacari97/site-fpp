@@ -248,7 +248,8 @@ def _build_bagagem_context(emissao, empresa):
     ]
 
 
-def build_emissao_preview_context(emissao):
+def build_emissao_preview_context(emissao, *, for_pdf=False):
+    _for_pdf = for_pdf
     status = _get_status_context(emissao)
     empresa = get_empresa_from_operational_record(emissao)
     localizador = emissao.localizador or "A confirmar"
@@ -292,7 +293,7 @@ def build_emissao_preview_context(emissao):
         "bagagem_items": _build_bagagem_context(emissao, empresa),
         "valores": _build_valores_context(emissao, empresa),
         "acompanhamento": acompanhamento,
-        "empresa_contato": build_empresa_contact_context(empresa),
+        "empresa_contato": build_empresa_contact_context(empresa, for_pdf=_for_pdf),
         "observacao_importante": observacao,
         "orientacoes": orientacoes,
     }

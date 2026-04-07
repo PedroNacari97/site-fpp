@@ -196,51 +196,6 @@
         </div>
     </section>
 
-    {% if preview.acompanhamento %}
-    <section class="quote-preview-section">
-        <div class="quote-preview-section__heading">
-            <span class="quote-preview-section__icon quote-preview-section__icon--orange">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12 2v5M12 17v5M4.93 4.93l3.54 3.54M15.53 15.53l3.54 3.54M2 12h5M17 12h5M4.93 19.07l3.54-3.54M15.53 8.47l3.54-3.54" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
-                </svg>
-            </span>
-            <h3>Acompanhamento da Passagem</h3>
-        </div>
-        <div class="emission-preview-tracking">
-            <article class="emission-preview-tracking__status emission-preview-tracking__status--{{ preview.acompanhamento.reserva_tone }}">
-                <span>Status da reserva</span>
-                <strong>{{ preview.acompanhamento.status_reserva_label }}</strong>
-                <small>Status do voo: {{ preview.acompanhamento.status_voo_label }}</small>
-            </article>
-            <div class="emission-preview-tracking__grid">
-                <div class="emission-preview-tracking__item">
-                    <span>Modo de consulta</span>
-                    <strong>{{ preview.acompanhamento.modo_label }}</strong>
-                </div>
-                <div class="emission-preview-tracking__item">
-                    <span>Ultima sincronizacao</span>
-                    <strong>{{ preview.acompanhamento.ultima_sincronizacao_display }}</strong>
-                </div>
-                <div class="emission-preview-tracking__item">
-                    <span>Proxima verificacao</span>
-                    <strong>{{ preview.acompanhamento.proxima_verificacao_display }}</strong>
-                </div>
-                <div class="emission-preview-tracking__item">
-                    <span>Acompanhamento</span>
-                    <strong>{% if preview.acompanhamento.ativo %}Ativo{% else %}Pausado{% endif %}</strong>
-                </div>
-            </div>
-            <div class="emission-preview-tracking__note">
-                {{ preview.acompanhamento.resumo }}
-            </div>
-            {% if preview.acompanhamento.erro %}
-            <div class="emission-preview-tracking__error">
-                {{ preview.acompanhamento.erro }}
-            </div>
-            {% endif %}
-        </div>
-    </section>
-    {% endif %}
 
     <section class="quote-preview-section quote-preview-section--soft">
         <h3 class="quote-preview-section__title-only">Orientacoes para a Viagem</h3>

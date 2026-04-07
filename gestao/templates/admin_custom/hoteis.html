@@ -4,6 +4,7 @@
 {% block title %}Emissoes de Hoteis{% endblock %}
 {% block header_title %}Emissoes de Hoteis{% endblock %}
 {% block header_subtitle %}<span>Padrao global com filtros, indicadores e tabela operacional.</span>{% endblock %}
+{% block header_actions %}<a href="{% url 'admin_nova_emissao_hotel' %}" class="btn btn-primary">Nova Emissão de Hotel</a>{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/css/home_figma.css' %}">
@@ -12,16 +13,6 @@
 
 {% block content %}
 <div class="emissions-page">
-  <div class="emissions-page__header">
-    <div>
-      <h2 class="emissions-page__title">Emissoes de Hoteis</h2>
-      <p class="emissions-page__subtitle">Padrao global com filtros, indicadores e tabela operacional.</p>
-    </div>
-    <div class="emissions-page__header-actions">
-      <a href="{% url 'admin_nova_emissao_hotel' %}" class="emissions-page__button emissions-page__button--primary">Nova Emissao</a>
-    </div>
-  </div>
-
   <section class="home-ops__filters">
     {% include "admin_custom/partials/home_management_filters.html" %}
   </section>

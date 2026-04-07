@@ -2,7 +2,8 @@
 {% load static %}
 {% block title %}Cotacoes de Voo{% endblock %}
 {% block header_title %}Cotacoes de Voo{% endblock %}
-{% block header_subtitle %}<span>Padrao global com filtros, KPIs e tabela operacional de cotacoes.</span>{% endblock %}
+{% block header_subtitle %}<span>Padrao global com filtros e tabela operacional de cotacoes.</span>{% endblock %}
+{% block header_actions %}<a href="{% url 'admin_nova_cotacao_voo' %}" class="btn btn-primary">Nova Cotação</a>{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/css/home_figma.css' %}">
@@ -11,37 +12,8 @@
 
 {% block content %}
 <div class="emissions-page">
-    <div class="emissions-page__header">
-        <div>
-            <h2 class="emissions-page__title">Cotacoes de Voo</h2>
-            <p class="emissions-page__subtitle">Padrao global com filtros, KPIs e tabela operacional de cotacoes.</p>
-        </div>
-        <div class="emissions-page__header-actions">
-            <a href="{% url 'admin_nova_cotacao_voo' %}" class="emissions-page__button emissions-page__button--primary">Nova Cotacao</a>
-        </div>
-    </div>
-
     <section class="home-ops__filters">
         {% include "admin_custom/partials/home_management_filters.html" %}
-    </section>
-
-    <section class="emissions-page__stats">
-        <article class="emissions-page__stat-card">
-            <p class="emissions-page__stat-label">Cotacoes filtradas</p>
-            <p class="emissions-page__stat-value">{{ cotacao_totais.total }}</p>
-        </article>
-        <article class="emissions-page__stat-card">
-            <p class="emissions-page__stat-label">Valor referencia</p>
-            <p class="emissions-page__stat-value">{{ cotacao_totais.referencia }}</p>
-        </article>
-        <article class="emissions-page__stat-card">
-            <p class="emissions-page__stat-label">Valor a vista</p>
-            <p class="emissions-page__stat-value">{{ cotacao_totais.venda }}</p>
-        </article>
-        <article class="emissions-page__stat-card">
-            <p class="emissions-page__stat-label">Economia estimada</p>
-            <p class="emissions-page__stat-value">{{ cotacao_totais.economia }}</p>
-        </article>
     </section>
 
     <section class="emissions-page__panel emissions-page__table-panel">
@@ -73,7 +45,7 @@
                         <td>{{ c.destino }}</td>
                         <td>{{ c.data_ida|date:"d/m/Y H:i" }}</td>
                         <td>{{ c.get_status_display }}</td>
-                        <td>R$ {{ c.economia|floatformat:2 }}</td>
+                        <td>{% if c.economia_total is not None %}R$ {{ c.economia_total|floatformat:2 }}{% else %}—{% endif %}</td>
                         <td>
                             <div class="emissions-page__row-actions">
                                 <a href="{% url 'admin_visualizar_cotacao_voo' c.id %}" class="emissions-page__row-button">Visualizar Cotacao</a>

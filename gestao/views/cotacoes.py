@@ -303,9 +303,9 @@ def admin_cotacoes_voo(request):
             cotacoes = cotacoes.filter(status=mapped_status)
 
     total = cotacoes.count()
-    valor_referencia_total = sum((c.valor_passagem or 0) for c in cotacoes)
-    valor_venda_total = sum((c.valor_vista or 0) for c in cotacoes)
-    economia_total = sum((c.economia or 0) for c in cotacoes)
+    valor_referencia_total = sum((c.valor_passagem or 0) * (c.qtd_passageiros or 1) for c in cotacoes)
+    valor_venda_total = sum((c.valor_vista or 0) * (c.qtd_passageiros or 1) for c in cotacoes)
+    economia_total = sum((c.economia or 0) * (c.qtd_passageiros or 1) for c in cotacoes)
 
     return render(
         request,

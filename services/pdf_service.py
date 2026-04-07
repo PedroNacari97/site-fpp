@@ -18,9 +18,10 @@ def emissao_pdf_response(emissao, *, filename_prefix="emissao", as_attachment=Tr
             "admin_custom/pdf/emissao_preview_pdf.html",
             {
                 "emissao": emissao,
-                "preview": build_emissao_preview_context(emissao),
+                "preview": build_emissao_preview_context(emissao, for_pdf=True),
             },
             css_paths=(
+                "gestao/css/base/variables.css",
                 "gestao/css/cotacao_preview.css",
                 "gestao/css/emissao_preview.css",
             ),
@@ -48,9 +49,10 @@ def cotacao_pdf_response(cotacao, *, filename_prefix="cotacao", as_attachment=Tr
             "admin_custom/pdf/cotacao_voo_pdf.html",
             {
                 "cotacao": cotacao,
-                **build_cotacao_preview_context(cotacao),
+                **build_cotacao_preview_context(cotacao, for_pdf=True),
             },
             css_paths=(
+                "gestao/css/base/variables.css",
                 "gestao/css/cotacao_preview.css",
                 "gestao/css/emissao_preview.css",
             ),
