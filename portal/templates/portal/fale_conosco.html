@@ -1,0 +1,75 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ seo_title|default:"Fale conosco | NC Fly" }}{% endblock %}
+{% block content %}
+<div class="portal-static-page">
+    <section class="portal-static-page__shell">
+        <header class="portal-static-page__hero">
+            <nav class="portal-static-page__breadcrumbs">
+                <a href="{% url 'portal_home' %}">In&iacute;cio</a>
+                <span>/</span>
+                <span>Fale conosco</span>
+            </nav>
+            <span class="news-pill news-pill--primary">{{ page_eyebrow|portal_text }}</span>
+            <h1>Fale com a NC Fly</h1>
+            <p>{{ page_intro|portal_text }}</p>
+        </header>
+
+        <section class="portal-static-page__section">
+            <h2>Para quais assuntos esta p&aacute;gina existe</h2>
+            <div class="portal-static-page__grid">
+                <article class="portal-static-page__card">
+                    <h3>Institucional</h3>
+                    <p>Assuntos ligados &agrave; empresa, posicionamento institucional e informa&ccedil;&otilde;es gerais sobre a NC Fly.</p>
+                </article>
+                <article class="portal-static-page__card">
+                    <h3>Comercial</h3>
+                    <p>Interesse em entender a plataforma, o modelo de atua&ccedil;&atilde;o da empresa e poss&iacute;veis frentes comerciais.</p>
+                </article>
+                <article class="portal-static-page__card">
+                    <h3>Parcerias</h3>
+                    <p>Conversas sobre relacionamento de marca, colabora&ccedil;&otilde;es, m&iacute;dia, distribui&ccedil;&atilde;o e iniciativas conjuntas.</p>
+                </article>
+                <article class="portal-static-page__card">
+                    <h3>Portal e alertas</h3>
+                    <p>D&uacute;vidas gerais relacionadas ao portal p&uacute;blico, &agrave; vitrine de alertas e &agrave;s p&aacute;ginas institucionais.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>Canais de contato</h2>
+            <p>Os contatos institucionais da NC Fly para atendimento geral, assuntos comerciais e conversas de parceria aparecem abaixo.</p>
+            <ul class="portal-static-page__list">
+                {% if portal_contact_email %}
+                <li>E-mail de atendimento: <a href="mailto:{{ portal_contact_email }}">{{ portal_contact_email }}</a>.</li>
+                {% else %}
+                <li>O e-mail de atendimento ainda n&atilde;o foi publicado nesta p&aacute;gina.</li>
+                {% endif %}
+                {% if portal_partnership_email %}
+                <li>E-mail de parcerias: <a href="mailto:{{ portal_partnership_email }}">{{ portal_partnership_email }}</a>.</li>
+                {% else %}
+                <li>O e-mail de parcerias ainda n&atilde;o foi publicado nesta p&aacute;gina.</li>
+                {% endif %}
+                {% if portal_contact_phone %}
+                <li>Telefone institucional: <a href="tel:{{ portal_contact_phone|phone_href }}">{{ portal_contact_phone|br_phone }}</a>.</li>
+                {% else %}
+                <li>Os telefones institucionais ainda n&atilde;o foram publicados aqui.</li>
+                {% endif %}
+                <li>Se o assunto for privacidade e dados pessoais, a NC Fly pode complementar esta p&aacute;gina com um canal espec&iacute;fico depois.</li>
+            </ul>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>Enquanto isso</h2>
+            <p>Voc&ecirc; pode continuar navegando pelas frentes p&uacute;blicas da NC Fly para entender melhor a empresa, acompanhar alertas e conhecer a plataforma.</p>
+            <div class="portal-static-page__cta-row">
+                <a href="{% url 'portal_sobre' %}" class="portal-button portal-button--ghost portal-button--sm">Sobre a NC Fly</a>
+                <a href="{% url 'portal_alertas' %}" class="portal-button portal-button--ghost portal-button--sm">Ver alertas</a>
+                <a href="{% url 'portal_plataforma_saas' %}" class="portal-button portal-button--ghost portal-button--sm">Conhecer a plataforma</a>
+            </div>
+            <p class="portal-static-page__updated">Atualizado em {{ page_updated_at|br_date_long }}.</p>
+        </section>
+    </section>
+</div>
+{% endblock %}

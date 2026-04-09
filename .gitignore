@@ -3,10 +3,12 @@ __pycache__/
 db.sqlite3
 dump.json
 .env
+.env.local
 staticfiles/
 .tmp/
 tmp_*.html
 tmp_*.pdf
+media/portal/noticias/generated/
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*

@@ -14,6 +14,7 @@ def portal_public_settings(request):
 
     raw_cookie_preferences = get_cookie_preferences_from_request(request)
     cookie_preferences = normalize_cookie_preferences(raw_cookie_preferences)
+    contact_whatsapp = settings.PORTAL_CONTACT_WHATSAPP or settings.PORTAL_CONTACT_PHONE
     category_nav_labels = {
         "milhas-e-pontos": "Milhas",
         "cartoes-credito": "Cartões",
@@ -24,8 +25,9 @@ def portal_public_settings(request):
         "google_search_console_verification": settings.GOOGLE_SEARCH_CONSOLE_VERIFICATION,
         "portal_legal_entity_name": settings.PORTAL_LEGAL_ENTITY_NAME,
         "portal_contact_email": settings.PORTAL_CONTACT_EMAIL,
+        "portal_partnership_email": settings.PORTAL_PARTNERSHIP_EMAIL,
         "portal_contact_phone": settings.PORTAL_CONTACT_PHONE,
-        "portal_contact_whatsapp": settings.PORTAL_CONTACT_WHATSAPP,
+        "portal_contact_whatsapp": contact_whatsapp,
         "portal_company_cnpj": settings.PORTAL_COMPANY_CNPJ,
         "portal_company_address": settings.PORTAL_COMPANY_ADDRESS,
         "portal_dpo_email": settings.PORTAL_DPO_EMAIL,

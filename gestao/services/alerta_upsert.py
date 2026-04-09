@@ -99,6 +99,12 @@ def create_or_update_alerta(data):
     now = timezone.now()
 
     if existing:
+        from portal.services.alert_email_broadcasts import (
+            capture_alert_email_snapshot,
+            notify_alert_subscribers,
+        )
+
+        previous_snapshot = capture_alert_email_snapshot(existing)
         existing.titulo = payload["titulo"] or existing.titulo
         existing.conteudo = payload["conteudo"] or existing.conteudo
         existing.continente = payload["continente"] or existing.continente
@@ -139,7 +145,11 @@ def create_or_update_alerta(data):
                 "criado_em",
             ]
         )
+        notify_alert_subscribers(existing, created=False, previous_snapshot=previous_snapshot)
         return existing, False
 
     alerta = AlertaViagem.objects.create(**payload)
+    from portal.services.alert_email_broadcasts import notify_alert_subscribers
+
+    notify_alert_subscribers(alerta, created=True)
     return alerta, True

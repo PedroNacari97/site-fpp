@@ -195,3 +195,18 @@ def telegram_set_webhook(webhook_url):
     if not payload.get("ok"):
         raise ValueError(f"Falha ao configurar webhook do Telegram: {payload}")
     return payload
+
+
+def telegram_delete_webhook(drop_pending_updates=False):
+    import requests
+
+    response = requests.post(
+        build_telegram_api_url("deleteWebhook"),
+        data={"drop_pending_updates": bool(drop_pending_updates)},
+        timeout=30,
+    )
+    response.raise_for_status()
+    payload = response.json()
+    if not payload.get("ok"):
+        raise ValueError(f"Falha ao remover webhook do Telegram: {payload}")
+    return payload

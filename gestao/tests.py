@@ -1,6 +1,7 @@
 import json
 from datetime import date, timedelta
 from decimal import Decimal
+from unittest.mock import Mock, patch
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -26,9 +27,11 @@ from gestao.models import (
     PassageiroFrequente,
     ProgramaFidelidade,
     TelegramAlertaEvento,
+    TelegramNoticiaEvento,
 )
 from gestao.services.dashboard import build_operational_notifications
 from gestao.services.interesses_viagem import sync_alerta_interest_matches
+from portal.models import Fonte, MateriaBruta, NoticiaPublicada
 
 User = get_user_model()
 
@@ -704,6 +707,167 @@ class TelegramAlertasWebhookTest(TestCase):
 
         alerta.refresh_from_db()
         self.assertGreater(alerta.criado_em, old_created_at)
+
+
+@override_settings(
+    TELEGRAM_NEWS_BOT_TOKEN="dummy-news-token",
+    TELEGRAM_NEWS_ALLOWED_CHAT_IDS=["-100123456"],
+)
+class TelegramNoticiasServiceTest(TestCase):
+    def setUp(self):
+        self.fonte = Fonte.objects.create(
+            nome="Fonte Telegram Noticias",
+            url="https://example.com/",
+            tipo_coleta="html",
+        )
+        self.materia = MateriaBruta.objects.create(
+            fonte=self.fonte,
+            url_original="https://example.com/noticia",
+            titulo_extraido="Titulo base",
+            texto_base="Texto base de noticia suficiente para testes.",
+            hash_conteudo="hash-noticia-1",
+        )
+        self.noticia = NoticiaPublicada.objects.create(
+            materia_bruta=self.materia,
+            fonte=self.fonte,
+            titulo="Noticia do teste",
+            resumo="Resumo do teste",
+            conteudo="Conteudo do teste",
+            slug="noticia-do-teste",
+            categoria="Promocoes",
+            topico="Ofertas",
+            url_fonte="https://example.com/noticia",
+            status="published",
+        )
+
+    def _build_payload(self, text, update_id=9001):
+        return {
+            "update_id": update_id,
+            "message": {
+                "message_id": 55,
+                "date": 1775070000,
+                "chat": {
+                    "id": -100123456,
+                    "title": "Noticias NC Fly",
+                    "type": "supergroup",
+                },
+                "text": text,
+            },
+        }
+
+    def test_parse_single_news_url_command_aceita_link_puro_e_embutido(self):
+        from gestao.services.telegram_noticias import parse_single_news_url_command
+
+        url = "https://www.cartoesdecredito.me/cartoes/btg-tap-black-oferece-ate-2-anos-de-anuidade-gratis/"
+        self.assertEqual(parse_single_news_url_command(url), url)
+        self.assertEqual(parse_single_news_url_command(f"noticia {url}"), url)
+        self.assertEqual(parse_single_news_url_command(f"Veja isso aqui {url} agora"), url)
+
+    def test_parse_single_news_url_command_ignora_url_embutida_em_texto_promocional_longo(self):
+        from gestao.services.telegram_noticias import parse_single_news_url_command
+
+        text = (
+            "TEM PROMOCODE NOVO NO AR NESTE MES DE ANIVERSARIO DA AZUL VIAGENS. "
+            "FESTA10 com 10% OFF em pacote aereo e hotel. "
+            "Tipo de produto: Aereo Azul, Aereo Amadeus, Hotel, Passeio, Traslado. "
+            "Data de venda: 08/04/2026 a 21/04/2026. "
+            "Data de viagem: 09/04/2026 a 27/06/2027. "
+            "Regra juridica com condicoes completas da campanha em http://azulviagens.com.br/termos-e-condicoes."
+        )
+
+        self.assertIsNone(parse_single_news_url_command(text))
+
+    def test_looks_like_manual_news_text_detecta_texto_promocional(self):
+        from gestao.services.telegram_noticias import looks_like_manual_news_text
+
+        self.assertTrue(
+            looks_like_manual_news_text(
+                "TEM PROMOCODE NOVO NO AR. FESTA10 com 10% OFF. "
+                "Tipo de produto: Aereo Azul e Hotel. "
+                "Data de venda: 08/04/2026 a 21/04/2026. "
+                "Data de viagem: 09/04/2026 a 27/06/2027. "
+                "Regra juridica com condicoes detalhadas."
+            )
+        )
+
+    def test_looks_like_manual_news_text_ignora_bom_invisivel(self):
+        from gestao.services.telegram_noticias import looks_like_manual_news_text
+
+        self.assertTrue(
+            looks_like_manual_news_text(
+                "TEM PROMOCODE NOVO NO AR. FESTA10 com 10% OFF. "
+                "Tipo de produto: Aereo Azul e Hotel. "
+                "Data de venda: 08/04/2026 a 21/04/2026. "
+                "Data de viagem: 09/04/2026 a 27/06/2027. "
+                "Regra juridica com condicoes detalhadas. "
+                "http://azulviagens.com.br/termos-e-condicoes\ufeff"
+            )
+        )
+
+    @patch("portal.views.invalidate_news_cache")
+    @patch("portal.services.news_sync_service.sync_news_from_url")
+    def test_process_news_update_com_link(self, mock_sync_news_from_url, _mock_invalidate_news_cache):
+        from gestao.services.telegram_noticias import process_telegram_news_update
+
+        mock_sync_news_from_url.return_value = {
+            "outcome": "published",
+            "noticia": self.noticia,
+            "processed": 1,
+            "published": 1,
+        }
+
+        event, outcome, meta = process_telegram_news_update(
+            self._build_payload("https://example.com/noticia-do-dia", update_id=9002)
+        )
+
+        self.assertEqual(outcome, "url_published")
+        self.assertEqual(event.status, TelegramNoticiaEvento.STATUS_PROCESSADO)
+        self.assertEqual(event.noticia_id, self.noticia.id)
+        self.assertIn("Noticia publicada.", meta["message"])
+
+    @patch("portal.views.invalidate_news_cache")
+    @patch("portal.services.news_sync_service.sync_news_from_text")
+    def test_process_news_update_com_texto_promocional(self, mock_sync_news_from_text, _mock_invalidate_news_cache):
+        from gestao.services.telegram_noticias import process_telegram_news_update
+
+        mock_sync_news_from_text.return_value = {
+            "outcome": "published",
+            "noticia": self.noticia,
+            "processed": 1,
+            "published": 1,
+        }
+
+        event, outcome, meta = process_telegram_news_update(
+            self._build_payload(
+                "TEM PROMOCODE NOVO NO AR NESTE MES DE ANIVERSARIO DA AZUL VIAGENS. "
+                "FESTA10 com 10% OFF em pacote aereo e hotel. "
+                "Tipo de produto: Aereo Azul, Hotel. "
+                "Data de venda: 08/04/2026 a 21/04/2026. "
+                "Data de viagem: 09/04/2026 a 27/06/2027. "
+                "Regra juridica com condicoes completas da campanha.",
+                update_id=9003,
+            )
+        )
+
+        self.assertEqual(outcome, "text_published")
+        self.assertEqual(event.status, TelegramNoticiaEvento.STATUS_PROCESSADO)
+        self.assertEqual(event.noticia_id, self.noticia.id)
+        self.assertIn("Noticia publicada.", meta["message"])
+
+    @patch("portal.views.invalidate_news_cache")
+    @patch("portal.services.news_sync_service.sync_news_progressive")
+    def test_process_news_update_com_atualizar(self, mock_sync_news_progressive, _mock_invalidate_news_cache):
+        from gestao.services.telegram_noticias import process_telegram_news_update
+
+        mock_sync_news_progressive.return_value = (4, 2, [])
+
+        event, outcome, meta = process_telegram_news_update(
+            self._build_payload("atualizar 4", update_id=9004)
+        )
+
+        self.assertEqual(outcome, "sync_batch")
+        self.assertEqual(event.status, TelegramNoticiaEvento.STATUS_PROCESSADO)
+        self.assertIn("Sync concluido: 4 processadas, 2 publicadas.", meta["message"])
 
 
 class AlertaViagemVitrineTest(TestCase):

@@ -16,7 +16,14 @@ class Command(BaseCommand):
         try:
             updates = telegram_get_updates(limit=limit, timeout=timeout)
         except Exception as exc:
-            raise CommandError(str(exc)) from exc
+            message = str(exc)
+            if "409 Client Error: Conflict" in message or "Conflict for url" in message:
+                raise CommandError(
+                    "O bot está com webhook ativo no Telegram. "
+                    "Para testar local com polling, rode antes: "
+                    "`py manage.py remover_telegram_alertas_webhook`"
+                ) from exc
+            raise CommandError(message) from exc
 
         counters = {
             "created": 0,

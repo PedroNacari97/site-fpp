@@ -277,3 +277,73 @@ class LeadPlataforma(models.Model):
 
     def __str__(self):
         return f"{self.nome_completo} - {self.empresa}"
+
+
+class LeadAlertaEmail(models.Model):
+    STATUS_ATIVO = "ativo"
+    STATUS_PAUSADO = "pausado"
+    STATUS_DESCADASTRADO = "descadastrado"
+    STATUS_CHOICES = (
+        (STATUS_ATIVO, "Ativo"),
+        (STATUS_PAUSADO, "Pausado"),
+        (STATUS_DESCADASTRADO, "Descadastrado"),
+    )
+
+    ORIGEM_HOME = "home"
+    ORIGEM_ALERTAS = "alertas"
+    ORIGEM_CHOICES = (
+        (ORIGEM_HOME, "Home"),
+        (ORIGEM_ALERTAS, "Página de alertas"),
+    )
+
+    nome_completo = models.CharField(max_length=180)
+    email = models.EmailField(unique=True)
+    telefone = models.CharField(max_length=40)
+    origem_cadastro = models.CharField(
+        max_length=20,
+        choices=ORIGEM_CHOICES,
+        default=ORIGEM_ALERTAS,
+    )
+    aceite_versao = models.CharField(max_length=40, blank=True)
+    aceito_em = models.DateTimeField(null=True, blank=True)
+    aceito_ip = models.CharField(max_length=45, blank=True)
+    aceito_user_agent = models.CharField(max_length=255, blank=True)
+    source_environment = models.CharField(max_length=20, default="local", db_index=True)
+    source_host = models.CharField(max_length=120, blank=True, db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_ATIVO)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-criado_em"]
+        verbose_name = "Lead de alertas por e-mail"
+        verbose_name_plural = "Leads de alertas por e-mail"
+
+    def __str__(self):
+        return f"{self.nome_completo} - {self.email}"
+
+
+class AlertEmailDigestItem(models.Model):
+    KIND_NEW = "new"
+    KIND_UPDATED = "updated"
+    KIND_CHOICES = (
+        (KIND_NEW, "Novo alerta"),
+        (KIND_UPDATED, "Alerta atualizado"),
+    )
+
+    alerta = models.ForeignKey(
+        "gestao.AlertaViagem",
+        on_delete=models.CASCADE,
+        related_name="alert_email_digest_items",
+    )
+    kind = models.CharField(max_length=20, choices=KIND_CHOICES, default=KIND_NEW)
+    metadata_json = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    sent_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+    def __str__(self):
+        route_label = (self.metadata_json or {}).get("route_label") or f"Alerta #{self.alerta_id}"
+        return f"{self.get_kind_display()} - {route_label}"

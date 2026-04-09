@@ -22,7 +22,7 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from core.views import healthcheck
 from accounts.views import custom_login, superadmin_login
-from gestao.views.alertas import telegram_alertas_webhook
+from gestao.views.alertas import telegram_alertas_webhook, telegram_noticias_webhook
 from portal import views as portal_views
 from portal.sitemaps import AlertSitemap, CategorySitemap, HomeSitemap, NewsSitemap, StaticPageSitemap
 
@@ -49,6 +49,7 @@ urlpatterns = [
     path("login/", custom_login, name="login_custom"),
     path("superadmin/login/", superadmin_login, name="superadmin_login"),
     path("integracoes/telegram/alertas/webhook/", telegram_alertas_webhook, name="telegram_alertas_webhook"),
+    path("integracoes/telegram/noticias/webhook/", telegram_noticias_webhook, name="telegram_noticias_webhook"),
     path("painel/", include("painel_cliente.urls")),
     path("django/admin/", admin.site.urls),
     path("adm/", include("gestao.urls_admin")),

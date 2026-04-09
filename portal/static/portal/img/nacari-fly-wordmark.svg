@@ -1,0 +1,49 @@
+<svg width="760" height="200" viewBox="0 0 760 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="nacariWordmarkTrail" x1="26" y1="154" x2="180" y2="42" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D4722C"/>
+      <stop offset="0.6" stop-color="#F19A18"/>
+      <stop offset="1" stop-color="#E5A820"/>
+    </linearGradient>
+    <linearGradient id="nacariWordmarkTrailHighlight" x1="34" y1="162" x2="178" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C95C26"/>
+      <stop offset="1" stop-color="#F2C14E"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(24 10)">
+    <polygon points="34 18 82 18 74 166 26 166" fill="#1B2A4A"/>
+    <polygon points="76 18 118 18 130 166 88 166" fill="#1B2A4A"/>
+    <polygon points="112 18 160 18 160 166 112 166" fill="#1B2A4A"/>
+    <polygon points="86 42 109 42 118 132 95 132" fill="#FFFFFF"/>
+
+    <path
+      d="M20 152C55 146 83 126 107 99C126 77 144 59 168 40"
+      stroke="url(#nacariWordmarkTrail)"
+      stroke-width="14"
+      stroke-linecap="round"
+    />
+    <path
+      d="M28 160C63 152 90 132 114 106C132 85 149 68 167 54"
+      stroke="url(#nacariWordmarkTrailHighlight)"
+      stroke-width="4.5"
+      stroke-linecap="round"
+    />
+
+    <g transform="translate(120 6)">
+      <g transform="scale(4.2)">
+        <g transform="rotate(-32 11.5 12)">
+          <path
+            d="M21 16V14L13 9V3.5A1.5 1.5 0 0 0 11.5 2A1.5 1.5 0 0 0 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
+            fill="#E5A820"
+          />
+        </g>
+      </g>
+    </g>
+  </g>
+
+  <text x="286" y="124" font-family="Segoe UI, Arial, sans-serif" fill="#1B2A4A">
+    <tspan font-size="86" font-weight="700">Nacari</tspan>
+    <tspan dx="12" font-size="76" font-style="italic" font-weight="400">Fly</tspan>
+  </text>
+</svg>

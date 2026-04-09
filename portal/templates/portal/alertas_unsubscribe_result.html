@@ -1,0 +1,25 @@
+{% extends "portal/base_public.html" %}
+
+{% block title %}Cancelamento de alertas | NC Fly News{% endblock %}
+
+{% block content %}
+<section class="portal-static-page">
+    <div class="portal-container portal-static-page__container">
+        <div class="portal-static-page__header">
+            <span class="portal-static-page__eyebrow">Alertas por e-mail</span>
+            {% if unsubscribe_success %}
+            <h1>Recebimento cancelado</h1>
+            <p>O e-mail {% if lead %}<strong>{{ lead.email }}</strong>{% else %}informado{% endif %} não receberá novos alertas automáticos da NC Fly.</p>
+            {% else %}
+            <h1>Não foi possível concluir o cancelamento</h1>
+            <p>Esse link pode estar inválido, expirado ou já ter sido usado anteriormente.</p>
+            {% endif %}
+        </div>
+
+        <div class="portal-static-page__body">
+            <p>Se quiser voltar a receber alertas no futuro, basta se cadastrar novamente na lista pública da NC Fly.</p>
+            <p><a href="{% url 'portal_alertas' %}" class="portal-button portal-button--primary">Ver alertas no site</a></p>
+        </div>
+    </div>
+</section>
+{% endblock %}

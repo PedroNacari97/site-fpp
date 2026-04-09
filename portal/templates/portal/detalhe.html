@@ -23,7 +23,7 @@
 
     <article class="news-detail-shell">
         <nav class="news-breadcrumbs">
-            <a href="{% url 'portal_home' %}" data-analytics-event="click_breadcrumb" data-analytics-category="navigation" data-analytics-label="home">Home</a>
+            <a href="{% url 'portal_home' %}" data-analytics-event="click_breadcrumb" data-analytics-category="navigation" data-analytics-label="home">In&iacute;cio</a>
             <span>/</span>
             {% if categoria_url %}
             <a href="{{ categoria_url }}" data-analytics-event="click_breadcrumb" data-analytics-category="navigation" data-analytics-label="{{ breadcrumbs_categoria|portal_text }}">{{ breadcrumbs_categoria|portal_text }}</a>
@@ -68,7 +68,7 @@
 
         {% if noticia.imagem_exibicao %}
         <figure class="news-detail-cover">
-            <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}">
+            <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}" width="1600" height="900" fetchpriority="high" decoding="async">
         </figure>
         {% endif %}
 
@@ -149,7 +149,7 @@
     </article>
 
     {% if relacionadas %}
-    <section class="news-related">
+    <section class="news-related portal-deferred-section portal-deferred-section--md">
         <header class="news-related__header">
             <h2>Notícias relacionadas</h2>
         </header>
@@ -168,7 +168,7 @@
                     data-analytics-article-topic="{{ item.topico|default:''|portal_text }}"
                     data-analytics-section="article_related"
                 >
-                    <img src="{{ item.imagem_exibicao }}" alt="{{ item.titulo }}">
+                    <img src="{{ item.imagem_exibicao }}" alt="{{ item.titulo }}" width="1600" height="1000" loading="lazy" decoding="async">
                 </a>
                 {% endif %}
                 <div class="news-card__body">

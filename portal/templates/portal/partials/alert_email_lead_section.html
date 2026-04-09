@@ -1,0 +1,227 @@
+{% load portal_extras %}
+<section class="portal-alert-signup{% if alert_email_lead_alerts %} portal-alert-signup--with-alerts{% endif %}" id="{{ alert_email_lead_section_id|default:'alertas-email-lead' }}">
+    <div class="portal-alert-signup__hero">
+        <div class="portal-alert-signup__content">
+            <div class="portal-alert-signup__copy">
+                <span class="news-kicker">Alertas por e-mail</span>
+                <h2>Quer receber novos alertas direto no seu e-mail?</h2>
+                <p>Cadastre seu contato para acompanhar novas oportunidades sem depender de busca manual no portal.</p>
+                <ul class="portal-alert-signup__list">
+                    <li>Cadastro r&aacute;pido com nome, e-mail e telefone.</li>
+                    <li>Termo espec&iacute;fico para alertas, separado do interesse na plataforma.</li>
+                    <li>Sem criar login ou acesso automaticamente.</li>
+                </ul>
+            </div>
+
+            {% if alert_email_lead_alerts %}
+            <div class="portal-alert-signup__alerts">
+                <div class="portal-alert-signup__alerts-header">
+                    <strong>Alertas recentes</strong>
+                    <a
+                        href="{% url 'portal_alertas' %}"
+                        class="news-section-bar__link news-section-bar__link--alerts"
+                        data-analytics-event="click_alertas_home_ver_todos"
+                        data-analytics-category="navigation"
+                        data-analytics-label="home_alertas_ver_todos"
+                        data-analytics-section="home_alerts"
+                    >
+                        Ver todos
+                        <span aria-hidden="true">&rarr;</span>
+                    </a>
+                </div>
+                <div
+                    class="news-alerts-carousel portal-alert-signup__carousel"
+                    data-alerts-carousel
+                    data-alerts-per-view-mobile="1"
+                    data-alerts-per-view-tablet="1"
+                    data-alerts-per-view-desktop="1"
+                >
+                    <button
+                        type="button"
+                        class="news-alerts-carousel__control news-alerts-carousel__control--prev"
+                        aria-label="Alerta anterior"
+                        data-alerts-prev
+                    >
+                        <span aria-hidden="true">&lsaquo;</span>
+                    </button>
+                    <div class="news-alerts-carousel__viewport" data-alerts-viewport>
+                        <div class="news-alerts-home__grid news-alerts-home__grid--carousel" data-alerts-track>
+                            {% for alerta in alert_email_lead_alerts %}
+                            <article class="news-alert-card" data-alerts-slide>
+                                <a
+                                    href="{{ alerta.url }}"
+                                    class="news-alert-card__stretch-link"
+                                    aria-label="Abrir alerta {{ alerta.origem_codigo }}-{{ alerta.destino_codigo }}"
+                                    data-analytics-event="click_alerta_home"
+                                    data-analytics-category="content"
+                                    data-analytics-label="{{ alerta.origem_codigo }}-{{ alerta.destino_codigo }}"
+                                    data-analytics-section="home_alerts"
+                                ></a>
+                                <div class="news-alert-card__top">
+                                    <span class="news-alert-card__plane" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                                        </svg>
+                                    </span>
+                                    {% if alerta.validade_label %}
+                                    <span class="news-alert-card__validity">{{ alerta.validade_label|portal_text }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="news-alert-card__route">
+                                    <div>
+                                        <strong>{{ alerta.origem_codigo }}</strong>
+                                        <span>{{ alerta.origem_cidade }}</span>
+                                    </div>
+                                    <div class="news-alert-card__route-line" aria-hidden="true">
+                                        <span></span>
+                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                            <path d="M3 12h18M15 6l6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                                        </svg>
+                                        <span></span>
+                                    </div>
+                                    <div class="news-alert-card__destination">
+                                        <strong>{{ alerta.destino_codigo }}</strong>
+                                        <span>{{ alerta.destino_cidade }}</span>
+                                    </div>
+                                </div>
+                                <div class="news-alert-card__meta">
+                                    <span class="news-alert-card__meta-badge">
+                                        <small>Programa</small>
+                                        <strong>{{ alerta.programa }}</strong>
+                                    </span>
+                                    <span class="news-alert-card__meta-badge">
+                                        <small>Companhia</small>
+                                        <strong>{{ alerta.companhia }}</strong>
+                                    </span>
+                                </div>
+                                <div class="news-alert-card__footer">
+                                    <div class="news-alert-card__price-box">
+                                        <small>{{ alerta.miles_kicker }}</small>
+                                        <strong>{{ alerta.miles_label }}</strong>
+                                    </div>
+                                    {% if portal_contact_whatsapp %}
+                                    <div class="news-alert-card__contact">
+                                        <span>Sem milhas? Pe&ccedil;a cota&ccedil;&atilde;o.</span>
+                                        <a
+                                            href="#"
+                                            class="news-alert-card__whatsapp"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label="Falar no WhatsApp sobre o alerta {{ alerta.origem_codigo }}-{{ alerta.destino_codigo }}"
+                                            title="Falar no WhatsApp"
+                                            data-alert-whatsapp
+                                            data-whatsapp-number="{{ portal_contact_whatsapp }}"
+                                            data-alert-link="{{ alerta.url }}"
+                                            data-whatsapp-message="Ol&aacute;! Vi o alerta {{ alerta.origem_codigo }} para {{ alerta.destino_codigo }} no portal NC Fly News e gostaria de fazer uma cota&ccedil;&atilde;o."
+                                            data-analytics-event="click_alerta_whatsapp"
+                                            data-analytics-category="conversion"
+                                            data-analytics-label="{{ alerta.origem_codigo }}-{{ alerta.destino_codigo }}"
+                                            data-analytics-section="home_alerts_whatsapp"
+                                        >
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <path fill="currentColor" d="M19.05 4.94A9.77 9.77 0 0 0 12.09 2C6.67 2 2.25 6.41 2.25 11.84c0 1.74.46 3.44 1.32 4.94L2 22l5.37-1.41a9.8 9.8 0 0 0 4.72 1.21h.01c5.42 0 9.84-4.41 9.84-9.84a9.77 9.77 0 0 0-2.89-7.02Zm-6.96 15.2h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.19.84.85-3.11-.2-.32a8.14 8.14 0 0 1-1.25-4.39c0-4.5 3.67-8.17 8.18-8.17a8.1 8.1 0 0 1 5.78 2.39 8.11 8.11 0 0 1 2.38 5.78c0 4.51-3.66 8.18-8.16 8.18Zm4.48-6.12c-.24-.12-1.42-.7-1.64-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1.02-.37-1.95-1.19-.72-.64-1.2-1.42-1.34-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.77-.2-.48-.4-.42-.54-.43h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.69 2.59 4.1 3.63.57.25 1.01.4 1.36.51.57.18 1.08.16 1.49.1.46-.07 1.42-.58 1.62-1.14.2-.56.2-1.03.14-1.13-.06-.1-.22-.16-.46-.28Z"></path>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </article>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        class="news-alerts-carousel__control news-alerts-carousel__control--next"
+                        aria-label="Pr&oacute;ximo alerta"
+                        data-alerts-next
+                    >
+                        <span aria-hidden="true">&rsaquo;</span>
+                    </button>
+                    <div class="news-alerts-carousel__dots" data-alerts-dots></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <aside class="portal-lead-form-card portal-alert-signup__form-card">
+            {% if alert_email_lead_submitted %}
+            <div class="portal-alert-signup__success">
+                <span class="portal-alert-signup__success-badge">Cadastro confirmado</span>
+                <h2>Seu contato entrou na lista.</h2>
+                <p>Quando novos alertas fizerem sentido para a vitrine p&uacute;blica, a NC Fly poder&aacute; usar esse cadastro para avisar voc&ecirc; por e-mail.</p>
+                <ul class="portal-alert-signup__list portal-alert-signup__list--success">
+                    <li>O termo de alertas &eacute; independente do interesse na plataforma.</li>
+                    <li>Voc&ecirc; pode atualizar esse cadastro enviando o formul&aacute;rio novamente.</li>
+                    <li>O cancelamento pode ser solicitado pelos canais informados pela NC Fly.</li>
+                </ul>
+            </div>
+            {% else %}
+            <span class="news-kicker">Receber alertas</span>
+            <h2>Entrar na lista de alertas</h2>
+            <p>Preencha o essencial para a NC Fly registrar seu interesse em receber novas oportunidades por e-mail.</p>
+
+            {% if alert_email_lead_form.non_field_errors %}
+            <div class="portal-lead-errors">
+                {% for error in alert_email_lead_form.non_field_errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" class="portal-lead-form portal-lead-form--compact" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="form_kind" value="alert_email_lead">
+
+                <div class="portal-lead-form__grid portal-lead-form__grid--compact">
+                    <div class="portal-lead-field">
+                        <label for="{{ alert_email_lead_form.nome_completo.id_for_label }}">{{ alert_email_lead_form.nome_completo.label }}</label>
+                        {{ alert_email_lead_form.nome_completo }}
+                        {% for error in alert_email_lead_form.nome_completo.errors %}
+                        <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    <div class="portal-lead-field">
+                        <label for="{{ alert_email_lead_form.email.id_for_label }}">{{ alert_email_lead_form.email.label }}</label>
+                        {{ alert_email_lead_form.email }}
+                        {% for error in alert_email_lead_form.email.errors %}
+                        <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                    <div class="portal-lead-field">
+                        <label for="{{ alert_email_lead_form.telefone.id_for_label }}">{{ alert_email_lead_form.telefone.label }}</label>
+                        {{ alert_email_lead_form.telefone }}
+                        {% for error in alert_email_lead_form.telefone.errors %}
+                        <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <label class="portal-alert-signup__consent">
+                    {{ alert_email_lead_form.aceite_alertas }}
+                    <span>
+                        Li e aceito os
+                        <a href="{% url 'portal_termos_alertas_email' %}" target="_blank" rel="noopener noreferrer">Termos de Recebimento de Alertas</a>
+                        e a
+                        <a href="{% url 'portal_privacidade' %}" target="_blank" rel="noopener noreferrer">Pol&iacute;tica de Privacidade</a>.
+                    </span>
+                </label>
+                {% for error in alert_email_lead_form.aceite_alertas.errors %}
+                <p class="portal-alert-signup__error">{{ error }}</p>
+                {% endfor %}
+
+                <button
+                    type="submit"
+                    class="portal-button portal-button--primary"
+                    data-analytics-event="click_alert_email_lead_submit"
+                    data-analytics-category="conversion"
+                    data-analytics-label="{{ alert_email_lead_section_id|default:'alertas-email-lead' }}"
+                    data-analytics-section="alert_email_lead"
+                >
+                    Quero receber alertas
+                </button>
+            </form>
+            {% endif %}
+        </aside>
+    </div>
+
+</section>

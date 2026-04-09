@@ -3,7 +3,7 @@
         <div class="portal-topbar__nav-wrap">
             <a href="{% url 'portal_home' %}" class="portal-brand portal-brand--topbar" data-analytics-event="click_brand_publica" data-analytics-label="topbar_brand" aria-label="{{ app_branding.alt }}">
                 <span class="portal-brand__logo">
-                    <img src="{{ app_branding.logo_url }}" alt="{{ app_branding.alt }}">
+                    <img src="{{ app_branding.logo_url }}" alt="{{ app_branding.alt }}" width="640" height="640" decoding="async">
                 </span>
             </a>
 
@@ -14,7 +14,7 @@
                             <path d="M3 12 12 4l9 8M5 10.5V20h14v-9.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
                         </svg>
                     </span>
-                    <span>Home</span>
+                    <span>In&iacute;cio</span>
                 </a>
                 <a href="{% url 'portal_alertas' %}" class="portal-topbar__nav-link portal-topbar__nav-link--desktop-only {% if request.resolver_match.url_name == 'portal_alertas' or request.resolver_match.url_name == 'portal_alerta_detalhe' %}is-active{% endif %}">
                     <span class="portal-topbar__nav-icon" aria-hidden="true">
@@ -138,7 +138,7 @@
                     data-analytics-event="click_area_logada"
                     data-analytics-label="topbar_admin"
                 >
-                    Admin
+                    Gest&atilde;o
                 </a>
                 {% else %}
                 <a

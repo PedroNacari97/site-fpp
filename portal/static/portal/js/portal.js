@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const body = document.body;
+  const analyticsMeasurementId = body.dataset.analyticsMeasurementId || "";
   const cookieName = body.dataset.cookieConsentName || "ncfly_cookie_preferences";
   const cookieVersion = body.dataset.cookieConsentVersion || "2026-04";
   const cookieMaxAgeDays = Number.parseInt(body.dataset.cookieConsentMaxAge || "180", 10);
@@ -7,10 +8,89 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const banner = document.querySelector("[data-cookie-banner]");
   const modal = document.querySelector("[data-cookie-modal]");
-  const analyticsAvailable =
+  let analyticsAvailable =
     typeof window !== "undefined" &&
     typeof window.gtag === "function" &&
     Boolean(window.NCFlyAnalytics?.measurementId);
+  const desktopAds = Array.from(document.querySelectorAll(".adsbygoogle[data-ad-client]"));
+  const desktopAdsMediaQuery = window.matchMedia
+    ? window.matchMedia("(min-width: 1440px)")
+    : null;
+  const scheduleNonCritical = (callback, timeout = 1200) => {
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(() => callback(), { timeout });
+      return;
+    }
+    window.setTimeout(callback, 1);
+  };
+
+  const loadDesktopAds = () => {
+    if (!desktopAds.length) {
+      return;
+    }
+
+    const isDesktopViewport = desktopAdsMediaQuery
+      ? desktopAdsMediaQuery.matches
+      : window.innerWidth >= 1440;
+    const reducedDataMode = Boolean(navigator.connection?.saveData);
+    const adClient = desktopAds[0].dataset.adClient || "";
+
+    if (!isDesktopViewport || reducedDataMode || !adClient) {
+      return;
+    }
+
+    const initializeSlots = () => {
+      desktopAds.forEach((slot) => {
+        if (slot.dataset.adInitialized === "1") {
+          return;
+        }
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+          slot.dataset.adInitialized = "1";
+        } catch {}
+      });
+    };
+
+    if (document.querySelector("script[data-portal-ads-script='1']")) {
+      initializeSlots();
+      return;
+    }
+
+    const adScript = document.createElement("script");
+    adScript.async = true;
+    adScript.crossOrigin = "anonymous";
+    adScript.dataset.portalAdsScript = "1";
+    adScript.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(adClient)}`;
+    adScript.addEventListener("load", initializeSlots, { once: true });
+
+    const injectScript = () => {
+      document.head.appendChild(adScript);
+    };
+
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(injectScript, { timeout: 2000 });
+      return;
+    }
+
+    window.setTimeout(injectScript, 1200);
+  };
+
+  const scheduleDesktopAdsLoad = () => {
+    scheduleNonCritical(loadDesktopAds, 2200);
+  };
+
+  if (document.readyState === "complete") {
+    scheduleDesktopAdsLoad();
+  } else {
+    window.addEventListener("load", scheduleDesktopAdsLoad, { once: true });
+  }
+  if (desktopAdsMediaQuery?.addEventListener) {
+    desktopAdsMediaQuery.addEventListener("change", (event) => {
+      if (event.matches) {
+        scheduleDesktopAdsLoad();
+      }
+    });
+  }
 
   const getCookieValue = (name) => {
     const prefix = `${name}=`;
@@ -84,11 +164,66 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const persistAndRefresh = (preferences) => {
+  const enableAnalytics = () => {
+    if (!analyticsMeasurementId) {
+      return;
+    }
+
+    const bootAnalytics = () => {
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = window.gtag || function gtag(){ window.dataLayer.push(arguments); };
+      window.gtag("js", new Date());
+      window.gtag("config", analyticsMeasurementId);
+      window.gtag("consent", "update", { analytics_storage: "granted" });
+      window.NCFlyAnalytics = { measurementId: analyticsMeasurementId };
+      analyticsAvailable = true;
+    };
+
+    if (analyticsAvailable) {
+      try {
+        window.gtag("consent", "update", { analytics_storage: "granted" });
+      } catch {}
+      return;
+    }
+
+    if (typeof window.gtag === "function") {
+      bootAnalytics();
+      return;
+    }
+
+    const existingScript = document.querySelector("script[data-portal-analytics-script='1']");
+    if (existingScript) {
+      return;
+    }
+
+    const analyticsScript = document.createElement("script");
+    analyticsScript.async = true;
+    analyticsScript.dataset.portalAnalyticsScript = "1";
+    analyticsScript.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(analyticsMeasurementId)}`;
+    analyticsScript.addEventListener("load", bootAnalytics, { once: true });
+    document.head.appendChild(analyticsScript);
+  };
+
+  const disableAnalytics = () => {
+    analyticsAvailable = false;
+    if (typeof window.gtag === "function") {
+      try {
+        window.gtag("consent", "update", { analytics_storage: "denied" });
+      } catch {}
+    }
+  };
+
+  const applyPreferences = (preferences) => {
     writePreferences(preferences);
     hideBanner();
     closeModal();
-    window.location.reload();
+    syncCookieInputs();
+
+    if (preferences.analytics) {
+      enableAnalytics();
+    } else {
+      disableAnalytics();
+    }
   };
 
   document.querySelectorAll("[data-cookie-open-preferences]").forEach((trigger) => {
@@ -112,31 +247,22 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (action === "accept") {
-        persistAndRefresh({ essential: true, analytics: true });
+        applyPreferences({ essential: true, analytics: true });
         return;
       }
 
       if (action === "reject") {
-        persistAndRefresh({ essential: true, analytics: false });
+        applyPreferences({ essential: true, analytics: false });
         return;
       }
 
       if (action === "save") {
         const analyticsInput = document.querySelector("[data-cookie-setting='analytics']");
-        persistAndRefresh({
+        applyPreferences({
           essential: true,
           analytics: Boolean(analyticsInput?.checked),
         });
       }
-    });
-  });
-
-  // Ler mais no artigo (mobile)
-  document.querySelectorAll("[data-article-readmore]").forEach((btn) => {
-    const section = btn.closest("[data-article-content]");
-    if (!section) return;
-    btn.addEventListener("click", () => {
-      section.setAttribute("data-expanded", "");
     });
   });
 
@@ -220,6 +346,33 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  const normalizeWhatsappNumber = (value) => {
+    const digits = String(value || "").replace(/\D/g, "");
+    if (digits.length === 10 || digits.length === 11) {
+      return `55${digits}`;
+    }
+    return digits;
+  };
+
+  document.querySelectorAll("[data-alert-whatsapp]").forEach((link) => {
+    const whatsappNumber = normalizeWhatsappNumber(link.dataset.whatsappNumber);
+    const whatsappMessage = link.dataset.whatsappMessage || "";
+    const alertLink = link.dataset.alertLink || "";
+
+    if (!whatsappNumber) {
+      link.remove();
+      return;
+    }
+
+    let finalMessage = whatsappMessage.trim();
+    if (alertLink) {
+      const absoluteAlertLink = new URL(alertLink, window.location.origin).toString();
+      finalMessage = `${finalMessage}\n\nLink do alerta: ${absoluteAlertLink}`;
+    }
+
+    link.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(finalMessage)}`;
+  });
+
   const trackEvent = (name, params = {}) => {
     if (!analyticsAvailable) {
       return;
@@ -290,71 +443,91 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Mobile: expande cards 4-6 da home antes de carregar mais do servidor
-  const mobileExpandBtn = document.querySelector("[data-home-mobile-expand]");
-  if (mobileExpandBtn) {
-    const mobileWrap = document.getElementById("home-mobile-expand-wrap");
-    const grid = document.getElementById("home-latest-grid");
-    mobileExpandBtn.addEventListener("click", () => {
-      if (grid) grid.setAttribute("data-mobile-expanded", "");
-      if (mobileWrap) mobileWrap.remove();
+  scheduleNonCritical(() => {
+    // Ler mais no artigo (mobile)
+    document.querySelectorAll("[data-article-readmore]").forEach((btn) => {
+      const section = btn.closest("[data-article-content]");
+      if (!section) return;
+      btn.addEventListener("click", () => {
+        section.setAttribute("data-expanded", "");
+      });
     });
-  }
 
-  const buttons = document.querySelectorAll("[data-load-more-button]");
-
-  buttons.forEach((button) => {
-    const targetId = button.getAttribute("data-load-more-target");
-    const target = targetId ? document.getElementById(targetId) : null;
-    if (!target) {
-      button.remove();
-      return;
+    // Mobile: expande cards 4-6 da home antes de carregar mais do servidor
+    const mobileExpandBtn = document.querySelector("[data-home-mobile-expand]");
+    if (mobileExpandBtn) {
+      const mobileWrap = document.getElementById("home-mobile-expand-wrap");
+      const grid = document.getElementById("home-latest-grid");
+      mobileExpandBtn.addEventListener("click", () => {
+        if (grid) grid.setAttribute("data-mobile-expanded", "");
+        if (mobileWrap) mobileWrap.remove();
+      });
     }
 
-    const batchSize = Number.parseInt(button.getAttribute("data-batch-size") || "6", 10);
-    const defaultLabel = button.getAttribute("data-label-default") || button.textContent.trim();
+    const buttons = document.querySelectorAll("[data-load-more-button]");
 
-    const updateState = () => {
-      const hiddenItems = target.querySelectorAll("[data-load-more-item].is-hidden");
-      if (!hiddenItems.length) {
-        const wrapper = button.closest(".portal-category-loadmore");
-        if (wrapper) {
-          wrapper.remove();
-        } else {
-          button.remove();
-        }
+    buttons.forEach((button) => {
+      const targetId = button.getAttribute("data-load-more-target");
+      const target = targetId ? document.getElementById(targetId) : null;
+      if (!target) {
+        button.remove();
         return;
       }
 
-      button.textContent = `${defaultLabel} (${hiddenItems.length})`;
-    };
+      const batchSize = Number.parseInt(button.getAttribute("data-batch-size") || "6", 10);
+      const defaultLabel = button.getAttribute("data-label-default") || button.textContent.trim();
 
-    button.addEventListener("click", () => {
-      const hiddenItems = Array.from(target.querySelectorAll("[data-load-more-item].is-hidden"));
-      hiddenItems.slice(0, batchSize).forEach((item) => item.classList.remove("is-hidden"));
-      trackEvent(button.dataset.analyticsEvent || "click_carregar_mais_noticias", {
-        event_category: button.dataset.analyticsCategory || "engagement",
-        event_label: button.dataset.analyticsLabel || defaultLabel,
-        revealed_items: Math.min(hiddenItems.length, batchSize),
-        hidden_items_remaining: Math.max(hiddenItems.length - batchSize, 0),
+      const updateState = () => {
+        const hiddenItems = target.querySelectorAll("[data-load-more-item].is-hidden");
+        if (!hiddenItems.length) {
+          const wrapper = button.closest(".portal-category-loadmore");
+          if (wrapper) {
+            wrapper.remove();
+          } else {
+            button.remove();
+          }
+          return;
+        }
+
+        button.textContent = `${defaultLabel} (${hiddenItems.length})`;
+      };
+
+      button.addEventListener("click", () => {
+        const hiddenItems = Array.from(target.querySelectorAll("[data-load-more-item].is-hidden"));
+        hiddenItems.slice(0, batchSize).forEach((item) => item.classList.remove("is-hidden"));
+        trackEvent(button.dataset.analyticsEvent || "click_carregar_mais_noticias", {
+          event_category: button.dataset.analyticsCategory || "engagement",
+          event_label: button.dataset.analyticsLabel || defaultLabel,
+          revealed_items: Math.min(hiddenItems.length, batchSize),
+          hidden_items_remaining: Math.max(hiddenItems.length - batchSize, 0),
+        });
+        updateState();
       });
+
       updateState();
     });
-
-    updateState();
   });
 
-  const getAlertsPerView = () => {
+  const getAlertsPerView = (carousel) => {
+    const mobilePerView = Number.parseInt(carousel?.dataset.alertsPerViewMobile || "1", 10);
+    const tabletPerView = Number.parseInt(carousel?.dataset.alertsPerViewTablet || "2", 10);
+    const desktopPerView = Number.parseInt(carousel?.dataset.alertsPerViewDesktop || "3", 10);
+
     if (window.innerWidth <= 760) {
-      return 1;
+      return Number.isFinite(mobilePerView) && mobilePerView > 0 ? mobilePerView : 1;
     }
     if (window.innerWidth <= 1080) {
-      return 2;
+      return Number.isFinite(tabletPerView) && tabletPerView > 0 ? tabletPerView : 2;
     }
-    return 3;
+    return Number.isFinite(desktopPerView) && desktopPerView > 0 ? desktopPerView : 3;
   };
 
-  document.querySelectorAll("[data-alerts-carousel]").forEach((carousel) => {
+  const initAlertsCarousel = (carousel) => {
+    if (!carousel || carousel.dataset.carouselInitialized === "1") {
+      return;
+    }
+    carousel.dataset.carouselInitialized = "1";
+
     const viewport = carousel.querySelector("[data-alerts-viewport]");
     const track = carousel.querySelector("[data-alerts-track]");
     const prevButton = carousel.querySelector("[data-alerts-prev]");
@@ -399,7 +572,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const recalcCarousel = () => {
-      const perView = getAlertsPerView();
+      const perView = getAlertsPerView(carousel);
       pageCount = Math.max(1, Math.ceil(slides.length / perView));
       currentPage = Math.min(currentPage, pageCount - 1);
       buildDots();
@@ -455,7 +628,34 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }, { passive: true });
 
-    window.addEventListener("resize", recalcCarousel, { passive: true });
+    let resizeFrame = 0;
+    window.addEventListener("resize", () => {
+      if (resizeFrame) {
+        window.cancelAnimationFrame(resizeFrame);
+      }
+      resizeFrame = window.requestAnimationFrame(recalcCarousel);
+    }, { passive: true });
     recalcCarousel();
-  });
+  };
+
+  const alertCarousels = Array.from(document.querySelectorAll("[data-alerts-carousel]"));
+  if ("IntersectionObserver" in window) {
+    const carouselObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) {
+          return;
+        }
+        initAlertsCarousel(entry.target);
+        observer.unobserve(entry.target);
+      });
+    }, {
+      rootMargin: "280px 0px",
+    });
+
+    alertCarousels.forEach((carousel) => {
+      carouselObserver.observe(carousel);
+    });
+  } else {
+    alertCarousels.forEach(initAlertsCarousel);
+  }
 });

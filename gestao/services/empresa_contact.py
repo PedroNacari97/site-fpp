@@ -61,7 +61,7 @@ def build_empresa_contact_context(empresa, *, for_pdf=False):
 
     custom_logo_url = getattr(empresa, "logo_documentos_url", "") if empresa else ""
     hide_primary_logo = bool(getattr(empresa, "ocultar_logo_documentos", False)) if empresa else False
-    default_logo_url = getattr(settings, "PORTAL_SITE_LOGO_URL", "/static/portal/img/ncfly-wordmark.svg")
+    default_logo_url = getattr(settings, "PORTAL_SITE_LOGO_URL", "/static/portal/img/nacari-fly-logo.webp")
     show_primary_logo = not hide_primary_logo
 
     logo_url = custom_logo_url or (default_logo_url if show_primary_logo else "")

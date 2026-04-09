@@ -1,7 +1,7 @@
 from django import forms
 from django.utils import timezone
 
-from .models import LeadPlataforma
+from .models import LeadAlertaEmail, LeadPlataforma
 
 
 class PlataformaLeadForm(forms.ModelForm):
@@ -160,3 +160,79 @@ class PlataformaQuickLeadForm(forms.Form):
             source_host=(source_host or "")[:120],
             status=LeadPlataforma.STATUS_CHOICES[0][0],
         )
+
+
+class AlertEmailLeadForm(forms.Form):
+    nome_completo = forms.CharField(
+        max_length=180,
+        widget=forms.TextInput(
+            attrs={
+                "class": "portal-lead-field__input",
+                "placeholder": "Seu nome completo",
+                "autocomplete": "name",
+            }
+        ),
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(
+            attrs={
+                "class": "portal-lead-field__input",
+                "placeholder": "seu@email.com",
+                "autocomplete": "email",
+            }
+        ),
+    )
+    telefone = forms.CharField(
+        max_length=40,
+        widget=forms.TextInput(
+            attrs={
+                "class": "portal-lead-field__input",
+                "placeholder": "(00) 00000-0000",
+                "autocomplete": "tel",
+            }
+        ),
+    )
+    aceite_alertas = forms.BooleanField(required=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["nome_completo"].label = "Nome"
+        self.fields["email"].label = "E-mail"
+        self.fields["telefone"].label = "Telefone"
+        self.fields["aceite_alertas"].label = "Li e aceito o recebimento de alertas"
+        self.fields["aceite_alertas"].error_messages = {
+            "required": "Você precisa aceitar os termos de recebimento de alertas para continuar.",
+        }
+
+    def clean_email(self):
+        return (self.cleaned_data.get("email") or "").strip().lower()
+
+    def clean_telefone(self):
+        return (self.cleaned_data.get("telefone") or "").strip()
+
+    def save(
+        self,
+        *,
+        consent_version="",
+        ip="",
+        user_agent="",
+        source_environment="local",
+        source_host="",
+        source_page=LeadAlertaEmail.ORIGEM_ALERTAS,
+    ):
+        lead, created = LeadAlertaEmail.objects.update_or_create(
+            email=self.cleaned_data["email"],
+            defaults={
+                "nome_completo": self.cleaned_data["nome_completo"],
+                "telefone": self.cleaned_data["telefone"],
+                "origem_cadastro": source_page,
+                "aceite_versao": consent_version,
+                "aceito_em": timezone.now(),
+                "aceito_ip": ip,
+                "aceito_user_agent": (user_agent or "")[:255],
+                "source_environment": (source_environment or "local")[:20],
+                "source_host": (source_host or "")[:120],
+                "status": LeadAlertaEmail.STATUS_ATIVO,
+            },
+        )
+        return lead, created

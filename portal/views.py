@@ -16,12 +16,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from accounts.security import get_client_ip, get_user_agent
-from .forms import PlataformaLeadForm, PlataformaQuickLeadForm
+from .forms import AlertEmailLeadForm, PlataformaLeadForm, PlataformaQuickLeadForm
 from .models import NoticiaPublicada
-from .models import LeadPlataforma
+from .models import LeadAlertaEmail, LeadPlataforma
+from .services.alert_email_broadcasts import unsubscribe_alert_email_by_token
+from .services.lead_notifications import notify_alert_email_lead, notify_platform_lead
 from .services.metrics import get_request_site_context, track_click_event, track_page_view
 from .services.public_alerts import (
-    build_public_alert_card,
+    PUBLIC_HOME_ALERT_MAX_AGE_DAYS,
+    build_public_alert_cards,
     build_public_alert_detail,
     build_similar_alert_cards,
     list_visible_public_alerts,
@@ -105,8 +108,9 @@ CATEGORY_CONFIGS = {
 }
 
 SEO_MAX_DESCRIPTION_LENGTH = 160
-PLATFORM_LEAD_CONSENT_VERSION = "2026-04-lead"
-ALERTS_PUBLIC_PAGE_BATCH_SIZE = 3
+PLATFORM_LEAD_CONSENT_VERSION = "2026-04-interesse-plataforma"
+ALERT_EMAIL_LEAD_CONSENT_VERSION = "2026-04-alertas-email"
+ALERTS_PUBLIC_PAGE_BATCH_SIZE = 6
 
 
 def _estimate_read_minutes(text):
@@ -117,6 +121,54 @@ def _estimate_read_minutes(text):
 def _normalize_text(value):
     normalized = unicodedata.normalize("NFKD", value or "")
     return normalized.encode("ascii", "ignore").decode("ascii").lower().strip()
+
+
+def _build_query_redirect(request, *, flag_key: str, flag_value: str, anchor: str = "") -> str:
+    query = request.GET.copy()
+    query[flag_key] = flag_value
+    encoded = query.urlencode()
+    target = request.path
+    if encoded:
+        target = f"{target}?{encoded}"
+    if anchor:
+        target = f"{target}#{anchor}"
+    return target
+
+
+def _handle_alert_email_lead_form(request, *, source_page: str, success_anchor: str):
+    submitted = request.GET.get("alert_signup") == "ok"
+    is_submission = request.method == "POST" and request.POST.get("form_kind") == "alert_email_lead"
+    form = AlertEmailLeadForm(request.POST if is_submission else None)
+
+    if is_submission and form.is_valid():
+        source_environment, source_host = get_request_site_context(request)
+        lead, created = form.save(
+            consent_version=ALERT_EMAIL_LEAD_CONSENT_VERSION,
+            ip=get_client_ip(request),
+            user_agent=get_user_agent(request),
+            source_environment=source_environment,
+            source_host=source_host,
+            source_page=source_page,
+        )
+        notify_alert_email_lead(lead, created=created)
+        messages.success(
+            request,
+            (
+                "Cadastro confirmado. Você entrou na lista para receber novos alertas por e-mail."
+                if created
+                else "Cadastro atualizado. Seus dados de recebimento de alertas foram atualizados."
+            ),
+        )
+        return form, submitted, redirect(
+            _build_query_redirect(
+                request,
+                flag_key="alert_signup",
+                flag_value="ok",
+                anchor=success_anchor,
+            )
+        )
+
+    return form, submitted, None
 
 
 def _seo_text(value):
@@ -208,6 +260,11 @@ def _build_website_schema(request):
         "name": settings.PORTAL_SITE_NAME,
         "url": home_url,
         "inLanguage": "pt-BR",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": f"{home_url}?q={{search_term_string}}",
+            "query-input": "required name=search_term_string",
+        },
     }
 
 
@@ -222,6 +279,28 @@ def _build_breadcrumb_schema(items):
                 "item": item["url"],
             }
             for position, item in enumerate(items, start=1)
+        ],
+    }
+
+
+def _build_item_list_schema(list_id, name, items):
+    normalized_items = [item for item in items if item.get("name") and item.get("url")]
+    if not normalized_items:
+        return None
+    return {
+        "@type": "ItemList",
+        "@id": f"{list_id}#itemlist",
+        "name": _seo_text(name),
+        "itemListOrder": "https://schema.org/ItemListOrderAscending",
+        "numberOfItems": len(normalized_items),
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": position,
+                "name": _seo_text(item["name"]),
+                "url": item["url"],
+            }
+            for position, item in enumerate(normalized_items, start=1)
         ],
     }
 
@@ -346,7 +425,7 @@ def _build_static_page_seo(request, *, route_name, title, description, robots="i
         },
         _build_breadcrumb_schema(
             [
-                {"name": "Home", "url": _absolute_public_url(request, reverse("portal_home"))},
+                {"name": "Início", "url": _absolute_public_url(request, reverse("portal_home"))},
                 {"name": title, "url": canonical_url},
             ]
         ),
@@ -438,7 +517,7 @@ def _build_saas_page_seo(request):
         },
         _build_breadcrumb_schema(
             [
-                {"name": "Home", "url": home_url},
+                {"name": "Início", "url": home_url},
                 {"name": "Plataforma NC Fly", "url": canonical_url},
             ]
         ),
@@ -489,7 +568,7 @@ def _build_saas_contact_page_seo(request):
         },
         _build_breadcrumb_schema(
             [
-                {"name": "Home", "url": home_url},
+                {"name": "Início", "url": home_url},
                 {"name": "Plataforma NC Fly", "url": _absolute_public_url(request, reverse("portal_plataforma_saas"))},
                 {"name": "Solicitar apresentação", "url": canonical_url},
             ]
@@ -512,9 +591,20 @@ def _build_saas_contact_page_seo(request):
     )
 
 
-def _build_alerts_list_seo(request):
+def _build_alerts_list_seo(request, alert_cards=None):
     canonical_url = _absolute_public_url(request, reverse("portal_alertas"))
     home_url = _absolute_public_url(request, reverse("portal_home"))
+    item_list_schema = _build_item_list_schema(
+        canonical_url,
+        "Alertas de passagens",
+        [
+            {
+                "name": f"{item['origem_codigo']} para {item['destino_codigo']} - {item['miles_label']}",
+                "url": _absolute_public_url(request, item["url"]),
+            }
+            for item in (alert_cards or [])[:12]
+        ],
+    )
     description = (
         "Veja alertas públicos de passagens com programas de fidelidade, quantidade de milhas, "
         "rotas, datas organizadas e acesso rápido para emissão."
@@ -533,10 +623,11 @@ def _build_alerts_list_seo(request):
         },
         _build_breadcrumb_schema(
             [
-                {"name": "Home", "url": home_url},
+                {"name": "Início", "url": home_url},
                 {"name": "Alertas de passagens", "url": canonical_url},
             ]
         ),
+        item_list_schema,
     )
     return _build_seo_context(
         request,
@@ -593,7 +684,7 @@ def _build_alert_detail_seo(request, alerta, alert_content):
         },
         _build_breadcrumb_schema(
             [
-                {"name": "Home", "url": home_url},
+                {"name": "Início", "url": home_url},
                 {"name": "Alertas de passagens", "url": _absolute_public_url(request, reverse("portal_alertas"))},
                 {"name": headline, "url": canonical_url},
             ]
@@ -657,9 +748,28 @@ def _build_platform_document_context(tipo):
     }
 
 
-def _build_category_seo(request, categoria_slug, categoria_config, featured=None, selected_topic=None):
+def _build_category_seo(
+    request,
+    categoria_slug,
+    categoria_config,
+    featured=None,
+    selected_topic=None,
+    listed_items=None,
+):
     canonical_url = _absolute_public_url(
         request, reverse("portal_categoria", kwargs={"categoria_slug": categoria_slug})
+    )
+    item_list_schema = _build_item_list_schema(
+        canonical_url,
+        categoria_config["label"],
+        [
+            {
+                "name": item.titulo,
+                "url": _absolute_public_url(request, item.get_absolute_url()),
+            }
+            for item in (listed_items or [])[:12]
+            if item
+        ],
     )
     description = categoria_config["hero_description"]
     title = f"{categoria_config['label']} | NC Fly News"
@@ -685,10 +795,11 @@ def _build_category_seo(request, categoria_slug, categoria_config, featured=None
         },
         _build_breadcrumb_schema(
             [
-                {"name": "Home", "url": _absolute_public_url(request, reverse("portal_home"))},
+                {"name": "Início", "url": _absolute_public_url(request, reverse("portal_home"))},
                 {"name": categoria_config["label"], "url": canonical_url},
             ]
         ),
+        item_list_schema,
     )
     return _build_seo_context(
         request,
@@ -740,7 +851,7 @@ def _build_article_seo(request, noticia, categoria_slug):
         article_schema["keywords"] = [_seo_text(tag) for tag in noticia.tags_exibicao]
         article_schema["about"] = [{"@type": "Thing", "name": _seo_text(tag)} for tag in noticia.tags_exibicao[:5]]
 
-    breadcrumb_items = [{"name": "Home", "url": _absolute_public_url(request, reverse("portal_home"))}]
+    breadcrumb_items = [{"name": "Início", "url": _absolute_public_url(request, reverse("portal_home"))}]
     if categoria_slug and category_url:
         breadcrumb_items.append({"name": noticia.categoria or "Categoria", "url": category_url})
     breadcrumb_items.append({"name": noticia.titulo, "url": canonical_url})
@@ -935,6 +1046,14 @@ def _build_category_page_context(categoria_slug, selected_topic_slug=""):
 
 
 def home_publica(request):
+    alert_email_lead_form, alert_email_lead_submitted, alert_email_lead_redirect = _handle_alert_email_lead_form(
+        request,
+        source_page=LeadAlertaEmail.ORIGEM_HOME,
+        success_anchor="home-alertas-email",
+    )
+    if alert_email_lead_redirect:
+        return alert_email_lead_redirect
+
     search_query = (request.GET.get("q") or "").strip()
     noticias = _filter_news_by_query(_get_published_news(), search_query)
     is_searching = bool(search_query)
@@ -944,7 +1063,9 @@ def home_publica(request):
     visible = noticias[:HOME_INITIAL]
     hidden = noticias[HOME_INITIAL:]
 
-    alertas_home = [] if is_searching else [build_public_alert_card(alerta) for alerta in list_visible_public_alerts(limit=15)]
+    alertas_home = [] if is_searching else build_public_alert_cards(
+        list_visible_public_alerts(limit=15, max_age_days=PUBLIC_HOME_ALERT_MAX_AGE_DAYS)
+    )
 
     context = {
         "noticias_visiveis": visible,
@@ -956,6 +1077,10 @@ def home_publica(request):
         "is_searching": is_searching,
         "search_results_total": len(noticias),
         "home_batch": HOME_BATCH,
+        "alert_email_lead_form": alert_email_lead_form,
+        "alert_email_lead_submitted": alert_email_lead_submitted,
+        "alert_email_lead_consent_version": ALERT_EMAIL_LEAD_CONSENT_VERSION,
+        "alert_email_lead_section_id": "home-alertas-email",
     }
     if is_searching:
         context.update(_build_home_search_seo(request, search_query))
@@ -971,7 +1096,15 @@ def home_publica(request):
 
 
 def alertas_publicos(request):
-    visible_alerts = list_visible_public_alerts()
+    alert_email_lead_form, alert_email_lead_submitted, alert_email_lead_redirect = _handle_alert_email_lead_form(
+        request,
+        source_page=LeadAlertaEmail.ORIGEM_ALERTAS,
+        success_anchor="alertas-email-lead",
+    )
+    if alert_email_lead_redirect:
+        return alert_email_lead_redirect
+
+    visible_alerts = list_visible_public_alerts(max_age_days=PUBLIC_HOME_ALERT_MAX_AGE_DAYS)
     selected_filters = {
         "aeroporto": (request.GET.get("aeroporto") or "").strip().upper(),
         "programa": (request.GET.get("programa") or "").strip(),
@@ -983,7 +1116,7 @@ def alertas_publicos(request):
         programa=selected_filters["programa"],
         companhia=selected_filters["companhia"],
     )
-    alert_cards = [build_public_alert_card(alerta) for alerta in filtered_alerts]
+    alert_cards = build_public_alert_cards(filtered_alerts)
     filters_active = any(selected_filters.values())
     context = {
         "page_title": "Alertas de passagens",
@@ -1003,8 +1136,12 @@ def alertas_publicos(request):
             "companhias": _alert_filter_option_values([alerta.companhia_aerea for alerta in visible_alerts]),
         },
         "alert_results_total": len(alert_cards),
+        "alert_email_lead_form": alert_email_lead_form,
+        "alert_email_lead_submitted": alert_email_lead_submitted,
+        "alert_email_lead_consent_version": ALERT_EMAIL_LEAD_CONSENT_VERSION,
+        "alert_email_lead_section_id": "alertas-email-lead",
     }
-    context.update(_build_alerts_list_seo(request))
+    context.update(_build_alerts_list_seo(request, alert_cards=alert_cards))
     track_page_view(
         request.path,
         request=request,
@@ -1017,14 +1154,14 @@ def alertas_publicos(request):
 
 def alerta_publico_detalhe(request, alerta_id):
     alerta = get_object_or_404(AlertaViagem, id=alerta_id, ativo=True)
-    if not alerta.deve_aparecer_na_vitrine():
+    if not alerta.deve_aparecer_na_vitrine(max_age_days=PUBLIC_HOME_ALERT_MAX_AGE_DAYS):
         raise Http404("Alerta não disponível.")
 
     alert_content = build_public_alert_detail(alerta)
     context = {
         "alerta": alerta,
         "alert_context": alert_content,
-        "similar_alerts": build_similar_alert_cards(alerta),
+        "similar_alerts": build_similar_alert_cards(alerta, max_age_days=PUBLIC_HOME_ALERT_MAX_AGE_DAYS),
         "back_url": reverse("portal_alertas"),
     }
     context.update(_build_alert_detail_seo(request, alerta, alert_content))
@@ -1044,13 +1181,14 @@ def plataforma_saas(request):
 
     if request.method == "POST" and quick_lead_form.is_valid():
         source_environment, source_host = get_request_site_context(request)
-        quick_lead_form.save(
+        lead = quick_lead_form.save(
             consent_version=PLATFORM_LEAD_CONSENT_VERSION,
             ip=get_client_ip(request),
             user_agent=get_user_agent(request),
             source_environment=source_environment,
             source_host=source_host,
         )
+        notify_platform_lead(lead, capture_label="Interesse rapido na landing da plataforma")
         return redirect(f"{reverse('portal_plataforma_saas')}?lead=ok#saas-interesse")
 
     context = {
@@ -1161,9 +1299,9 @@ def plataforma_saas(request):
         ],
         "saas_faqs": [
             {
-                "question": "A Plataforma NC Fly substitui a home pública?",
+                "question": "A Plataforma NC Fly substitui a página inicial pública?",
                 "answer": (
-                    "Não. A home continua como camada editorial e de aquisição. A Plataforma NC Fly é a "
+                    "Não. A página inicial pública continua como camada editorial e de aquisição. A Plataforma NC Fly é a "
                     "camada de operação para empresas que querem organizar melhor o atendimento e a execução."
                 ),
             },
@@ -1211,6 +1349,7 @@ def plataforma_contato(request):
         lead.source_host = source_host
         lead.status = LeadPlataforma.STATUS_CHOICES[0][0]
         lead.save()
+        notify_platform_lead(lead, capture_label="Formulario completo de contato da plataforma")
         messages.success(
             request,
             "Recebemos seu contato. A equipe da NC Fly vai analisar seu contexto e retornar em breve.",
@@ -1271,6 +1410,11 @@ def categoria_lista(request, categoria_slug):
             context["categoria_config"],
             featured=context["featured"],
             selected_topic=context["topico_ativo"],
+            listed_items=[
+                item
+                for item in [context["featured"], *context["sidebar_cards"], *context["grid_cards"]]
+                if item
+            ],
         )
     )
     track_page_view(
@@ -1356,6 +1500,44 @@ def sobre_nos(request):
     return render(request, "portal/sobre_nos.html", context)
 
 
+def sobre_empresa_publica(request):
+    context = {
+        "page_title": "Sobre NÃ³s",
+        "page_eyebrow": "Institucional",
+        "page_intro": "ConheÃ§a a NC Fly, a forma como a empresa organiza sua atuaÃ§Ã£o e o papel do portal pÃºblico dentro desse ecossistema.",
+        "page_updated_at": timezone.localdate(),
+    }
+    context.update(
+        _build_static_page_seo(
+            request,
+            route_name="portal_sobre",
+            title="Sobre NÃ³s",
+            description="ConheÃ§a a NC Fly, seu posicionamento, seus princÃ­pios e a relaÃ§Ã£o entre o portal pÃºblico, os alertas e a plataforma.",
+        )
+    )
+    track_page_view(request.path, request=request, section="static")
+    return render(request, "portal/sobre_nos.html", context)
+
+
+def fale_conosco(request):
+    context = {
+        "page_title": "Fale Conosco",
+        "page_eyebrow": "Institucional",
+        "page_intro": "Canal institucional da NC Fly para orientar o tipo de assunto e centralizar futuros meios de contato da empresa.",
+        "page_updated_at": timezone.localdate(),
+    }
+    context.update(
+        _build_static_page_seo(
+            request,
+            route_name="portal_fale_conosco",
+            title="Fale Conosco",
+            description="PÃ¡gina institucional da NC Fly para contato, assuntos comerciais, parcerias e orientaÃ§Ãµes gerais sobre a empresa.",
+        )
+    )
+    track_page_view(request.path, request=request, section="static")
+    return render(request, "portal/fale_conosco.html", context)
+
+
 def politica_privacidade(request):
     context = {
         "page_title": "Política de Privacidade",
@@ -1392,6 +1574,48 @@ def termos_de_uso(request):
     )
     track_page_view(request.path, request=request, section="static")
     return render(request, "portal/termos_uso.html", context)
+
+
+def termos_alertas_email(request):
+    context = {
+        "page_title": "Termos de Recebimento de Alertas",
+        "page_eyebrow": "Alertas por e-mail",
+        "page_intro": (
+            "Regras aplicáveis ao cadastro de nome, e-mail e telefone para receber alertas "
+            "de passagens e comunicações associadas a esse serviço."
+        ),
+        "page_updated_at": timezone.localdate(),
+        "alert_email_lead_consent_version": ALERT_EMAIL_LEAD_CONSENT_VERSION,
+    }
+    context.update(
+        _build_static_page_seo(
+            request,
+            route_name="portal_termos_alertas_email",
+            title="Termos de Recebimento de Alertas",
+            description=(
+                "Termos do cadastro para receber alertas por e-mail no portal NC Fly News, "
+                "com finalidade, dados coletados, registro do aceite e cancelamento."
+            ),
+        )
+    )
+    track_page_view(request.path, request=request, section="static")
+    return render(request, "portal/termos_alertas_email.html", context)
+
+
+@csrf_exempt
+def alertas_email_unsubscribe(request):
+    token = (request.POST.get("token") or request.GET.get("token") or "").strip()
+    lead = unsubscribe_alert_email_by_token(token) if token else None
+    context = {
+        "lead": lead,
+        "unsubscribe_success": bool(lead),
+    }
+    return render(
+        request,
+        "portal/alertas_unsubscribe_result.html",
+        context,
+        status=200 if lead else 400,
+    )
 
 
 def privacidade_plataforma(request):

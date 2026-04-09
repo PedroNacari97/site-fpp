@@ -10,7 +10,7 @@ from django.urls import reverse_lazy
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-def _load_env_file(path: Path) -> None:
+def _load_env_file(path: Path, *, override: bool = False) -> None:
     if not path.exists():
         return
     try:
@@ -28,11 +28,33 @@ def _load_env_file(path: Path) -> None:
             continue
         if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
             value = value[1:-1]
-        os.environ.setdefault(key, value)
+        if override or key not in os.environ:
+            os.environ[key] = value
 
 
 _load_env_file(BASE_DIR / ".env")
-_load_env_file(BASE_DIR / ".env.local")
+
+
+def _should_load_local_env() -> bool:
+    explicit_flag = os.environ.get("DJANGO_LOAD_DOTENV_LOCAL")
+    if explicit_flag is not None:
+        return explicit_flag.lower() in ("1", "true", "yes", "on")
+
+    environment_hint = (
+        os.environ.get("SITE_ENVIRONMENT")
+        or os.environ.get("DJANGO_ENV")
+        or ""
+    ).strip().lower()
+    if environment_hint:
+        return environment_hint in {"local", "development", "dev"}
+
+    # Se a execucao ja recebeu uma secret key explicita do ambiente, assume
+    # contexto de deploy e nao carrega .env.local por padrao.
+    return not bool(os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY"))
+
+
+if _should_load_local_env():
+    _load_env_file(BASE_DIR / ".env.local", override=True)
 
 
 def _env_bool(name, default=False):
@@ -198,10 +220,10 @@ SITE_ENVIRONMENT = os.environ.get(
 ).strip().lower() or ("local" if DEBUG else "production")
 PORTAL_SITE_NAME = os.environ.get("PORTAL_SITE_NAME", "NC Fly News").strip() or "NC Fly News"
 PORTAL_SITE_LOGO_URL = os.environ.get(
-    "PORTAL_SITE_LOGO_URL", "/static/portal/img/ncfly-wordmark.svg"
+    "PORTAL_SITE_LOGO_URL", "/static/portal/img/nacari-fly-logo.webp"
 ).strip()
 PORTAL_SITE_LOGO_LIGHT_URL = os.environ.get(
-    "PORTAL_SITE_LOGO_LIGHT_URL", "/static/portal/img/ncfly-wordmark-light.svg"
+    "PORTAL_SITE_LOGO_LIGHT_URL", "/static/portal/img/nacari-fly-logo.webp"
 ).strip()
 PORTAL_DEFAULT_META_DESCRIPTION = (
     os.environ.get(
@@ -213,8 +235,13 @@ PORTAL_DEFAULT_META_DESCRIPTION = (
 
 PORTAL_LEGAL_ENTITY_NAME = os.environ.get("PORTAL_LEGAL_ENTITY_NAME", "NC Fly").strip() or "NC Fly"
 PORTAL_CONTACT_EMAIL = os.environ.get("PORTAL_CONTACT_EMAIL", "").strip()
+PORTAL_PARTNERSHIP_EMAIL = os.environ.get("PORTAL_PARTNERSHIP_EMAIL", "").strip()
 PORTAL_CONTACT_PHONE = os.environ.get("PORTAL_CONTACT_PHONE", "").strip()
 PORTAL_CONTACT_WHATSAPP = os.environ.get("PORTAL_CONTACT_WHATSAPP", "").strip()
+PORTAL_LEAD_NOTIFICATION_RECIPIENTS = _env_list(
+    "PORTAL_LEAD_NOTIFICATION_RECIPIENTS",
+    ["pdrnacari@gmail.com"],
+)
 PORTAL_COMPANY_CNPJ = os.environ.get("PORTAL_COMPANY_CNPJ", "").strip()
 PORTAL_COMPANY_ADDRESS = os.environ.get("PORTAL_COMPANY_ADDRESS", "").strip()
 PORTAL_DPO_EMAIL = os.environ.get("PORTAL_DPO_EMAIL", PORTAL_CONTACT_EMAIL).strip()
@@ -291,10 +318,20 @@ def _default_outbound_email():
 
 
 DEFAULT_FROM_EMAIL = os.environ.get("DJANGO_DEFAULT_FROM_EMAIL", _default_outbound_email())
+PORTAL_ALERTS_FROM_EMAIL = (
+    os.environ.get("PORTAL_ALERTS_FROM_EMAIL", "alertas@ncfly.com.br").strip()
+    or DEFAULT_FROM_EMAIL
+)
+PORTAL_ALERTS_REPLY_TO = (
+    os.environ.get("PORTAL_ALERTS_REPLY_TO", PORTAL_CONTACT_EMAIL).strip()
+)
 
 TELEGRAM_ALERTS_BOT_TOKEN = os.environ.get("TELEGRAM_ALERTS_BOT_TOKEN", "")
 TELEGRAM_ALERTS_WEBHOOK_SECRET = os.environ.get("TELEGRAM_ALERTS_WEBHOOK_SECRET", "")
 TELEGRAM_ALERTS_ALLOWED_CHAT_IDS = _env_list("TELEGRAM_ALERTS_ALLOWED_CHAT_IDS", [])
+TELEGRAM_NEWS_BOT_TOKEN = os.environ.get("TELEGRAM_NEWS_BOT_TOKEN", "")
+TELEGRAM_NEWS_WEBHOOK_SECRET = os.environ.get("TELEGRAM_NEWS_WEBHOOK_SECRET", "")
+TELEGRAM_NEWS_ALLOWED_CHAT_IDS = _env_list("TELEGRAM_NEWS_ALLOWED_CHAT_IDS", [])
 
 if os.environ.get("AWS_STORAGE_BUCKET_NAME"):
     AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
