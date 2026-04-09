@@ -307,6 +307,7 @@ EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("DJANGO_EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = _env_bool("DJANGO_EMAIL_USE_TLS", False)
 EMAIL_USE_SSL = _env_bool("DJANGO_EMAIL_USE_SSL", False)
+EMAIL_TIMEOUT = int(os.environ.get("DJANGO_EMAIL_TIMEOUT", "10"))
 
 
 def _default_outbound_email():
