@@ -1,11 +1,11 @@
-{% load static %}
+{% load static portal_extras %}
 <footer class="portal-footer portal-footer--home portal-footer--saas">
     <div class="portal-footer__panel">
         <div class="portal-footer__panel-inner portal-footer__panel-inner--saas">
             <div class="portal-footer__brand-block portal-footer__brand-block--saas">
-                <a href="{% url 'portal_plataforma_saas' %}" class="portal-brand portal-brand--footer">
+                <a href="{% url 'portal_plataforma_saas' %}" class="portal-brand portal-brand--footer portal-brand--footer-stack">
                     <span class="portal-brand__logo">
-                        <img src="{{ app_branding.footer_logo_url }}" alt="{{ app_branding.alt }}">
+                        <img src="{{ app_branding.footer_logo_url }}" alt="{{ app_branding.alt }}" width="640" height="640" loading="lazy" decoding="async">
                     </span>
                     <span class="portal-brand__copy">
                         <strong>Plataforma NC Fly</strong>
@@ -13,31 +13,42 @@
                     </span>
                 </a>
                 <p>Uma vis&atilde;o da plataforma da NC Fly para organizar cota&ccedil;&otilde;es, emiss&otilde;es, alertas, clientes e contas fidelidade em um fluxo mais claro.</p>
+                {% if portal_contact_phone or portal_contact_email %}
+                <div class="portal-footer__contact-list">
+                    {% if portal_contact_email %}
+                    <a href="mailto:{{ portal_contact_email }}">{{ portal_contact_email }}</a>
+                    {% endif %}
+                    {% if portal_contact_phone %}
+                    <a href="tel:{{ portal_contact_phone|phone_href }}">Telefone: {{ portal_contact_phone|br_phone }}</a>
+                    {% endif %}
+                </div>
+                {% endif %}
             </div>
 
             <div class="portal-footer__column portal-footer__column--saas">
                 <h3>Plataforma</h3>
                 <a href="{% url 'portal_plataforma_saas' %}">Vis&atilde;o geral</a>
                 <a href="{% url 'portal_plataforma_saas' %}#saas-modulos">M&oacute;dulos</a>
-                <a href="{% url 'portal_plataforma_saas' %}#saas-faq">FAQ</a>
-                <a href="{% url 'portal_home' %}">Voltar para a home</a>
+                <a href="{% url 'portal_plataforma_saas' %}#saas-faq">Perguntas frequentes</a>
+                <a href="{% url 'portal_home' %}">Voltar para o in&iacute;cio</a>
             </div>
 
             <div class="portal-footer__column portal-footer__column--saas">
                 <h3>NC Fly</h3>
-                <a href="{% url 'portal_sobre' %}">Quem somos</a>
+                <a href="{% url 'portal_sobre' %}">Sobre a NC Fly</a>
+                <a href="{% url 'portal_fale_conosco' %}">Fale conosco</a>
                 <a href="{% url 'portal_privacidade' %}">Pol&iacute;tica de Privacidade</a>
                 <a href="{% url 'portal_termos' %}">Termos de Uso</a>
-                {% if portal_contact_email %}
-                <a href="mailto:{{ portal_contact_email }}">Falar com a NC Fly</a>
-                {% endif %}
                 <button type="button" class="portal-footer__link-button" data-cookie-open-preferences>Prefer&ecirc;ncias de cookies</button>
             </div>
         </div>
     </div>
     <div class="portal-footer__bar">
         <div class="portal-footer__bar-inner portal-footer__bar-inner--saas">
-            <span>&copy; {% now "Y" %} Plataforma NC Fly. P&aacute;gina p&uacute;blica de apresenta&ccedil;&atilde;o do produto.</span>
+            <span>
+                &copy; {% now "Y" %} Plataforma NC Fly. P&aacute;gina p&uacute;blica de apresenta&ccedil;&atilde;o do produto.
+                {% if portal_company_cnpj %} CNPJ: {{ portal_company_cnpj }}.{% endif %}
+            </span>
         </div>
     </div>
 </footer>

@@ -180,12 +180,19 @@ class Command(BaseCommand):
                     draft.resumo,
                     draft.categoria,
                     draft.topico,
+                    article.text,
                 )
                 duplicate_news = find_duplicate_news(
                     draft.titulo,
                     draft.resumo,
                     draft.categoria,
                     draft.topico,
+                    body=article.text,
+                    outbound_urls=[
+                        item.get("url", "")
+                        for item in (article.metadata or {}).get("outbound_links", [])
+                        if isinstance(item, dict)
+                    ],
                     exclude_pk=existing_news.pk if existing_news else None,
                 )
 

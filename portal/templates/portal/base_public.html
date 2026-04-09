@@ -9,6 +9,7 @@
     <meta name="robots" content="{{ seo_robots|default:'index,follow' }}">
     <meta name="author" content="{{ seo_site_name|default:'NC Fly News' }}">
     <meta name="theme-color" content="#0f172a">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     {% if google_search_console_verification %}
     <meta name="google-site-verification" content="{{ google_search_console_verification }}">
     {% endif %}
@@ -50,10 +51,11 @@
     <meta name="twitter:description" content="{{ seo_description|default:'Portal da NC Fly com not&iacute;cias, promo&ccedil;&otilde;es, milhas, cart&otilde;es de cr&eacute;dito, hot&eacute;is e estrat&eacute;gias para viajar melhor.' }}">
     {% if seo_og_image %}
     <meta name="twitter:image" content="{{ seo_og_image }}">
+    <meta name="twitter:image:alt" content="{{ seo_title|default:'NC Fly News' }}">
     {% endif %}
 
     <link rel="stylesheet" href="{% static 'portal/css/portal.css' %}">
-    {% if google_analytics_measurement_id and portal_cookie_analytics_enabled %}
+    {% if google_analytics_measurement_id and portal_cookie_consent_exists and portal_cookie_analytics_enabled %}
     <link rel="preconnect" href="https://www.googletagmanager.com">
     <link rel="preconnect" href="https://www.google-analytics.com">
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ google_analytics_measurement_id }}"></script>
@@ -69,10 +71,10 @@
     <script type="application/ld+json">{{ seo_schema_json|safe }}</script>
     {% endif %}
     {% block extra_head %}{% endblock %}
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8670696864452622" crossorigin="anonymous"></script>
 </head>
 <body
     class="portal-body"
+    data-analytics-measurement-id="{{ google_analytics_measurement_id|default:'' }}"
     data-cookie-consent-name="{{ portal_cookie_consent_name }}"
     data-cookie-consent-version="{{ portal_cookie_consent_version }}"
     data-cookie-consent-max-age="{{ portal_cookie_consent_max_age_days }}"
@@ -89,7 +91,6 @@
                  data-ad-slot="3291393849"
                  data-ad-format="auto"
                  data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </aside>
 
         <div class="portal-ads-layout__center">
@@ -114,7 +115,6 @@
                      data-ad-slot="3012921192"
                      data-ad-format="auto"
                      data-full-width-responsive="true"></ins>
-                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
             </div>
         </div>
 
@@ -126,7 +126,6 @@
                  data-ad-slot="4326002864"
                  data-ad-format="auto"
                  data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </aside>
     </div>
 
@@ -187,7 +186,7 @@
         </div>
     </div>
 
-    <script src="{% static 'portal/js/portal.js' %}"></script>
+    <script defer src="{% static 'portal/js/portal.js' %}"></script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

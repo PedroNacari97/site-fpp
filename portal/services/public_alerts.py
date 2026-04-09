@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 import os
 from datetime import date
+from decimal import Decimal, ROUND_HALF_UP
 from functools import lru_cache
-from typing import Any
+from typing import Any, Iterable
 
 from django.urls import reverse
 
@@ -16,6 +17,7 @@ from portal.templatetags.portal_extras import repair_portuguese_text
 
 ALERTA_PUBLIC_MODEL = os.environ.get("OPENAI_ALERT_PUBLIC_MODEL", "gpt-5.4-mini")
 ALERTA_COPY_ENABLED = os.environ.get("PORTAL_GENERATE_AI_ALERT_COPY", "1").lower() in {"1", "true", "yes", "on"}
+PUBLIC_HOME_ALERT_MAX_AGE_DAYS = 15
 
 PROGRAM_URL_MAP = {
     "latam": "https://www.latamairlines.com/br/pt/latam-pass",
@@ -34,6 +36,17 @@ PROGRAM_URL_MAP = {
     "tap miles&go": "https://www.flytap.com/pt-br/miles-and-go",
     "connectmiles": "https://www.connectmiles.com",
     "aadvantage": "https://www.aa.com/aadvantage-program/",
+}
+
+PROGRAM_MILE_VALUE_MAP = {
+    "latam": Decimal("28"),
+    "latam pass": Decimal("28"),
+    "latampass": Decimal("28"),
+    "smiles": Decimal("18"),
+    "azul": Decimal("18"),
+    "azul fidelidade": Decimal("18"),
+    "tudoazul": Decimal("18"),
+    "azul pelo mundo": Decimal("17"),
 }
 
 MONTH_LABELS = {
@@ -62,6 +75,8 @@ def _airport_city(iata: str, fallback: str = "") -> str:
     airport = Aeroporto.objects.filter(sigla__iexact=iata).order_by("id").first()
     if airport and airport.cidade:
         return repair_portuguese_text(airport.cidade)
+    if airport and airport.nome:
+        return repair_portuguese_text(airport.nome)
     return repair_portuguese_text(fallback or iata)
 
 
@@ -82,6 +97,20 @@ def _format_money(value) -> str:
     if value in (None, ""):
         return ""
     return f"R$ {value}"
+
+
+def _estimate_points_cash_value(alerta: AlertaViagem) -> str:
+    if not alerta.valor_milhas:
+        return ""
+
+    rate_per_thousand = PROGRAM_MILE_VALUE_MAP.get(_normalize_key(alerta.programa_fidelidade))
+    if rate_per_thousand is None:
+        return ""
+
+    estimated_total = (
+        (Decimal(alerta.valor_milhas) / Decimal("1000")) * rate_per_thousand
+    ).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    return _format_money(f"{estimated_total:,.0f}".replace(",", "."))
 
 
 def _format_date_short(value: date | None) -> str:
@@ -140,6 +169,47 @@ def _build_route_summary(alerta: AlertaViagem) -> dict[str, str]:
     }
 
 
+def _build_airport_lookup(alertas: Iterable[AlertaViagem]) -> dict[str, str]:
+    normalized_iatas = {
+        str(code).strip().upper()
+        for alerta in alertas
+        for code in (alerta.origem, alerta.destino)
+        if str(code or "").strip()
+    }
+    if not normalized_iatas:
+        return {}
+
+    lookup: dict[str, str] = {}
+    for airport in Aeroporto.objects.filter(sigla__in=normalized_iatas).order_by("sigla", "id"):
+        code = str(airport.sigla or "").strip().upper()
+        if not code or code in lookup:
+            continue
+        if airport.cidade:
+            lookup[code] = repair_portuguese_text(airport.cidade)
+            continue
+        if airport.nome:
+            lookup[code] = repair_portuguese_text(airport.nome)
+    return lookup
+
+
+def _build_route_summary_with_lookup(alerta: AlertaViagem, airport_lookup: dict[str, str] | None = None) -> dict[str, str]:
+    airport_lookup = airport_lookup or {}
+    origem_codigo = (alerta.origem or "").upper()
+    destino_codigo = (alerta.destino or "").upper()
+    origem_cidade = airport_lookup.get(origem_codigo) or _airport_city(alerta.origem)
+    destino_cidade = repair_portuguese_text(
+        alerta.cidade_destino or airport_lookup.get(destino_codigo) or _airport_city(alerta.destino)
+    )
+    return {
+        "origem_codigo": origem_codigo,
+        "destino_codigo": destino_codigo,
+        "origem_cidade": origem_cidade,
+        "destino_cidade": destino_cidade,
+        "route_label": f"{origem_cidade} → {destino_cidade}",
+        "route_search_label": f"{origem_codigo}-{destino_codigo}",
+    }
+
+
 def _resolve_program_url(alerta: AlertaViagem) -> str:
     program_key = _normalize_key(alerta.programa_fidelidade)
     if program_key in PROGRAM_URL_MAP:
@@ -159,11 +229,11 @@ def _resolve_program_url(alerta: AlertaViagem) -> str:
     return ""
 
 
-def list_visible_public_alerts(limit: int | None = None) -> list[AlertaViagem]:
+def list_visible_public_alerts(limit: int | None = None, *, max_age_days: int = 5) -> list[AlertaViagem]:
     visible = [
         alerta
         for alerta in AlertaViagem.objects.filter(ativo=True).order_by("-criado_em")
-        if alerta.deve_aparecer_na_vitrine() and alerta.valor_milhas
+        if alerta.deve_aparecer_na_vitrine(max_age_days=max_age_days) and alerta.valor_milhas
     ]
     return visible[:limit] if limit else visible
 
@@ -172,6 +242,7 @@ def build_public_alert_card(alerta: AlertaViagem) -> dict[str, Any]:
     route = _build_route_summary(alerta)
     all_dates = alerta.datas_disponiveis_validas()
     has_miles = bool(alerta.valor_milhas)
+    estimated_cash_value = _estimate_points_cash_value(alerta)
     return {
         "id": alerta.id,
         "url": reverse("portal_alerta_detalhe", args=[alerta.id]),
@@ -185,14 +256,48 @@ def build_public_alert_card(alerta: AlertaViagem) -> dict[str, Any]:
         "companhia": repair_portuguese_text(alerta.companhia_aerea),
         "miles_label": f"{_format_milhas(alerta.valor_milhas)} milhas" if has_miles else "Consulte o programa",
         "miles_kicker": "A partir de" if has_miles else "Quantidade de milhas",
+        "estimated_cash_value": estimated_cash_value,
         "validade_label": f"Até {_format_date_short(all_dates[-1])}" if all_dates else "",
         "tem_datas_volta": bool(alerta.datas_volta),
     }
 
 
-def build_similar_alert_cards(alerta: AlertaViagem, limit: int = 3) -> list[dict[str, Any]]:
+def build_public_alert_cards(alertas: Iterable[AlertaViagem]) -> list[dict[str, Any]]:
+    alerts = list(alertas)
+    if not alerts:
+        return []
+
+    airport_lookup = _build_airport_lookup(alerts)
+    cards = []
+    for alerta in alerts:
+        route = _build_route_summary_with_lookup(alerta, airport_lookup)
+        all_dates = alerta.datas_disponiveis_validas()
+        has_miles = bool(alerta.valor_milhas)
+        cards.append(
+            {
+                "id": alerta.id,
+                "url": reverse("portal_alerta_detalhe", args=[alerta.id]),
+                "origem_codigo": route["origem_codigo"],
+                "destino_codigo": route["destino_codigo"],
+                "origem_cidade": route["origem_cidade"],
+                "destino_cidade": route["destino_cidade"],
+                "route_label": route["route_label"],
+                "classe_label": alerta.get_classe_display(),
+                "programa": repair_portuguese_text(alerta.programa_fidelidade),
+                "companhia": repair_portuguese_text(alerta.companhia_aerea),
+                "miles_label": f"{_format_milhas(alerta.valor_milhas)} milhas" if has_miles else "Consulte o programa",
+                "miles_kicker": "A partir de" if has_miles else "Quantidade de milhas",
+                "estimated_cash_value": _estimate_points_cash_value(alerta),
+                "validade_label": f"Até {_format_date_short(all_dates[-1])}" if all_dates else "",
+                "tem_datas_volta": bool(alerta.datas_volta),
+            }
+        )
+    return cards
+
+
+def build_similar_alert_cards(alerta: AlertaViagem, limit: int = 3, *, max_age_days: int = 5) -> list[dict[str, Any]]:
     candidates = []
-    for item in list_visible_public_alerts():
+    for item in list_visible_public_alerts(max_age_days=max_age_days):
         if item.id == alerta.id:
             continue
         score = 0
@@ -209,7 +314,7 @@ def build_similar_alert_cards(alerta: AlertaViagem, limit: int = 3) -> list[dict
         candidates.append((score, item.criado_em, item))
 
     candidates.sort(key=lambda entry: (entry[0], entry[1]), reverse=True)
-    return [build_public_alert_card(item) for _, _, item in candidates[:limit]]
+    return build_public_alert_cards([item for _, _, item in candidates[:limit]])
 
 
 def _alert_signature(alerta: AlertaViagem) -> str:
@@ -437,6 +542,7 @@ def build_public_alert_detail(alerta: AlertaViagem) -> dict[str, Any]:
         "miles_label": f"{_format_milhas(alerta.valor_milhas)} milhas" if alerta.valor_milhas else "Consulte o programa",
         "miles_kicker": "A partir de" if alerta.valor_milhas else "Quantidade de milhas",
         "miles_caption": "por pessoa" if alerta.valor_milhas else "",
+        "estimated_cash_value": _estimate_points_cash_value(alerta),
         "money_label": _format_money(alerta.valor_reais),
         "validade_label": f"Até {_format_date_short(alerta.ultima_data_disponivel())}" if alerta.ultima_data_disponivel() else "",
         "origem_codigo": route["origem_codigo"],

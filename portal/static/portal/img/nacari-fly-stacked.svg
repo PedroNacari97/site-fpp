@@ -1,0 +1,49 @@
+<svg width="760" height="400" viewBox="0 0 760 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="nacariStackTrail" x1="16" y1="158" x2="194" y2="34" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D4722C"/>
+      <stop offset="0.58" stop-color="#F19A18"/>
+      <stop offset="1" stop-color="#E5A820"/>
+    </linearGradient>
+    <linearGradient id="nacariStackTrailHighlight" x1="24" y1="168" x2="191" y2="50" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C95C26"/>
+      <stop offset="1" stop-color="#F2C14E"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(262 16)">
+    <polygon points="36 18 90 18 80 182 26 182" fill="#1B2A4A"/>
+    <polygon points="84 18 130 18 145 182 99 182" fill="#1B2A4A"/>
+    <polygon points="122 18 176 18 176 182 122 182" fill="#1B2A4A"/>
+    <polygon points="96 52 121 52 132 144 107 144" fill="#FFFFFF"/>
+
+    <path
+      d="M16 156C58 151 89 129 117 97C141 70 164 50 193 31"
+      stroke="url(#nacariStackTrail)"
+      stroke-width="16"
+      stroke-linecap="round"
+    />
+    <path
+      d="M23 166C65 158 96 136 124 106C147 80 168 61 190 47"
+      stroke="url(#nacariStackTrailHighlight)"
+      stroke-width="5.5"
+      stroke-linecap="round"
+    />
+
+    <g transform="translate(144 3)">
+      <g transform="scale(5.8)">
+        <g transform="rotate(-32 11.5 12)">
+          <path
+            d="M21 16V14L13 9V3.5A1.5 1.5 0 0 0 11.5 2A1.5 1.5 0 0 0 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
+            fill="#E5A820"
+          />
+        </g>
+      </g>
+    </g>
+  </g>
+
+  <text x="110" y="320" font-family="Segoe UI, Arial, sans-serif" fill="#1B2A4A">
+    <tspan font-size="118" font-weight="700">Nacari</tspan>
+    <tspan dx="12" font-size="102" font-style="italic" font-weight="400">Fly</tspan>
+  </text>
+</svg>

@@ -1,95 +1,84 @@
 {% extends "portal/base_public.html" %}
 {% load portal_extras %}
-{% block title %}{{ seo_title|default:"Sobre n&oacute;s | NC Fly News" }}{% endblock %}
+{% block title %}{{ seo_title|default:"Sobre n&oacute;s | NC Fly" }}{% endblock %}
 {% block content %}
 <div class="portal-static-page">
     <section class="portal-static-page__shell">
         <header class="portal-static-page__hero">
             <nav class="portal-static-page__breadcrumbs">
-                <a href="{% url 'portal_home' %}">Home</a>
+                <a href="{% url 'portal_home' %}">In&iacute;cio</a>
                 <span>/</span>
                 <span>Sobre n&oacute;s</span>
             </nav>
             <span class="news-pill news-pill--primary">{{ page_eyebrow|portal_text }}</span>
-            <h1>Sobre n&oacute;s</h1>
+            <h1>Sobre a NC Fly</h1>
             <p>{{ page_intro|portal_text }}</p>
         </header>
 
         <section class="portal-static-page__section">
-            <h2>Quem somos</h2>
-            <p>A NC Fly News &eacute; a frente editorial p&uacute;blica da NC Fly para not&iacute;cias, promo&ccedil;&otilde;es, milhas, cart&otilde;es de cr&eacute;dito, hot&eacute;is e viagens. O portal foi estruturado para organizar conte&uacute;do &uacute;til, alertas operacionais e oportunidades que possam ajudar o leitor a decidir melhor.</p>
-            <p>Nosso foco &eacute; publicar conte&uacute;do claro, rastre&aacute;vel e relevante para quem acompanha o mercado de fidelidade, passagens, hospedagem e benef&iacute;cios financeiros ligados ao universo de viagens.</p>
+            <h2>Quem &eacute; a NC Fly</h2>
+            <p>A NC Fly atua no universo de viagens, milhas, fidelidade e organiza&ccedil;&atilde;o operacional, conectando informa&ccedil;&atilde;o, oportunidade e rotina comercial em um mesmo ecossistema.</p>
+            <p>O portal p&uacute;blico NC Fly News faz parte dessa estrutura como frente editorial e vitrine de conte&uacute;do, enquanto a plataforma concentra fluxos internos, acompanhamento operacional e organiza&ccedil;&atilde;o de processos.</p>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>Como o conte&uacute;do &eacute; produzido</h2>
+            <h2>Como a empresa se posiciona</h2>
             <ul class="portal-static-page__list">
-                <li>Monitoramos fontes p&uacute;blicas, portais especializados, programas de fidelidade, promo&ccedil;&otilde;es e atualiza&ccedil;&otilde;es de mercado.</li>
-                <li>As informa&ccedil;&otilde;es passam por organiza&ccedil;&atilde;o editorial antes de publica&ccedil;&atilde;o na home e nas p&aacute;ginas de categoria.</li>
-                <li>Nosso objetivo &eacute; contextualizar a oportunidade ou mudan&ccedil;a, traduzindo regras, datas, riscos, elegibilidade e impacto pr&aacute;tico para o leitor.</li>
-                <li>Sempre que houver link relevante de oferta ou p&aacute;gina oficial, ele pode ser destacado na mat&eacute;ria para facilitar o acesso do leitor.</li>
-                <li>Condi&ccedil;&otilde;es comerciais, disponibilidade, estoque, regras de emiss&atilde;o e prazo podem mudar rapidamente na origem.</li>
+                <li>Clareza para transformar cen&aacute;rios complexos em informa&ccedil;&atilde;o objetiva.</li>
+                <li>Organiza&ccedil;&atilde;o para conectar alertas, conte&uacute;do e opera&ccedil;&atilde;o de forma coerente.</li>
+                <li>Pragmatismo para priorizar o que realmente ajuda na tomada de decis&atilde;o.</li>
+                <li>Consist&ecirc;ncia para manter linguagem, contexto e padr&atilde;o entre portal e plataforma.</li>
             </ul>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>O que o portal &eacute; e o que ele n&atilde;o &eacute;</h2>
-            <ul class="portal-static-page__list">
-                <li>O NC Fly News &eacute; um portal editorial e informativo sobre viagens, fidelidade, cart&otilde;es, promo&ccedil;&otilde;es e oportunidades.</li>
-                <li>O portal n&atilde;o substitui a leitura das regras oficiais da companhia, do programa, do banco, do hotel ou do parceiro respons&aacute;vel pela oferta.</li>
-                <li>Salvo quando houver contrata&ccedil;&atilde;o espec&iacute;fica em outro ambiente da NC Fly, a publica&ccedil;&atilde;o de conte&uacute;do n&atilde;o significa consultoria individual, recomenda&ccedil;&atilde;o financeira, intermedia&ccedil;&atilde;o obrigat&oacute;ria nem venda direta de passagens ou produtos.</li>
-            </ul>
-        </section>
-
-        <section class="portal-static-page__section">
-            <h2>Compromissos editoriais</h2>
+            <h2>Portal, alertas e plataforma</h2>
             <div class="portal-static-page__grid">
                 <article class="portal-static-page__card">
-                    <h3>Clareza</h3>
-                    <p>Buscamos resumir cen&aacute;rios complexos em linguagem objetiva, destacando o que importa para a tomada de decis&atilde;o.</p>
+                    <h3>Portal p&uacute;blico</h3>
+                    <p>Re&uacute;ne not&iacute;cias, contexto editorial, categorias e p&aacute;ginas institucionais em uma camada aberta de comunica&ccedil;&atilde;o.</p>
                 </article>
                 <article class="portal-static-page__card">
-                    <h3>Transpar&ecirc;ncia</h3>
-                    <p>Indicamos quando a mat&eacute;ria foi montada a partir de fonte externa, oferta promocional, alerta operacional ou reorganiza&ccedil;&atilde;o editorial.</p>
+                    <h3>Alertas</h3>
+                    <p>Destacam oportunidades e movimentos de mercado com foco em utilidade, timing e leitura r&aacute;pida.</p>
                 </article>
                 <article class="portal-static-page__card">
-                    <h3>Atualiza&ccedil;&atilde;o</h3>
-                    <p>Conte&uacute;dos podem ser revisados, reclassificados ou retirados da vitrine quando perderem validade operacional.</p>
+                    <h3>Plataforma</h3>
+                    <p>Organiza a opera&ccedil;&atilde;o em um ambiente mais estruturado para o dia a dia comercial e operacional.</p>
                 </article>
                 <article class="portal-static-page__card">
-                    <h3>Responsabilidade editorial</h3>
-                    <p>Buscamos evitar reprodu&ccedil;&atilde;o literal de material de terceiros, priorizando contexto pr&oacute;prio, clareza, utilidade e refer&ecirc;ncia factual.</p>
+                    <h3>Rela&ccedil;&atilde;o entre as frentes</h3>
+                    <p>Cada camada cumpre uma fun&ccedil;&atilde;o diferente, mas todas seguem o mesmo compromisso com clareza, organiza&ccedil;&atilde;o e utilidade.</p>
                 </article>
             </div>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>Publicidade, parcerias e links de terceiros</h2>
-            <p>O portal pode destacar links externos, ofertas, p&aacute;ginas oficiais, parceiros comerciais, publicidade e, quando aplic&aacute;vel, rela&ccedil;&otilde;es promocionais ou de afilia&ccedil;&atilde;o. Isso n&atilde;o elimina a necessidade de confer&ecirc;ncia final das regras, do pre&ccedil;o e da disponibilidade diretamente no destino final.</p>
-            <p>Quando houver interesse comercial envolvido em algum posicionamento, o compromisso editorial permanece o de manter informa&ccedil;&atilde;o clara, objetiva e coerente com a natureza da p&aacute;gina.</p>
-        </section>
-
-        <section class="portal-static-page__section">
-            <h2>Importante para o leitor</h2>
+            <h2>Princ&iacute;pios da empresa</h2>
             <ul class="portal-static-page__list">
-                <li>O portal tem natureza informativa e editorial. Ele n&atilde;o substitui a confirma&ccedil;&atilde;o final na companhia, programa, hotel, parceiro ou emissor respons&aacute;vel.</li>
-                <li>Pre&ccedil;os, milhas, taxas, disponibilidade e regras de promo&ccedil;&atilde;o podem mudar sem aviso.</li>
-                <li>Antes de contratar, emitir, reservar ou transferir pontos, confirme sempre a condi&ccedil;&atilde;o oficial no destino final da oferta.</li>
+                <li>Informa&ccedil;&atilde;o &uacute;til precisa ser clara, contextualizada e acion&aacute;vel.</li>
+                <li>Processo bom reduz ru&iacute;do, retrabalho e perda de contexto.</li>
+                <li>Conte&uacute;do e opera&ccedil;&atilde;o devem conversar entre si, e n&atilde;o funcionar como silos separados.</li>
+                <li>O leitor e o cliente precisam entender rapidamente o que mudou, o que importa e o pr&oacute;ximo passo.</li>
             </ul>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>Contato institucional</h2>
-            <p>
+            <h2>Fale com a NC Fly</h2>
+            <p>A NC Fly centraliza o contato institucional pela p&aacute;gina de atendimento, com canal geral e canal dedicado para parcerias.</p>
+            {% if portal_contact_email or portal_partnership_email %}
+            <ul class="portal-static-page__list">
                 {% if portal_contact_email %}
-                E-mail: <a href="mailto:{{ portal_contact_email }}">{{ portal_contact_email }}</a>.
-                {% else %}
-                O atendimento institucional deve ser feito pelos canais oficiais divulgados no rodap&eacute; e nas p&aacute;ginas institucionais do portal.
+                <li>Atendimento: <a href="mailto:{{ portal_contact_email }}">{{ portal_contact_email }}</a>.</li>
                 {% endif %}
-                {% if portal_contact_phone %}
-                Telefone: <a href="tel:{{ portal_contact_phone }}">{{ portal_contact_phone }}</a>.
+                {% if portal_partnership_email %}
+                <li>Parcerias: <a href="mailto:{{ portal_partnership_email }}">{{ portal_partnership_email }}</a>.</li>
                 {% endif %}
-            </p>
+            </ul>
+            {% endif %}
+            <div class="portal-static-page__cta-row">
+                <a href="{% url 'portal_fale_conosco' %}" class="portal-button portal-button--ghost portal-button--sm">Ir para Fale conosco</a>
+            </div>
             <p class="portal-static-page__updated">Atualizado em {{ page_updated_at|br_date_long }}.</p>
         </section>
     </section>

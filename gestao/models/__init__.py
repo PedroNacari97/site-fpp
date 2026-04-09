@@ -19,6 +19,7 @@ from .uso_cpf import UsoCPF
 from .audit_log import AuditLog
 from .alerta_viagem import AlertaViagem
 from .telegram_alerta_evento import TelegramAlertaEvento
+from .telegram_noticia_evento import TelegramNoticiaEvento
 from .notificacao_sistema import NotificacaoSistema
 from .acompanhamento_passagem import AcompanhamentoPassagem
 from .interesse_viagem_cliente import InteresseViagemCliente, InteresseViagemMatch
@@ -46,6 +47,7 @@ __all__ = [
     'AuditLog',
     'AlertaViagem',
     'TelegramAlertaEvento',
+    'TelegramNoticiaEvento',
     'NotificacaoSistema',
     'AcompanhamentoPassagem',
     'InteresseViagemCliente',

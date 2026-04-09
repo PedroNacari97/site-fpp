@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Fonte, JobExecucao, MateriaBruta, NoticiaPublicada
+from .models import Fonte, JobExecucao, LeadAlertaEmail, MateriaBruta, NoticiaPublicada
 
 
 @admin.register(Fonte)
@@ -31,3 +31,19 @@ class JobExecucaoAdmin(admin.ModelAdmin):
     list_display = ("job_name", "status", "horario", "finalizado_em", "quantidade_processada", "quantidade_publicada")
     list_filter = ("status", "job_name")
     readonly_fields = ("horario", "finalizado_em")
+
+
+@admin.register(LeadAlertaEmail)
+class LeadAlertaEmailAdmin(admin.ModelAdmin):
+    list_display = (
+        "nome_completo",
+        "email",
+        "telefone",
+        "origem_cadastro",
+        "status",
+        "aceite_versao",
+        "criado_em",
+    )
+    list_filter = ("origem_cadastro", "status", "source_environment")
+    search_fields = ("nome_completo", "email", "telefone", "source_host")
+    readonly_fields = ("aceito_em", "aceito_ip", "aceito_user_agent", "criado_em", "atualizado_em")

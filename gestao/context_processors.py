@@ -12,11 +12,11 @@ def _resolve_user_empresa(user):
 
 def app_branding(request):
     empresa = _resolve_user_empresa(getattr(request, "user", None))
-    default_logo_url = getattr(settings, "PORTAL_SITE_LOGO_URL", "/static/portal/img/ncfly-wordmark.svg")
+    default_logo_url = getattr(settings, "PORTAL_SITE_LOGO_URL", "/static/portal/img/nacari-fly-logo.webp")
     footer_logo_url = getattr(
         settings,
         "PORTAL_SITE_LOGO_LIGHT_URL",
-        "/static/portal/img/ncfly-wordmark-light.svg",
+        "/static/portal/img/nacari-fly-logo.webp",
     )
     custom_logo_url = getattr(empresa, "logo_documentos_url", "") if empresa else ""
 
@@ -28,8 +28,8 @@ def app_branding(request):
             "default_logo_url": default_logo_url,
             "default_footer_logo_url": footer_logo_url,
             "has_custom_logo": bool(custom_logo_url),
-            "name": getattr(empresa, "nome", "") or "NC Fly",
-            "alt": getattr(empresa, "nome", "") or "NC Fly",
+            "name": getattr(empresa, "nome", "") or "Nacari Fly",
+            "alt": getattr(empresa, "nome", "") or "Nacari Fly",
         }
     }
 

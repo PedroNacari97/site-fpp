@@ -1,0 +1,62 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ seo_title|default:"Termos de Recebimento de Alertas | NC Fly News" }}{% endblock %}
+{% block content %}
+<div class="portal-static-page">
+    <section class="portal-static-page__shell">
+        <header class="portal-static-page__hero">
+            <nav class="portal-static-page__breadcrumbs">
+                <a href="{% url 'portal_home' %}">In&iacute;cio</a>
+                <span>/</span>
+                <a href="{% url 'portal_alertas' %}">Alertas</a>
+                <span>/</span>
+                <span>Termos de Recebimento de Alertas</span>
+            </nav>
+            <span class="news-pill news-pill--primary">{{ page_eyebrow|portal_text }}</span>
+            <h1>Termos de Recebimento de Alertas</h1>
+            <p>{{ page_intro|portal_text }}</p>
+        </header>
+
+        <section class="portal-static-page__section">
+            <h2>1. Finalidade do cadastro</h2>
+            <p>Este cadastro existe para registrar o interesse do usuário em receber alertas de passagens, oportunidades relacionadas a programas de fidelidade e comunicações diretamente associadas a esse acompanhamento editorial da NC Fly.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>2. Dados coletados</h2>
+            <p>Ao preencher o formulário, o usuário informa nome, e-mail e telefone. Esses dados são usados para identificar o cadastro, viabilizar o envio de alertas e, quando necessário, permitir contato operacional ou comercial relacionado a esse interesse.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>3. Natureza das comunicações</h2>
+            <ul class="portal-static-page__list">
+                <li>O e-mail é o canal principal para recebimento dos alertas.</li>
+                <li>O telefone pode ser usado como apoio em contato relacionado ao cadastro ou à comunicação da NC Fly.</li>
+                <li>Este aceite é específico para alertas e não substitui, nem se confunde, com o aceite de interesse comercial na plataforma.</li>
+            </ul>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>4. Disponibilidade e responsabilidade</h2>
+            <p>Os alertas possuem natureza informativa e podem refletir disponibilidade sujeita a alteração, esgotamento, limitação de estoque, mudança de regra, suspensão promocional ou remoção na origem. O recebimento do alerta não garante a manutenção da oferta nas mesmas condições.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>5. Registro do aceite</h2>
+            <p>Ao enviar o formulário, a NC Fly registra a versão do termo aceita, a data e hora do aceite, o IP e a identificação técnica básica do navegador utilizada no envio.</p>
+            <p>Versão atual do termo: <strong>{{ alert_email_lead_consent_version }}</strong>.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>6. Privacidade e cancelamento</h2>
+            <p>O tratamento desses dados deve ser lido em conjunto com a <a href="{% url 'portal_privacidade' %}">Política de Privacidade</a>. Se o usuário não quiser mais receber esse tipo de comunicação, poderá solicitar a interrupção pelos canais oficiais da NC Fly.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>7. Atualização</h2>
+            <p>Estes termos podem ser revisados para refletir mudanças operacionais, jurídicas ou técnicas no fluxo de alertas.</p>
+            <p class="portal-static-page__updated">Atualizado em {{ page_updated_at|br_date_long }}.</p>
+        </section>
+    </section>
+</div>
+{% endblock %}

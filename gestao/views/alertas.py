@@ -24,6 +24,15 @@ from ..services.telegram_alertas import (
     process_telegram_alert_update,
     telegram_send_message,
 )
+from ..services.telegram_noticias import (
+    get_telegram_noticias_config,
+    process_telegram_news_update,
+    telegram_news_send_message,
+)
+from portal.services.alert_email_broadcasts import (
+    capture_alert_email_snapshot,
+    notify_alert_subscribers,
+)
 from .permissions import require_admin_or_operator
 
 
@@ -437,8 +446,10 @@ def editar_alerta_passagem(request, alerta_id):
                 },
             )
         if form.is_valid():
+            previous_snapshot = capture_alert_email_snapshot(alerta)
             alerta = form.save()
             sync_alerta_interest_matches(alerta)
+            notify_alert_subscribers(alerta, created=False, previous_snapshot=previous_snapshot)
             messages.success(request, "Alerta atualizado com sucesso.")
             return redirect("admin_alertas_passagens")
     else:
@@ -600,6 +611,32 @@ def _extract_chat_id(payload):
     return (msg.get("chat") or {}).get("id")
 
 
+def _run_telegram_news_update_background(payload, chat_id):
+    try:
+        event, outcome, meta = process_telegram_news_update(payload)
+        message = meta.get("message")
+        if not message and outcome == "ignored_unknown_format":
+            message = "Formato nao suportado. Envie 'atualizar 10', um link ou um texto promocional."
+        elif not message and outcome == "ignored_chat":
+            message = "Esse chat nao esta autorizado para o bot de noticias."
+        elif not message and outcome == "ignored_duplicate_message":
+            message = "Essa mensagem ja foi processada antes."
+        elif not message and outcome == "ignored_empty":
+            message = "Nao encontrei texto util para processar."
+        elif not message and outcome == "processing_error":
+            message = "Ocorreu um erro ao processar sua solicitacao."
+
+        target_chat_id = event.chat_id or chat_id
+        if target_chat_id and message:
+            telegram_news_send_message(target_chat_id, message)
+    except Exception as exc:
+        if chat_id:
+            try:
+                telegram_news_send_message(chat_id, f"Erro ao processar noticia: {exc}")
+            except Exception:
+                pass
+
+
 @login_required
 def admin_configurar_telegram_webhook(request):
     if not request.user.is_superuser:
@@ -682,3 +719,31 @@ def telegram_alertas_webhook(request):
             "alerta_id": event.alerta_id,
         }
     )
+
+
+@csrf_exempt
+def telegram_noticias_webhook(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    config = get_telegram_noticias_config()
+    expected_secret = config["secret"]
+    if expected_secret:
+        received_secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+        if received_secret != expected_secret:
+            return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8") or "{}")
+    except Exception:
+        return JsonResponse({"ok": False, "error": "invalid_json"}, status=400)
+
+    chat_id = _extract_chat_id(payload)
+    thread = threading.Thread(
+        target=_run_telegram_news_update_background,
+        args=(payload, chat_id),
+        daemon=True,
+    )
+    thread.start()
+
+    return JsonResponse({"ok": True, "outcome": "news_processing_started"})

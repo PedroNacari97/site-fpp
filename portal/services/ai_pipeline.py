@@ -4,6 +4,7 @@ import base64
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+from html import escape
 import hashlib
 import json
 import os
@@ -1069,7 +1070,7 @@ def build_news_draft(source_name: str, raw_article: dict) -> NewsDraft:
     return _apply_quality_rules(draft, raw_article)
 
 
-def _render_svg_cover(title: str, category: str) -> bytes:
+def _render_svg_cover_legacy(title: str, category: str) -> bytes:
     safe_title = (title[:70] + "...") if len(title) > 70 else title
     safe_category = category or "NC Fly"
     svg = f"""
@@ -1087,6 +1088,61 @@ def _render_svg_cover(title: str, category: str) -> bytes:
       <text x="120" y="180" fill="#bfdbfe" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">{safe_category}</text>
       <text x="120" y="320" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="72" font-weight="800">{safe_title}</text>
       <text x="120" y="760" fill="#e2e8f0" font-family="Segoe UI, Arial, sans-serif" font-size="34">NC Fly · Imagem ilustrativa</text>
+    </svg>
+    """
+    return textwrap.dedent(svg).encode("utf-8")
+
+
+def _wrap_svg_cover_title(title: str, width: int = 24, max_lines: int = 3) -> list[str]:
+    clean_title = " ".join((title or "").split())
+    return textwrap.wrap(
+        clean_title,
+        width=width,
+        max_lines=max_lines,
+        placeholder="…",
+        break_long_words=False,
+        break_on_hyphens=False,
+    ) or ["NC Fly News"]
+
+
+def _render_svg_cover(title: str, category: str) -> bytes:
+    wrapped_title = _wrap_svg_cover_title(title)
+    line_count = len(wrapped_title)
+    if line_count == 1:
+        title_font_size = 84
+        line_height = 96
+        title_y = 320
+    elif line_count == 2:
+        title_font_size = 72
+        line_height = 84
+        title_y = 288
+    else:
+        title_font_size = 60
+        line_height = 72
+        title_y = 252
+
+    title_tspans = "\n".join(
+        f'        <tspan x="120" dy="{0 if index == 0 else line_height}">{escape(line, quote=False)}</tspan>'
+        for index, line in enumerate(wrapped_title)
+    )
+    safe_category = escape(" ".join((category or "NC Fly").split()), quote=False)
+    svg = f"""
+    <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+      <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0f172a"/>
+          <stop offset="60%" stop-color="#ff6b6b"/>
+          <stop offset="100%" stop-color="#f5a623"/>
+        </linearGradient>
+      </defs>
+      <rect width="1600" height="900" fill="url(#bg)"/>
+      <circle cx="1360" cy="180" r="180" fill="rgba(255,255,255,0.08)"/>
+      <circle cx="220" cy="760" r="150" fill="rgba(255,255,255,0.06)"/>
+      <text x="120" y="180" fill="#bfdbfe" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">{safe_category}</text>
+      <text x="120" y="{title_y}" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="{title_font_size}" font-weight="800">
+{title_tspans}
+      </text>
+      <text x="120" y="760" fill="#e2e8f0" font-family="Segoe UI, Arial, sans-serif" font-size="34">NC Fly | Imagem ilustrativa</text>
     </svg>
     """
     return textwrap.dedent(svg).encode("utf-8")

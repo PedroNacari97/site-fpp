@@ -29,11 +29,13 @@
         </div>
 
         <aside class="portal-alert-detail__summary">
-            <p class="portal-alert-detail__summary-label">{{ alert_context.miles_kicker|portal_text }}</p>
-            <strong>{{ alert_context.miles_label|portal_text }}</strong>
-            {% if alert_context.miles_caption %}
-            <span>{{ alert_context.miles_caption|portal_text }}</span>
-            {% endif %}
+            <div class="portal-alert-detail__summary-highlight">
+                <p class="portal-alert-detail__summary-label">{{ alert_context.miles_kicker|portal_text }}</p>
+                <strong>{{ alert_context.miles_label|portal_text }}</strong>
+                {% if alert_context.miles_caption %}
+                <span>{{ alert_context.miles_caption|portal_text }}</span>
+                {% endif %}
+            </div>
             <div class="portal-alert-detail__summary-meta">
                 <div>
                     <span>Programa</span>
@@ -60,6 +62,7 @@
                 </div>
                 {% endif %}
             </div>
+            <div class="portal-alert-detail__summary-actions">
             {% if alert_context.cta_url %}
             <a
                 href="{{ alert_context.cta_url }}"
@@ -74,6 +77,34 @@
                 Resgatar agora
             </a>
             {% endif %}
+            {% if portal_contact_whatsapp %}
+            <a
+                href="#"
+                class="portal-button portal-button--ghost portal-alert-detail__cta portal-alert-detail__cta--whatsapp"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-alert-whatsapp
+                data-whatsapp-number="{{ portal_contact_whatsapp }}"
+                data-alert-link="{{ request.path }}"
+                data-whatsapp-message="Ol&aacute;! Vi o alerta {{ alert_context.origem_codigo }} para {{ alert_context.destino_codigo }} no portal NC Fly News e gostaria de fazer uma cota&ccedil;&atilde;o."
+                data-analytics-event="click_alerta_whatsapp_detalhe"
+                data-analytics-category="conversion"
+                data-analytics-label="{{ alert_context.origem_codigo }}-{{ alert_context.destino_codigo }}"
+                data-analytics-section="alert_detail_whatsapp"
+            >
+                <span class="portal-alert-detail__cta-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M19.05 4.94A9.77 9.77 0 0 0 12.09 2C6.67 2 2.25 6.41 2.25 11.84c0 1.74.46 3.44 1.32 4.94L2 22l5.37-1.41a9.8 9.8 0 0 0 4.72 1.21h.01c5.42 0 9.84-4.41 9.84-9.84a9.77 9.77 0 0 0-2.89-7.02Zm-6.96 15.2h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.19.84.85-3.11-.2-.32a8.14 8.14 0 0 1-1.25-4.39c0-4.5 3.67-8.17 8.18-8.17a8.1 8.1 0 0 1 5.78 2.39 8.11 8.11 0 0 1 2.38 5.78c0 4.51-3.66 8.18-8.16 8.18Zm4.48-6.12c-.24-.12-1.42-.7-1.64-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1.02-.37-1.95-1.19-.72-.64-1.2-1.42-1.34-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.77-.2-.48-.4-.42-.54-.43h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.69 2.59 4.1 3.63.57.25 1.01.4 1.36.51.57.18 1.08.16 1.49.1.46-.07 1.42-.58 1.62-1.14.2-.56.2-1.03.14-1.13-.06-.1-.22-.16-.46-.28Z"></path>
+                    </svg>
+                </span>
+                Falar no WhatsApp
+            </a>
+            {% endif %}
+            </div>
+            <div class="portal-alert-detail__notice">
+                <strong>Importante:</strong>
+                <span>As datas e a disponibilidade desta oferta podem se esgotar rapidamente. Em alguns casos, o alerta ainda pode aparecer aqui at&eacute; a pr&oacute;xima atualiza&ccedil;&atilde;o.</span>
+            </div>
         </aside>
     </section>
 
@@ -160,7 +191,7 @@
     </section>
 
     {% if similar_alerts %}
-    <section class="portal-alert-detail__similar">
+    <section class="portal-alert-detail__similar portal-deferred-section portal-deferred-section--md">
         <header class="news-section-bar news-section-bar--stacked">
             <div>
                 <h2>Alertas semelhantes</h2>
@@ -170,15 +201,19 @@
         <div class="scroll-hint-wrap">
         <div id="similar-alerts-grid" class="news-alerts-home__grid news-alerts-home__grid--listing news-alerts-similar__scroll">
             {% for alerta in similar_alerts %}
-            <a
-                href="{{ alerta.url }}"
+            <article
                 class="news-alert-card news-alert-card--listing{% if forloop.counter > 3 %} is-hidden{% endif %}"
                 {% if forloop.counter > 3 %}data-load-more-item{% endif %}
-                data-analytics-event="click_alerta_semelhante"
-                data-analytics-category="content"
-                data-analytics-label="{{ alerta.origem_codigo }}-{{ alerta.destino_codigo }}"
-                data-analytics-section="alert_similar"
             >
+                <a
+                    href="{{ alerta.url }}"
+                    class="news-alert-card__stretch-link"
+                    aria-label="Abrir alerta {{ alerta.origem_codigo }}-{{ alerta.destino_codigo }}"
+                    data-analytics-event="click_alerta_semelhante"
+                    data-analytics-category="content"
+                    data-analytics-label="{{ alerta.origem_codigo }}-{{ alerta.destino_codigo }}"
+                    data-analytics-section="alert_similar"
+                ></a>
                 <div class="news-alert-card__top">
                     <span class="news-alert-card__plane" aria-hidden="true">
                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -216,11 +251,38 @@
                         <strong>{{ alerta.companhia|portal_text }}</strong>
                     </span>
                 </div>
-                <div class="news-alert-card__price-box">
-                    <small>{{ alerta.miles_kicker|portal_text }}</small>
-                    <strong>{{ alerta.miles_label|portal_text }}</strong>
+                <div class="news-alert-card__footer">
+                    <div class="news-alert-card__price-box">
+                        <small>{{ alerta.miles_kicker|portal_text }}</small>
+                        <strong>{{ alerta.miles_label|portal_text }}</strong>
+                    </div>
+                    {% if portal_contact_whatsapp %}
+                    <div class="news-alert-card__contact">
+                        <span>Sem milhas? Pe&ccedil;a cota&ccedil;&atilde;o.</span>
+                        <a
+                            href="#"
+                            class="news-alert-card__whatsapp"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Falar no WhatsApp sobre o alerta {{ alerta.origem_codigo }}-{{ alerta.destino_codigo }}"
+                            title="Falar no WhatsApp"
+                            data-alert-whatsapp
+                            data-whatsapp-number="{{ portal_contact_whatsapp }}"
+                            data-alert-link="{{ alerta.url }}"
+                            data-whatsapp-message="Ol&aacute;! Vi o alerta {{ alerta.origem_codigo }} para {{ alerta.destino_codigo }} no portal NC Fly News e gostaria de fazer uma cota&ccedil;&atilde;o."
+                            data-analytics-event="click_alerta_whatsapp"
+                            data-analytics-category="conversion"
+                            data-analytics-label="{{ alerta.origem_codigo }}-{{ alerta.destino_codigo }}"
+                            data-analytics-section="alert_similar_whatsapp"
+                        >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path fill="currentColor" d="M19.05 4.94A9.77 9.77 0 0 0 12.09 2C6.67 2 2.25 6.41 2.25 11.84c0 1.74.46 3.44 1.32 4.94L2 22l5.37-1.41a9.8 9.8 0 0 0 4.72 1.21h.01c5.42 0 9.84-4.41 9.84-9.84a9.77 9.77 0 0 0-2.89-7.02Zm-6.96 15.2h-.01a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-3.19.84.85-3.11-.2-.32a8.14 8.14 0 0 1-1.25-4.39c0-4.5 3.67-8.17 8.18-8.17a8.1 8.1 0 0 1 5.78 2.39 8.11 8.11 0 0 1 2.38 5.78c0 4.51-3.66 8.18-8.16 8.18Zm4.48-6.12c-.24-.12-1.42-.7-1.64-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1.02-.37-1.95-1.19-.72-.64-1.2-1.42-1.34-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.77-.2-.48-.4-.42-.54-.43h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.69 2.59 4.1 3.63.57.25 1.01.4 1.36.51.57.18 1.08.16 1.49.1.46-.07 1.42-.58 1.62-1.14.2-.56.2-1.03.14-1.13-.06-.1-.22-.16-.46-.28Z"></path>
+                            </svg>
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
-            </a>
+            </article>
             {% endfor %}
         </div>
         </div>

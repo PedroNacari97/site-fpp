@@ -60,7 +60,7 @@ class AlertaViagem(models.Model):
         datas = self.datas_disponiveis_validas()
         return datas[-1] if datas else None
 
-    def deve_aparecer_na_vitrine(self, reference_date=None):
+    def deve_aparecer_na_vitrine(self, reference_date=None, max_age_days=5):
         if not self.ativo:
             return False
 
@@ -79,4 +79,4 @@ class AlertaViagem(models.Model):
             if timezone.is_aware(self.criado_em)
             else self.criado_em.date()
         )
-        return (today - created_date).days <= 5
+        return (today - created_date).days <= max_age_days

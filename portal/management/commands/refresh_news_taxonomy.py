@@ -50,6 +50,7 @@ class Command(BaseCommand):
                 normalized.resumo,
                 normalized.categoria,
                 normalized.topico,
+                noticia.materia_bruta.texto_base if noticia.materia_bruta_id and noticia.materia_bruta else noticia.conteudo,
             )
             noticia.metadata_json = append_source_reference(
                 metadata,

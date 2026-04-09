@@ -153,6 +153,24 @@ def portal_text(value):
     return repair_portuguese_text(value)
 
 
+@register.filter
+def br_phone(value):
+    digits = re.sub(r"\D+", "", str(value or ""))
+    if digits.startswith("55") and len(digits) >= 12:
+        digits = digits[2:]
+    if len(digits) == 11:
+        return f"({digits[:2]}) {digits[2:7]}-{digits[7:]}"
+    if len(digits) == 10:
+        return f"({digits[:2]}) {digits[2:6]}-{digits[6:]}"
+    return str(value or "").strip()
+
+
+@register.filter
+def phone_href(value):
+    digits = re.sub(r"\D+", "", str(value or ""))
+    return digits
+
+
 def _markdown_to_html(text: str) -> str:
     """Converte markdown simples (negrito, links) para HTML seguro."""
     # Converte **texto** e *texto* para <strong>

@@ -3,6 +3,7 @@ from django.urls import reverse
 
 from gestao.models import AlertaViagem
 from .models import NoticiaPublicada
+from .services.public_alerts import PUBLIC_HOME_ALERT_MAX_AGE_DAYS
 
 
 CATEGORY_SLUGS = (
@@ -15,7 +16,9 @@ CATEGORY_SLUGS = (
 
 STATIC_ROUTE_NAMES = (
     "portal_alertas",
+    "portal_termos_alertas_email",
     "portal_sobre",
+    "portal_fale_conosco",
     "portal_privacidade",
     "portal_termos",
     "portal_plataforma_saas",
@@ -83,7 +86,11 @@ class AlertSitemap(Sitemap):
     priority = 0.8
 
     def items(self):
-        return [alerta for alerta in AlertaViagem.objects.filter(ativo=True).order_by("-criado_em") if alerta.deve_aparecer_na_vitrine()]
+        return [
+            alerta
+            for alerta in AlertaViagem.objects.filter(ativo=True).order_by("-criado_em")
+            if alerta.deve_aparecer_na_vitrine(max_age_days=PUBLIC_HOME_ALERT_MAX_AGE_DAYS)
+        ]
 
     def location(self, item):
         return reverse("portal_alerta_detalhe", args=[item.id])
