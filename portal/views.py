@@ -720,20 +720,29 @@ def _alert_filter_option_values(values):
 
 
 def _filter_public_alerts(alertas, aeroporto="", programa="", companhia=""):
-    selected_airport = str(aeroporto or "").strip().upper()
+    selected_airport = _normalize_text(aeroporto)
     selected_program = _normalize_text(programa)
     selected_airline = _normalize_text(companhia)
 
     filtered = []
     for alerta in alertas:
-        if selected_airport and selected_airport not in {
-            str(alerta.origem or "").strip().upper(),
-            str(alerta.destino or "").strip().upper(),
-        }:
+        airport_search_values = [
+            alerta.get("origem_codigo", ""),
+            alerta.get("destino_codigo", ""),
+            alerta.get("origem_display", ""),
+            alerta.get("destino_display", ""),
+            alerta.get("origem_cidade", ""),
+            alerta.get("destino_cidade", ""),
+            alerta.get("route_label", ""),
+        ]
+        airport_search_text = " ".join(
+            value for value in (_normalize_text(item) for item in airport_search_values) if value
+        )
+        if selected_airport and selected_airport not in airport_search_text:
             continue
-        if selected_program and _normalize_text(alerta.programa_fidelidade) != selected_program:
+        if selected_program and _normalize_text(alerta.get("programa")) != selected_program:
             continue
-        if selected_airline and _normalize_text(alerta.companhia_aerea) != selected_airline:
+        if selected_airline and _normalize_text(alerta.get("companhia")) != selected_airline:
             continue
         filtered.append(alerta)
     return filtered
@@ -1106,17 +1115,17 @@ def alertas_publicos(request):
 
     visible_alerts = list_visible_public_alerts(max_age_days=PUBLIC_HOME_ALERT_MAX_AGE_DAYS)
     selected_filters = {
-        "aeroporto": (request.GET.get("aeroporto") or "").strip().upper(),
+        "aeroporto": (request.GET.get("aeroporto") or "").strip(),
         "programa": (request.GET.get("programa") or "").strip(),
         "companhia": (request.GET.get("companhia") or "").strip(),
     }
-    filtered_alerts = _filter_public_alerts(
-        visible_alerts,
+    visible_alert_cards = build_public_alert_cards(visible_alerts)
+    alert_cards = _filter_public_alerts(
+        visible_alert_cards,
         aeroporto=selected_filters["aeroporto"],
         programa=selected_filters["programa"],
         companhia=selected_filters["companhia"],
     )
-    alert_cards = build_public_alert_cards(filtered_alerts)
     filters_active = any(selected_filters.values())
     context = {
         "page_title": "Alertas de passagens",

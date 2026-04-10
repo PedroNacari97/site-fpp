@@ -93,8 +93,14 @@ def serialize_alerta_payload(data):
     return payload
 
 
+def _validate_alerta_payload(payload):
+    if not payload.get("valor_milhas"):
+        raise ValueError("Valor em milhas obrigatorio para publicar alerta.")
+
+
 def create_or_update_alerta(data):
     payload = serialize_alerta_payload(data)
+    _validate_alerta_payload(payload)
     existing = find_matching_alerta(payload)
     now = timezone.now()
 

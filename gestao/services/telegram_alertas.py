@@ -65,6 +65,7 @@ def _required_parsed_fields(parsed):
         "classe",
         "programa_fidelidade",
         "companhia_aerea",
+        "valor_milhas",
     ]
     return [field for field in required_fields if not parsed.get(field)]
 

@@ -1264,6 +1264,12 @@ class AlertaViagemForm(forms.ModelForm):
     def clean_datas_volta(self):
         return self._clean_datas("datas_volta")
 
+    def clean_valor_milhas(self):
+        value = self.cleaned_data.get("valor_milhas")
+        if value in (None, "") or int(value or 0) <= 0:
+            raise forms.ValidationError("Informe a quantidade de milhas do alerta.")
+        return value
+
 class CompanhiaAereaForm(forms.ModelForm):
     class Meta:
         model = CompanhiaAerea

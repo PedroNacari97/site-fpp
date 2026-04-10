@@ -153,7 +153,7 @@ def _build_digest_metadata(alerta, *, kind: str, current_snapshot: dict[str, obj
 
 def notify_alert_subscribers(alerta, *, created: bool, previous_snapshot: dict[str, object] | None = None) -> bool:
     current_snapshot = capture_alert_email_snapshot(alerta)
-    if not current_snapshot["publico"]:
+    if not current_snapshot["publico"] or not current_snapshot.get("valor_milhas"):
         return False
 
     pending_item = (
@@ -471,7 +471,15 @@ def send_pending_alert_digest(*, max_items: int | None = None, remaining_slots: 
         max_items=max_items,
         remaining_slots=remaining_slots,
     )
-    items = list(pending_qs[:batch_size]) if batch_size else []
+    items = list(pending_qs.select_related("alerta")[:batch_size]) if batch_size else []
+    if not items:
+        return {"items": 0, "recipients": 0, "emails_sent": 0}
+
+    now = timezone.now()
+    invalid_items = [item for item in items if not getattr(item.alerta, "valor_milhas", None)]
+    if invalid_items:
+        AlertEmailDigestItem.objects.filter(id__in=[item.id for item in invalid_items]).update(sent_at=now)
+    items = [item for item in items if getattr(item.alerta, "valor_milhas", None)]
     if not items:
         return {"items": 0, "recipients": 0, "emails_sent": 0}
 
@@ -490,7 +498,7 @@ def send_pending_alert_digest(*, max_items: int | None = None, remaining_slots: 
             emails_sent += 1
 
     if eligible_recipients == 0 or emails_sent == eligible_recipients:
-        AlertEmailDigestItem.objects.filter(id__in=[item.id for item in items]).update(sent_at=timezone.now())
+        AlertEmailDigestItem.objects.filter(id__in=[item.id for item in items]).update(sent_at=now)
 
     return {
         "items": len(items),

@@ -197,16 +197,30 @@ def _parse_dates_line(line):
 
 
 def _normalize_milhas_value(value):
-    digits = re.sub(r"\D", "", str(value or ""))
+    raw = _normalize_text(value)
+    compact = raw.replace(" ", "")
+    if not compact:
+        return ""
+
+    kilo_match = re.search(r"(?P<number>\d+(?:[.,]\d+)?)k\b", compact, re.IGNORECASE)
+    if kilo_match:
+        normalized_number = kilo_match.group("number").replace(".", "").replace(",", ".")
+        try:
+            return str(int(float(normalized_number) * 1000))
+        except ValueError:
+            return ""
+
+    digits = re.sub(r"\D", "", compact)
     return digits or ""
 
 
 def _extract_milhas_from_line(line):
     text = _repair_mojibake(line)
     patterns = [
-        r"custo\s*(?:do|de)?\s*trecho\s*:\s*(?P<milhas>[\d\.,\s]+)\s*milhas",
-        r"a partir de\s*(?P<milhas>[\d\.,\s]+)\s*milhas",
-        r"(?P<milhas>[\d\.,\s]+)\s*milhas",
+        r"custo\s*(?:do|de)?\s*trecho\s*:\s*(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)?",
+        r"a partir de\s*(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)",
+        r"(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)",
+        r"custo\s*(?:do|de)?\s*trecho\s*:\s*(?P<milhas>[\d\.,\skK]+)\s*\+\s*taxas",
     ]
     for pattern in patterns:
         match = re.search(pattern, text, re.IGNORECASE)
@@ -254,7 +268,7 @@ def parse_alerta_bruto(raw_text):
             parsed["pais"], parsed["continente"] = country_info
 
     miles_match = re.search(
-        r"(?P<cidade>.+?)\s+\((?P<destino>[A-Z]{3})\)\s+(?P<milhas>[\d\.,\s]+)\s+milhas",
+        r"(?P<cidade>.+?)\s+\((?P<destino>[A-Z]{3})\)\s+(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)",
         first_line,
         re.IGNORECASE,
     )
