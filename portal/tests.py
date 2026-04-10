@@ -956,6 +956,32 @@ class PortalAlertEmailLeadTest(TestCase):
         self.assertContains(response, "Você precisa aceitar os termos de recebimento de alertas")
 
 
+    def test_post_com_email_ja_ativo_exibe_mensagem_de_cadastro_existente(self):
+        LeadAlertaEmail.objects.create(
+            nome_completo="Ana Souza",
+            email="ana@example.com",
+            telefone="(11) 98888-7777",
+            origem_cadastro=LeadAlertaEmail.ORIGEM_HOME,
+            aceite_versao="2026-04-alertas-email",
+            status=LeadAlertaEmail.STATUS_ATIVO,
+        )
+
+        response = self.client.post(
+            reverse("portal_home"),
+            data={
+                "form_kind": "alert_email_lead",
+                "nome_completo": "Ana Souza",
+                "email": "ana@example.com",
+                "telefone": "(11) 98888-7777",
+                "aceite_alertas": "on",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(LeadAlertaEmail.objects.count(), 1)
+        self.assertContains(response, "Este e-mail ja esta cadastrado para receber alertas.")
+
+
 @override_settings(
     EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
     PORTAL_LEAD_NOTIFICATION_RECIPIENTS=["pdrnacari@gmail.com"],

@@ -238,7 +238,11 @@ class AlertEmailLeadForm(forms.Form):
         }
 
     def clean_email(self):
-        return (self.cleaned_data.get("email") or "").strip().lower()
+        email = (self.cleaned_data.get("email") or "").strip().lower()
+        existing = LeadAlertaEmail.objects.filter(email=email).only("status").first()
+        if existing and existing.status == LeadAlertaEmail.STATUS_ATIVO:
+            raise forms.ValidationError("Este e-mail ja esta cadastrado para receber alertas.")
+        return email
 
     def clean_telefone(self):
         return _format_br_phone(self.cleaned_data.get("telefone", ""))
