@@ -456,6 +456,13 @@ def _resolve_digest_batch_size(total_pending: int, *, max_items: int | None = No
     return total_pending
 
 
+def _eligible_digest_items_for_lead(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem]) -> list[AlertEmailDigestItem]:
+    lead_created_at = getattr(lead, "criado_em", None)
+    if not lead_created_at:
+        return list(items)
+    return [item for item in items if item.created_at >= lead_created_at]
+
+
 def send_pending_alert_digest(*, max_items: int | None = None, remaining_slots: int | None = None) -> dict[str, int]:
     pending_qs = AlertEmailDigestItem.objects.filter(sent_at__isnull=True).order_by("created_at", "id")
     total_pending = pending_qs.count()
@@ -472,16 +479,21 @@ def send_pending_alert_digest(*, max_items: int | None = None, remaining_slots: 
         LeadAlertaEmail.objects.filter(status=LeadAlertaEmail.STATUS_ATIVO)
         .order_by("email")
     )
+    eligible_recipients = 0
     emails_sent = 0
     for lead in leads:
-        if _send_digest_to_lead(lead, items):
+        eligible_items = _eligible_digest_items_for_lead(lead, items)
+        if not eligible_items:
+            continue
+        eligible_recipients += 1
+        if _send_digest_to_lead(lead, eligible_items):
             emails_sent += 1
 
-    if leads and emails_sent == len(leads):
+    if eligible_recipients == 0 or emails_sent == eligible_recipients:
         AlertEmailDigestItem.objects.filter(id__in=[item.id for item in items]).update(sent_at=timezone.now())
 
     return {
         "items": len(items),
-        "recipients": len(leads),
+        "recipients": eligible_recipients,
         "emails_sent": emails_sent,
     }
