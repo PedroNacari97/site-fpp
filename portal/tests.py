@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+from io import StringIO
 from datetime import timedelta
 from decimal import Decimal
 from types import SimpleNamespace
@@ -9,6 +10,7 @@ from unittest.mock import Mock, patch
 
 from django.conf import settings
 from django.core import mail
+from django.core.management import call_command
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.core.cache import cache
 from django.test import TestCase, override_settings
@@ -2058,6 +2060,45 @@ class PortalSingleUrlNewsSyncTest(TestCase):
         self.assertEqual(noticia.titulo, "Azul Viagens libera cupom FESTA10 com 10% OFF em pacotes")
         self.assertNotEqual(noticia.slug, "noticia-nc-fly")
         self.assertIn("azul-viagens-libera-cupom-festa10", noticia.slug)
+
+
+class PortalRegenerateNewsCoverCommandTest(TestCase):
+    @patch(
+        "portal.management.commands.regenerate_news_cover.ensure_cover_for_news",
+        return_value=("portal/noticias/generated/capa-regenerada.png", True),
+    )
+    def test_regenera_capa_por_slug(self, _mock_cover):
+        fonte = Fonte.objects.create(
+            nome="Fonte Comando",
+            url="https://example.com",
+            tipo_coleta="html",
+        )
+        noticia = NoticiaPublicada.objects.create(
+            fonte=fonte,
+            titulo="Noticia com capa quebrada",
+            resumo="Resumo suficiente para o teste do comando.",
+            conteudo="Conteudo suficiente para representar uma noticia ja publicada.",
+            slug="noticia-com-capa-quebrada",
+            categoria="Promocoes",
+            topico="Ofertas Relampago",
+            tags_json=["Promocoes", "Azul Viagens"],
+            url_fonte="https://example.com/noticia",
+            imagem_url="https://example.com/imagem-quebrada.jpg",
+            status="published",
+            confianca=Decimal("0.85"),
+            publicada_em=timezone.now(),
+            metadata_json={"offer_cta": {"url": "https://example.com/regulamento", "label": "Ver regras"}},
+        )
+
+        stdout = StringIO()
+        call_command("regenerate_news_cover", noticia.slug, stdout=stdout)
+
+        noticia.refresh_from_db()
+        self.assertEqual(noticia.imagem.name, "portal/noticias/generated/capa-regenerada.png")
+        self.assertTrue(noticia.imagem_ilustrativa)
+        self.assertEqual(noticia.metadata_json.get("cover_source"), "ai_generated")
+        self.assertEqual(noticia.imagem_url, "https://example.com/imagem-quebrada.jpg")
+        self.assertIn("Capa regenerada com sucesso.", stdout.getvalue())
 
 
 class PortalCrawlerTest(TestCase):
