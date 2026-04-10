@@ -318,7 +318,11 @@ def _default_outbound_email():
     return "contato@ncfly.com.br"
 
 
-DEFAULT_FROM_EMAIL = os.environ.get("DJANGO_DEFAULT_FROM_EMAIL", _default_outbound_email())
+DEFAULT_FROM_EMAIL = (
+    os.environ.get("DJANGO_DEFAULT_FROM_EMAIL", "").strip()
+    or EMAIL_HOST_USER.strip()
+    or _default_outbound_email()
+)
 PORTAL_ALERTS_FROM_EMAIL = (
     os.environ.get("PORTAL_ALERTS_FROM_EMAIL", "alertas@ncfly.com.br").strip()
     or DEFAULT_FROM_EMAIL
