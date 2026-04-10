@@ -1131,7 +1131,7 @@ class PortalAlertDigestTest(TestCase):
         self.assertIn("WhatsApp da NC Fly", email.alternatives[0][0])
         self.assertIn("Falar no WhatsApp", email.alternatives[0][0])
 
-    def test_novo_inscrito_antes_do_horario_entra_no_digest_pendente(self):
+    def test_novo_inscrito_nao_recebe_digest_retroativo(self):
         create_or_update_alerta(self._alerta_payload())
         LeadAlertaEmail.objects.create(
             nome_completo="Carla Dias",
@@ -1145,9 +1145,29 @@ class PortalAlertDigestTest(TestCase):
         result = send_pending_alert_digest()
 
         self.assertEqual(result["items"], 1)
-        self.assertEqual(result["recipients"], 2)
-        self.assertEqual(result["emails_sent"], 2)
-        self.assertEqual({email.to[0] for email in mail.outbox}, {"ana@example.com", "carla@example.com"})
+        self.assertEqual(result["recipients"], 1)
+        self.assertEqual(result["emails_sent"], 1)
+        self.assertEqual({email.to[0] for email in mail.outbox}, {"ana@example.com"})
+
+    def test_digest_sem_destinatario_elegivel_marca_item_como_processado(self):
+        create_or_update_alerta(self._alerta_payload())
+        LeadAlertaEmail.objects.all().delete()
+        LeadAlertaEmail.objects.create(
+            nome_completo="Carla Dias",
+            email="carla@example.com",
+            telefone="(31) 97777-5555",
+            origem_cadastro=LeadAlertaEmail.ORIGEM_HOME,
+            aceite_versao="2026-04-alertas-email",
+            status=LeadAlertaEmail.STATUS_ATIVO,
+        )
+
+        result = send_pending_alert_digest()
+
+        self.assertEqual(result["items"], 1)
+        self.assertEqual(result["recipients"], 0)
+        self.assertEqual(result["emails_sent"], 0)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(AlertEmailDigestItem.objects.filter(sent_at__isnull=True).count(), 0)
 
     def test_send_pending_alert_digest_respeita_max_items_e_deixa_resto_para_depois(self):
         create_or_update_alerta(self._alerta_payload())
