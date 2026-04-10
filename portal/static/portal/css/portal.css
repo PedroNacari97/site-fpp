@@ -93,11 +93,7 @@ img {
 }
 
 .portal-ad-footer {
-  width: min(1120px, calc(100% - 40px));
-  margin: 0 auto;
-  padding: 0;
-  min-height: 0;
-  overflow: hidden;
+  display: none !important;
 }
 
 /* Esconde anúncios em mobile/tablet */
@@ -114,16 +110,12 @@ img {
     min-height: 600px;
   }
 
-  .portal-ad-footer {
-    min-height: 280px;
-  }
-
-  .portal-ad-footer .adsbygoogle {
-    min-height: 280px;
-  }
-
   .portal-ad-desktop-only {
     display: block;
+  }
+
+  .portal-ad-footer.portal-ad-desktop-only {
+    display: none !important;
   }
 }
 
