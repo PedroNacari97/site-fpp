@@ -17,9 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.conf import settings
-from django.conf.urls.static import static
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views.generic import RedirectView
+from django.views.static import serve as serve_static
 from core.views import healthcheck
 from accounts.views import custom_login, superadmin_login
 from gestao.views.alertas import telegram_alertas_webhook, telegram_noticias_webhook
@@ -59,4 +59,11 @@ urlpatterns = [
 ]
 
 if settings.MEDIA_URL and not str(settings.MEDIA_URL).startswith(("http://", "https://")):
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += [
+        re_path(
+            r"^media/(?P<path>.*)$",
+            serve_static,
+            {"document_root": settings.MEDIA_ROOT},
+            name="portal_media",
+        )
+    ]
