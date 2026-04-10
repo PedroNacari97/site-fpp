@@ -274,6 +274,70 @@ KNOWN_TAGS = (
 )
 
 
+BRAND_COVER_THEMES = (
+    {
+        "label": "Azul Viagens",
+        "aliases": ("azul viagens", "azul fidelidade", "tudoazul", "azul"),
+        "hint": "Marca em destaque",
+        "background_start": "#032b6b",
+        "background_mid": "#1357c5",
+        "background_end": "#17a6ff",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#ffb703",
+    },
+    {
+        "label": "Livelo",
+        "aliases": ("livelo",),
+        "hint": "Programa em destaque",
+        "background_start": "#23135f",
+        "background_mid": "#5c2dd5",
+        "background_end": "#c54ac9",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#4fe0c3",
+    },
+    {
+        "label": "Smiles",
+        "aliases": ("smiles",),
+        "hint": "Programa em destaque",
+        "background_start": "#722100",
+        "background_mid": "#ff6a00",
+        "background_end": "#ffb347",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#fff1b8",
+    },
+    {
+        "label": "LATAM Pass",
+        "aliases": ("latam pass", "latampass", "latam"),
+        "hint": "Programa em destaque",
+        "background_start": "#1a1f71",
+        "background_mid": "#5f2dbf",
+        "background_end": "#df2c6e",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#ffb3c7",
+    },
+    {
+        "label": "Esfera",
+        "aliases": ("esfera",),
+        "hint": "Programa em destaque",
+        "background_start": "#4d0019",
+        "background_mid": "#a80d44",
+        "background_end": "#ff5b87",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#ffd8e5",
+    },
+    {
+        "label": "TAP",
+        "aliases": ("tap air portugal", "tap portugal", "tap"),
+        "hint": "Companhia em destaque",
+        "background_start": "#044c3f",
+        "background_mid": "#0a8b65",
+        "background_end": "#cf102d",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#f4d35e",
+    },
+)
+
+
 @dataclass
 class NewsDraft:
     titulo: str
@@ -1105,7 +1169,28 @@ def _wrap_svg_cover_title(title: str, width: int = 24, max_lines: int = 3) -> li
     ) or ["NC Fly News"]
 
 
-def _render_svg_cover(title: str, category: str) -> bytes:
+def _resolve_cover_brand_theme(*parts) -> dict[str, str] | None:
+    haystack_parts: list[str] = []
+    for part in parts:
+        if not part:
+            continue
+        if isinstance(part, (list, tuple, set)):
+            haystack_parts.extend(str(item) for item in part if str(item).strip())
+        else:
+            haystack_parts.append(str(part))
+
+    haystack = _normalize_lookup(" ".join(haystack_parts))
+    if not haystack:
+        return None
+
+    for theme in BRAND_COVER_THEMES:
+        for alias in theme["aliases"]:
+            if _normalize_lookup(alias) in haystack:
+                return theme
+    return None
+
+
+def _render_svg_cover(title: str, category: str, brand_theme: dict[str, str] | None = None) -> bytes:
     wrapped_title = _wrap_svg_cover_title(title)
     line_count = len(wrapped_title)
     if line_count == 1:
@@ -1126,18 +1211,36 @@ def _render_svg_cover(title: str, category: str) -> bytes:
         for index, line in enumerate(wrapped_title)
     )
     safe_category = escape(" ".join((category or "NC Fly").split()), quote=False)
+    background_start = (brand_theme or {}).get("background_start", "#0f172a")
+    background_mid = (brand_theme or {}).get("background_mid", "#ff6b6b")
+    background_end = (brand_theme or {}).get("background_end", "#f5a623")
+    brand_badge = ""
+    if brand_theme:
+        safe_brand_label = escape(str(brand_theme.get("label", "") or ""), quote=False)
+        safe_brand_hint = escape(str(brand_theme.get("hint", "") or ""), quote=False)
+        wordmark_color = escape(str(brand_theme.get("wordmark_color", "#ffffff")), quote=False)
+        accent_color = escape(str(brand_theme.get("accent_color", "#ffffff")), quote=False)
+        brand_badge = f"""
+      <g>
+        <rect x="1010" y="100" width="470" height="178" rx="36" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.18)" />
+        <rect x="1046" y="138" width="118" height="12" rx="6" fill="{accent_color}" opacity="0.95" />
+        <text x="1046" y="178" fill="#dbeafe" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">{safe_brand_hint}</text>
+        <text x="1046" y="236" fill="{wordmark_color}" font-family="Segoe UI, Arial, sans-serif" font-size="52" font-weight="900">{safe_brand_label}</text>
+      </g>
+        """
     svg = f"""
     <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
       <defs>
         <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#0f172a"/>
-          <stop offset="60%" stop-color="#ff6b6b"/>
-          <stop offset="100%" stop-color="#f5a623"/>
+          <stop offset="0%" stop-color="{background_start}"/>
+          <stop offset="60%" stop-color="{background_mid}"/>
+          <stop offset="100%" stop-color="{background_end}"/>
         </linearGradient>
       </defs>
       <rect width="1600" height="900" fill="url(#bg)"/>
       <circle cx="1360" cy="180" r="180" fill="rgba(255,255,255,0.08)"/>
       <circle cx="220" cy="760" r="150" fill="rgba(255,255,255,0.06)"/>
+{brand_badge}
       <text x="120" y="180" fill="#bfdbfe" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">{safe_category}</text>
       <text x="120" y="{title_y}" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="{title_font_size}" font-weight="800">
 {title_tspans}
@@ -1146,6 +1249,21 @@ def _render_svg_cover(title: str, category: str) -> bytes:
     </svg>
     """
     return textwrap.dedent(svg).encode("utf-8")
+
+
+def _render_svg_cover_for_draft(draft: NewsDraft) -> bytes:
+    return _render_svg_cover(
+        draft.titulo,
+        draft.categoria,
+        brand_theme=_resolve_cover_brand_theme(
+            draft.titulo,
+            draft.resumo,
+            draft.conteudo,
+            draft.categoria,
+            draft.topico,
+            draft.tags,
+        ),
+    )
 
 
 def _save_generated_file(name: str, content: bytes) -> str:
@@ -1194,7 +1312,7 @@ def ensure_cover_for_news(draft: NewsDraft) -> tuple[str | None, bool]:
         return None, False
 
     file_name = f"portal/noticias/generated/{timezone.now():%Y%m%d%H%M%S}_{draft.slug[:50]}.svg"
-    return _save_generated_file(file_name, _render_svg_cover(draft.titulo, draft.categoria)), True
+    return _save_generated_file(file_name, _render_svg_cover_for_draft(draft)), True
 
 
 def build_hash_from_article(url_original: str, title: str, text: str) -> str:

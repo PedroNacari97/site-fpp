@@ -15,7 +15,7 @@ from portal.models import Fonte, JobExecucao, MateriaBruta, NoticiaPublicada
 from portal.services.ai_pipeline import (
     NewsDraft,
     _apply_quality_rules,
-    _render_svg_cover,
+    _render_svg_cover_for_draft,
     _save_generated_file,
     build_hash_from_article,
     build_news_draft,
@@ -551,7 +551,7 @@ def _upsert_news_from_article(
             image_storage_path, illustrative = None, False
         else:
             file_name = f"portal/noticias/generated/{timezone.now():%Y%m%d%H%M%S}_{draft.slug[:50]}.svg"
-            image_storage_path = _save_generated_file(file_name, _render_svg_cover(draft.titulo, draft.categoria))
+            image_storage_path = _save_generated_file(file_name, _render_svg_cover_for_draft(draft))
             illustrative = True
 
     if image_storage_path:
