@@ -32,6 +32,7 @@ from .services.ai_pipeline import (
     _build_cover_prompt,
     _normalize_confidence,
     _render_svg_cover,
+    _resolve_cover_brand_theme,
     ensure_cover_for_news,
 )
 from .services.alert_email_broadcasts import build_alert_unsubscribe_token, send_pending_alert_digest
@@ -1559,6 +1560,19 @@ class PortalContentQualityTest(TestCase):
         self.assertIn("&amp;", svg)
         self.assertIn("Imagem ilustrativa", svg)
 
+    def test_detecta_marca_para_capa_padrao_da_noticia(self):
+        theme = _resolve_cover_brand_theme(
+            "Azul Viagens libera promocode FESTA10",
+            "Campanha promocional da Azul Viagens com desconto em pacotes.",
+            "",
+            "Promocoes",
+            "Ofertas Relampago",
+            ["Azul Viagens"],
+        )
+
+        self.assertIsNotNone(theme)
+        self.assertEqual(theme["label"], "Azul Viagens")
+
     def test_portal_content_nao_transforma_asterisco_simples_em_negrito(self):
         rendered = str(portal_content("Linha com *marcacao simples* do Telegram."))
 
@@ -1829,6 +1843,9 @@ class PortalSingleUrlNewsSyncTest(TestCase):
         self.assertTrue(noticia.imagem.name.endswith(".svg"))
         self.assertFalse(noticia.imagem_url)
         self.assertNotIn("**", noticia.conteudo)
+        with noticia.imagem.open("rb") as image_file:
+            svg = image_file.read().decode("utf-8")
+        self.assertIn("Azul Viagens", svg)
 
     @patch("portal.services.news_sync_service.build_news_draft", side_effect=TimeoutError("timed out"))
     def test_sync_news_from_text_atualiza_slug_quando_titulo_manual_melhora(self, _mock_build_news_draft):
