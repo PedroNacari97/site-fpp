@@ -227,7 +227,7 @@
                 <div class="news-alert-card__route">
                     <div>
                         <strong>{{ alerta.origem_codigo }}</strong>
-                        <span>{{ alerta.origem_cidade|portal_text }}</span>
+                        <span>{{ alerta.origem_display|default:alerta.origem_cidade|portal_text }}</span>
                     </div>
                     <div class="news-alert-card__route-line" aria-hidden="true">
                         <span></span>
@@ -238,7 +238,7 @@
                     </div>
                     <div class="news-alert-card__destination">
                         <strong>{{ alerta.destino_codigo }}</strong>
-                        <span>{{ alerta.destino_cidade|portal_text }}</span>
+                        <span>{{ alerta.destino_display|default:alerta.destino_cidade|portal_text }}</span>
                     </div>
                 </div>
                 <div class="news-alert-card__meta">

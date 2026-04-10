@@ -69,15 +69,32 @@ def _normalize_key(value: Any) -> str:
     return " ".join(str(value or "").strip().lower().split())
 
 
-def _airport_city(iata: str, fallback: str = "") -> str:
+def _airport_text(value: Any) -> str:
+    return repair_portuguese_text(str(value or "").strip())
+
+
+def _airport_info(iata: str, fallback: str = "") -> dict[str, str]:
+    fallback_label = _airport_text(fallback or iata)
     if not iata:
-        return fallback
+        return {
+            "city": fallback_label,
+            "name": fallback_label,
+            "display": fallback_label,
+        }
+
     airport = Aeroporto.objects.filter(sigla__iexact=iata).order_by("id").first()
-    if airport and airport.cidade:
-        return repair_portuguese_text(airport.cidade)
-    if airport and airport.nome:
-        return repair_portuguese_text(airport.nome)
-    return repair_portuguese_text(fallback or iata)
+    city = _airport_text(getattr(airport, "cidade", ""))
+    name = _airport_text(getattr(airport, "nome", ""))
+    display = name or city or fallback_label
+    return {
+        "city": city or fallback_label,
+        "name": name or city or fallback_label,
+        "display": display,
+    }
+
+
+def _airport_city(iata: str, fallback: str = "") -> str:
+    return _airport_info(iata, fallback=fallback)["city"]
 
 
 def _format_milhas(value: int | None) -> str:
@@ -157,19 +174,23 @@ def _group_dates(values) -> list[dict[str, Any]]:
 
 
 def _build_route_summary(alerta: AlertaViagem) -> dict[str, str]:
-    origem_cidade = _airport_city(alerta.origem)
-    destino_cidade = repair_portuguese_text(alerta.cidade_destino or _airport_city(alerta.destino))
+    origem_info = _airport_info(alerta.origem)
+    destino_info = _airport_info(alerta.destino, fallback=alerta.cidade_destino)
+    origem_cidade = origem_info["city"]
+    destino_cidade = repair_portuguese_text(alerta.cidade_destino or destino_info["city"])
     return {
         "origem_codigo": (alerta.origem or "").upper(),
         "destino_codigo": (alerta.destino or "").upper(),
         "origem_cidade": origem_cidade,
         "destino_cidade": destino_cidade,
+        "origem_display": origem_info["display"],
+        "destino_display": destino_info["display"],
         "route_label": f"{origem_cidade} → {destino_cidade}",
         "route_search_label": f"{(alerta.origem or '').upper()}-{(alerta.destino or '').upper()}",
     }
 
 
-def _build_airport_lookup(alertas: Iterable[AlertaViagem]) -> dict[str, str]:
+def _build_airport_lookup(alertas: Iterable[AlertaViagem]) -> dict[str, dict[str, str]]:
     normalized_iatas = {
         str(code).strip().upper()
         for alerta in alertas
@@ -179,32 +200,39 @@ def _build_airport_lookup(alertas: Iterable[AlertaViagem]) -> dict[str, str]:
     if not normalized_iatas:
         return {}
 
-    lookup: dict[str, str] = {}
+    lookup: dict[str, dict[str, str]] = {}
     for airport in Aeroporto.objects.filter(sigla__in=normalized_iatas).order_by("sigla", "id"):
         code = str(airport.sigla or "").strip().upper()
         if not code or code in lookup:
             continue
-        if airport.cidade:
-            lookup[code] = repair_portuguese_text(airport.cidade)
-            continue
-        if airport.nome:
-            lookup[code] = repair_portuguese_text(airport.nome)
+        city = _airport_text(getattr(airport, "cidade", ""))
+        name = _airport_text(getattr(airport, "nome", ""))
+        display = name or city or code
+        lookup[code] = {
+            "city": city or display,
+            "name": name or city or display,
+            "display": display,
+        }
     return lookup
 
 
-def _build_route_summary_with_lookup(alerta: AlertaViagem, airport_lookup: dict[str, str] | None = None) -> dict[str, str]:
+def _build_route_summary_with_lookup(
+    alerta: AlertaViagem, airport_lookup: dict[str, dict[str, str]] | None = None
+) -> dict[str, str]:
     airport_lookup = airport_lookup or {}
     origem_codigo = (alerta.origem or "").upper()
     destino_codigo = (alerta.destino or "").upper()
-    origem_cidade = airport_lookup.get(origem_codigo) or _airport_city(alerta.origem)
-    destino_cidade = repair_portuguese_text(
-        alerta.cidade_destino or airport_lookup.get(destino_codigo) or _airport_city(alerta.destino)
-    )
+    origem_info = airport_lookup.get(origem_codigo) or _airport_info(alerta.origem)
+    destino_info = airport_lookup.get(destino_codigo) or _airport_info(alerta.destino, fallback=alerta.cidade_destino)
+    origem_cidade = origem_info["city"]
+    destino_cidade = repair_portuguese_text(alerta.cidade_destino or destino_info["city"])
     return {
         "origem_codigo": origem_codigo,
         "destino_codigo": destino_codigo,
         "origem_cidade": origem_cidade,
         "destino_cidade": destino_cidade,
+        "origem_display": origem_info["display"],
+        "destino_display": destino_info["display"],
         "route_label": f"{origem_cidade} → {destino_cidade}",
         "route_search_label": f"{origem_codigo}-{destino_codigo}",
     }
@@ -250,6 +278,8 @@ def build_public_alert_card(alerta: AlertaViagem) -> dict[str, Any]:
         "destino_codigo": route["destino_codigo"],
         "origem_cidade": route["origem_cidade"],
         "destino_cidade": route["destino_cidade"],
+        "origem_display": route["origem_display"],
+        "destino_display": route["destino_display"],
         "route_label": route["route_label"],
         "classe_label": alerta.get_classe_display(),
         "programa": repair_portuguese_text(alerta.programa_fidelidade),
@@ -281,6 +311,8 @@ def build_public_alert_cards(alertas: Iterable[AlertaViagem]) -> list[dict[str, 
                 "destino_codigo": route["destino_codigo"],
                 "origem_cidade": route["origem_cidade"],
                 "destino_cidade": route["destino_cidade"],
+                "origem_display": route["origem_display"],
+                "destino_display": route["destino_display"],
                 "route_label": route["route_label"],
                 "classe_label": alerta.get_classe_display(),
                 "programa": repair_portuguese_text(alerta.programa_fidelidade),

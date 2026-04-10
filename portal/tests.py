@@ -358,6 +358,53 @@ class PortalRoutesTest(TestCase):
         self.assertContains(response, "American Airlines")
         self.assertContains(response, "Smiles")
 
+    def test_listagem_publica_de_alertas_exibe_nome_completo_dos_aeroportos_nos_cards(self):
+        Aeroporto.objects.create(
+            nome="Aeroporto Internacional de Guarulhos",
+            sigla="GRU",
+            cidade="Sao Paulo",
+            estado="SP",
+        )
+        Aeroporto.objects.create(
+            nome="Miami International Airport",
+            sigla="MIA",
+            cidade="Miami",
+            estado="FL",
+        )
+
+        response = self.client.get(reverse("portal_alertas"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Aeroporto Internacional de Guarulhos")
+        self.assertContains(response, "Miami International Airport")
+
+    def test_listagem_publica_de_alertas_filtra_por_nome_completo_do_aeroporto(self):
+        Aeroporto.objects.create(
+            nome="Aeroporto Internacional de Guarulhos",
+            sigla="GRU",
+            cidade="Sao Paulo",
+            estado="SP",
+        )
+        Aeroporto.objects.create(
+            nome="Miami International Airport",
+            sigla="MIA",
+            cidade="Miami",
+            estado="FL",
+        )
+
+        response = self.client.get(
+            reverse("portal_alertas"),
+            {"aeroporto": "Aeroporto Internacional de Guarulhos"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["alertas_publicos"]), 1)
+        self.assertEqual(
+            response.context["selected_alert_filters"]["aeroporto"],
+            "Aeroporto Internacional de Guarulhos",
+        )
+        self.assertContains(response, "Aeroporto Internacional de Guarulhos")
+
     def test_listagem_publica_de_alertas_mantem_alerta_visivel_ate_quinze_dias(self):
         AlertaViagem.objects.filter(id=self.alerta.id).update(criado_em=timezone.now() - timedelta(days=10))
         self.alerta.refresh_from_db()
@@ -1133,6 +1180,15 @@ class PortalAlertDigestTest(TestCase):
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(AlertEmailDigestItem.objects.count(), 1)
 
+    def test_alerta_sem_milhas_nao_sobe_na_fila(self):
+        payload = self._alerta_payload()
+        payload["valor_milhas"] = None
+
+        with self.assertRaisesMessage(ValueError, "Valor em milhas obrigatorio para publicar alerta."):
+            create_or_update_alerta(payload)
+
+        self.assertEqual(AlertEmailDigestItem.objects.count(), 0)
+
     def test_send_pending_alert_digest_envia_email_para_inscritos_ativos(self):
         alerta, _ = create_or_update_alerta(self._alerta_payload())
 
@@ -1190,6 +1246,36 @@ class PortalAlertDigestTest(TestCase):
         result = send_pending_alert_digest()
 
         self.assertEqual(result["items"], 1)
+        self.assertEqual(result["recipients"], 0)
+        self.assertEqual(result["emails_sent"], 0)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(AlertEmailDigestItem.objects.filter(sent_at__isnull=True).count(), 0)
+
+    def test_send_pending_alert_digest_descarta_item_antigo_sem_milhas(self):
+        alerta = AlertaViagem.objects.create(
+            titulo="GRU para MIA sem milhas",
+            conteudo="Alerta legado sem milhas.",
+            continente="AmÃ©rica do Norte",
+            pais="Estados Unidos",
+            cidade_destino="Miami",
+            origem="GRU",
+            destino="MIA",
+            classe=AlertaViagem.CLASSE_ECONOMICA,
+            programa_fidelidade="Smiles",
+            companhia_aerea="American Airlines",
+            valor_milhas=None,
+            datas_ida=["2026-06-01"],
+            ativo=True,
+        )
+        AlertEmailDigestItem.objects.create(
+            alerta=alerta,
+            kind=AlertEmailDigestItem.KIND_NEW,
+            metadata_json={"route_label": "GRU para MIA"},
+        )
+
+        result = send_pending_alert_digest()
+
+        self.assertEqual(result["items"], 0)
         self.assertEqual(result["recipients"], 0)
         self.assertEqual(result["emails_sent"], 0)
         self.assertEqual(len(mail.outbox), 0)

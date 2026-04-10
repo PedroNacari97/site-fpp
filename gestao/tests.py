@@ -670,6 +670,46 @@ class TelegramAlertasWebhookTest(TestCase):
         self.assertEqual(sent_chat_id, -100123456)
         self.assertIn("Nao consegui interpretar o alerta.", sent_text)
 
+    @patch("gestao.views.alertas.telegram_send_message")
+    def test_webhook_nao_cria_alerta_quando_milhas_nao_sao_identificadas(self, mock_send_message):
+        payload = self._build_payload(update_id=504)
+        payload["channel_post"]["text"] = (
+            "Ribeirao Preto (RAO)\n"
+            "Economica\n\n"
+            "Programa LatamPass\n"
+            "Classe Economica\n"
+            "Voando Latam\n\n"
+            "Sao Paulo (GRU) > Ribeirao Preto (RAO)\n\n"
+            "Disponibilidade de Ida\n"
+            "Jun/26:`01,02,03`\n"
+        )
+
+        response = self.client.post(
+            reverse("telegram_alertas_webhook"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN="segredo-alertas",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(AlertaViagem.objects.count(), 0)
+        sent_chat_id, sent_text = mock_send_message.call_args.args
+        self.assertEqual(sent_chat_id, -100123456)
+        self.assertIn("valor_milhas", sent_text)
+
+    def test_parser_aceita_quantidade_em_pontos(self):
+        from gestao.services.alerta_parser import parse_alerta_bruto
+
+        parsed = parse_alerta_bruto(
+            "Ribeirao Preto (RAO) 4.100 pontos + taxas\n"
+            "Economica\n"
+            "Programa LatamPass\n"
+            "Voando Latam\n"
+            "Sao Paulo (GRU) > Ribeirao Preto (RAO)\n"
+        )
+
+        self.assertEqual(parsed["valor_milhas"], "4100")
+
     def test_webhook_nao_duplica_mesmo_update(self):
         payload = self._build_payload(update_id=777)
         headers = {
