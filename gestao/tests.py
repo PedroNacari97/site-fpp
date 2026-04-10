@@ -930,6 +930,19 @@ class TelegramNoticiasServiceTest(TestCase):
             )
         )
 
+    def test_looks_like_manual_news_text_com_link_de_regulamento_continua_manual(self):
+        from gestao.services.telegram_noticias import looks_like_manual_news_text, parse_single_news_url_command
+
+        text = (
+            "PROMOCAO DA AZUL VIAGENS COM CODIGO FESTA10 PARA PACOTES. \n"
+            "Tipo de produto: Aereo Azul e Hotel.\n"
+            "Consulte o regulamento oficial em https://azulviagens.com.br/termos-e-condicoes.\n"
+            "Essa campanha segue condicoes comerciais especificas e disponibilidade."
+        )
+
+        self.assertTrue(looks_like_manual_news_text(text))
+        self.assertIsNone(parse_single_news_url_command(text))
+
     @patch("portal.views.invalidate_news_cache")
     @patch("portal.services.news_sync_service.sync_news_from_url")
     def test_process_news_update_com_link(self, mock_sync_news_from_url, _mock_invalidate_news_cache):

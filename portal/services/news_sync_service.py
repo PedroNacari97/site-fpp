@@ -323,6 +323,18 @@ _DATE_VIAGEM_RE = re.compile(r"Data de viagem:\s*([0-9/]+)\s*[Aa]\s*([0-9/]+)", 
 _TIPO_PRODUTO_RE = re.compile(r"Tipo de produto:\s*(.+)", re.IGNORECASE)
 
 
+def _extract_manual_text_links(raw_text: str) -> list[dict[str, str]]:
+    seen: set[str] = set()
+    links: list[dict[str, str]] = []
+    for match in _URL_RE.findall(raw_text or ""):
+        cleaned = match.rstrip(").,;>")
+        if not cleaned or cleaned in seen:
+            continue
+        seen.add(cleaned)
+        links.append({"url": cleaned, "label": "Regulamento e regras"})
+    return links
+
+
 def _build_manual_text_fallback_draft(raw_text: str, raw_article: dict) -> NewsDraft:
     clean_text = " ".join((raw_text or "").split()).strip()
     lowered = clean_text.lower()
@@ -685,6 +697,7 @@ def sync_news_from_text(raw_text: str, *, source_name: str = "Telegram Manual", 
     source = _resolve_manual_text_source(source_name)
     content_hash = hashlib.sha1(clean_text.encode("utf-8")).hexdigest()
     pseudo_url = f"https://ncfly.com.br/telegram/manual/{content_hash[:24]}/"
+    outbound_links = _extract_manual_text_links(clean_text)
     article = FetchedEntry(
         url=pseudo_url,
         title="",
@@ -694,6 +707,7 @@ def sync_news_from_text(raw_text: str, *, source_name: str = "Telegram Manual", 
         metadata={
             "manual_submission": True,
             "submission_channel": "telegram",
+            "outbound_links": outbound_links,
         },
     )
     raw_article_payload = {
@@ -704,7 +718,7 @@ def sync_news_from_text(raw_text: str, *, source_name: str = "Telegram Manual", 
         "imagem_url": "",
         "data_publicacao_original": "",
         "categoria_padrao": "Promocoes",
-        "outbound_links": article.metadata.get("outbound_links", []) if article.metadata else [],
+        "outbound_links": outbound_links,
     }
 
     try:

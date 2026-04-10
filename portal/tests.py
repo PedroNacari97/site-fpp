@@ -1898,6 +1898,48 @@ class PortalSingleUrlNewsSyncTest(TestCase):
         self.assertEqual(noticia.categoria, "Promocoes")
         self.assertTrue(noticia.metadata_json.get("manual_submission"))
 
+    @patch("portal.services.news_sync_service.ensure_cover_for_news", return_value=(None, False))
+    @patch("portal.services.news_sync_service.build_news_draft")
+    def test_sync_news_from_text_preserva_link_de_regulamento_como_cta(self, mock_build_news_draft, _mock_cover):
+        from .services.news_sync_service import sync_news_from_text
+
+        def fake_build_news_draft(_source_name, raw_article):
+            return _apply_quality_rules(
+                NewsDraft(
+                    titulo="Azul Viagens libera promocode FESTA10 com 10% OFF em pacotes",
+                    resumo="Campanha promocional da Azul Viagens com regulamento oficial disponivel.",
+                    conteudo="Conteudo editorial gerado a partir do texto enviado no Telegram.",
+                    categoria="Promocoes",
+                    topico="Ofertas Relampago",
+                    tags=["Promocoes", "Azul Viagens"],
+                    cta_url="",
+                    cta_label="",
+                    slug="azul-viagens-festa10-regulamento",
+                    confianca=Decimal("0.61"),
+                    imagem_url="",
+                    metadata={},
+                ),
+                raw_article,
+            )
+
+        mock_build_news_draft.side_effect = fake_build_news_draft
+
+        raw_text = (
+            "PROMOCAO DA AZUL VIAGENS COM CODIGO FESTA10 PARA PACOTES. "
+            "Tipo de produto: Aereo Azul e Hotel. "
+            "Regra juridica completa em https://azulviagens.com.br/termos-e-condicoes. "
+            "Data de venda: 08/04/2026 a 21/04/2026."
+        )
+
+        result = sync_news_from_text(raw_text)
+
+        self.assertEqual(result["outcome"], "published")
+        noticia = NoticiaPublicada.objects.get()
+        self.assertEqual(
+            (noticia.metadata_json or {}).get("offer_cta", {}).get("url"),
+            "https://azulviagens.com.br/termos-e-condicoes",
+        )
+
     @patch("portal.services.news_sync_service.build_news_draft", side_effect=TimeoutError("timed out"))
     def test_sync_news_from_text_usa_fallback_local_quando_etapa_principal_falha(self, _mock_build_news_draft):
         from .services.news_sync_service import sync_news_from_text

@@ -90,6 +90,10 @@ def _clean_submitted_url(url):
     return _sanitize_news_text(url).rstrip(").,;>")
 
 
+def _strip_news_urls(text):
+    return _EMBEDDED_URL_RE.sub(" ", text or "")
+
+
 def parse_single_news_url_command(text):
     raw_text = (text or "").strip()
     if not raw_text:
@@ -117,9 +121,17 @@ def looks_like_manual_news_text(text):
     raw_text = _sanitize_news_text(text)
     if len(raw_text) < 160:
         return False
-    lowered = raw_text.lower()
+    text_without_urls = _strip_news_urls(raw_text)
+    lowered = text_without_urls.lower()
     score = sum(1 for hint in _MANUAL_NEWS_HINTS if hint in lowered)
-    return score >= 2
+    structured_fields = text_without_urls.count(":")
+    multiline = "\n" in raw_text
+    has_url = bool(_EMBEDDED_URL_RE.search(raw_text))
+    return (
+        score >= 2
+        or (score >= 1 and len(text_without_urls.strip()) >= 220 and (structured_fields >= 2 or multiline))
+        or (score >= 1 and has_url and len(text_without_urls.strip()) >= 140 and (structured_fields >= 1 or multiline))
+    )
 
 
 def _find_recent_duplicate(message_hash, chat_id):
