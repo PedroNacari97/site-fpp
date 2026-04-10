@@ -9,6 +9,7 @@ from unittest.mock import Mock, patch
 
 from django.conf import settings
 from django.core import mail
+from django.core.mail import EmailMultiAlternatives, get_connection
 from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -1347,6 +1348,62 @@ class PortalAlertDigestTest(TestCase):
         lead.refresh_from_db()
         self.assertEqual(lead.status, LeadAlertaEmail.STATUS_DESCADASTRADO)
         self.assertContains(response, "Recebimento cancelado")
+
+
+@override_settings(
+    EMAIL_BACKEND="portal.email_backends.ResendEmailBackend",
+    RESEND_API_KEY="re_test_123",
+    RESEND_API_URL="https://api.resend.com/emails",
+    RESEND_REQUEST_TIMEOUT=15,
+    DEFAULT_FROM_EMAIL="pedro@ncfly.com.br",
+)
+class ResendEmailBackendTest(TestCase):
+    @patch("portal.email_backends.requests.Session.post")
+    def test_send_mail_via_resend_backend(self, mock_post):
+        mock_post.return_value = Mock(status_code=200)
+        mock_post.return_value.raise_for_status = Mock()
+
+        message = EmailMultiAlternatives(
+            subject="Teste lead",
+            body="Corpo simples",
+            from_email="pedro@ncfly.com.br",
+            to=["destino@example.com"],
+        )
+
+        sent = get_connection().send_messages([message])
+
+        self.assertEqual(sent, 1)
+        self.assertEqual(mock_post.call_count, 1)
+        self.assertEqual(mock_post.call_args.kwargs["timeout"], 15)
+        payload = mock_post.call_args.kwargs["json"]
+        self.assertEqual(payload["from"], "pedro@ncfly.com.br")
+        self.assertEqual(payload["to"], ["destino@example.com"])
+        self.assertEqual(payload["subject"], "Teste lead")
+        self.assertEqual(payload["text"], "Corpo simples")
+
+    @patch("portal.email_backends.requests.Session.post")
+    def test_email_multi_alternatives_preserva_html_headers_e_reply_to(self, mock_post):
+        mock_post.return_value = Mock(status_code=200)
+        mock_post.return_value.raise_for_status = Mock()
+
+        message = EmailMultiAlternatives(
+            subject="Digest NC Fly",
+            body="Versao texto",
+            from_email="alertas@ncfly.com.br",
+            to=["ana@example.com"],
+            reply_to=["atendimento@ncfly.com.br"],
+            headers={"List-Unsubscribe": "<https://ncfly.com.br/unsub>"},
+        )
+        message.attach_alternative("<p>Versao html</p>", "text/html")
+
+        sent = get_connection().send_messages([message])
+
+        self.assertEqual(sent, 1)
+        payload = mock_post.call_args.kwargs["json"]
+        self.assertEqual(payload["reply_to"], ["atendimento@ncfly.com.br"])
+        self.assertEqual(payload["headers"]["List-Unsubscribe"], "<https://ncfly.com.br/unsub>")
+        self.assertEqual(payload["html"], "<p>Versao html</p>")
+        self.assertEqual(payload["text"], "Versao texto")
 
 
 class PortalArticleSeoMetadataTest(TestCase):

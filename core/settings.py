@@ -295,12 +295,26 @@ SUPERADMIN_MFA_ATTEMPT_LIMIT = int(
     os.environ.get("SUPERADMIN_MFA_ATTEMPT_LIMIT", "5")
 )
 
-EMAIL_BACKEND = os.environ.get(
-    "DJANGO_EMAIL_BACKEND",
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "").strip()
+RESEND_API_URL = os.environ.get("RESEND_API_URL", "https://api.resend.com/emails").strip()
+RESEND_FROM_EMAIL = os.environ.get("RESEND_FROM_EMAIL", "").strip()
+RESEND_REQUEST_TIMEOUT = int(os.environ.get("RESEND_REQUEST_TIMEOUT", "15"))
+
+_configured_email_backend = os.environ.get("DJANGO_EMAIL_BACKEND", "").strip()
+_default_email_backend = (
     "django.core.mail.backends.console.EmailBackend"
     if DEBUG
-    else "django.core.mail.backends.smtp.EmailBackend",
+    else "django.core.mail.backends.smtp.EmailBackend"
 )
+if RESEND_API_KEY and (
+    not _configured_email_backend
+    or _configured_email_backend == "django.core.mail.backends.smtp.EmailBackend"
+):
+    _default_email_backend = "portal.email_backends.ResendEmailBackend"
+elif _configured_email_backend:
+    _default_email_backend = _configured_email_backend
+
+EMAIL_BACKEND = _default_email_backend
 EMAIL_HOST = os.environ.get("DJANGO_EMAIL_HOST", "localhost")
 EMAIL_PORT = int(os.environ.get("DJANGO_EMAIL_PORT", "25"))
 EMAIL_HOST_USER = os.environ.get("DJANGO_EMAIL_HOST_USER", "")
@@ -320,6 +334,7 @@ def _default_outbound_email():
 
 DEFAULT_FROM_EMAIL = (
     os.environ.get("DJANGO_DEFAULT_FROM_EMAIL", "").strip()
+    or RESEND_FROM_EMAIL
     or EMAIL_HOST_USER.strip()
     or _default_outbound_email()
 )
