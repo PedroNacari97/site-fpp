@@ -781,6 +781,34 @@ def _clean_generated_text(value: str) -> str:
     return "\n\n".join(parts)
 
 
+def _build_cover_focus_prompt(title: str, summary: str, category: str) -> str:
+    label = _extract_cover_brand_label(title, summary, category)
+    lowered = _normalize_lookup(f"{title} {summary}")
+    instructions: list[str] = []
+
+    if label:
+        instructions.append(
+            f"Priorize um unico elemento hero claramente ligado a {label}, com identidade visual reconhecivel e protagonismo na composicao."
+        )
+        instructions.append(
+            f"Se houver marcas, programas, cartoes, companhias ou aeronaves relacionados a {label}, mantenha o foco neles e evite dispersar a cena em muitos assuntos ao mesmo tempo."
+        )
+
+    if any(keyword in lowered for keyword in ("promocode", "cupom", "coupon", "% off", "desconto")):
+        instructions.append(
+            "Se a pauta envolver cupom, promocode ou desconto, represente isso com um unico elemento visual de voucher, ticket ou selo promocional discreto e elegante."
+        )
+
+    instructions.append(
+        "Evite colagens genericas com excesso de malas, carros, onibus, baloes, presentes, hoteis ou varios objetos ao mesmo tempo, a menos que eles sejam essenciais para entender a pauta."
+    )
+    instructions.append(
+        "Prefira uma direcao de arte mais limpa, com poucos elementos fortes, boa hierarquia visual e cara de capa editorial premium."
+    )
+
+    return " ".join(instructions)
+
+
 def _build_cover_prompt(title: str, summary: str, category: str) -> str:
     return (
         f"Capa editorial premium para uma noticia de {category}. "
@@ -791,6 +819,7 @@ def _build_cover_prompt(title: str, summary: str, category: str) -> str:
         "Mas a composicao final precisa ser uma nova variacao visual, nao uma copia da capa vista no site de referencia. "
         "Altere enquadramento, perspectiva, crop, distribuicao dos elementos, distancia da camera, profundidade, proporcao entre objetos, luz, textura e pequenos detalhes visuais. "
         "O resultado pode lembrar a mesma campanha ou assunto, mas nao deve reproduzir exatamente a arte promocional original. "
+        f"{_build_cover_focus_prompt(title, summary, category)} "
         "Visual sofisticado, limpo, com cara de capa de portal premium. Sem texto, sem marcas d'agua, sem interface, sem branding do site-fonte."
     )
 
@@ -803,6 +832,7 @@ def _build_cover_reference_prompt(title: str, summary: str, category: str) -> st
         "Mantenha a mesma ideia central, os mesmos produtos, marcas, programas, companhias, cartoes, aeronaves ou destinos que forem relevantes na materia. "
         "A nova capa deve continuar reconhecivel em relacao ao tema original, mas com alteracoes controladas no enquadramento, crop, perspectiva, organizacao dos elementos, luz, profundidade, textura e pequenos detalhes. "
         "Nao copie a arte exatamente como esta. Gere uma variacao editorial refinada e propria, como se fosse uma nova versao da mesma campanha ou assunto. "
+        f"{_build_cover_focus_prompt(title, summary, category)} "
         "Sem texto adicional, sem marcas d'agua, sem interface, sem branding do site-fonte."
     )
 

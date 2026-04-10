@@ -993,7 +993,10 @@ class TelegramNoticiasServiceTest(TestCase):
 
         self.assertEqual(outcome, "sync_batch")
         self.assertEqual(event.status, TelegramNoticiaEvento.STATUS_PROCESSADO)
-        self.assertIn("Sync concluido: 4 processadas, 2 publicadas.", meta["message"])
+        self.assertIn("Atualizacao concluida.", meta["message"])
+        self.assertIn("Solicitadas: ate 4 noticia(s).", meta["message"])
+        self.assertIn("Processadas: 4.", meta["message"])
+        self.assertIn("Publicadas: 2.", meta["message"])
 
 
 class AlertaViagemVitrineTest(TestCase):

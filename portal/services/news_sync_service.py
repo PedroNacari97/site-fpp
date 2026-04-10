@@ -429,11 +429,13 @@ def _should_prefer_manual_text_fallback(raw_text: str) -> bool:
         score += 1
     if "data de viagem:" in lowered:
         score += 1
+    if "fluxo de aplicacao:" in lowered or "fluxo de aplicação:" in lowered:
+        score += 1
     if "regra jurídica:" in lowered or "regra juridica:" in lowered:
         score += 1
     if "promocode" in lowered or _PROMO_CODE_RE.search(raw_text or "") or _PROMO_CODE_FALLBACK_RE.search(raw_text or ""):
         score += 1
-    return score >= 3
+    return score >= 3 or (len((raw_text or "").strip()) >= 600 and score >= 2)
 
 
 def _upsert_news_from_article(
@@ -510,6 +512,8 @@ def _upsert_news_from_article(
             if isinstance(item, dict)
         ],
         exclude_pk=existing_news.pk if existing_news else None,
+        source_url=article.url,
+        manual_submission=manual_submission,
     )
 
     if duplicate_news and duplicate_news.materia_bruta_id != raw_article.pk:
