@@ -28,6 +28,8 @@ from ..services.telegram_alertas import (
 )
 from ..services.telegram_noticias import (
     get_telegram_noticias_config,
+    looks_like_manual_news_text,
+    parse_single_news_url_command,
     process_telegram_news_update,
     telegram_news_send_message,
 )
@@ -691,6 +693,30 @@ def _run_telegram_news_update_background(payload, chat_id):
                 pass
 
 
+def _build_telegram_news_acknowledgement(raw_text):
+    clean_text = (raw_text or "").strip()
+    news_limit = _parse_news_command(clean_text)
+    if news_limit is not None:
+        return (
+            f"Recebi o comando atualizar {news_limit}.\n"
+            "Vou buscar as noticias agora e te devolver um resumo quando terminar."
+        )
+
+    if parse_single_news_url_command(clean_text):
+        return (
+            "Recebi o link.\n"
+            "Vou analisar a materia, comparar com o que ja existe e te responder aqui."
+        )
+
+    if looks_like_manual_news_text(clean_text):
+        return (
+            "Recebi o texto da noticia.\n"
+            "Vou montar a materia e tentar gerar a capa automaticamente. Isso pode levar um pouco mais."
+        )
+
+    return ""
+
+
 @login_required
 def admin_configurar_telegram_webhook(request):
     if not request.user.is_superuser:
@@ -805,6 +831,15 @@ def telegram_noticias_webhook(request):
         return JsonResponse({"ok": False, "error": "invalid_json"}, status=400)
 
     chat_id = _extract_chat_id(payload)
+    msg = payload.get("message") or payload.get("channel_post") or {}
+    raw_text = (msg.get("text") or msg.get("caption") or "").strip()
+    ack_message = _build_telegram_news_acknowledgement(raw_text)
+    if chat_id and ack_message:
+        try:
+            telegram_news_send_message(chat_id, ack_message)
+        except Exception:
+            logger.exception("Falha ao enviar confirmacao imediata do bot de noticias.")
+
     thread = threading.Thread(
         target=_run_telegram_news_update_background,
         args=(payload, chat_id),

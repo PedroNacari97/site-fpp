@@ -179,6 +179,8 @@ def find_duplicate_news(
     body: str = "",
     outbound_urls: list[str] | None = None,
     exclude_pk: int | None = None,
+    source_url: str = "",
+    manual_submission: bool = False,
 ) -> NoticiaPublicada | None:
     fingerprint = build_story_fingerprint(title, summary, category, topic, body)
     normalized_title = normalize_story_text(title)
@@ -190,6 +192,7 @@ def find_duplicate_news(
         for normalized in (normalize_reference_url(url) for url in (outbound_urls or []))
         if normalized
     }
+    normalized_source_url = normalize_reference_url(source_url)
     normalized_category = normalize_story_text(category)
     normalized_topic = normalize_story_text(topic)
 
@@ -201,6 +204,12 @@ def find_duplicate_news(
     )
 
     for existing in queryset:
+        existing_source_url = normalize_reference_url(
+            (existing.materia_bruta.url_original if existing.materia_bruta_id and existing.materia_bruta else existing.url_fonte) or ""
+        )
+        if normalized_source_url and existing_source_url == normalized_source_url:
+            return existing
+
         existing_fingerprint = _existing_story_fingerprint(existing)
         if existing_fingerprint == fingerprint:
             return existing
@@ -225,6 +234,17 @@ def find_duplicate_news(
         if existing.materia_bruta_id and existing.materia_bruta and existing.materia_bruta.metadata_json:
             existing_reference_urls |= _outbound_reference_urls(existing.materia_bruta.metadata_json)
         outbound_overlap = bool(candidate_outbound_urls & existing_reference_urls)
+
+        if manual_submission:
+            if outbound_overlap and (title_similarity >= 0.86 or body_similarity >= 0.8 or overlap >= 0.78):
+                return existing
+            if same_category and title_similarity >= 0.92 and overlap >= 0.68:
+                return existing
+            if same_category and same_topic and body_similarity >= 0.84 and overlap >= 0.7:
+                return existing
+            if title_token_overlap >= 0.85 and body_similarity >= 0.78:
+                return existing
+            continue
 
         if outbound_overlap and (same_category or same_topic or overlap >= 0.45):
             return existing

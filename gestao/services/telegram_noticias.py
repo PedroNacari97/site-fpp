@@ -140,7 +140,7 @@ def _build_result_message(result):
     titulo = noticia.titulo if noticia else ""
 
     if outcome == "duplicate_reference":
-        return f"Essa pauta ja existia no site.\n{titulo}\n{noticia_url}".strip()
+        return f"Encontrei uma noticia ja publicada para essa pauta.\n{titulo}\n{noticia_url}".strip()
     if outcome == "updated":
         return f"Noticia atualizada.\n{titulo}\n{noticia_url}".strip()
     if outcome == "draft":
@@ -148,6 +148,22 @@ def _build_result_message(result):
     if outcome == "already_published":
         return f"Essa noticia ja estava publicada.\n{titulo}\n{noticia_url}".strip()
     return f"Noticia publicada.\n{titulo}\n{noticia_url}".strip()
+
+
+def _build_sync_batch_message(limit: int, processed: int, published: int, errors: list[str] | None = None) -> str:
+    errors = errors or []
+    lines = [
+        "Atualizacao concluida.",
+        f"Solicitadas: ate {limit} noticia(s).",
+        f"Processadas: {processed}.",
+        f"Publicadas: {published}.",
+    ]
+    if errors:
+        lines.append(f"Erros: {len(errors)}.")
+        lines.append(f"Primeiro erro: {errors[0][:220]}")
+    elif published == 0:
+        lines.append("Nenhuma noticia nova foi publicada nesta rodada.")
+    return "\n".join(lines)
 
 
 def process_telegram_news_update(update):
@@ -215,10 +231,7 @@ def process_telegram_news_update(update):
             event.status = TelegramNoticiaEvento.STATUS_PROCESSADO
             event.processado_em = timezone.now()
             event.save(update_fields=["status", "processado_em"])
-            summary = (
-                f"Sync concluido: {processed} processadas, {published} publicadas."
-                + (f" ({len(errors)} erros)" if errors else "")
-            )
+            summary = _build_sync_batch_message(news_limit, processed, published, errors)
             return event, "sync_batch", {"message": summary}
 
         news_url = parse_single_news_url_command(raw_text)

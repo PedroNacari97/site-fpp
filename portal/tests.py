@@ -1586,6 +1586,8 @@ class PortalContentQualityTest(TestCase):
         self.assertIn("nova variacao visual", prompt)
         self.assertIn("marcas, programas, companhias", prompt)
         self.assertIn("nao uma copia da capa vista no site de referencia", prompt)
+        self.assertIn("Priorize um unico elemento hero", prompt)
+        self.assertIn("Evite colagens genericas", prompt)
         self.assertIn("Sem texto, sem marcas d'agua", prompt)
 
     def test_render_svg_cover_quebra_titulo_em_linhas_e_escapa_caracteres(self):
@@ -2186,3 +2188,34 @@ class PortalCrossSourceDeduplicationTest(TestCase):
             title="Titulo",
         )
         self.assertEqual(len(metadata["source_references"]), 1)
+
+    def test_find_duplicate_news_manual_submission_e_mais_conservador(self):
+        duplicate = find_duplicate_news(
+            "Banco premium libera nova campanha institucional",
+            "Nova acao comercial para clientes de alta renda com foco em posicionamento de marca.",
+            "Promocoes",
+            "Transferencias e Bonus",
+            body=(
+                "Texto editorial sobre posicionamento de marca, beneficios amplos e campanha comercial sem relacao direta "
+                "com a transferencia bonificada da noticia publicada anteriormente."
+            ),
+            outbound_urls=["https://programa.exemplo.com/promocao?utm_source=manual"],
+            source_url="https://fonte-nova.com/noticia-diferente",
+            manual_submission=True,
+        )
+
+        self.assertIsNone(duplicate)
+
+    def test_find_duplicate_news_manual_submission_aceita_mesma_url_original(self):
+        duplicate = find_duplicate_news(
+            "Titulo qualquer",
+            "Resumo qualquer",
+            "Promocoes",
+            "Transferencias e Bonus",
+            body="Outro corpo qualquer.",
+            source_url="https://espelho.com/noticia",
+            manual_submission=True,
+        )
+
+        self.assertIsNotNone(duplicate)
+        self.assertEqual(duplicate.pk, self.noticia.pk)
