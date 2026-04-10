@@ -1,7 +1,25 @@
+import re
+
 from django import forms
 from django.utils import timezone
 
 from .models import LeadAlertaEmail, LeadPlataforma
+
+
+def _format_br_phone(value):
+    digits = re.sub(r"\D+", "", str(value or ""))
+    if digits.startswith("55") and len(digits) >= 12:
+        digits = digits[2:]
+    digits = digits[:11]
+    if not digits:
+        return ""
+    if len(digits) <= 2:
+        return f"({digits}"
+    if len(digits) <= 6:
+        return f"({digits[:2]}) {digits[2:]}"
+    if len(digits) <= 10:
+        return f"({digits[:2]}) {digits[2:6]}-{digits[6:]}"
+    return f"({digits[:2]}) {digits[2:7]}-{digits[7:]}"
 
 
 class PlataformaLeadForm(forms.ModelForm):
@@ -60,6 +78,9 @@ class PlataformaLeadForm(forms.ModelForm):
                     "class": "portal-lead-field__input",
                     "placeholder": "(00) 00000-0000",
                     "autocomplete": "tel",
+                    "inputmode": "tel",
+                    "maxlength": "15",
+                    "data-phone-mask": "br",
                 }
             ),
             "equipe_tamanho": forms.Select(
@@ -100,6 +121,9 @@ class PlataformaLeadForm(forms.ModelForm):
             )
         return "1"
 
+    def clean_telefone(self):
+        return _format_br_phone(self.cleaned_data.get("telefone", ""))
+
 
 class PlataformaQuickLeadForm(forms.Form):
     nome = forms.CharField(
@@ -129,6 +153,9 @@ class PlataformaQuickLeadForm(forms.Form):
                 "class": "portal-lead-field__input",
                 "placeholder": "(00) 00000-0000",
                 "autocomplete": "tel",
+                "inputmode": "tel",
+                "maxlength": "15",
+                "data-phone-mask": "br",
             }
         ),
     )
@@ -142,6 +169,9 @@ class PlataformaQuickLeadForm(forms.Form):
         self.fields["aceite_contato"].label = (
             "Autorizo o contato da NC Fly sobre a plataforma e li a Política de Privacidade."
         )
+
+    def clean_telefone(self):
+        return _format_br_phone(self.cleaned_data.get("telefone", ""))
 
     def save(self, *, consent_version="", ip="", user_agent="", source_environment="local", source_host=""):
         return LeadPlataforma.objects.create(
@@ -189,6 +219,9 @@ class AlertEmailLeadForm(forms.Form):
                 "class": "portal-lead-field__input",
                 "placeholder": "(00) 00000-0000",
                 "autocomplete": "tel",
+                "inputmode": "tel",
+                "maxlength": "15",
+                "data-phone-mask": "br",
             }
         ),
     )
@@ -208,7 +241,7 @@ class AlertEmailLeadForm(forms.Form):
         return (self.cleaned_data.get("email") or "").strip().lower()
 
     def clean_telefone(self):
-        return (self.cleaned_data.get("telefone") or "").strip()
+        return _format_br_phone(self.cleaned_data.get("telefone", ""))
 
     def save(
         self,

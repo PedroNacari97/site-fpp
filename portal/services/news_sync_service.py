@@ -366,19 +366,19 @@ def _build_manual_text_fallback_draft(raw_text: str, raw_article: dict) -> NewsD
     paragraphs = []
     lead = f"{brand} colocou no ar uma nova campanha promocional"
     if code:
-        lead += f" com o codigo **{code}**"
+        lead += f" com o codigo {code}"
     if percent:
-        lead += f", que entrega **{percent}**"
+        lead += f", que entrega {percent}"
     if "pacote" in lowered:
         lead += " em pacotes"
     lead += "."
     paragraphs.append(lead)
 
-    details = f"A promocao vale para **{product_type}**"
+    details = f"A promocao vale para {product_type}"
     if sale_range:
-        details += f", com periodo de venda entre **{sale_range}**"
+        details += f", com periodo de venda entre {sale_range}"
     if travel_range:
-        details += f" e janela de viagem de **{travel_range}**"
+        details += f" e janela de viagem de {travel_range}"
     details += "."
     paragraphs.append(details)
 

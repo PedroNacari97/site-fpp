@@ -1,4 +1,5 @@
 import logging
+import threading
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -8,6 +9,12 @@ from portal.models import LeadAlertaEmail
 
 
 logger = logging.getLogger(__name__)
+SYNC_NOTIFICATION_BACKENDS = {
+    "django.core.mail.backends.console.EmailBackend",
+    "django.core.mail.backends.dummy.EmailBackend",
+    "django.core.mail.backends.filebased.EmailBackend",
+    "django.core.mail.backends.locmem.EmailBackend",
+}
 
 ALERT_SOURCE_LABELS = {
     LeadAlertaEmail.ORIGEM_HOME: "Home publica",
@@ -26,6 +33,21 @@ def _format_datetime(value):
     return timezone.localtime(value).strftime("%d/%m/%Y %H:%M")
 
 
+def _send_lead_notification_now(*, subject, body, recipients):
+    try:
+        send_mail(
+            subject=subject,
+            message=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=recipients,
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception("Falha ao enviar notificacao de lead por e-mail.")
+        return False
+    return True
+
+
 def _send_lead_notification(subject, lines):
     recipients = [
         item.strip()
@@ -35,17 +57,26 @@ def _send_lead_notification(subject, lines):
     if not recipients:
         return False
 
-    try:
-        send_mail(
+    body = "\n".join(lines)
+    email_backend = str(getattr(settings, "EMAIL_BACKEND", "") or "").strip()
+    if email_backend in SYNC_NOTIFICATION_BACKENDS:
+        return _send_lead_notification_now(
             subject=subject,
-            message="\n".join(lines),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=recipients,
-            fail_silently=False,
+            body=body,
+            recipients=recipients,
         )
-    except Exception:
-        logger.exception("Falha ao enviar notificacao de lead por e-mail.")
-        return False
+
+    thread = threading.Thread(
+        target=_send_lead_notification_now,
+        kwargs={
+            "subject": subject,
+            "body": body,
+            "recipients": recipients,
+        },
+        daemon=True,
+        name="portal-lead-notification-email",
+    )
+    thread.start()
     return True
 
 
