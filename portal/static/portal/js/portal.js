@@ -354,6 +354,56 @@ document.addEventListener("DOMContentLoaded", () => {
     return digits;
   };
 
+  const formatBrazilPhone = (value) => {
+    const digits = String(value || "")
+      .replace(/\D/g, "")
+      .replace(/^55(?=\d{10,11}$)/, "")
+      .slice(0, 11);
+
+    if (!digits) {
+      return "";
+    }
+    if (digits.length <= 2) {
+      return `(${digits}`;
+    }
+    if (digits.length <= 6) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    }
+    if (digits.length <= 10) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    }
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  };
+
+  document.querySelectorAll("[data-phone-mask='br']").forEach((input) => {
+    const applyMask = () => {
+      input.value = formatBrazilPhone(input.value);
+    };
+
+    applyMask();
+    input.addEventListener("input", applyMask);
+    input.addEventListener("blur", applyMask);
+  });
+
+  document.querySelectorAll("form").forEach((form) => {
+    const submitButton = form.querySelector("[data-submit-loading-label]");
+    if (!submitButton) {
+      return;
+    }
+
+    form.addEventListener("submit", () => {
+      if (form.dataset.submitting === "1") {
+        return;
+      }
+
+      form.dataset.submitting = "1";
+      submitButton.dataset.originalLabel = submitButton.textContent.trim();
+      submitButton.textContent = submitButton.dataset.submitLoadingLabel || "Enviando...";
+      submitButton.disabled = true;
+      submitButton.setAttribute("aria-busy", "true");
+    });
+  });
+
   document.querySelectorAll("[data-alert-whatsapp]").forEach((link) => {
     const whatsappNumber = normalizeWhatsappNumber(link.dataset.whatsappNumber);
     const whatsappMessage = link.dataset.whatsappMessage || "";

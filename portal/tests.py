@@ -37,6 +37,7 @@ from .services.alert_email_broadcasts import build_alert_unsubscribe_token, send
 from .services.deduplication import append_source_reference, build_story_fingerprint, find_duplicate_news
 from .services.fetchers.base import extract_article_text, extract_relevant_outbound_links
 from .services.fetchers.html import HtmlFetcher
+from .templatetags.portal_extras import portal_content
 
 
 class PortalRoutesTest(TestCase):
@@ -578,6 +579,7 @@ class PortalRoutesTest(TestCase):
         self.assertContains(response, "Sobre a NC Fly")
         self.assertContains(response, "Fale conosco")
         self.assertContains(response, "Pol&iacute;tica de Privacidade")
+        self.assertNotContains(response, "portal-deferred-section--md", html=False)
 
 class PortalSeoTest(TestCase):
     def setUp(self):
@@ -899,6 +901,23 @@ class PortalAlertEmailLeadTest(TestCase):
         self.assertEqual(lead.status, "ativo")
         self.assertContains(response, "Seu contato entrou na lista.")
 
+    def test_post_valido_formata_telefone_digitado_sem_mascara(self):
+        response = self.client.post(
+            reverse("portal_home"),
+            data={
+                "form_kind": "alert_email_lead",
+                "nome_completo": "Ana Souza",
+                "email": "ana@example.com",
+                "telefone": "11988887777",
+                "aceite_alertas": "on",
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        lead = LeadAlertaEmail.objects.get()
+        self.assertEqual(lead.telefone, "(11) 98888-7777")
+
     def test_post_valido_na_pagina_de_alertas_cria_lead_de_alerta(self):
         response = self.client.post(
             reverse("portal_alertas"),
@@ -1111,6 +1130,24 @@ class PortalAlertDigestTest(TestCase):
         self.assertEqual(email.alternatives[0][1], "text/html")
         self.assertIn("WhatsApp da NC Fly", email.alternatives[0][0])
         self.assertIn("Falar no WhatsApp", email.alternatives[0][0])
+
+    def test_novo_inscrito_antes_do_horario_entra_no_digest_pendente(self):
+        create_or_update_alerta(self._alerta_payload())
+        LeadAlertaEmail.objects.create(
+            nome_completo="Carla Dias",
+            email="carla@example.com",
+            telefone="(31) 97777-5555",
+            origem_cadastro=LeadAlertaEmail.ORIGEM_HOME,
+            aceite_versao="2026-04-alertas-email",
+            status=LeadAlertaEmail.STATUS_ATIVO,
+        )
+
+        result = send_pending_alert_digest()
+
+        self.assertEqual(result["items"], 1)
+        self.assertEqual(result["recipients"], 2)
+        self.assertEqual(result["emails_sent"], 2)
+        self.assertEqual({email.to[0] for email in mail.outbox}, {"ana@example.com", "carla@example.com"})
 
     def test_send_pending_alert_digest_respeita_max_items_e_deixa_resto_para_depois(self):
         create_or_update_alerta(self._alerta_payload())
@@ -1332,6 +1369,12 @@ class PortalContentQualityTest(TestCase):
         self.assertIn("<tspan", svg)
         self.assertIn("&amp;", svg)
         self.assertIn("Imagem ilustrativa", svg)
+
+    def test_portal_content_nao_transforma_asterisco_simples_em_negrito(self):
+        rendered = str(portal_content("Linha com *marcacao simples* do Telegram."))
+
+        self.assertIn("*marcacao simples*", rendered)
+        self.assertNotIn("<strong>marcacao simples</strong>", rendered)
 
     @patch("portal.services.ai_pipeline._save_generated_file", return_value="portal/noticias/generated/teste.svg")
     def test_force_ai_images_sem_geracao_mantem_imagem_da_fonte(self, mock_save_generated_file):
@@ -1594,6 +1637,9 @@ class PortalSingleUrlNewsSyncTest(TestCase):
         self.assertEqual(noticia.categoria, "Promoções")
         self.assertEqual(noticia.topico, "Ofertas Relâmpago")
         self.assertEqual(noticia.metadata_json.get("provider"), "manual_text_fallback")
+        self.assertTrue(noticia.imagem.name.endswith(".svg"))
+        self.assertFalse(noticia.imagem_url)
+        self.assertNotIn("**", noticia.conteudo)
 
     @patch("portal.services.news_sync_service.build_news_draft", side_effect=TimeoutError("timed out"))
     def test_sync_news_from_text_atualiza_slug_quando_titulo_manual_melhora(self, _mock_build_news_draft):

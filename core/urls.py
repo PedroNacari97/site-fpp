@@ -58,5 +58,5 @@ urlpatterns = [
     path("", RedirectView.as_view(pattern_name="portal_home", permanent=False)),
 ]
 
-if settings.DEBUG:
+if settings.MEDIA_URL and not str(settings.MEDIA_URL).startswith(("http://", "https://")):
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

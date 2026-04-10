@@ -173,9 +173,10 @@ def phone_href(value):
 
 def _markdown_to_html(text: str) -> str:
     """Converte markdown simples (negrito, links) para HTML seguro."""
-    # Converte **texto** e *texto* para <strong>
+    # Converte apenas **texto** para <strong>. Marcadores simples com *
+    # aparecem com frequencia em textos do Telegram e estavam deixando
+    # blocos inteiros em negrito no portal.
     text = re.sub(r"\*\*(.+?)\*\*", lambda m: f"<strong>{escape(m.group(1))}</strong>", text)
-    text = re.sub(r"\*(.+?)\*", lambda m: f"<strong>{escape(m.group(1))}</strong>", text)
     # Converte [texto](url) para <a> com rel seguro
     def _link(m):
         label = escape(m.group(1))

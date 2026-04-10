@@ -148,7 +148,7 @@
             <div class="portal-alert-signup__success">
                 <span class="portal-alert-signup__success-badge">Cadastro confirmado</span>
                 <h2>Seu contato entrou na lista.</h2>
-                <p>Quando novos alertas fizerem sentido para a vitrine p&uacute;blica, a NC Fly poder&aacute; usar esse cadastro para avisar voc&ecirc; por e-mail.</p>
+                <p>Quando novos alertas fizerem sentido para a vitrine p&uacute;blica, a NC Fly poder&aacute; usar esse cadastro para avisar voc&ecirc; por e-mail nas pr&oacute;ximas janelas autom&aacute;ticas de envio.</p>
                 <ul class="portal-alert-signup__list portal-alert-signup__list--success">
                     <li>O termo de alertas &eacute; independente do interesse na plataforma.</li>
                     <li>Voc&ecirc; pode atualizar esse cadastro enviando o formul&aacute;rio novamente.</li>
@@ -212,6 +212,7 @@
                 <button
                     type="submit"
                     class="portal-button portal-button--primary"
+                    data-submit-loading-label="Enviando..."
                     data-analytics-event="click_alert_email_lead_submit"
                     data-analytics-category="conversion"
                     data-analytics-label="{{ alert_email_lead_section_id|default:'alertas-email-lead' }}"

@@ -191,6 +191,16 @@ img {
   }
 }
 
+@supports (content-visibility: auto) {
+  @media (max-width: 760px) {
+    .portal-footer__panel,
+    .portal-footer__bar {
+      content-visibility: visible;
+      contain-intrinsic-size: none;
+    }
+  }
+}
+
 .portal-topbar__inner {
   display: flex;
   align-items: center;
