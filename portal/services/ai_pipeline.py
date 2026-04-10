@@ -335,7 +335,233 @@ BRAND_COVER_THEMES = (
         "wordmark_color": "#ffffff",
         "accent_color": "#f4d35e",
     },
+    {
+        "label": "BTG",
+        "aliases": ("btg pactual", "btg"),
+        "hint": "Banco em destaque",
+        "background_start": "#041d5b",
+        "background_mid": "#0e49c7",
+        "background_end": "#2db9ff",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#9ee7ff",
+    },
+    {
+        "label": "C6",
+        "aliases": ("c6 bank", "c6"),
+        "hint": "Banco em destaque",
+        "background_start": "#111111",
+        "background_mid": "#2a2a2a",
+        "background_end": "#b6923a",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#f7d57a",
+    },
+    {
+        "label": "XP",
+        "aliases": ("xp investimentos", "xp"),
+        "hint": "Banco em destaque",
+        "background_start": "#111111",
+        "background_mid": "#2f2f2f",
+        "background_end": "#f7a400",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#ffe3a3",
+    },
+    {
+        "label": "Mastercard Black",
+        "aliases": ("mastercard black", "master black"),
+        "hint": "Cartao em destaque",
+        "background_start": "#050505",
+        "background_mid": "#1c1c1c",
+        "background_end": "#d94c2a",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#ffb06b",
+    },
+    {
+        "label": "Visa Infinite",
+        "aliases": ("visa infinite",),
+        "hint": "Cartao em destaque",
+        "background_start": "#091f57",
+        "background_mid": "#1a4dcc",
+        "background_end": "#67b2ff",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#d8efff",
+    },
+    {
+        "label": "American Express",
+        "aliases": ("american express", "amex"),
+        "hint": "Cartao em destaque",
+        "background_start": "#0057b8",
+        "background_mid": "#1583ff",
+        "background_end": "#7ddcff",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#dff8ff",
+    },
 )
+
+
+GENERIC_COVER_PALETTES = (
+    {
+        "background_start": "#0f172a",
+        "background_mid": "#1d4ed8",
+        "background_end": "#38bdf8",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#bfdbfe",
+    },
+    {
+        "background_start": "#1f2937",
+        "background_mid": "#7c3aed",
+        "background_end": "#d946ef",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#f5d0fe",
+    },
+    {
+        "background_start": "#111827",
+        "background_mid": "#f97316",
+        "background_end": "#facc15",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#fef3c7",
+    },
+    {
+        "background_start": "#0b132b",
+        "background_mid": "#0ea5a4",
+        "background_end": "#34d399",
+        "wordmark_color": "#ffffff",
+        "accent_color": "#d1fae5",
+    },
+)
+
+
+_COMPOSITE_BRAND_LABEL_PATTERNS = (
+    re.compile(
+        r"\b(xp|btg(?:\s+pactual)?|c6(?:\s+bank)?)\s+"
+        r"(visa\s+infinite|mastercard\s+black|american\s+express|amex)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\b(visa\s+infinite|mastercard\s+black|american\s+express|amex)\s+"
+        r"(?:do|da|de)\s+"
+        r"(xp|btg(?:\s+pactual)?|c6(?:\s+bank)?)\b",
+        re.IGNORECASE,
+    ),
+)
+
+
+_GENERIC_BRAND_LABEL_PATTERNS = (
+    re.compile(
+        r"\b(?:cartao|cartao|cart[aã]o|programa|clube|banco|campanha|promocao|promo[cç][aã]o|oferta|aniversario)\s+"
+        r"(?:da|do|de|na|no|com)?\s*"
+        r"([a-z0-9&.+-]+(?:\s+[a-z0-9&.+-]+){0,4})",
+        re.IGNORECASE,
+    ),
+)
+
+
+_BRAND_LABEL_TOKEN_STOPWORDS = {
+    "a",
+    "ao",
+    "aos",
+    "as",
+    "ate",
+    "até",
+    "beneficio",
+    "beneficios",
+    "benefício",
+    "benefícios",
+    "bonus",
+    "bônus",
+    "card",
+    "cartao",
+    "cartão",
+    "clientes",
+    "clube",
+    "com",
+    "compra",
+    "conta",
+    "desconto",
+    "e",
+    "em",
+    "empresa",
+    "entrega",
+    "especial",
+    "garante",
+    "gratis",
+    "grátis",
+    "hotel",
+    "hoteis",
+    "hotéis",
+    "libera",
+    "milhas",
+    "na",
+    "nas",
+    "nc",
+    "news",
+    "no",
+    "nos",
+    "nova",
+    "novo",
+    "oferece",
+    "pacote",
+    "pacotes",
+    "para",
+    "passagens",
+    "pontos",
+    "premio",
+    "prêmio",
+    "programa",
+    "promocao",
+    "promoção",
+    "smiles",
+    "sua",
+    "suas",
+    "trecho",
+    "valida",
+    "viagem",
+    "viagens",
+}
+
+
+_BRAND_TOKEN_CANONICAL = {
+    "accor": "Accor",
+    "all": "ALL",
+    "amex": "Amex",
+    "american": "American",
+    "avios": "Avios",
+    "azul": "Azul",
+    "bank": "Bank",
+    "black": "Black",
+    "bonvoy": "Bonvoy",
+    "bradesco": "Bradesco",
+    "btg": "BTG",
+    "c6": "C6",
+    "caixa": "Caixa",
+    "club": "Club",
+    "executive": "Executive",
+    "esfera": "Esfera",
+    "express": "Express",
+    "fidelidade": "Fidelidade",
+    "gol": "Gol",
+    "honors": "Honors",
+    "iberia": "Iberia",
+    "infinite": "Infinite",
+    "inter": "Inter",
+    "itau": "Itau",
+    "itaucard": "Itaucard",
+    "latam": "LATAM",
+    "livelo": "Livelo",
+    "mastercard": "Mastercard",
+    "miles": "Miles",
+    "more": "More",
+    "pass": "Pass",
+    "pactual": "Pactual",
+    "plus": "Plus",
+    "porto": "Porto",
+    "santander": "Santander",
+    "smiles": "Smiles",
+    "tap": "TAP",
+    "tudoazul": "TudoAzul",
+    "visa": "Visa",
+    "viagens": "Viagens",
+    "xp": "XP",
+}
 
 
 @dataclass
@@ -1169,24 +1395,147 @@ def _wrap_svg_cover_title(title: str, width: int = 24, max_lines: int = 3) -> li
     ) or ["NC Fly News"]
 
 
-def _resolve_cover_brand_theme(*parts) -> dict[str, str] | None:
-    haystack_parts: list[str] = []
+def _flatten_cover_parts(*parts) -> list[str]:
+    flattened: list[str] = []
     for part in parts:
         if not part:
             continue
         if isinstance(part, (list, tuple, set)):
-            haystack_parts.extend(str(item) for item in part if str(item).strip())
-        else:
-            haystack_parts.append(str(part))
+            flattened.extend(str(item) for item in part if str(item).strip())
+            continue
+        flattened.append(str(part))
+    return flattened
 
+
+def _format_cover_brand_token(token: str) -> str:
+    cleaned = re.sub(r"[^A-Za-z0-9&.+-]", "", token or "")
+    if not cleaned:
+        return ""
+    normalized = _normalize_lookup(cleaned)
+    canonical = _BRAND_TOKEN_CANONICAL.get(normalized)
+    if canonical:
+        return canonical
+    if any(char.isdigit() for char in cleaned) or cleaned.isupper():
+        return cleaned.upper()
+    return cleaned.capitalize()
+
+
+def _clean_cover_brand_label(candidate: str) -> str:
+    tokens = re.findall(r"[A-Za-z0-9&.+-]+", candidate or "")
+    cleaned_tokens: list[str] = []
+    for token in tokens:
+        normalized = _normalize_lookup(token)
+        if not normalized:
+            continue
+        if normalized in _BRAND_LABEL_TOKEN_STOPWORDS:
+            if cleaned_tokens:
+                break
+            continue
+        cleaned_tokens.append(_format_cover_brand_token(token))
+        if len(cleaned_tokens) >= 4:
+            break
+    if not cleaned_tokens:
+        return ""
+    return " ".join(cleaned_tokens).strip()
+
+
+def _find_known_cover_theme(haystack: str) -> dict[str, str] | None:
+    best_theme: dict[str, str] | None = None
+    best_alias_length = -1
+    for theme in BRAND_COVER_THEMES:
+        for alias in theme["aliases"]:
+            normalized_alias = _normalize_lookup(alias)
+            if normalized_alias and normalized_alias in haystack and len(normalized_alias) > best_alias_length:
+                best_theme = theme
+                best_alias_length = len(normalized_alias)
+    return best_theme
+
+
+def _infer_cover_brand_hint(label: str, category: str = "") -> str:
+    normalized_label = _normalize_lookup(label)
+    normalized_category = _normalize_lookup(category)
+    if any(keyword in normalized_label for keyword in ("visa", "mastercard", "american express", "amex", "black", "infinite")):
+        return "Cartao em destaque"
+    if any(keyword in normalized_label for keyword in ("bank", "banco", "btg", "c6", "xp", "itau", "bradesco", "santander", "inter", "porto")):
+        return "Banco em destaque"
+    if any(keyword in normalized_label for keyword in ("air", "airlines", "aerolineas", "companhia", "tap")):
+        return "Companhia em destaque"
+    if "cartoes de credito" in normalized_category:
+        return "Cartao em destaque"
+    return "Programa em destaque"
+
+
+def _build_generic_cover_theme(label: str, category: str = "") -> dict[str, str]:
+    palette_index = int(hashlib.sha1((label or "ncfly").encode("utf-8")).hexdigest(), 16) % len(GENERIC_COVER_PALETTES)
+    palette = GENERIC_COVER_PALETTES[palette_index]
+    return {
+        "label": label,
+        "aliases": (),
+        "hint": _infer_cover_brand_hint(label, category),
+        **palette,
+    }
+
+
+def _extract_cover_brand_label(*parts) -> str:
+    flattened_parts = _flatten_cover_parts(*parts)
+    if not flattened_parts:
+        return ""
+
+    haystack_raw = " ".join(flattened_parts)
+    haystack = _normalize_lookup(haystack_raw)
+    if not haystack:
+        return ""
+
+    for pattern in _COMPOSITE_BRAND_LABEL_PATTERNS:
+        match = pattern.search(haystack_raw)
+        if not match:
+            continue
+        groups = [group for group in match.groups() if group]
+        if not groups:
+            candidate = match.group(1)
+        elif len(groups) == 2:
+            candidate = " ".join(groups)
+        else:
+            candidate = groups[0]
+        cleaned = _clean_cover_brand_label(candidate)
+        if cleaned:
+            return cleaned
+
+    known_theme = _find_known_cover_theme(haystack)
+    if known_theme:
+        label = known_theme.get("label") or ""
+        if label:
+            return label
+
+    for pattern in _GENERIC_BRAND_LABEL_PATTERNS:
+        match = pattern.search(haystack_raw)
+        if not match:
+            continue
+        cleaned = _clean_cover_brand_label(match.group(1))
+        if cleaned:
+            return cleaned
+
+    return ""
+
+
+def _resolve_cover_brand_theme(*parts) -> dict[str, str] | None:
+    haystack_parts = _flatten_cover_parts(*parts)
     haystack = _normalize_lookup(" ".join(haystack_parts))
     if not haystack:
         return None
 
-    for theme in BRAND_COVER_THEMES:
-        for alias in theme["aliases"]:
-            if _normalize_lookup(alias) in haystack:
-                return theme
+    explicit_label = _extract_cover_brand_label(*parts)
+    theme = _find_known_cover_theme(haystack)
+    if theme and explicit_label:
+        return {
+            **theme,
+            "label": explicit_label,
+            "hint": _infer_cover_brand_hint(explicit_label),
+        }
+    if theme:
+        return theme
+    if explicit_label:
+        return _build_generic_cover_theme(explicit_label)
     return None
 
 

@@ -77,9 +77,10 @@ def _airport_info(iata: str, fallback: str = "") -> dict[str, str]:
     fallback_label = _airport_text(fallback or iata)
     if not iata:
         return {
-            "city": fallback_label,
-            "name": fallback_label,
+            "city": "",
+            "name": "",
             "display": fallback_label,
+            "fallback": fallback_label,
         }
 
     airport = Aeroporto.objects.filter(sigla__iexact=iata).order_by("id").first()
@@ -87,14 +88,28 @@ def _airport_info(iata: str, fallback: str = "") -> dict[str, str]:
     name = _airport_text(getattr(airport, "nome", ""))
     display = name or city or fallback_label
     return {
-        "city": city or fallback_label,
-        "name": name or city or fallback_label,
+        "city": city,
+        "name": name,
         "display": display,
+        "fallback": fallback_label,
     }
 
 
 def _airport_city(iata: str, fallback: str = "") -> str:
-    return _airport_info(iata, fallback=fallback)["city"]
+    info = _airport_info(iata, fallback=fallback)
+    return info["city"] or info["display"] or info["fallback"]
+
+
+def _resolve_airport_city(info: dict[str, str], city_override: str = "") -> str:
+    return _airport_text(city_override) or info["city"] or info["display"] or info["fallback"]
+
+
+def _build_airport_label(info: dict[str, str], city_override: str = "") -> str:
+    city = _resolve_airport_city(info, city_override)
+    name = _airport_text(info.get("name", ""))
+    if name and city and _normalize_key(name) != _normalize_key(city):
+        return f"{name} - {city}"
+    return name or city or info.get("display", "") or info.get("fallback", "")
 
 
 def _format_milhas(value: int | None) -> str:
@@ -176,8 +191,10 @@ def _group_dates(values) -> list[dict[str, Any]]:
 def _build_route_summary(alerta: AlertaViagem) -> dict[str, str]:
     origem_info = _airport_info(alerta.origem)
     destino_info = _airport_info(alerta.destino, fallback=alerta.cidade_destino)
-    origem_cidade = origem_info["city"]
-    destino_cidade = repair_portuguese_text(alerta.cidade_destino or destino_info["city"])
+    origem_cidade = _resolve_airport_city(origem_info)
+    destino_cidade = _resolve_airport_city(destino_info, alerta.cidade_destino)
+    origem_label = _build_airport_label(origem_info)
+    destino_label = _build_airport_label(destino_info, alerta.cidade_destino)
     return {
         "origem_codigo": (alerta.origem or "").upper(),
         "destino_codigo": (alerta.destino or "").upper(),
@@ -185,6 +202,10 @@ def _build_route_summary(alerta: AlertaViagem) -> dict[str, str]:
         "destino_cidade": destino_cidade,
         "origem_display": origem_info["display"],
         "destino_display": destino_info["display"],
+        "origem_name": origem_info["name"] or origem_label,
+        "destino_name": destino_info["name"] or destino_label,
+        "origem_label": origem_label,
+        "destino_label": destino_label,
         "route_label": f"{origem_cidade} → {destino_cidade}",
         "route_search_label": f"{(alerta.origem or '').upper()}-{(alerta.destino or '').upper()}",
     }
@@ -209,9 +230,10 @@ def _build_airport_lookup(alertas: Iterable[AlertaViagem]) -> dict[str, dict[str
         name = _airport_text(getattr(airport, "nome", ""))
         display = name or city or code
         lookup[code] = {
-            "city": city or display,
-            "name": name or city or display,
+            "city": city,
+            "name": name,
             "display": display,
+            "fallback": display,
         }
     return lookup
 
@@ -224,8 +246,10 @@ def _build_route_summary_with_lookup(
     destino_codigo = (alerta.destino or "").upper()
     origem_info = airport_lookup.get(origem_codigo) or _airport_info(alerta.origem)
     destino_info = airport_lookup.get(destino_codigo) or _airport_info(alerta.destino, fallback=alerta.cidade_destino)
-    origem_cidade = origem_info["city"]
-    destino_cidade = repair_portuguese_text(alerta.cidade_destino or destino_info["city"])
+    origem_cidade = _resolve_airport_city(origem_info)
+    destino_cidade = _resolve_airport_city(destino_info, alerta.cidade_destino)
+    origem_label = _build_airport_label(origem_info)
+    destino_label = _build_airport_label(destino_info, alerta.cidade_destino)
     return {
         "origem_codigo": origem_codigo,
         "destino_codigo": destino_codigo,
@@ -233,6 +257,10 @@ def _build_route_summary_with_lookup(
         "destino_cidade": destino_cidade,
         "origem_display": origem_info["display"],
         "destino_display": destino_info["display"],
+        "origem_name": origem_info["name"] or origem_label,
+        "destino_name": destino_info["name"] or destino_label,
+        "origem_label": origem_label,
+        "destino_label": destino_label,
         "route_label": f"{origem_cidade} → {destino_cidade}",
         "route_search_label": f"{origem_codigo}-{destino_codigo}",
     }
@@ -280,6 +308,10 @@ def build_public_alert_card(alerta: AlertaViagem) -> dict[str, Any]:
         "destino_cidade": route["destino_cidade"],
         "origem_display": route["origem_display"],
         "destino_display": route["destino_display"],
+        "origem_name": route["origem_name"],
+        "destino_name": route["destino_name"],
+        "origem_label": route["origem_label"],
+        "destino_label": route["destino_label"],
         "route_label": route["route_label"],
         "classe_label": alerta.get_classe_display(),
         "programa": repair_portuguese_text(alerta.programa_fidelidade),
@@ -313,6 +345,10 @@ def build_public_alert_cards(alertas: Iterable[AlertaViagem]) -> list[dict[str, 
                 "destino_cidade": route["destino_cidade"],
                 "origem_display": route["origem_display"],
                 "destino_display": route["destino_display"],
+                "origem_name": route["origem_name"],
+                "destino_name": route["destino_name"],
+                "origem_label": route["origem_label"],
+                "destino_label": route["destino_label"],
                 "route_label": route["route_label"],
                 "classe_label": alerta.get_classe_display(),
                 "programa": repair_portuguese_text(alerta.programa_fidelidade),
@@ -581,6 +617,8 @@ def build_public_alert_detail(alerta: AlertaViagem) -> dict[str, Any]:
         "destino_codigo": route["destino_codigo"],
         "origem_cidade": route["origem_cidade"],
         "destino_cidade": route["destino_cidade"],
+        "origem_label": route["origem_label"],
+        "destino_label": route["destino_label"],
         "route_label": route["route_label"],
     }
     return merged

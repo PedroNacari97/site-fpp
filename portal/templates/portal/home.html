@@ -102,9 +102,9 @@
                                 {% endif %}
                             </div>
                             <div class="news-alert-card__route">
-                                <div>
-                                    <strong>{{ alerta.origem_codigo }}</strong>
-                                    <span>{{ alerta.origem_display|default:alerta.origem_cidade }}</span>
+                                <div class="news-alert-card__route-stop">
+                                    <span class="news-alert-card__iata">{{ alerta.origem_codigo }}</span>
+                                    <span class="news-alert-card__airport-label">{{ alerta.origem_label|default:alerta.origem_display|default:alerta.origem_cidade }}</span>
                                 </div>
                                 <div class="news-alert-card__route-line" aria-hidden="true">
                                     <span></span>
@@ -113,9 +113,9 @@
                                     </svg>
                                     <span></span>
                                 </div>
-                                <div class="news-alert-card__destination">
-                                    <strong>{{ alerta.destino_codigo }}</strong>
-                                    <span>{{ alerta.destino_display|default:alerta.destino_cidade }}</span>
+                                <div class="news-alert-card__route-stop news-alert-card__route-stop--destination">
+                                    <span class="news-alert-card__iata">{{ alerta.destino_codigo }}</span>
+                                    <span class="news-alert-card__airport-label">{{ alerta.destino_label|default:alerta.destino_display|default:alerta.destino_cidade }}</span>
                                 </div>
                             </div>
                             <div class="news-alert-card__meta">

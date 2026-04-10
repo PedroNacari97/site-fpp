@@ -1,0 +1,28 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#032b6b"/>
+      <stop offset="60%" stop-color="#1357c5"/>
+      <stop offset="100%" stop-color="#17a6ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1360" cy="180" r="180" fill="rgba(255,255,255,0.08)"/>
+  <circle cx="220" cy="760" r="150" fill="rgba(255,255,255,0.06)"/>
+
+  <g>
+    <rect x="1010" y="100" width="470" height="178" rx="36" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.18)" />
+    <rect x="1046" y="138" width="118" height="12" rx="6" fill="#ffb703" opacity="0.95" />
+    <text x="1046" y="178" fill="#dbeafe" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Programa em destaque</text>
+    <text x="1046" y="236" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="52" font-weight="900">Azul Viagens</text>
+  </g>
+
+  <text x="120" y="180" fill="#bfdbfe" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">Promocoes</text>
+  <text x="120" y="252" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="60" font-weight="800">
+    <tspan x="120" dy="0">Azul Viagens libera</tspan>
+    <tspan x="120" dy="72">promocode FESTA10 com</tspan>
+    <tspan x="120" dy="72">10% OFF em pacotes</tspan>
+  </text>
+  <text x="120" y="760" fill="#e2e8f0" font-family="Segoe UI, Arial, sans-serif" font-size="34">NC Fly | Imagem ilustrativa</text>
+</svg>

@@ -10,9 +10,9 @@
             <p>{{ alert_context.hero_subtitle|portal_text }}</p>
 
             <div class="portal-alert-detail__route-card">
-                <div>
-                    <strong>{{ alert_context.origem_codigo }}</strong>
-                    <span>{{ alert_context.origem_cidade|portal_text }}</span>
+                <div class="portal-alert-detail__route-stop">
+                    <span class="portal-alert-detail__iata">{{ alert_context.origem_codigo }}</span>
+                    <span class="portal-alert-detail__airport-label">{{ alert_context.origem_label|default:alert_context.origem_cidade|portal_text }}</span>
                 </div>
                 <div class="portal-alert-detail__route-line" aria-hidden="true">
                     <span></span>
@@ -21,9 +21,9 @@
                     </svg>
                     <span></span>
                 </div>
-                <div>
-                    <strong>{{ alert_context.destino_codigo }}</strong>
-                    <span>{{ alert_context.destino_cidade|portal_text }}</span>
+                <div class="portal-alert-detail__route-stop portal-alert-detail__route-stop--destination">
+                    <span class="portal-alert-detail__iata">{{ alert_context.destino_codigo }}</span>
+                    <span class="portal-alert-detail__airport-label">{{ alert_context.destino_label|default:alert_context.destino_cidade|portal_text }}</span>
                 </div>
             </div>
         </div>
@@ -105,6 +105,23 @@
                 <strong>Importante:</strong>
                 <span>As datas e a disponibilidade desta oferta podem se esgotar rapidamente. Em alguns casos, o alerta ainda pode aparecer aqui at&eacute; a pr&oacute;xima atualiza&ccedil;&atilde;o.</span>
             </div>
+            <div class="portal-alert-detail__faq">
+                <h2>Como funciona</h2>
+                <div class="portal-alert-detail__faq-list">
+                    {% for step in alert_context.steps %}
+                    <details class="portal-alert-detail__faq-item"{% if forloop.first %} open{% endif %}>
+                        <summary>
+                            <span class="portal-alert-detail__faq-order">{{ forloop.counter }}</span>
+                            <span class="portal-alert-detail__faq-question">{{ step.title|portal_text }}</span>
+                            <span class="portal-alert-detail__faq-toggle" aria-hidden="true"></span>
+                        </summary>
+                        <div class="portal-alert-detail__faq-answer">
+                            <p>{{ step.description|portal_text }}</p>
+                        </div>
+                    </details>
+                    {% endfor %}
+                </div>
+            </div>
         </aside>
     </section>
 
@@ -172,22 +189,6 @@
             </article>
         </div>
 
-        <div class="portal-alert-detail__right">
-            <article class="portal-alert-detail__panel">
-                <h2>Como funciona?</h2>
-                <div class="portal-alert-detail__steps">
-                    {% for step in alert_context.steps %}
-                    <article class="portal-alert-detail__step">
-                        <strong>{{ forloop.counter }}</strong>
-                        <div>
-                            <h3>{{ step.title|portal_text }}</h3>
-                            <p>{{ step.description|portal_text }}</p>
-                        </div>
-                    </article>
-                    {% endfor %}
-                </div>
-            </article>
-        </div>
     </section>
 
     {% if similar_alerts %}
@@ -225,9 +226,9 @@
                     {% endif %}
                 </div>
                 <div class="news-alert-card__route">
-                    <div>
-                        <strong>{{ alerta.origem_codigo }}</strong>
-                        <span>{{ alerta.origem_display|default:alerta.origem_cidade|portal_text }}</span>
+                    <div class="news-alert-card__route-stop">
+                        <span class="news-alert-card__iata">{{ alerta.origem_codigo }}</span>
+                        <span class="news-alert-card__airport-label">{{ alerta.origem_label|default:alerta.origem_display|default:alerta.origem_cidade|portal_text }}</span>
                     </div>
                     <div class="news-alert-card__route-line" aria-hidden="true">
                         <span></span>
@@ -236,9 +237,9 @@
                         </svg>
                         <span></span>
                     </div>
-                    <div class="news-alert-card__destination">
-                        <strong>{{ alerta.destino_codigo }}</strong>
-                        <span>{{ alerta.destino_display|default:alerta.destino_cidade|portal_text }}</span>
+                    <div class="news-alert-card__route-stop news-alert-card__route-stop--destination">
+                        <span class="news-alert-card__iata">{{ alerta.destino_codigo }}</span>
+                        <span class="news-alert-card__airport-label">{{ alerta.destino_label|default:alerta.destino_display|default:alerta.destino_cidade|portal_text }}</span>
                     </div>
                 </div>
                 <div class="news-alert-card__meta">

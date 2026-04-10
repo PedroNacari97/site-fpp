@@ -178,6 +178,11 @@ def _parse_route(line):
     return match.groupdict() if match else None
 
 
+def _parse_headline_destination(line):
+    match = re.search(r"(?P<cidade>.+?)\s+\((?P<destino>[A-Z]{3})\)", line)
+    return match.groupdict() if match else None
+
+
 def _parse_dates_line(line):
     match = re.search(r"([A-Za-z]{3})/(\d{2})\s*:\s*`?([0-9,\s]+)`?", line)
     if not match:
@@ -233,12 +238,12 @@ def _normalize_milhas_value(value):
 def _extract_milhas_from_line(line):
     text = _repair_mojibake(line)
     patterns = [
-        r"custo\s*(?:do|de)?\s*trecho\s*:\s*(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)?(?:\s*\+\s*taxas)?",
-        r"a partir de\s*(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)?(?:\s*\+\s*taxas)?",
-        r"(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)(?:\s*\+\s*taxas)?",
+        r"custo\s*(?:do|de)?\s*trecho\s*:\s*(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|avios|pts?)?(?:\s*\+\s*taxas)?",
+        r"a partir de\s*(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|avios|pts?)?(?:\s*\+\s*taxas)?",
+        r"(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|avios|pts?)(?:\s*\+\s*taxas)?",
         r"(?P<milhas>[\d\.,\skK]+)\s*(?:o|por|cada)\s*trecho(?:\s*\+\s*taxas)?",
         r"(?P<milhas>[\d\.,\skK]+)\s*\+\s*taxas",
-        r"custo\s*(?:do|de)?\s*trecho\s*:\s*(?P<milhas>[\d\.,\skK]+)\s*\+\s*taxas",
+        r"(?:(?:por|a)\s+)?(?P<milhas>[\d\.,\skK]+)\s*(?:cada\s+)?(?:passageiro|pax)(?:\s*\+\s*taxas)?",
     ]
     for pattern in patterns:
         match = re.search(pattern, text, re.IGNORECASE)
@@ -285,16 +290,11 @@ def parse_alerta_bruto(raw_text):
         if country_info:
             parsed["pais"], parsed["continente"] = country_info
 
-    miles_match = re.search(
-        r"(?P<cidade>.+?)\s+\((?P<destino>[A-Z]{3})\)\s+(?P<milhas>[\d\.,\skK]+)(?:\s*(?:milhas|pontos|pts?))?(?:\s*(?:\+\s*taxas|o trecho|cada trecho|por trecho))?",
-        first_line,
-        re.IGNORECASE,
-    )
-    if miles_match:
-        parsed["cidade_destino"] = miles_match.group("cidade").strip()
-        parsed["destino"] = miles_match.group("destino").strip().upper()
-        parsed["valor_milhas"] = _normalize_milhas_value(miles_match.group("milhas"))
-    elif not parsed["valor_milhas"]:
+    headline_destination = _parse_headline_destination(first_line)
+    if headline_destination:
+        parsed["cidade_destino"] = headline_destination["cidade"].strip()
+        parsed["destino"] = headline_destination["destino"].strip().upper()
+    if not parsed["valor_milhas"]:
         parsed["valor_milhas"] = _extract_milhas_from_line(first_line)
 
     for idx, line in enumerate(lines):
