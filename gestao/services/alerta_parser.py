@@ -204,7 +204,23 @@ def _normalize_milhas_value(value):
 
     kilo_match = re.search(r"(?P<number>\d+(?:[.,]\d+)?)k\b", compact, re.IGNORECASE)
     if kilo_match:
-        normalized_number = kilo_match.group("number").replace(".", "").replace(",", ".")
+        normalized_number = kilo_match.group("number")
+        if "," in normalized_number and "." in normalized_number:
+            normalized_number = normalized_number.replace(".", "").replace(",", ".")
+        elif "," in normalized_number:
+            integer, decimal = normalized_number.split(",", 1)
+            normalized_number = (
+                f"{integer}.{decimal}"
+                if len(decimal) <= 2
+                else integer + decimal
+            )
+        elif "." in normalized_number:
+            integer, decimal = normalized_number.split(".", 1)
+            normalized_number = (
+                f"{integer}.{decimal}"
+                if len(decimal) <= 2
+                else integer + decimal
+            )
         try:
             return str(int(float(normalized_number) * 1000))
         except ValueError:
@@ -217,9 +233,11 @@ def _normalize_milhas_value(value):
 def _extract_milhas_from_line(line):
     text = _repair_mojibake(line)
     patterns = [
-        r"custo\s*(?:do|de)?\s*trecho\s*:\s*(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)?",
-        r"a partir de\s*(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)",
-        r"(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)",
+        r"custo\s*(?:do|de)?\s*trecho\s*:\s*(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)?(?:\s*\+\s*taxas)?",
+        r"a partir de\s*(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)?(?:\s*\+\s*taxas)?",
+        r"(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)(?:\s*\+\s*taxas)?",
+        r"(?P<milhas>[\d\.,\skK]+)\s*(?:o|por|cada)\s*trecho(?:\s*\+\s*taxas)?",
+        r"(?P<milhas>[\d\.,\skK]+)\s*\+\s*taxas",
         r"custo\s*(?:do|de)?\s*trecho\s*:\s*(?P<milhas>[\d\.,\skK]+)\s*\+\s*taxas",
     ]
     for pattern in patterns:
@@ -268,7 +286,7 @@ def parse_alerta_bruto(raw_text):
             parsed["pais"], parsed["continente"] = country_info
 
     miles_match = re.search(
-        r"(?P<cidade>.+?)\s+\((?P<destino>[A-Z]{3})\)\s+(?P<milhas>[\d\.,\skK]+)\s*(?:milhas|pontos|pts?)",
+        r"(?P<cidade>.+?)\s+\((?P<destino>[A-Z]{3})\)\s+(?P<milhas>[\d\.,\skK]+)(?:\s*(?:milhas|pontos|pts?))?(?:\s*(?:\+\s*taxas|o trecho|cada trecho|por trecho))?",
         first_line,
         re.IGNORECASE,
     )
