@@ -1,9 +1,11 @@
 import json
+import logging
 import re
 import threading
 from datetime import date, timedelta
 from urllib.parse import urlencode
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -34,6 +36,8 @@ from portal.services.alert_email_broadcasts import (
     notify_alert_subscribers,
 )
 from .permissions import require_admin_or_operator
+
+logger = logging.getLogger(__name__)
 
 
 def _require_superuser(request):
@@ -611,6 +615,56 @@ def _extract_chat_id(payload):
     return (msg.get("chat") or {}).get("id")
 
 
+def _public_site_base_url(request=None):
+    configured = str(getattr(settings, "SITE_BASE_URL", "") or "").strip().rstrip("/")
+    if configured:
+        return configured
+    if request is not None:
+        return request.build_absolute_uri("/").rstrip("/")
+    return "https://ncfly.com.br"
+
+
+def _build_telegram_alert_feedback(outcome, event, *, request=None):
+    alerta = getattr(event, "alerta", None)
+    route_label = ""
+    if alerta:
+        route_label = f"{alerta.origem} para {alerta.destino}".strip(" para ")
+    alert_url = ""
+    if alerta:
+        alert_url = f"{_public_site_base_url(request)}{reverse('portal_alerta_detalhe', args=[alerta.id])}"
+
+    if outcome == "created" and alerta:
+        lines = [
+            "Alerta publicado com sucesso.",
+            f"Rota: {route_label}" if route_label else f"Alerta: {alerta.titulo}",
+            f"Programa: {alerta.programa_fidelidade}" if alerta.programa_fidelidade else "",
+            f"Ver no site: {alert_url}" if alert_url else "",
+        ]
+        return "\n".join([line for line in lines if line])
+
+    if outcome == "updated" and alerta:
+        lines = [
+            "Alerta atualizado com sucesso.",
+            f"Rota: {route_label}" if route_label else f"Alerta: {alerta.titulo}",
+            f"Programa: {alerta.programa_fidelidade}" if alerta.programa_fidelidade else "",
+            f"Ver no site: {alert_url}" if alert_url else "",
+        ]
+        return "\n".join([line for line in lines if line])
+
+    if outcome == "duplicate_update":
+        return "Esse update do Telegram ja foi processado antes."
+    if outcome == "ignored_chat":
+        return "Esse chat nao esta autorizado para cadastrar alertas."
+    if outcome == "ignored_empty":
+        return "Nao encontrei texto util para interpretar o alerta."
+    if outcome == "ignored_duplicate_message":
+        return "Essa mensagem ja tinha sido processada antes."
+    if outcome == "parse_error":
+        error_detail = getattr(event, "erro", "") or "Nao consegui interpretar o alerta nesse formato."
+        return f"Nao consegui interpretar o alerta.\n{error_detail}"
+    return "O alerta foi recebido, mas nao foi possivel determinar o resultado."
+
+
 def _run_telegram_news_update_background(payload, chat_id):
     try:
         event, outcome, meta = process_telegram_news_update(payload)
@@ -709,7 +763,19 @@ def telegram_alertas_webhook(request):
     try:
         event, outcome = process_telegram_alert_update(payload)
     except Exception as exc:
+        if chat_id:
+            try:
+                telegram_send_message(chat_id, f"Erro ao processar alerta: {exc}")
+            except Exception:
+                logger.exception("Falha ao enviar mensagem de erro do bot de alertas.")
         return JsonResponse({"ok": False, "error": str(exc)}, status=400)
+
+    feedback_message = _build_telegram_alert_feedback(outcome, event, request=request)
+    if chat_id and feedback_message:
+        try:
+            telegram_send_message(chat_id, feedback_message)
+        except Exception:
+            logger.exception("Falha ao enviar retorno do bot de alertas.")
 
     return JsonResponse(
         {
