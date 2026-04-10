@@ -256,7 +256,7 @@ def _build_digest_subject(total_items: int) -> str:
     return f"[NC Fly Alertas] {total_items} atualizações para conferir hoje"
 
 
-def _build_digest_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem]) -> str:
+def _build_digest_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem], unsubscribe_url: str) -> str:
     lines = [
         f"Olá, {lead.nome_completo.split()[0] if lead.nome_completo else 'cliente'}.",
         "",
@@ -301,12 +301,14 @@ def _build_digest_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem])
     lines.extend(
         [
             f"Ver todos os alertas: {_absolute_alerts_list_url()}",
+            "",
+            f"Cancelar inscricao: {unsubscribe_url}",
         ]
     )
     return "\n".join(lines)
 
 
-def _build_digest_html_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem]) -> str:
+def _build_digest_html_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem], unsubscribe_url: str) -> str:
     first_name = lead.nome_completo.split()[0] if lead.nome_completo else "cliente"
     item_blocks: list[str] = []
 
@@ -379,6 +381,10 @@ def _build_digest_html_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestI
           <div style="margin-top:24px;">
             <a href="{html_escape(alerts_url)}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#fff0e6;color:#ff7a00;text-decoration:none;font-size:14px;font-weight:800;">Ver todos os alertas</a>
           </div>
+          <div style="margin-top:18px;padding-top:16px;border-top:1px solid #e2e8f0;">
+            <div style="margin:0 0 8px;font-size:12px;line-height:1.6;color:#64748b;">Se quiser parar de receber estes alertas, voce pode cancelar sua inscricao em um clique.</div>
+            <a href="{html_escape(unsubscribe_url)}" style="display:inline-block;padding:8px 14px;border-radius:999px;border:1px solid #cbd5e1;background:#f8fafc;color:#475569;text-decoration:none;font-size:12px;font-weight:700;">Cancelar inscricao</a>
+          </div>
         </div>
       </body>
     </html>
@@ -409,13 +415,13 @@ def _send_digest_to_lead(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem
 
     message = EmailMultiAlternatives(
         subject=_build_digest_subject(len(items)),
-        body=_build_digest_body(lead, items),
+        body=_build_digest_body(lead, items, unsubscribe_url),
         from_email=from_email,
         to=[lead.email],
         reply_to=[reply_to] if reply_to else None,
         headers=headers,
     )
-    message.attach_alternative(_build_digest_html_body(lead, items), "text/html")
+    message.attach_alternative(_build_digest_html_body(lead, items, unsubscribe_url), "text/html")
     try:
         message.send(fail_silently=False)
     except Exception:

@@ -15,6 +15,7 @@ from portal.models import Fonte, JobExecucao, MateriaBruta, NoticiaPublicada
 from portal.services.ai_pipeline import (
     NewsDraft,
     _apply_quality_rules,
+    _extract_cover_brand_label,
     _render_svg_cover_for_draft,
     _save_generated_file,
     build_hash_from_article,
@@ -332,7 +333,12 @@ def _build_manual_text_fallback_draft(raw_text: str, raw_article: dict) -> NewsD
     product_match = _TIPO_PRODUTO_RE.search(clean_text)
     explicit_url = _URL_RE.search(clean_text)
 
-    brand = "Azul Viagens" if "azul viagens" in lowered else "NC Fly"
+    brand = _extract_cover_brand_label(
+        clean_text,
+        raw_article.get("titulo_extraido") or "",
+        raw_article.get("resumo_base") or "",
+        raw_article.get("categoria_padrao") or "",
+    ) or ("Azul Viagens" if "azul viagens" in lowered else "NC Fly")
     code = promo_match.group(1).upper() if promo_match else ""
     percent = f"{promo_match.group(2)}% OFF" if promo_match else (f"{percent_match.group(1)}% OFF" if percent_match else "")
     sale_range = f"{sale_match.group(1)} a {sale_match.group(2)}" if sale_match else ""
@@ -707,7 +713,7 @@ def sync_news_from_text(raw_text: str, *, source_name: str = "Telegram Manual", 
                 refresh_published=True,
                 manual_submission=True,
                 draft_override=fallback_draft,
-                allow_ai_cover=False,
+                allow_ai_cover=True,
             )
         else:
             result = _upsert_news_from_article(
@@ -733,7 +739,7 @@ def sync_news_from_text(raw_text: str, *, source_name: str = "Telegram Manual", 
                 refresh_published=True,
                 manual_submission=True,
                 draft_override=fallback_draft,
-                allow_ai_cover=False,
+                allow_ai_cover=True,
             )
             noticia = result.get("noticia")
             if noticia:

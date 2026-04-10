@@ -736,6 +736,32 @@ class TelegramAlertasWebhookTest(TestCase):
 
         self.assertEqual(parsed["valor_milhas"], "4100")
 
+    def test_parser_aceita_quantidade_em_avios(self):
+        from gestao.services.alerta_parser import parse_alerta_bruto
+
+        parsed = parse_alerta_bruto(
+            "Madri (MAD) 59.000 avios + taxas\n"
+            "Executiva\n"
+            "Programa Iberia Plus\n"
+            "Voando Iberia\n"
+            "Sao Paulo (GRU) > Madri (MAD)\n"
+        )
+
+        self.assertEqual(parsed["valor_milhas"], "59000")
+
+    def test_parser_ignora_numero_solto_antes_do_valor_real_em_avios(self):
+        from gestao.services.alerta_parser import parse_alerta_bruto
+
+        parsed = parse_alerta_bruto(
+            "Madri (MAD) 2 lugares por 59.000 avios + taxas\n"
+            "Executiva\n"
+            "Programa Iberia Plus\n"
+            "Voando Iberia\n"
+            "Sao Paulo (GRU) > Madri (MAD)\n"
+        )
+
+        self.assertEqual(parsed["valor_milhas"], "59000")
+
     def test_webhook_nao_duplica_mesmo_update(self):
         payload = self._build_payload(update_id=777)
         headers = {

@@ -3072,40 +3072,49 @@ img {
 .news-alert-card__route {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: start;
-  gap: 10px;
-  min-height: 98px;
+  align-items: center;
+  gap: 12px;
+  min-height: 88px;
 }
 
-.news-alert-card__route > div:first-child,
-.news-alert-card__destination {
+.news-alert-card__route-stop {
   min-width: 0;
   display: grid;
   align-content: start;
-  gap: 2px;
+  gap: 6px;
 }
 
-.news-alert-card__route strong {
-  display: block;
-  font-size: clamp(28px, 3vw, 36px);
-  line-height: 1;
-  color: var(--brand-navy);
-  letter-spacing: -0.04em;
-}
-
-.news-alert-card__route span,
-.news-alert-card__destination span {
-  display: block;
-  margin-top: 4px;
-  color: #5b6679;
-  font-size: 12px;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-}
-
-.news-alert-card__destination {
+.news-alert-card__route-stop--destination {
   text-align: right;
   justify-items: end;
+}
+
+.news-alert-card__iata {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0 11px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--brand-navy);
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.news-alert-card__route-stop--destination .news-alert-card__iata {
+  justify-self: end;
+}
+
+.news-alert-card__airport-label {
+  display: block;
+  color: #5b6679;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .news-alert-card__route-line {
@@ -3113,8 +3122,6 @@ img {
   align-items: center;
   gap: 10px;
   color: #ff7a1b;
-  align-self: start;
-  margin-top: 24px;
 }
 
 .news-alert-card__route-line span {
@@ -3318,11 +3325,11 @@ img {
   overflow-wrap: anywhere;
 }
 
-.news-alert-card__route--compact strong {
-  font-size: clamp(28px, 3vw, 34px);
+.news-alert-card__route--compact .news-alert-card__iata {
+  font-size: clamp(17px, 2.2vw, 20px);
 }
 
-.news-alert-card__route--compact span {
+.news-alert-card__route--compact .news-alert-card__airport-label {
   font-size: 13px;
 }
 
@@ -3572,13 +3579,13 @@ img {
   gap: 8px;
 }
 
-.portal-alert-signup__alerts .news-alert-card__route strong {
-  font-size: clamp(22px, 2.3vw, 30px);
+.portal-alert-signup__alerts .news-alert-card__iata {
+  min-height: 28px;
+  padding: 0 9px;
+  font-size: clamp(15px, 2vw, 18px);
 }
 
-.portal-alert-signup__alerts .news-alert-card__route span,
-.portal-alert-signup__alerts .news-alert-card__destination span {
-  margin-top: 1px;
+.portal-alert-signup__alerts .news-alert-card__airport-label {
   font-size: 11px;
   line-height: 1.28;
   display: -webkit-box;
@@ -3589,7 +3596,6 @@ img {
 
 .portal-alert-signup__alerts .news-alert-card__route-line {
   gap: 8px;
-  margin-top: 12px;
 }
 
 .portal-alert-signup__alerts .news-alert-card__route-line span {
@@ -3837,6 +3843,12 @@ img {
   letter-spacing: -0.04em;
 }
 
+@media (min-width: 981px) {
+  .portal-alert-detail__hero h1 {
+    max-width: 760px;
+  }
+}
+
 .portal-alert-detail__hero p {
   margin: 0;
   color: rgba(255, 255, 255, 0.88);
@@ -3848,7 +3860,7 @@ img {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin-top: 2px;
   padding: 16px 18px;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -3856,23 +3868,43 @@ img {
   background: rgba(255, 255, 255, 0.1);
 }
 
-.portal-alert-detail__route-card strong {
-  display: block;
-  font-size: clamp(30px, 3.3vw, 40px);
-  line-height: 1;
-  letter-spacing: -0.05em;
+.portal-alert-detail__route-stop {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
 }
 
-.portal-alert-detail__route-card span {
-  display: block;
-  margin-top: 4px;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.portal-alert-detail__route-card > div:last-child {
+.portal-alert-detail__route-stop--destination {
   text-align: right;
+  justify-items: end;
+}
+
+.portal-alert-detail__iata {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0 13px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-size: clamp(22px, 2.4vw, 28px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.portal-alert-detail__route-stop--destination .portal-alert-detail__iata {
+  justify-self: end;
+}
+
+.portal-alert-detail__airport-label {
+  display: block;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .portal-alert-detail__route-line {
@@ -4013,9 +4045,108 @@ img {
   line-height: 1.55;
 }
 
+.portal-alert-detail__faq {
+  display: grid;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.portal-alert-detail__faq h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.1;
+  color: var(--brand-navy);
+}
+
+.portal-alert-detail__faq-list {
+  display: grid;
+  gap: 10px;
+}
+
+.portal-alert-detail__faq-item {
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 18px;
+  background: linear-gradient(135deg, #fff8ef 0%, #fff5fa 100%);
+  overflow: hidden;
+}
+
+.portal-alert-detail__faq-item summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.portal-alert-detail__faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.portal-alert-detail__faq-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand-coral), #f5428d);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.portal-alert-detail__faq-question {
+  min-width: 0;
+  color: var(--brand-navy);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.portal-alert-detail__faq-toggle {
+  position: relative;
+  width: 18px;
+  height: 18px;
+}
+
+.portal-alert-detail__faq-toggle::before,
+.portal-alert-detail__faq-toggle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 2px;
+  border-radius: 999px;
+  background: #ff6b00;
+  transform: translate(-50%, -50%);
+}
+
+.portal-alert-detail__faq-toggle::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.portal-alert-detail__faq-item[open] .portal-alert-detail__faq-toggle::after {
+  transform: translate(-50%, -50%) rotate(0deg);
+  opacity: 0;
+}
+
+.portal-alert-detail__faq-answer {
+  padding: 0 16px 16px 58px;
+}
+
+.portal-alert-detail__faq-answer p {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
 .portal-alert-detail__content {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.88fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 22px;
 }
 
@@ -4441,8 +4572,14 @@ img {
     text-align: center;
   }
 
-  .portal-alert-detail__route-card > div:last-child {
+  .portal-alert-detail__route-stop,
+  .portal-alert-detail__route-stop--destination {
+    justify-items: center;
     text-align: center;
+  }
+
+  .portal-alert-detail__route-stop--destination .portal-alert-detail__iata {
+    justify-self: center;
   }
 
   .portal-alert-detail__route-line {
@@ -4880,12 +5017,11 @@ img {
 
 /* ── Footer compacto — scrollável no mobile ───────────────── */
 /* ── Alertas semelhantes: card route não extrapola ───────── */
-.news-alerts-similar__scroll .news-alert-card__route strong {
-  font-size: clamp(20px, 2.5vw, 28px);
+.news-alerts-similar__scroll .news-alert-card__iata {
+  font-size: clamp(16px, 2vw, 19px);
 }
 
-.news-alerts-similar__scroll .news-alert-card__route span,
-.news-alerts-similar__scroll .news-alert-card__destination span {
+.news-alerts-similar__scroll .news-alert-card__airport-label {
   overflow-wrap: normal;
   word-break: normal;
   hyphens: none;
@@ -5242,10 +5378,13 @@ img {
   .portal-alerts-page__filter-actions { width: 100%; }
   .portal-alerts-page__filter-actions .portal-button { width: 100%; justify-content: center; }
   .portal-alert-detail__route-card { grid-template-columns: 1fr; gap: 18px; text-align: center; }
-  .portal-alert-detail__route-card > div:last-child { text-align: center; }
+  .portal-alert-detail__route-stop,
+  .portal-alert-detail__route-stop--destination { justify-items: center; text-align: center; }
+  .portal-alert-detail__route-stop--destination .portal-alert-detail__iata { justify-self: center; }
   .portal-alert-detail__route-line { justify-content: center; }
   .portal-alert-detail__hero h1 { font-size: clamp(34px, 10vw, 46px); }
   .portal-alert-detail__summary-highlight > strong { font-size: clamp(42px, 12vw, 56px); }
+  .portal-alert-detail__faq-answer { padding: 0 16px 16px; }
 
   /* Steps — empilhados no mobile */
   .portal-alert-detail__steps,

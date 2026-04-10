@@ -30,6 +30,7 @@ from .services.ai_pipeline import (
     NewsDraft,
     _apply_quality_rules,
     _build_cover_prompt,
+    _extract_cover_brand_label,
     _normalize_confidence,
     _render_svg_cover,
     _resolve_cover_brand_theme,
@@ -377,8 +378,8 @@ class PortalRoutesTest(TestCase):
         response = self.client.get(reverse("portal_alertas"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Aeroporto Internacional de Guarulhos")
-        self.assertContains(response, "Miami International Airport")
+        self.assertContains(response, "Aeroporto Internacional de Guarulhos - Sao Paulo")
+        self.assertContains(response, "Miami International Airport - Miami")
 
     def test_listagem_publica_de_alertas_filtra_por_nome_completo_do_aeroporto(self):
         Aeroporto.objects.create(
@@ -406,6 +407,23 @@ class PortalRoutesTest(TestCase):
             "Aeroporto Internacional de Guarulhos",
         )
         self.assertContains(response, "Aeroporto Internacional de Guarulhos")
+
+    def test_listagem_publica_de_alertas_filtra_por_label_composto_do_destino(self):
+        Aeroporto.objects.create(
+            nome="Miami International Airport",
+            sigla="MIA",
+            cidade="Miami",
+            estado="FL",
+        )
+
+        response = self.client.get(
+            reverse("portal_alertas"),
+            {"aeroporto": "Miami International Airport - Miami"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["alertas_publicos"]), 1)
+        self.assertContains(response, "Miami International Airport - Miami")
 
     def test_listagem_publica_de_alertas_mantem_alerta_visivel_ate_quinze_dias(self):
         AlertaViagem.objects.filter(id=self.alerta.id).update(criado_em=timezone.now() - timedelta(days=10))
@@ -537,6 +555,18 @@ class PortalRoutesTest(TestCase):
         self.assertContains(response, "Termos de Recebimento de Alertas")
 
     def test_detalhe_alerta_publico_carrega_com_cta_do_programa(self):
+        Aeroporto.objects.create(
+            nome="Aeroporto Internacional de Guarulhos",
+            sigla="GRU",
+            cidade="Sao Paulo",
+            estado="SP",
+        )
+        Aeroporto.objects.create(
+            nome="Miami International Airport",
+            sigla="MIA",
+            cidade="Miami",
+            estado="FL",
+        )
         with patch("portal.services.public_alerts._build_ai_public_copy", return_value={}):
             response = self.client.get(reverse("portal_alerta_detalhe", args=[self.alerta.id]))
 
@@ -549,6 +579,10 @@ class PortalRoutesTest(TestCase):
         self.assertContains(response, "A partir de")
         self.assertContains(response, "70.000 milhas")
         self.assertContains(response, "Falar no WhatsApp")
+        self.assertContains(response, "Como funciona")
+        self.assertContains(response, "Aeroporto Internacional de Guarulhos - Sao Paulo")
+        self.assertContains(response, "Miami International Airport - Miami")
+        self.assertContains(response, 'class="portal-alert-detail__faq-item"', html=False)
         self.assertContains(
             response,
             "As datas e a disponibilidade desta oferta podem se esgotar rapidamente.",
@@ -1210,10 +1244,13 @@ class PortalAlertDigestTest(TestCase):
         self.assertIn("Recebi%20o%20e-mail%20de%20alertas%20da%20NC%20Fly", email.body)
         self.assertIn("List-Unsubscribe", email.extra_headers)
         self.assertIn("/home/alertas/cancelar/?token=", email.extra_headers["List-Unsubscribe"])
+        self.assertIn("Cancelar inscricao: https://ncfly.com.br/home/alertas/cancelar/?token=", email.body)
         self.assertEqual(len(email.alternatives), 1)
         self.assertEqual(email.alternatives[0][1], "text/html")
         self.assertIn("WhatsApp da NC Fly", email.alternatives[0][0])
         self.assertIn("Falar no WhatsApp", email.alternatives[0][0])
+        self.assertIn("Cancelar inscricao", email.alternatives[0][0])
+        self.assertIn('href="https://ncfly.com.br/home/alertas/cancelar/?token=', email.alternatives[0][0])
 
     def test_novo_inscrito_nao_recebe_digest_retroativo(self):
         create_or_update_alerta(self._alerta_payload())
@@ -1573,6 +1610,47 @@ class PortalContentQualityTest(TestCase):
         self.assertIsNotNone(theme)
         self.assertEqual(theme["label"], "Azul Viagens")
 
+    def test_detecta_referencia_composta_para_capa_padrao_da_noticia(self):
+        label = _extract_cover_brand_label(
+            "Cartao XP Visa Infinite libera nova campanha com bonus de adesao.",
+            "XP Visa Infinite com novos beneficios",
+            "",
+            "Cartoes de Credito",
+        )
+        theme = _resolve_cover_brand_theme(
+            "Cartao XP Visa Infinite libera nova campanha com bonus de adesao.",
+            "XP Visa Infinite com novos beneficios",
+            "",
+            "Cartoes de Credito",
+            "Lancamentos e Analises",
+            ["XP", "Visa Infinite"],
+        )
+
+        self.assertEqual(label, "XP Visa Infinite")
+        self.assertIsNotNone(theme)
+        self.assertEqual(theme["label"], "XP Visa Infinite")
+
+    def test_cria_tema_generico_para_referencia_manual_fora_da_whitelist(self):
+        label = _extract_cover_brand_label(
+            "Campanha do cartao Inter Black garante beneficios extras para novos clientes.",
+            "",
+            "",
+            "Cartoes de Credito",
+        )
+        theme = _resolve_cover_brand_theme(
+            "Campanha do cartao Inter Black garante beneficios extras para novos clientes.",
+            "",
+            "",
+            "Cartoes de Credito",
+            "Lancamentos e Analises",
+            ["Inter Black"],
+        )
+
+        self.assertEqual(label, "Inter Black")
+        self.assertIsNotNone(theme)
+        self.assertEqual(theme["label"], "Inter Black")
+        self.assertEqual(theme["hint"], "Cartao em destaque")
+
     def test_portal_content_nao_transforma_asterisco_simples_em_negrito(self):
         rendered = str(portal_content("Linha com *marcacao simples* do Telegram."))
 
@@ -1846,6 +1924,46 @@ class PortalSingleUrlNewsSyncTest(TestCase):
         with noticia.imagem.open("rb") as image_file:
             svg = image_file.read().decode("utf-8")
         self.assertIn("Azul Viagens", svg)
+
+    @patch("portal.services.news_sync_service.ensure_cover_for_news", return_value=("portal/noticias/generated/manual-ai-cover.png", True))
+    @patch("portal.services.news_sync_service.build_news_draft", side_effect=TimeoutError("timed out"))
+    def test_sync_news_from_text_prioriza_capa_por_ia_no_fallback_manual(self, _mock_build_news_draft, mock_ensure_cover):
+        from .services.news_sync_service import sync_news_from_text
+
+        raw_text = (
+            "CARTAO XP VISA INFINITE libera campanha especial para novos clientes. "
+            "Tipo de produto: Cartao XP Visa Infinite. "
+            "Data de venda: 10/04/2026 a 21/04/2026. "
+            "Regra juridica: campanha valida para propostas aprovadas dentro do periodo e sujeita a analise de credito."
+        )
+
+        result = sync_news_from_text(raw_text)
+
+        self.assertEqual(result["outcome"], "published")
+        noticia = NoticiaPublicada.objects.get()
+        self.assertEqual(noticia.imagem.name, "portal/noticias/generated/manual-ai-cover.png")
+        self.assertEqual(noticia.metadata_json.get("cover_source"), "ai_generated")
+        mock_ensure_cover.assert_called_once()
+
+    @patch("portal.services.news_sync_service.build_news_draft", side_effect=TimeoutError("timed out"))
+    def test_sync_news_from_text_gera_capa_contextual_com_programa_referenciado(self, _mock_build_news_draft):
+        from .services.news_sync_service import sync_news_from_text
+
+        raw_text = (
+            "CARTAO XP VISA INFINITE libera campanha especial para novos clientes. "
+            "Tipo de produto: Cartao XP Visa Infinite. "
+            "Data de venda: 10/04/2026 a 21/04/2026. "
+            "Regra juridica: campanha valida para propostas aprovadas dentro do periodo e sujeita a analise de credito."
+        )
+
+        result = sync_news_from_text(raw_text)
+
+        self.assertEqual(result["outcome"], "published")
+        noticia = NoticiaPublicada.objects.get()
+        self.assertTrue(noticia.imagem.name.endswith(".svg"))
+        with noticia.imagem.open("rb") as image_file:
+            svg = image_file.read().decode("utf-8")
+        self.assertIn("XP Visa Infinite", svg)
 
     @patch("portal.services.news_sync_service.build_news_draft", side_effect=TimeoutError("timed out"))
     def test_sync_news_from_text_atualiza_slug_quando_titulo_manual_melhora(self, _mock_build_news_draft):
