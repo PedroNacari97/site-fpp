@@ -636,6 +636,40 @@ class TelegramAlertasWebhookTest(TestCase):
         self.assertEqual(alerta.continente, "América do Sul")
         self.assertEqual(alerta.valor_milhas, 3928)
 
+    @patch("gestao.views.alertas.telegram_send_message")
+    def test_webhook_envia_confirmacao_no_bot_quando_alerta_sobe(self, mock_send_message):
+        response = self.client.post(
+            reverse("telegram_alertas_webhook"),
+            data=json.dumps(self._build_payload(update_id=502)),
+            content_type="application/json",
+            HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN="segredo-alertas",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(mock_send_message.called)
+        sent_chat_id, sent_text = mock_send_message.call_args.args
+        self.assertEqual(sent_chat_id, -100123456)
+        self.assertIn("Alerta publicado com sucesso.", sent_text)
+        self.assertIn("Ver no site:", sent_text)
+
+    @patch("gestao.views.alertas.telegram_send_message")
+    def test_webhook_envia_erro_claro_no_bot_quando_nao_consegue_interpretar(self, mock_send_message):
+        payload = self._build_payload(update_id=503)
+        payload["channel_post"]["text"] = "oi"
+
+        response = self.client.post(
+            reverse("telegram_alertas_webhook"),
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN="segredo-alertas",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(mock_send_message.called)
+        sent_chat_id, sent_text = mock_send_message.call_args.args
+        self.assertEqual(sent_chat_id, -100123456)
+        self.assertIn("Nao consegui interpretar o alerta.", sent_text)
+
     def test_webhook_nao_duplica_mesmo_update(self):
         payload = self._build_payload(update_id=777)
         headers = {
