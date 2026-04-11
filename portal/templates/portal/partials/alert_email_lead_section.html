@@ -4,13 +4,26 @@
         <div class="portal-alert-signup__content">
             <div class="portal-alert-signup__copy">
                 <span class="news-kicker">Alertas por e-mail</span>
-                <h2>Quer receber novos alertas direto no seu e-mail?</h2>
+                <h2>
+                    <span class="portal-alert-signup__title-full">{{ alert_email_lead_title|default:"Quer receber novos alertas direto no seu e-mail?" }}</span>
+                    <span class="portal-alert-signup__title-mobile">
+                        {% if alert_email_lead_mobile_title %}
+                            {{ alert_email_lead_mobile_title }}
+                        {% elif alert_email_lead_title %}
+                            {{ alert_email_lead_title }}
+                        {% else %}
+                            Quer receber novos alertas?
+                        {% endif %}
+                    </span>
+                </h2>
+                {% if not alert_email_lead_compact_copy %}
                 <p>Cadastre seu contato para acompanhar novas oportunidades sem depender de busca manual no portal.</p>
                 <ul class="portal-alert-signup__list">
                     <li>Cadastro r&aacute;pido com nome, e-mail e telefone.</li>
                     <li>Termo espec&iacute;fico para alertas, separado do interesse na plataforma.</li>
                     <li>Sem criar login ou acesso automaticamente.</li>
                 </ul>
+                {% endif %}
             </div>
 
             {% if alert_email_lead_alerts %}

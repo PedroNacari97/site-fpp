@@ -598,6 +598,7 @@ def build_public_alert_detail(alerta: AlertaViagem) -> dict[str, Any]:
     ai_copy = _build_ai_public_copy(signature)
     merged = {
         "hero_title": ai_copy.get("hero_title") or fallback["hero_title"],
+        "hero_title_mobile": route["route_label"],
         "hero_subtitle": ai_copy.get("hero_subtitle") or fallback["hero_subtitle"],
         "about_offer": ai_copy.get("about_offer") or fallback["about_offer"],
         "benefits": ai_copy.get("benefits") or fallback["benefits"],
