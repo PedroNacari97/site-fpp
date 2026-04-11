@@ -43,7 +43,7 @@
         </section>
         {% endif %}
 
-        {% if alertas_home and not is_searching and render_legacy_alerts_section %}
+        {% if alertas_home and not is_searching %}
         <section class="news-alerts-home">
             <header class="news-section-bar news-section-bar--alerts">
                 <div class="news-alerts-home__title">
@@ -177,7 +177,7 @@
         {% endif %}
 
         {% if not is_searching %}
-        {% include "portal/partials/alert_email_lead_section.html" with alert_email_lead_alerts=alertas_home %}
+        {% include "portal/partials/alert_email_lead_section.html" %}
         {% endif %}
 
         <section class="news-latest-block">

@@ -92,6 +92,100 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  document.querySelectorAll("[data-alerts-filter-form]").forEach((form) => {
+    const airportInput = form.querySelector("[data-alerts-airport-filter]");
+    const advancedInputs = Array.from(form.querySelectorAll(".portal-alerts-page__advanced-filter select, .portal-alerts-page__advanced-filter input"));
+    if (!airportInput) {
+      return;
+    }
+
+    const revealFilters = () => form.classList.add("is-expanded");
+    const hasAdvancedValue = advancedInputs.some((input) => Boolean(input.value));
+
+    if (airportInput.value.trim() || hasAdvancedValue) {
+      revealFilters();
+    }
+
+    airportInput.addEventListener("focus", revealFilters);
+    airportInput.addEventListener("input", revealFilters);
+  });
+
+  const alertsPage = document.querySelector(".portal-alerts-page");
+  const mobileAlertsMediaQuery = window.matchMedia
+    ? window.matchMedia("(max-width: 760px)")
+    : null;
+  if (alertsPage && mobileAlertsMediaQuery) {
+    const leadSection = Array.from(alertsPage.children).find((child) => (
+      child.classList?.contains("portal-alert-signup")
+    ));
+    const alertsGrid = alertsPage.querySelector("#public-alerts-grid");
+
+    if (leadSection && alertsGrid) {
+      const placeholder = document.createComment("alert lead signup original position");
+      leadSection.parentNode.insertBefore(placeholder, leadSection);
+
+      const updateLeadPlacement = () => {
+        const cards = Array.from(alertsGrid.querySelectorAll(".news-alert-card[data-load-more-item]"));
+        const targetIndex = mobileAlertsMediaQuery.matches ? 1 : 2;
+        const targetCard = cards[targetIndex] || cards[cards.length - 1];
+
+        if (targetCard) {
+          leadSection.classList.add("portal-alert-signup--inline-alerts");
+          leadSection.classList.toggle("portal-alert-signup--inline-mobile", mobileAlertsMediaQuery.matches);
+          targetCard.insertAdjacentElement("afterend", leadSection);
+          return;
+        }
+
+        leadSection.classList.remove("portal-alert-signup--inline-alerts");
+        leadSection.classList.remove("portal-alert-signup--inline-mobile");
+        if (placeholder.parentNode) {
+          placeholder.parentNode.insertBefore(leadSection, placeholder.nextSibling);
+        }
+      };
+
+      updateLeadPlacement();
+      if (mobileAlertsMediaQuery.addEventListener) {
+        mobileAlertsMediaQuery.addEventListener("change", updateLeadPlacement);
+      } else if (mobileAlertsMediaQuery.addListener) {
+        mobileAlertsMediaQuery.addListener(updateLeadPlacement);
+      }
+    }
+  }
+
+  document.querySelectorAll(".portal-alert-detail__faq-list").forEach((faqList) => {
+    const faqItems = Array.from(faqList.querySelectorAll(".portal-alert-detail__faq-item"));
+    const mobileFaqMediaQuery = window.matchMedia
+      ? window.matchMedia("(max-width: 760px)")
+      : null;
+
+    if (!faqItems.length) {
+      return;
+    }
+
+    const isMobileFaq = () => (
+      mobileFaqMediaQuery ? mobileFaqMediaQuery.matches : window.innerWidth <= 760
+    );
+
+    let syncingFaqItems = false;
+    const setAllFaqItemsOpen = (open) => {
+      syncingFaqItems = true;
+      faqItems.forEach((sibling) => {
+        sibling.open = open;
+      });
+      syncingFaqItems = false;
+    };
+
+    faqItems.forEach((item) => {
+      item.addEventListener("toggle", () => {
+        if (syncingFaqItems || !isMobileFaq()) {
+          return;
+        }
+
+        setAllFaqItemsOpen(item.open);
+      });
+    });
+  });
+
   const getCookieValue = (name) => {
     const prefix = `${name}=`;
     const match = document.cookie
@@ -297,6 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-topbar-search]").forEach((form) => {
     const toggle = form.querySelector("[data-search-toggle]");
     const input = form.querySelector("[data-search-input]");
+    const topbar = form.closest(".portal-topbar");
 
     if (!toggle || !input) {
       return;
@@ -304,6 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const setOpenState = (open) => {
       form.classList.toggle("is-open", open);
+      topbar?.classList.toggle("portal-topbar--search-open", open);
       toggle.setAttribute("aria-expanded", open ? "true" : "false");
     };
 
@@ -544,6 +640,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!section) return;
       btn.addEventListener("click", () => {
         section.setAttribute("data-expanded", "");
+        btn.setAttribute("aria-expanded", "true");
       });
     });
 

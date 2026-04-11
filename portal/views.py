@@ -1,6 +1,6 @@
 import json
 import unicodedata
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 from django.contrib import messages
 from django.conf import settings
@@ -211,9 +211,21 @@ def _request_is_same_origin(request):
     origin = request.headers.get("Origin", "").strip()
     referer = request.headers.get("Referer", "").strip()
     base_url = _public_base_url(request)
-    if origin and not origin.startswith(base_url):
+
+    allowed_origins = {base_url.rstrip("/")}
+    request_origin = f"{request.scheme}://{request.get_host()}".rstrip("/")
+    allowed_origins.add(request_origin)
+
+    def origin_is_allowed(value):
+        if not value:
+            return True
+        parsed_value = urlparse(value)
+        value_origin = f"{parsed_value.scheme}://{parsed_value.netloc}".rstrip("/")
+        return value_origin in allowed_origins
+
+    if origin and not origin_is_allowed(origin):
         return False
-    if referer and not referer.startswith(base_url):
+    if referer and not origin_is_allowed(referer):
         return False
     return True
 
@@ -1174,7 +1186,10 @@ def alertas_publicos(request):
         "alert_email_lead_submitted": alert_email_lead_submitted,
         "alert_email_lead_consent_version": ALERT_EMAIL_LEAD_CONSENT_VERSION,
         "alert_email_lead_section_id": "alertas-email-lead",
+        "alert_email_lead_title": "Quer receber novos alertas?",
+        "alert_email_lead_compact_copy": True,
     }
+    context["page_intro"] = "Acompanhe oportunidades de emiss\u00e3o com programas de fidelidade"
     context.update(_build_alerts_list_seo(request, alert_cards=alert_cards))
     track_page_view(
         request.path,

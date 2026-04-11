@@ -8,7 +8,11 @@
         <h1>{{ page_title|portal_text }}</h1>
         <p>{{ page_intro|portal_text }}</p>
         <div class="portal-alerts-page__filters">
-            <form method="get" class="portal-alerts-page__filter-form">
+            <form
+                method="get"
+                class="portal-alerts-page__filter-form{% if selected_alert_filters.aeroporto or selected_alert_filters.programa or selected_alert_filters.companhia or selected_alert_filters.classe %} is-expanded{% endif %}"
+                data-alerts-filter-form
+            >
                 <div class="portal-lead-field">
                     <label for="alert-filter-aeroporto">Aeroporto</label>
                     <input
@@ -19,9 +23,10 @@
                         maxlength="120"
                         placeholder="Ex.: GRU, Guarulhos, Miami"
                         value="{{ selected_alert_filters.aeroporto|default:'' }}"
+                        data-alerts-airport-filter
                     >
                 </div>
-                <div class="portal-lead-field">
+                <div class="portal-lead-field portal-alerts-page__advanced-filter">
                     <label for="alert-filter-programa">Programa</label>
                     <select id="alert-filter-programa" name="programa" class="portal-lead-field__input">
                         <option value="">Todos os programas</option>
@@ -30,7 +35,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="portal-lead-field">
+                <div class="portal-lead-field portal-alerts-page__advanced-filter">
                     <label for="alert-filter-companhia">Companhia a&eacute;rea</label>
                     <select id="alert-filter-companhia" name="companhia" class="portal-lead-field__input">
                         <option value="">Todas as companhias</option>
@@ -39,7 +44,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="portal-lead-field">
+                <div class="portal-lead-field portal-alerts-page__advanced-filter">
                     <label for="alert-filter-classe">Classe</label>
                     <select id="alert-filter-classe" name="classe" class="portal-lead-field__input">
                         <option value="">Todas as classes</option>

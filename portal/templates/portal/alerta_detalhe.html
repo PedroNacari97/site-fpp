@@ -6,7 +6,10 @@
     <section class="portal-alert-detail__hero">
         <div class="portal-alert-detail__hero-copy">
             <a href="{{ back_url }}" class="portal-alert-detail__back-link">&larr; Voltar</a>
-            <h1>{{ alert_context.hero_title|portal_text }}</h1>
+            <h1>
+                <span class="portal-alert-detail__title-full">{{ alert_context.hero_title|portal_text }}</span>
+                <span class="portal-alert-detail__title-mobile">{{ alert_context.hero_title_mobile|default:alert_context.route_label|portal_text }}</span>
+            </h1>
             <p>{{ alert_context.hero_subtitle|portal_text }}</p>
 
             <div class="portal-alert-detail__route-card">
@@ -109,7 +112,7 @@
                 <h2>Como funciona</h2>
                 <div class="portal-alert-detail__faq-list">
                     {% for step in alert_context.steps %}
-                    <details class="portal-alert-detail__faq-item"{% if forloop.first %} open{% endif %}>
+                    <details class="portal-alert-detail__faq-item">
                         <summary>
                             <span class="portal-alert-detail__faq-order">{{ forloop.counter }}</span>
                             <span class="portal-alert-detail__faq-question">{{ step.title|portal_text }}</span>
@@ -129,7 +132,14 @@
         <div class="portal-alert-detail__left">
             <article class="portal-alert-detail__panel">
                 <h2>Sobre esta oferta</h2>
-                <p>{{ alert_context.about_offer|portal_text }}</p>
+                <div class="portal-alert-detail__about" data-article-content>
+                    <div class="portal-alert-detail__about-preview" data-article-preview>
+                        <p>{{ alert_context.about_offer|portal_text }}</p>
+                    </div>
+                    <button type="button" class="news-detail-content__readmore portal-alert-detail__about-readmore" data-article-readmore aria-expanded="false">
+                        Ler mais
+                    </button>
+                </div>
             </article>
 
             <article class="portal-alert-detail__panel">

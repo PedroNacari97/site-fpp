@@ -569,7 +569,9 @@ class PortalRoutesTest(TestCase):
         response = self.client.get(reverse("portal_alertas"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Entrar na lista de alertas")
+        self.assertContains(response, "Quer receber novos alertas?")
+        self.assertNotContains(response, "Quer receber novos alertas direto no seu e-mail?")
+        self.assertNotContains(response, "Cadastre seu contato para acompanhar novas oportunidades")
         self.assertContains(response, "Termos de Recebimento de Alertas")
 
     def test_detalhe_alerta_publico_carrega_com_cta_do_programa(self):

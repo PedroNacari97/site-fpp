@@ -45,11 +45,12 @@
                 {% endfor %}
                 <div class="portal-topbar__dropdown portal-topbar__dropdown--mobile-only{% if request.resolver_match.url_name == 'portal_categoria' %} is-active{% endif %}" data-topbar-dropdown>
                     <button type="button" class="portal-topbar__nav-link portal-topbar__dropdown-toggle" aria-expanded="false" aria-haspopup="true" data-dropdown-toggle>
-                        <span class="portal-topbar__nav-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path></svg>
-                        </span>
                         <span>Categorias</span>
-                        <span class="portal-topbar__dropdown-caret" aria-hidden="true">&#8964;</span>
+                        <span class="portal-topbar__dropdown-caret" aria-hidden="true">
+                            <svg viewBox="0 0 16 16" focusable="false">
+                                <path d="M4.25 6.25 8 10l3.75-3.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                            </svg>
+                        </span>
                     </button>
                     <div class="portal-topbar__dropdown-menu" data-dropdown-menu>
                         <a href="{% url 'portal_alertas' %}" class="portal-topbar__dropdown-item{% if request.resolver_match.url_name == 'portal_alertas' or request.resolver_match.url_name == 'portal_alerta_detalhe' %} is-active{% endif %}">
