@@ -1,25 +1,79 @@
 {% extends "portal/base_public.html" %}
 
-{% block title %}Cancelamento de alertas | NC Fly News{% endblock %}
+{% block title %}Cancelar inscri&ccedil;&atilde;o de alertas | NC Fly News{% endblock %}
 
 {% block content %}
-<section class="portal-static-page">
-    <div class="portal-container portal-static-page__container">
-        <div class="portal-static-page__header">
+<div class="portal-static-page">
+    <section class="portal-static-page__shell portal-unsubscribe-page">
+        <header class="portal-static-page__hero">
             <span class="portal-static-page__eyebrow">Alertas por e-mail</span>
-            {% if unsubscribe_success %}
-            <h1>Recebimento cancelado</h1>
-            <p>O e-mail {% if lead %}<strong>{{ lead.email }}</strong>{% else %}informado{% endif %} não receberá novos alertas automáticos da NC Fly.</p>
-            {% else %}
-            <h1>Não foi possível concluir o cancelamento</h1>
-            <p>Esse link pode estar inválido, expirado ou já ter sido usado anteriormente.</p>
-            {% endif %}
-        </div>
 
-        <div class="portal-static-page__body">
-            <p>Se quiser voltar a receber alertas no futuro, basta se cadastrar novamente na lista pública da NC Fly.</p>
-            <p><a href="{% url 'portal_alertas' %}" class="portal-button portal-button--primary">Ver alertas no site</a></p>
-        </div>
-    </div>
-</section>
+            {% if unsubscribe_success %}
+            <h1>Inscri&ccedil;&atilde;o cancelada</h1>
+            <p>O e-mail <strong>{{ lead.email }}</strong> n&atilde;o receber&aacute; novos alertas autom&aacute;ticos da NC Fly.</p>
+            {% if motivo_label %}
+            <p class="portal-static-page__updated">Motivo registrado: {{ motivo_label }}.</p>
+            {% endif %}
+
+            {% elif unsubscribe_cancelled %}
+            <h1>Cancelamento interrompido</h1>
+            <p>Sua inscri&ccedil;&atilde;o continua ativa. O e-mail <strong>{{ lead.email }}</strong> seguir&aacute; recebendo os alertas da NC Fly.</p>
+
+            {% elif already_unsubscribed %}
+            <h1>Inscri&ccedil;&atilde;o j&aacute; cancelada</h1>
+            <p>O e-mail <strong>{{ lead.email }}</strong> j&aacute; estava fora da lista de alertas autom&aacute;ticos.</p>
+
+            {% elif lead %}
+            <h1>Confirmar cancelamento</h1>
+            <p>Antes de remover <strong>{{ lead.email }}</strong> da lista, selecione o principal motivo do cancelamento.</p>
+
+            {% else %}
+            <h1>N&atilde;o foi poss&iacute;vel abrir o cancelamento</h1>
+            <p>Esse link pode estar inv&aacute;lido ou expirado. Se precisar, cadastre-se novamente na p&aacute;gina de alertas.</p>
+            {% endif %}
+        </header>
+
+        {% if lead and not unsubscribe_success and not unsubscribe_cancelled and not already_unsubscribed %}
+        <form method="post" class="portal-static-page__section portal-unsubscribe-form">
+            {% csrf_token %}
+            <input type="hidden" name="token" value="{{ token }}">
+
+            <div>
+                <h2>Qual foi o motivo?</h2>
+                <p>Essa resposta ajuda a ajustar frequ&ecirc;ncia e conte&uacute;do dos alertas.</p>
+            </div>
+
+            {% if form.motivo.errors %}
+            <p class="portal-unsubscribe-form__error">{{ form.motivo.errors|striptags }}</p>
+            {% endif %}
+
+            <div class="portal-unsubscribe-form__options">
+                {% for radio in form.motivo %}
+                <label class="portal-unsubscribe-form__option">
+                    {{ radio.tag }}
+                    <span>{{ radio.choice_label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+
+            <div class="portal-unsubscribe-form__actions">
+                <button type="submit" name="action" value="confirm" class="portal-button portal-button--primary">
+                    Confirmar cancelamento
+                </button>
+                <button type="submit" name="action" value="cancel" class="portal-button portal-button--ghost">
+                    Manter minha inscri&ccedil;&atilde;o
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <section class="portal-static-page__section">
+            <p>Se quiser alterar sua decis&atilde;o depois, basta se cadastrar novamente na lista p&uacute;blica da NC Fly.</p>
+            <div class="portal-static-page__cta-row">
+                <a href="{% url 'portal_alertas' %}" class="portal-button portal-button--primary">Ver alertas no site</a>
+                <a href="{% url 'portal_home' %}" class="portal-button portal-button--ghost">Voltar para a home</a>
+            </div>
+        </section>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}

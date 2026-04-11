@@ -1242,6 +1242,8 @@ class PortalAlertDigestTest(TestCase):
         self.assertEqual(email.reply_to, ["atendimento@ncfly.com.br"])
         self.assertIn("1 atualização para conferir hoje", email.subject)
         self.assertIn(f"Ver alerta: https://ncfly.com.br/home/alertas/{alerta.id}/", email.body)
+        self.assertIn("Compartilhar no WhatsApp: https://wa.me/?text=", email.body)
+        self.assertIn("Olha%20este%20alerta%20da%20NC%20Fly", email.body)
         self.assertIn("https://wa.me/5512991722902?text=", email.body)
         self.assertIn("Recebi%20o%20e-mail%20de%20alertas%20da%20NC%20Fly", email.body)
         self.assertIn("List-Unsubscribe", email.extra_headers)
@@ -1251,6 +1253,8 @@ class PortalAlertDigestTest(TestCase):
         self.assertEqual(email.alternatives[0][1], "text/html")
         self.assertIn("WhatsApp da NC Fly", email.alternatives[0][0])
         self.assertIn("Falar no WhatsApp", email.alternatives[0][0])
+        self.assertIn("Compartilhar no WhatsApp", email.alternatives[0][0])
+        self.assertIn('href="https://wa.me/?text=', email.alternatives[0][0])
         self.assertIn("Cancelar inscricao", email.alternatives[0][0])
         self.assertIn('href="https://ncfly.com.br/home/alertas/cancelar/?token=', email.alternatives[0][0])
 
@@ -1378,7 +1382,7 @@ class PortalAlertDigestTest(TestCase):
         self.assertEqual(third["items"], 0)
         self.assertEqual(AlertEmailDigestItem.objects.filter(sent_at__isnull=True).count(), 0)
 
-    def test_unsubscribe_endpoint_descadastra_lead(self):
+    def test_unsubscribe_endpoint_exibe_confirmacao_sem_descadastrar_no_get(self):
         lead = LeadAlertaEmail.objects.get(email="ana@example.com")
         token = build_alert_unsubscribe_token(lead.email)
 
@@ -1386,8 +1390,58 @@ class PortalAlertDigestTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         lead.refresh_from_db()
+        self.assertEqual(lead.status, LeadAlertaEmail.STATUS_ATIVO)
+        self.assertContains(response, "Confirmar cancelamento")
+        self.assertContains(response, "Recebo muitos e-mails")
+
+    def test_unsubscribe_endpoint_confirma_cancelamento_com_motivo(self):
+        lead = LeadAlertaEmail.objects.get(email="ana@example.com")
+        token = build_alert_unsubscribe_token(lead.email)
+
+        response = self.client.post(
+            reverse("portal_alertas_unsubscribe"),
+            {
+                "token": token,
+                "action": "confirm",
+                "motivo": LeadAlertaEmail.MOTIVO_CANCELAMENTO_CONTEUDO_IRRELEVANTE,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        lead.refresh_from_db()
         self.assertEqual(lead.status, LeadAlertaEmail.STATUS_DESCADASTRADO)
-        self.assertContains(response, "Recebimento cancelado")
+        self.assertEqual(
+            lead.motivo_cancelamento,
+            LeadAlertaEmail.MOTIVO_CANCELAMENTO_CONTEUDO_IRRELEVANTE,
+        )
+        self.assertIsNotNone(lead.cancelado_em)
+        self.assertContains(response, "Inscri")
+        self.assertContains(response, "cancelada")
+
+    def test_unsubscribe_endpoint_cancelar_mantem_lead_ativo(self):
+        lead = LeadAlertaEmail.objects.get(email="ana@example.com")
+        token = build_alert_unsubscribe_token(lead.email)
+
+        response = self.client.post(
+            reverse("portal_alertas_unsubscribe"),
+            {
+                "token": token,
+                "action": "cancel",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        lead.refresh_from_db()
+        self.assertEqual(lead.status, LeadAlertaEmail.STATUS_ATIVO)
+        self.assertEqual(lead.motivo_cancelamento, "")
+        self.assertIsNone(lead.cancelado_em)
+        self.assertContains(response, "continua ativa")
+
+    def test_unsubscribe_endpoint_token_invalido(self):
+        response = self.client.get(reverse("portal_alertas_unsubscribe"), {"token": "invalido"})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, "link pode estar", status_code=400)
 
 
 @override_settings(

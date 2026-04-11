@@ -270,6 +270,22 @@ class AlertEmailLeadForm(forms.Form):
                 "source_environment": (source_environment or "local")[:20],
                 "source_host": (source_host or "")[:120],
                 "status": LeadAlertaEmail.STATUS_ATIVO,
+                "motivo_cancelamento": "",
+                "cancelado_em": None,
             },
         )
         return lead, created
+
+
+class AlertEmailUnsubscribeForm(forms.Form):
+    motivo = forms.ChoiceField(
+        choices=LeadAlertaEmail.MOTIVO_CANCELAMENTO_CHOICES,
+        widget=forms.RadioSelect,
+        error_messages={
+            "required": "Selecione um motivo para confirmar o cancelamento.",
+        },
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["motivo"].label = "Motivo do cancelamento"

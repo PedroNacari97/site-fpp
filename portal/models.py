@@ -289,6 +289,19 @@ class LeadAlertaEmail(models.Model):
         (STATUS_DESCADASTRADO, "Descadastrado"),
     )
 
+    MOTIVO_CANCELAMENTO_MUITOS_EMAILS = "muitos_emails"
+    MOTIVO_CANCELAMENTO_CONTEUDO_IRRELEVANTE = "conteudo_irrelevante"
+    MOTIVO_CANCELAMENTO_SEM_INTERESSE = "sem_interesse"
+    MOTIVO_CANCELAMENTO_NAO_RECONHECE = "nao_reconhece_cadastro"
+    MOTIVO_CANCELAMENTO_CAIXA_CHEIA = "caixa_cheia"
+    MOTIVO_CANCELAMENTO_CHOICES = (
+        (MOTIVO_CANCELAMENTO_MUITOS_EMAILS, "Recebo muitos e-mails"),
+        (MOTIVO_CANCELAMENTO_CONTEUDO_IRRELEVANTE, "O conteudo nao e relevante para mim"),
+        (MOTIVO_CANCELAMENTO_SEM_INTERESSE, "Nao tenho mais interesse nos alertas"),
+        (MOTIVO_CANCELAMENTO_NAO_RECONHECE, "Nao lembro de ter me cadastrado"),
+        (MOTIVO_CANCELAMENTO_CAIXA_CHEIA, "Quero reduzir mensagens na caixa de entrada"),
+    )
+
     ORIGEM_HOME = "home"
     ORIGEM_ALERTAS = "alertas"
     ORIGEM_CHOICES = (
@@ -311,6 +324,12 @@ class LeadAlertaEmail(models.Model):
     source_environment = models.CharField(max_length=20, default="local", db_index=True)
     source_host = models.CharField(max_length=120, blank=True, db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_ATIVO)
+    motivo_cancelamento = models.CharField(
+        max_length=40,
+        choices=MOTIVO_CANCELAMENTO_CHOICES,
+        blank=True,
+    )
+    cancelado_em = models.DateTimeField(null=True, blank=True)
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 
