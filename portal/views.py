@@ -16,10 +16,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from accounts.security import get_client_ip, get_user_agent
-from .forms import AlertEmailLeadForm, PlataformaLeadForm, PlataformaQuickLeadForm
+from .forms import AlertEmailLeadForm, AlertEmailUnsubscribeForm, PlataformaLeadForm, PlataformaQuickLeadForm
 from .models import NoticiaPublicada
 from .models import LeadAlertaEmail, LeadPlataforma
-from .services.alert_email_broadcasts import unsubscribe_alert_email_by_token
+from .services.alert_email_broadcasts import (
+    get_alert_email_lead_by_unsubscribe_token,
+    unsubscribe_alert_email_by_token,
+)
 from .services.lead_notifications import notify_alert_email_lead, notify_platform_lead
 from .services.metrics import get_request_site_context, track_click_event, track_page_view
 from .services.public_alerts import (
@@ -1615,19 +1618,53 @@ def termos_alertas_email(request):
     return render(request, "portal/termos_alertas_email.html", context)
 
 
-@csrf_exempt
 def alertas_email_unsubscribe(request):
     token = (request.POST.get("token") or request.GET.get("token") or "").strip()
-    lead = unsubscribe_alert_email_by_token(token) if token else None
+    lead = get_alert_email_lead_by_unsubscribe_token(token) if token else None
+    form = AlertEmailUnsubscribeForm(request.POST or None)
     context = {
         "lead": lead,
-        "unsubscribe_success": bool(lead),
+        "token": token,
+        "form": form,
+        "unsubscribe_success": False,
+        "unsubscribe_cancelled": False,
+        "already_unsubscribed": bool(
+            lead and lead.status == LeadAlertaEmail.STATUS_DESCADASTRADO
+        ),
     }
+
+    if not lead:
+        return render(
+            request,
+            "portal/alertas_unsubscribe_result.html",
+            context,
+            status=400,
+        )
+
+    if request.method == "POST":
+        if request.POST.get("action") == "cancel":
+            context["unsubscribe_cancelled"] = True
+            context["already_unsubscribed"] = False
+            return render(request, "portal/alertas_unsubscribe_result.html", context)
+
+        if form.is_valid():
+            lead = unsubscribe_alert_email_by_token(token, motivo=form.cleaned_data["motivo"])
+            context.update(
+                {
+                    "lead": lead,
+                    "unsubscribe_success": bool(lead),
+                    "already_unsubscribed": False,
+                    "motivo_label": lead.get_motivo_cancelamento_display() if lead else "",
+                }
+            )
+            return render(request, "portal/alertas_unsubscribe_result.html", context)
+
+        context["already_unsubscribed"] = False
+
     return render(
         request,
         "portal/alertas_unsubscribe_result.html",
         context,
-        status=200 if lead else 400,
     )
 
 

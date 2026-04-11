@@ -90,6 +90,17 @@ def _whatsapp_contact_url(message: str | None = None) -> str:
     return f"https://wa.me/{number}"
 
 
+def _build_alert_share_message(route_label: str, milhas_label: str, alert_url: str) -> str:
+    route_label = str(route_label or "alerta de viagem").strip()
+    milhas_label = str(milhas_label or "").strip()
+    detail = f" por {milhas_label}" if milhas_label and milhas_label != "Consulte o alerta no site" else ""
+    return f"Olha este alerta da NC Fly: {route_label}{detail}. {alert_url}"
+
+
+def _whatsapp_share_url(message: str) -> str:
+    return f"https://wa.me/?text={quote(str(message or '').strip())}"
+
+
 def capture_alert_email_snapshot(alerta) -> dict[str, object]:
     return {
         "publico": bool(alerta.deve_aparecer_na_vitrine(max_age_days=PUBLIC_HOME_ALERT_MAX_AGE_DAYS)),
@@ -227,7 +238,7 @@ def build_alert_unsubscribe_token(email: str) -> str:
     )
 
 
-def unsubscribe_alert_email_by_token(token: str) -> LeadAlertaEmail | None:
+def get_alert_email_lead_by_unsubscribe_token(token: str) -> LeadAlertaEmail | None:
     try:
         payload = signing.loads(token, salt=UNSUBSCRIBE_SALT, max_age=60 * 60 * 24 * 365)
     except signing.BadSignature:
@@ -244,9 +255,26 @@ def unsubscribe_alert_email_by_token(token: str) -> LeadAlertaEmail | None:
     if not lead:
         return None
 
-    if lead.status != LeadAlertaEmail.STATUS_DESCADASTRADO:
-        lead.status = LeadAlertaEmail.STATUS_DESCADASTRADO
-        lead.save(update_fields=["status", "atualizado_em"])
+    return lead
+
+
+def unsubscribe_alert_email_by_token(token: str, *, motivo: str = "") -> LeadAlertaEmail | None:
+    lead = get_alert_email_lead_by_unsubscribe_token(token)
+    if not lead:
+        return None
+
+    valid_motivos = {value for value, _label in LeadAlertaEmail.MOTIVO_CANCELAMENTO_CHOICES}
+    motivo = str(motivo or "").strip()
+    if motivo not in valid_motivos:
+        motivo = ""
+
+    update_fields = ["status", "cancelado_em", "atualizado_em"]
+    lead.status = LeadAlertaEmail.STATUS_DESCADASTRADO
+    lead.cancelado_em = timezone.now()
+    if motivo:
+        lead.motivo_cancelamento = motivo
+        update_fields.append("motivo_cancelamento")
+    lead.save(update_fields=update_fields)
     return lead
 
 
@@ -267,6 +295,11 @@ def _build_digest_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem],
     for index, item in enumerate(items, start=1):
         metadata = item.metadata_json or {}
         route_label = metadata.get("route_label") or f"Alerta #{item.alerta_id}"
+        alert_url = _absolute_alert_url(item.alerta_id)
+        milhas_label = metadata.get("milhas_label") or "Consulte o alerta no site"
+        share_url = _whatsapp_share_url(
+            _build_alert_share_message(str(route_label), str(milhas_label), alert_url)
+        )
         if item.kind == AlertEmailDigestItem.KIND_NEW:
             lines.extend(
                 [
@@ -275,8 +308,9 @@ def _build_digest_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem],
                     f"Programa: {metadata.get('programa') or '-'}",
                     f"Companhia: {metadata.get('companhia') or '-'}",
                     f"Classe: {metadata.get('classe') or '-'}",
-                    f"Milhas: {metadata.get('milhas_label') or 'Consulte o alerta no site'}",
-                    f"Ver alerta: {_absolute_alert_url(item.alerta_id)}",
+                    f"Milhas: {milhas_label}",
+                    f"Ver alerta: {alert_url}",
+                    f"Compartilhar no WhatsApp: {share_url}",
                     "",
                 ]
             )
@@ -285,7 +319,8 @@ def _build_digest_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem],
         lines.append(f"{index}. Alerta atualizado: {route_label}")
         for highlight in metadata.get("highlights") or []:
             lines.append(f"- {highlight}")
-        lines.append(f"Acompanhar alerta: {_absolute_alert_url(item.alerta_id)}")
+        lines.append(f"Acompanhar alerta: {alert_url}")
+        lines.append(f"Compartilhar no WhatsApp: {share_url}")
         lines.append("")
 
     whatsapp_url = _whatsapp_contact_url(_build_whatsapp_digest_message())
@@ -316,6 +351,10 @@ def _build_digest_html_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestI
         metadata = item.metadata_json or {}
         route_label = metadata.get("route_label") or f"Alerta #{item.alerta_id}"
         alert_url = _absolute_alert_url(item.alerta_id)
+        milhas_label = metadata.get("milhas_label") or "Consulte o alerta no site"
+        share_url = _whatsapp_share_url(
+            _build_alert_share_message(str(route_label), str(milhas_label), alert_url)
+        )
 
         if item.kind == AlertEmailDigestItem.KIND_NEW:
             item_blocks.append(
@@ -328,10 +367,11 @@ def _build_digest_html_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestI
                     <div><strong>Programa:</strong> {html_escape(str(metadata.get('programa') or '-'))}</div>
                     <div><strong>Companhia:</strong> {html_escape(str(metadata.get('companhia') or '-'))}</div>
                     <div><strong>Classe:</strong> {html_escape(str(metadata.get('classe') or '-'))}</div>
-                    <div><strong>Milhas:</strong> {html_escape(str(metadata.get('milhas_label') or 'Consulte o alerta no site'))}</div>
+                    <div><strong>Milhas:</strong> {html_escape(str(milhas_label))}</div>
                   </div>
                   <div style="margin-top:14px;">
                     <a href="{html_escape(alert_url)}" style="display:inline-block;padding:11px 16px;border-radius:999px;background:#13294b;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;">Ver alerta</a>
+                    <a href="{html_escape(share_url)}" style="display:inline-block;margin-left:8px;padding:10px 15px;border-radius:999px;border:1px solid #25d366;background:#ffffff;color:#128c4a;text-decoration:none;font-size:14px;font-weight:800;">Compartilhar no WhatsApp</a>
                   </div>
                 </div>
                 """
@@ -351,6 +391,7 @@ def _build_digest_html_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestI
                 {highlights}
               </ul>
               <a href="{html_escape(alert_url)}" style="display:inline-block;padding:11px 16px;border-radius:999px;background:#13294b;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;">Acompanhar alerta</a>
+              <a href="{html_escape(share_url)}" style="display:inline-block;margin-left:8px;padding:10px 15px;border-radius:999px;border:1px solid #25d366;background:#ffffff;color:#128c4a;text-decoration:none;font-size:14px;font-weight:800;">Compartilhar no WhatsApp</a>
             </div>
             """
         )

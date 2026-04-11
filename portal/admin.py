@@ -41,9 +41,18 @@ class LeadAlertaEmailAdmin(admin.ModelAdmin):
         "telefone",
         "origem_cadastro",
         "status",
+        "motivo_cancelamento",
+        "cancelado_em",
         "aceite_versao",
         "criado_em",
     )
-    list_filter = ("origem_cadastro", "status", "source_environment")
+    list_filter = ("origem_cadastro", "status", "motivo_cancelamento", "source_environment")
     search_fields = ("nome_completo", "email", "telefone", "source_host")
-    readonly_fields = ("aceito_em", "aceito_ip", "aceito_user_agent", "criado_em", "atualizado_em")
+    readonly_fields = (
+        "aceito_em",
+        "aceito_ip",
+        "aceito_user_agent",
+        "cancelado_em",
+        "criado_em",
+        "atualizado_em",
+    )

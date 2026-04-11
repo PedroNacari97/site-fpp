@@ -852,6 +852,70 @@ img {
   color: var(--muted);
 }
 
+.portal-unsubscribe-page {
+  width: min(760px, 100%);
+}
+
+.portal-unsubscribe-form {
+  display: grid;
+  gap: 18px;
+}
+
+.portal-unsubscribe-form__options {
+  display: grid;
+  gap: 12px;
+}
+
+.portal-unsubscribe-form__option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.portal-unsubscribe-form__option:hover,
+.portal-unsubscribe-form__option:has(input:checked) {
+  border-color: rgba(255, 96, 22, 0.45);
+  background: #fff7ed;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+}
+
+.portal-unsubscribe-form__option input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+
+.portal-unsubscribe-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.portal-unsubscribe-form__error {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .portal-unsubscribe-form__actions .portal-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 .news-home-frame,
 .news-detail-frame {
   display: grid;
