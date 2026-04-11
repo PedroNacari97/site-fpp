@@ -1,0 +1,53 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+
+{% block title %}{{ seo_title|default:"Compartilhar alerta | NC Fly News" }}{% endblock %}
+
+{% block content %}
+<div class="portal-alert-share-page">
+    <section class="portal-alert-share-page__shell">
+        <a href="{{ back_url }}" class="portal-alert-detail__back-link portal-alert-share-page__back">&larr; Voltar ao alerta</a>
+
+        <article class="portal-alert-share-card">
+            <span class="portal-static-page__eyebrow">Compartilhar alerta</span>
+            <h1>{{ alert_context.hero_title|portal_text }}</h1>
+            <p>No celular, toque em <strong>Compartilhar agora</strong> para abrir a lista de apps dispon&iacute;veis, como WhatsApp, Instagram, Telegram, e-mail e outros.</p>
+
+            <div class="portal-alert-share-card__summary">
+                <span>{{ alert_context.origem_codigo }} &rarr; {{ alert_context.destino_codigo }}</span>
+                <strong>{{ alert_context.miles_label|portal_text }}</strong>
+            </div>
+
+            <button
+                type="button"
+                class="portal-button portal-button--primary portal-alert-share-card__native"
+                data-native-share
+                data-share-title="{{ share_title }}"
+                data-share-text="{{ share_text }}"
+                data-share-url="{{ alert_url }}"
+            >
+                Compartilhar agora
+            </button>
+
+            <p class="portal-alert-share-card__hint">Se o seletor nativo n&atilde;o abrir neste aparelho, use uma das op&ccedil;&otilde;es abaixo.</p>
+
+            <div class="portal-alert-share-card__grid">
+                <a href="{{ share_links.whatsapp }}" target="_blank" rel="noopener noreferrer" class="portal-alert-share-card__option">
+                    WhatsApp
+                </a>
+                <a href="{{ share_links.telegram }}" target="_blank" rel="noopener noreferrer" class="portal-alert-share-card__option">
+                    Telegram
+                </a>
+                <a href="{{ share_links.email }}" class="portal-alert-share-card__option">
+                    E-mail
+                </a>
+                <button type="button" class="portal-alert-share-card__option" data-copy-share-link data-share-url="{{ alert_url }}">
+                    Copiar link
+                </button>
+            </div>
+
+            <p class="portal-alert-share-card__feedback" data-copy-share-feedback aria-live="polite"></p>
+        </article>
+    </section>
+</div>
+{% endblock %}

@@ -39,6 +39,15 @@
                         {% endfor %}
                     </select>
                 </div>
+                <div class="portal-lead-field">
+                    <label for="alert-filter-classe">Classe</label>
+                    <select id="alert-filter-classe" name="classe" class="portal-lead-field__input">
+                        <option value="">Todas as classes</option>
+                        {% for option in alert_filter_options.classes %}
+                        <option value="{{ option.value }}" {% if selected_alert_filters.classe == option.value %}selected{% endif %}>{{ option.label|portal_text }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
                 <div class="portal-alerts-page__filter-actions">
                     <button type="submit" class="portal-button portal-button--light">Filtrar</button>
                     {% if filters_active %}

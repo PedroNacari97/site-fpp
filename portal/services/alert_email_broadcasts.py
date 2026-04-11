@@ -35,6 +35,10 @@ def _absolute_alert_url(alerta_id: int) -> str:
     return f"{_alerts_site_base_url()}{reverse('portal_alerta_detalhe', args=[alerta_id])}"
 
 
+def _absolute_alert_share_url(alerta_id: int) -> str:
+    return f"{_alerts_site_base_url()}{reverse('portal_alerta_compartilhar', args=[alerta_id])}"
+
+
 def _absolute_alerts_list_url() -> str:
     return f"{_alerts_site_base_url()}{reverse('portal_alertas')}"
 
@@ -88,17 +92,6 @@ def _whatsapp_contact_url(message: str | None = None) -> str:
     if message:
         return f"https://wa.me/{number}?text={quote(message)}"
     return f"https://wa.me/{number}"
-
-
-def _build_alert_share_message(route_label: str, milhas_label: str, alert_url: str) -> str:
-    route_label = str(route_label or "alerta de viagem").strip()
-    milhas_label = str(milhas_label or "").strip()
-    detail = f" por {milhas_label}" if milhas_label and milhas_label != "Consulte o alerta no site" else ""
-    return f"Olha este alerta da NC Fly: {route_label}{detail}. {alert_url}"
-
-
-def _whatsapp_share_url(message: str) -> str:
-    return f"https://wa.me/?text={quote(str(message or '').strip())}"
 
 
 def capture_alert_email_snapshot(alerta) -> dict[str, object]:
@@ -297,9 +290,7 @@ def _build_digest_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem],
         route_label = metadata.get("route_label") or f"Alerta #{item.alerta_id}"
         alert_url = _absolute_alert_url(item.alerta_id)
         milhas_label = metadata.get("milhas_label") or "Consulte o alerta no site"
-        share_url = _whatsapp_share_url(
-            _build_alert_share_message(str(route_label), str(milhas_label), alert_url)
-        )
+        share_url = _absolute_alert_share_url(item.alerta_id)
         if item.kind == AlertEmailDigestItem.KIND_NEW:
             lines.extend(
                 [
@@ -310,7 +301,7 @@ def _build_digest_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem],
                     f"Classe: {metadata.get('classe') or '-'}",
                     f"Milhas: {milhas_label}",
                     f"Ver alerta: {alert_url}",
-                    f"Compartilhar no WhatsApp: {share_url}",
+                    f"Compartilhar alerta: {share_url}",
                     "",
                 ]
             )
@@ -320,7 +311,7 @@ def _build_digest_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem],
         for highlight in metadata.get("highlights") or []:
             lines.append(f"- {highlight}")
         lines.append(f"Acompanhar alerta: {alert_url}")
-        lines.append(f"Compartilhar no WhatsApp: {share_url}")
+        lines.append(f"Compartilhar alerta: {share_url}")
         lines.append("")
 
     whatsapp_url = _whatsapp_contact_url(_build_whatsapp_digest_message())
@@ -352,9 +343,7 @@ def _build_digest_html_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestI
         route_label = metadata.get("route_label") or f"Alerta #{item.alerta_id}"
         alert_url = _absolute_alert_url(item.alerta_id)
         milhas_label = metadata.get("milhas_label") or "Consulte o alerta no site"
-        share_url = _whatsapp_share_url(
-            _build_alert_share_message(str(route_label), str(milhas_label), alert_url)
-        )
+        share_url = _absolute_alert_share_url(item.alerta_id)
 
         if item.kind == AlertEmailDigestItem.KIND_NEW:
             item_blocks.append(
@@ -370,8 +359,8 @@ def _build_digest_html_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestI
                     <div><strong>Milhas:</strong> {html_escape(str(milhas_label))}</div>
                   </div>
                   <div style="margin-top:14px;">
-                    <a href="{html_escape(alert_url)}" style="display:inline-block;padding:11px 16px;border-radius:999px;background:#13294b;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;">Ver alerta</a>
-                    <a href="{html_escape(share_url)}" style="display:inline-block;margin-left:8px;padding:10px 15px;border-radius:999px;border:1px solid #25d366;background:#ffffff;color:#128c4a;text-decoration:none;font-size:14px;font-weight:800;">Compartilhar no WhatsApp</a>
+                    <a href="{html_escape(alert_url)}" style="display:block;padding:11px 16px;border-radius:999px;background:#13294b;color:#ffffff;text-align:center;text-decoration:none;font-size:14px;font-weight:700;">Ver alerta</a>
+                    <a href="{html_escape(share_url)}" style="display:block;margin-top:8px;padding:10px 15px;border-radius:999px;border:1px solid #ff7a00;background:#ffffff;color:#ff7a00;text-align:center;text-decoration:none;font-size:14px;font-weight:800;">Compartilhar alerta</a>
                   </div>
                 </div>
                 """
@@ -390,8 +379,8 @@ def _build_digest_html_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestI
               <ul style="margin:0 0 14px 18px;padding:0;font-size:14px;line-height:1.7;color:#42526b;">
                 {highlights}
               </ul>
-              <a href="{html_escape(alert_url)}" style="display:inline-block;padding:11px 16px;border-radius:999px;background:#13294b;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;">Acompanhar alerta</a>
-              <a href="{html_escape(share_url)}" style="display:inline-block;margin-left:8px;padding:10px 15px;border-radius:999px;border:1px solid #25d366;background:#ffffff;color:#128c4a;text-decoration:none;font-size:14px;font-weight:800;">Compartilhar no WhatsApp</a>
+              <a href="{html_escape(alert_url)}" style="display:block;padding:11px 16px;border-radius:999px;background:#13294b;color:#ffffff;text-align:center;text-decoration:none;font-size:14px;font-weight:700;">Acompanhar alerta</a>
+              <a href="{html_escape(share_url)}" style="display:block;margin-top:8px;padding:10px 15px;border-radius:999px;border:1px solid #ff7a00;background:#ffffff;color:#ff7a00;text-align:center;text-decoration:none;font-size:14px;font-weight:800;">Compartilhar alerta</a>
             </div>
             """
         )
