@@ -423,6 +423,50 @@ document.addEventListener("DOMContentLoaded", () => {
     link.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(finalMessage)}`;
   });
 
+  const setShareFeedback = (element, message) => {
+    const host = element.closest(".portal-alert-share-card");
+    const feedback = host?.querySelector("[data-copy-share-feedback]");
+    if (feedback) {
+      feedback.textContent = message;
+    }
+  };
+
+  document.querySelectorAll("[data-native-share]").forEach((button) => {
+    const canUseNativeShare = typeof navigator.share === "function";
+
+    if (!canUseNativeShare) {
+      button.textContent = "Compartilhamento nativo indisponivel";
+      button.classList.add("portal-button--ghost");
+    }
+
+    button.addEventListener("click", async () => {
+      if (!canUseNativeShare) {
+        setShareFeedback(button, "Este navegador nao abriu o seletor de apps. Use uma opcao abaixo.");
+        return;
+      }
+
+      try {
+        await navigator.share({
+          title: button.dataset.shareTitle || document.title,
+          text: button.dataset.shareText || "",
+          url: button.dataset.shareUrl || window.location.href,
+        });
+      } catch {}
+    });
+  });
+
+  document.querySelectorAll("[data-copy-share-link]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const url = button.dataset.shareUrl || window.location.href;
+      try {
+        await navigator.clipboard.writeText(url);
+        setShareFeedback(button, "Link copiado.");
+      } catch {
+        setShareFeedback(button, url);
+      }
+    });
+  });
+
   const trackEvent = (name, params = {}) => {
     if (!analyticsAvailable) {
       return;
@@ -562,8 +606,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const mobilePerView = Number.parseInt(carousel?.dataset.alertsPerViewMobile || "1", 10);
     const tabletPerView = Number.parseInt(carousel?.dataset.alertsPerViewTablet || "2", 10);
     const desktopPerView = Number.parseInt(carousel?.dataset.alertsPerViewDesktop || "3", 10);
+    const isTouchViewport = typeof window.matchMedia === "function"
+      && window.matchMedia("(hover: none) and (pointer: coarse)").matches;
 
-    if (window.innerWidth <= 760) {
+    if (isTouchViewport || window.innerWidth <= 900) {
       return Number.isFinite(mobilePerView) && mobilePerView > 0 ? mobilePerView : 1;
     }
     if (window.innerWidth <= 1080) {

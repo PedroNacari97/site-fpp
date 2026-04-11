@@ -1,5 +1,6 @@
 import json
 import unicodedata
+from urllib.parse import quote
 
 from django.contrib import messages
 from django.conf import settings
@@ -722,10 +723,22 @@ def _alert_filter_option_values(values):
     return [{"value": value, "label": value} for value in sorted(seen.values(), key=_normalize_text)]
 
 
-def _filter_public_alerts(alertas, aeroporto="", programa="", companhia=""):
+def _alert_class_filter_options(alertas):
+    seen = {}
+    choices = dict(AlertaViagem.CLASSE_CHOICES)
+    for alerta in alertas:
+        raw_value = (alerta.classe or "").strip()
+        if not raw_value or raw_value in seen:
+            continue
+        seen[raw_value] = repair_portuguese_text(choices.get(raw_value, alerta.get_classe_display() or raw_value))
+    return [{"value": value, "label": label} for value, label in sorted(seen.items(), key=lambda item: _normalize_text(item[1]))]
+
+
+def _filter_public_alerts(alertas, aeroporto="", programa="", companhia="", classe=""):
     selected_airport = _normalize_text(aeroporto)
     selected_program = _normalize_text(programa)
     selected_airline = _normalize_text(companhia)
+    selected_class = _normalize_text(classe)
 
     filtered = []
     for alerta in alertas:
@@ -750,6 +763,8 @@ def _filter_public_alerts(alertas, aeroporto="", programa="", companhia=""):
         if selected_program and _normalize_text(alerta.get("programa")) != selected_program:
             continue
         if selected_airline and _normalize_text(alerta.get("companhia")) != selected_airline:
+            continue
+        if selected_class and _normalize_text(alerta.get("classe")) != selected_class:
             continue
         filtered.append(alerta)
     return filtered
@@ -1125,6 +1140,7 @@ def alertas_publicos(request):
         "aeroporto": (request.GET.get("aeroporto") or "").strip(),
         "programa": (request.GET.get("programa") or "").strip(),
         "companhia": (request.GET.get("companhia") or "").strip(),
+        "classe": (request.GET.get("classe") or "").strip(),
     }
     visible_alert_cards = build_public_alert_cards(visible_alerts)
     alert_cards = _filter_public_alerts(
@@ -1132,6 +1148,7 @@ def alertas_publicos(request):
         aeroporto=selected_filters["aeroporto"],
         programa=selected_filters["programa"],
         companhia=selected_filters["companhia"],
+        classe=selected_filters["classe"],
     )
     filters_active = any(selected_filters.values())
     context = {
@@ -1150,6 +1167,7 @@ def alertas_publicos(request):
         "alert_filter_options": {
             "programas": _alert_filter_option_values([alerta.programa_fidelidade for alerta in visible_alerts]),
             "companhias": _alert_filter_option_values([alerta.companhia_aerea for alerta in visible_alerts]),
+            "classes": _alert_class_filter_options(visible_alerts),
         },
         "alert_results_total": len(alert_cards),
         "alert_email_lead_form": alert_email_lead_form,
@@ -1163,7 +1181,7 @@ def alertas_publicos(request):
         request=request,
         section="public_alerts",
         article_category=selected_filters["programa"],
-        article_topic=selected_filters["aeroporto"] or selected_filters["companhia"],
+        article_topic=selected_filters["aeroporto"] or selected_filters["companhia"] or selected_filters["classe"],
     )
     return render(request, "portal/alertas.html", context)
 
@@ -1189,6 +1207,56 @@ def alerta_publico_detalhe(request, alerta_id):
         article_topic=alerta.cidade_destino,
     )
     return render(request, "portal/alerta_detalhe.html", context)
+
+
+def alerta_publico_compartilhar(request, alerta_id):
+    alerta = get_object_or_404(AlertaViagem, id=alerta_id, ativo=True)
+    if not alerta.deve_aparecer_na_vitrine(max_age_days=PUBLIC_HOME_ALERT_MAX_AGE_DAYS):
+        raise Http404("Alerta nao disponivel.")
+
+    alert_content = build_public_alert_detail(alerta)
+    alert_url = request.build_absolute_uri(reverse("portal_alerta_detalhe", args=[alerta.id]))
+    share_title = f"Alerta NC Fly: {alert_content['hero_title']}"
+    share_text = (
+        f"Olha este alerta da NC Fly: {alert_content['hero_title']} "
+        f"por {alert_content['miles_label']}."
+    )
+    share_message = f"{share_text} {alert_url}"
+    encoded_url = quote(alert_url, safe="")
+    encoded_text = quote(share_text, safe="")
+    encoded_message = quote(share_message, safe="")
+    context = {
+        "alerta": alerta,
+        "alert_context": alert_content,
+        "alert_url": alert_url,
+        "share_title": share_title,
+        "share_text": share_text,
+        "share_message": share_message,
+        "share_links": {
+            "whatsapp": f"https://wa.me/?text={encoded_message}",
+            "telegram": f"https://t.me/share/url?url={encoded_url}&text={encoded_text}",
+            "email": f"mailto:?subject={quote(share_title, safe='')}&body={encoded_message}",
+        },
+        "back_url": reverse("portal_alerta_detalhe", args=[alerta.id]),
+    }
+    context.update(
+        {
+            "seo_title": f"Compartilhar alerta {alert_content['hero_title']} | NC Fly News",
+            "seo_description": f"Compartilhe o alerta {alert_content['hero_title']} da NC Fly.",
+            "seo_canonical_url": request.build_absolute_uri(
+                reverse("portal_alerta_compartilhar", args=[alerta.id])
+            ),
+            "seo_robots": "noindex,follow",
+        }
+    )
+    track_page_view(
+        request.path,
+        request=request,
+        section="public_alert_share",
+        article_category=alerta.programa_fidelidade,
+        article_topic=alerta.cidade_destino,
+    )
+    return render(request, "portal/alerta_compartilhar.html", context)
 
 
 def plataforma_saas(request):

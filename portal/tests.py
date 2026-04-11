@@ -349,10 +349,15 @@ class PortalRoutesTest(TestCase):
             max(0, len(response.context["alertas_publicos"]) - response.context["alerts_page_size"]),
         )
 
-    def test_listagem_publica_de_alertas_filtra_por_aeroporto_programa_e_companhia(self):
+    def test_listagem_publica_de_alertas_filtra_por_aeroporto_programa_companhia_e_classe(self):
         response = self.client.get(
             reverse("portal_alertas"),
-            {"aeroporto": "GRU", "programa": "Smiles", "companhia": "American Airlines"},
+            {
+                "aeroporto": "GRU",
+                "programa": "Smiles",
+                "companhia": "American Airlines",
+                "classe": AlertaViagem.CLASSE_ECONOMICA,
+            },
         )
 
         self.assertEqual(response.status_code, 200)
@@ -360,8 +365,19 @@ class PortalRoutesTest(TestCase):
         self.assertEqual(response.context["selected_alert_filters"]["aeroporto"], "GRU")
         self.assertEqual(response.context["selected_alert_filters"]["programa"], "Smiles")
         self.assertEqual(response.context["selected_alert_filters"]["companhia"], "American Airlines")
+        self.assertEqual(response.context["selected_alert_filters"]["classe"], AlertaViagem.CLASSE_ECONOMICA)
         self.assertContains(response, "American Airlines")
         self.assertContains(response, "Smiles")
+        self.assertContains(response, 'name="classe"')
+        self.assertContains(response, "Econ")
+
+    def test_listagem_publica_de_alertas_filtra_por_classe_executiva(self):
+        response = self.client.get(reverse("portal_alertas"), {"classe": AlertaViagem.CLASSE_EXECUTIVA})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["alertas_publicos"]), 1)
+        self.assertEqual(response.context["alertas_publicos"][0]["id"], self.alerta_relacionado.id)
+        self.assertEqual(response.context["selected_alert_filters"]["classe"], AlertaViagem.CLASSE_EXECUTIVA)
 
     def test_listagem_publica_de_alertas_exibe_nome_completo_dos_aeroportos_nos_cards(self):
         Aeroporto.objects.create(
@@ -1242,8 +1258,10 @@ class PortalAlertDigestTest(TestCase):
         self.assertEqual(email.reply_to, ["atendimento@ncfly.com.br"])
         self.assertIn("1 atualização para conferir hoje", email.subject)
         self.assertIn(f"Ver alerta: https://ncfly.com.br/home/alertas/{alerta.id}/", email.body)
-        self.assertIn("Compartilhar no WhatsApp: https://wa.me/?text=", email.body)
-        self.assertIn("Olha%20este%20alerta%20da%20NC%20Fly", email.body)
+        self.assertIn(
+            f"Compartilhar alerta: https://ncfly.com.br/home/alertas/{alerta.id}/compartilhar/",
+            email.body,
+        )
         self.assertIn("https://wa.me/5512991722902?text=", email.body)
         self.assertIn("Recebi%20o%20e-mail%20de%20alertas%20da%20NC%20Fly", email.body)
         self.assertIn("List-Unsubscribe", email.extra_headers)
@@ -1253,10 +1271,25 @@ class PortalAlertDigestTest(TestCase):
         self.assertEqual(email.alternatives[0][1], "text/html")
         self.assertIn("WhatsApp da NC Fly", email.alternatives[0][0])
         self.assertIn("Falar no WhatsApp", email.alternatives[0][0])
-        self.assertIn("Compartilhar no WhatsApp", email.alternatives[0][0])
-        self.assertIn('href="https://wa.me/?text=', email.alternatives[0][0])
+        self.assertIn("Compartilhar alerta", email.alternatives[0][0])
+        self.assertIn(
+            f'href="https://ncfly.com.br/home/alertas/{alerta.id}/compartilhar/"',
+            email.alternatives[0][0],
+        )
         self.assertIn("Cancelar inscricao", email.alternatives[0][0])
         self.assertIn('href="https://ncfly.com.br/home/alertas/cancelar/?token=', email.alternatives[0][0])
+
+    def test_pagina_compartilhar_alerta_exibe_opcoes(self):
+        alerta, _ = create_or_update_alerta(self._alerta_payload())
+
+        response = self.client.get(reverse("portal_alerta_compartilhar", args=[alerta.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Compartilhar agora")
+        self.assertContains(response, "WhatsApp")
+        self.assertContains(response, "Telegram")
+        self.assertContains(response, "Copiar link")
+        self.assertContains(response, f"/home/alertas/{alerta.id}/")
 
     def test_novo_inscrito_nao_recebe_digest_retroativo(self):
         create_or_update_alerta(self._alerta_payload())

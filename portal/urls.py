@@ -9,6 +9,7 @@ urlpatterns = [
     path("alertas/", views.alertas_publicos, name="portal_alertas"),
     path("alertas/termos-de-recebimento/", views.termos_alertas_email, name="portal_termos_alertas_email"),
     path("alertas/cancelar/", views.alertas_email_unsubscribe, name="portal_alertas_unsubscribe"),
+    path("alertas/<int:alerta_id>/compartilhar/", views.alerta_publico_compartilhar, name="portal_alerta_compartilhar"),
     path("alertas/<int:alerta_id>/", views.alerta_publico_detalhe, name="portal_alerta_detalhe"),
     path("plataforma/", views.plataforma_saas, name="portal_plataforma_saas"),
     path("plataforma/contato/", views.plataforma_contato, name="portal_plataforma_contato"),
