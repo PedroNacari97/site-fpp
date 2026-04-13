@@ -98,6 +98,8 @@ def editar_conta_administrada(request, conta_id):
 
 @login_required
 def deletar_conta(request, conta_id):
+    if request.method != "POST":
+        return redirect("admin_contas")
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
@@ -114,6 +116,8 @@ def deletar_conta(request, conta_id):
 
 @login_required
 def deletar_conta_administrada(request, conta_id):
+    if request.method != "POST":
+        return redirect("admin_contas_administradas")
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")

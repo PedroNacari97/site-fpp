@@ -10,15 +10,19 @@
 {% endblock %}
 
 {% block header_actions %}
-<a href="{% url 'admin_emissao_acompanhamento' emissao.id %}" class="quote-preview__toolbar-link quote-preview__toolbar-link--ghost">Acompanhar Status</a>
-<button type="button" class="quote-preview__toolbar-link quote-preview__toolbar-link--ghost" title="Envio por e-mail em breve">Enviar por E-mail</button>
-<a href="{% url 'admin_emissao_pdf' emissao.id %}" class="quote-preview__toolbar-link quote-preview__toolbar-link--primary" target="_blank" rel="noopener">Imprimir / Salvar PDF</a>
+<a href="{% url 'admin_emissao_pdf' emissao.id %}" class="quote-preview__toolbar-link quote-preview__toolbar-link--ghost no-print" target="_blank" rel="noopener">Salvar PDF</a>
+<button type="button" class="quote-preview__toolbar-link quote-preview__toolbar-link--primary no-print" onclick="compartilharPDF('{% url 'admin_emissao_pdf' emissao.id %}', 'Emissão {{ emissao.id }}')">
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="margin-right:6px"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+    Compartilhar
+</button>
 {% endblock %}
 
 {% block mobile_header_actions %}
-<a href="{% url 'admin_emissao_acompanhamento' emissao.id %}" class="quote-preview__toolbar-link quote-preview__toolbar-link--ghost">Acompanhar Status</a>
-<button type="button" class="quote-preview__toolbar-link quote-preview__toolbar-link--ghost" title="Envio por e-mail em breve">Enviar por E-mail</button>
-<a href="{% url 'admin_emissao_pdf' emissao.id %}" class="quote-preview__toolbar-link quote-preview__toolbar-link--primary" target="_blank" rel="noopener">Imprimir / Salvar PDF</a>
+<a href="{% url 'admin_emissao_pdf' emissao.id %}" class="quote-preview__toolbar-link quote-preview__toolbar-link--ghost no-print" target="_blank" rel="noopener">Salvar PDF</a>
+<button type="button" class="quote-preview__toolbar-link quote-preview__toolbar-link--primary no-print" onclick="compartilharPDF('{% url 'admin_emissao_pdf' emissao.id %}', 'Emissão {{ emissao.id }}')">
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="margin-right:6px"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+    Compartilhar
+</button>
 {% endblock %}
 
 {% block content %}

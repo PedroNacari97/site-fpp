@@ -21,13 +21,13 @@
 .emission-preview-hero__summary {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    min-width: 185px;
+    gap: 0.5rem;
+    min-width: 160px;
 }
 
 .emission-preview-hero__badge,
 .emission-preview-hero__status {
-    padding: 0.85rem 1rem;
+    padding: 0.6rem 0.85rem;
     border-radius: 0.9rem;
     text-align: center;
 }
@@ -53,7 +53,7 @@
 .emission-preview-hero__badge strong {
     display: block;
     margin-top: 0.25rem;
-    font-size: 2rem;
+    font-size: 1.5rem;
     line-height: 1;
 }
 
@@ -533,7 +533,51 @@
     }
 }
 
+/* Ocultar no print */
 @media print {
+    .no-print {
+        display: none !important;
+    }
+}
+
+@media print {
+    @page {
+        size: A4;
+        margin: 15mm;
+    }
+
+    html,
+    body,
+    .admin-body,
+    .admin-shell,
+    .admin-main,
+    .admin-page-main {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    .admin-sidebar,
+    .admin-topbar,
+    .admin-sidebar-overlay,
+    .admin-topbar__actions,
+    .admin-notifications-panel,
+    .quote-preview__back-link,
+    .no-print {
+        display: none !important;
+    }
+
+    .admin-main,
+    .admin-page-main,
+    .admin-page-main > div {
+        display: block !important;
+        max-width: none !important;
+        width: 100% !important;
+        min-height: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+    }
+
     .emission-preview-sheet {
         overflow: hidden !important;
         border: 1px solid rgba(148, 163, 184, 0.18) !important;
@@ -556,5 +600,37 @@
     .quote-preview-contact {
         break-inside: avoid;
         page-break-inside: avoid;
+    }
+
+    /* Localizador, PNR e Data em linha horizontal */
+    .emission-preview-meta {
+        display: flex;
+        flex-direction: row;
+        gap: 2rem;
+        flex-wrap: wrap;
+        padding: 0.75rem 1.25rem;
+    }
+
+    .emission-preview-meta__item {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    /* Reduzir padding das seções no PDF */
+    .quote-preview-section {
+        padding: 0.85rem 1.25rem;
+    }
+
+    .quote-preview-section__heading {
+        margin-bottom: 0.6rem;
+    }
+
+    .emission-preview-hero {
+        padding: 1rem 1.25rem;
+    }
+
+    /* Bagagem em linha horizontal */
+    .emission-preview-baggage-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }

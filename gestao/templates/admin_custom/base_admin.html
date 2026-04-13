@@ -230,16 +230,25 @@
         </nav>
 
         <div class="admin-sidebar__footer">
+            <details class="admin-sidebar__legal-group">
+                <summary class="admin-sidebar__legal-summary">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10ZM12 8v4M12 16h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Legal &amp; Suporte</span>
+                    <span class="admin-sidebar__summary-caret">
+                        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+                    </span>
+                </summary>
+                <div class="admin-sidebar__legal">
+                    <a href="{% url 'portal_termos_plataforma' %}">Termos</a>
+                    <a href="{% url 'portal_privacidade_plataforma' %}">Privacidade</a>
+                    <a href="{% url 'portal_dpa_plataforma' %}">DPA</a>
+                    <a href="{% url 'portal_seguranca_plataforma' %}">Segurança</a>
+                </div>
+            </details>
             <a href="{% url 'logout' %}" class="admin-sidebar__logout" data-sidebar-link title="Logout">
                 <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
                 <span class="admin-sidebar__label">Logout</span>
             </a>
-            <div class="admin-sidebar__legal">
-                <a href="{% url 'portal_termos_plataforma' %}">Termos da Plataforma</a>
-                <a href="{% url 'portal_privacidade_plataforma' %}">Privacidade da Plataforma</a>
-                <a href="{% url 'portal_dpa_plataforma' %}">DPA da Plataforma</a>
-                <a href="{% url 'portal_seguranca_plataforma' %}">Politica de Seguranca</a>
-            </div>
         </div>
     </aside>
 
@@ -320,13 +329,7 @@
 
         <main class="admin-page-main min-h-0 flex-1 overflow-y-auto">
             <div class="mx-auto w-full max-w-[1600px] px-6 py-8">
-                {% if messages %}
-                    <div class="mb-6 space-y-3">
-                        {% for message in messages %}
-                            <div class="admin-flash px-4 py-3 text-sm">{{ message }}</div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
+                {% block breadcrumbs %}{% endblock %}
                 {% block content %}{% endblock %}
             </div>
         </main>
@@ -334,6 +337,135 @@
 </div>
 <script src="{% static 'gestao/js/forms.js' %}" defer></script>
 <script type="module" src="{% static 'painel_cliente/js/app.js' %}" defer></script>
+<script>
+function compartilharPDF(pdfUrl, titulo) {
+    var baseUrl = window.location.origin;
+    var fullPdfUrl = pdfUrl.startsWith('http') ? pdfUrl : baseUrl + pdfUrl;
+    if (navigator.share) {
+        navigator.share({ title: titulo, text: titulo, url: fullPdfUrl })
+            .catch(function(e) { if (e.name !== 'AbortError') { window.open(fullPdfUrl, '_blank'); } });
+    } else {
+        window.open(fullPdfUrl, '_blank');
+    }
+}
+</script>
+
+{# ── Toast notifications ── #}
+<div id="admin-toast-region" aria-live="polite" aria-atomic="false" style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;pointer-events:none;"></div>
+
+{% if messages %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    {% for m in messages %}
+    window.__adminToast && window.__adminToast("{{ m.message|escapejs }}", "{{ m.tags }}");
+    {% endfor %}
+});
+</script>
+{% endif %}
+
+{# ── Modal de confirmação de deleção ── #}
+<div id="confirm-delete-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-delete-title"
+     style="display:none;position:fixed;inset:0;z-index:10000;align-items:center;justify-content:center;padding:1rem;">
+    <div id="confirm-delete-backdrop" style="position:absolute;inset:0;background:rgba(0,0,0,.6);"></div>
+    <div style="position:relative;background:var(--color-surface,#1a2332);border:1px solid var(--color-border,#2d3748);border-radius:1rem;padding:2rem;max-width:440px;width:100%;">
+        <h2 id="confirm-delete-title" style="font-size:1.125rem;font-weight:700;color:var(--color-heading,#f1f5f9);margin-bottom:.5rem;">Confirmar exclusão</h2>
+        <p id="confirm-delete-body" style="color:var(--color-muted,#99a1af);font-size:.9rem;margin-bottom:1.5rem;line-height:1.5;"></p>
+        <div style="display:flex;gap:.75rem;justify-content:flex-end;">
+            <button id="confirm-delete-cancel" type="button"
+                    style="padding:.5rem 1.25rem;border-radius:.6rem;background:transparent;border:1px solid var(--color-border,#2d3748);color:var(--color-heading,#f1f5f9);font-weight:600;cursor:pointer;">
+                Cancelar
+            </button>
+            <form id="confirm-delete-form" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit"
+                        style="padding:.5rem 1.25rem;border-radius:.6rem;background:#dc2626;border:none;color:#fff;font-weight:600;cursor:pointer;">
+                    Confirmar exclusão
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Toast system ──────────────────────────────────────────────
+(function(){
+    var region = document.getElementById('admin-toast-region');
+    function toast(msg, tag){
+        if(!msg) return;
+        var bg = tag && tag.includes('error') ? '#dc2626' : tag && tag.includes('warning') ? '#d97706' : '#16a34a';
+        var el = document.createElement('div');
+        el.setAttribute('role','alert');
+        el.style.cssText = 'pointer-events:all;background:'+bg+';color:#fff;padding:.75rem 1.25rem;border-radius:.75rem;font-size:.875rem;max-width:360px;box-shadow:0 4px 16px rgba(0,0,0,.4);display:flex;align-items:center;gap:.75rem;animation:toastIn .2s ease;';
+        el.innerHTML = '<span style="flex:1">'+msg+'</span><button type="button" aria-label="Fechar" style="background:none;border:none;color:#fff;cursor:pointer;font-size:1rem;line-height:1;padding:0;">&times;</button>';
+        el.querySelector('button').onclick = function(){ dismiss(el); };
+        region.appendChild(el);
+        var t = setTimeout(function(){ dismiss(el); }, 5000);
+        el._timer = t;
+        function dismiss(e){ clearTimeout(e._timer); e.style.opacity='0'; e.style.transform='translateX(1rem)'; e.style.transition='all .2s'; setTimeout(function(){ e.remove(); },200); }
+    }
+    window.__adminToast = toast;
+    var style = document.createElement('style');
+    style.textContent = '@keyframes toastIn{from{opacity:0;transform:translateX(1rem)}to{opacity:1;transform:none}}';
+    document.head.appendChild(style);
+})();
+
+// ── Delete confirmation modal ─────────────────────────────────
+(function(){
+    var modal = document.getElementById('confirm-delete-modal');
+    var body  = document.getElementById('confirm-delete-body');
+    var form  = document.getElementById('confirm-delete-form');
+    var cancelBtn = document.getElementById('confirm-delete-cancel');
+    var backdrop  = document.getElementById('confirm-delete-backdrop');
+
+    function open(url, label){
+        form.action = url;
+        body.textContent = label ? 'Tem certeza que deseja excluir "' + label + '"? Esta ação não pode ser desfeita.' : 'Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.';
+        modal.style.display = 'flex';
+        cancelBtn.focus();
+    }
+    function close(){
+        modal.style.display = 'none';
+        if(window._confirmDeleteTrigger){ window._confirmDeleteTrigger.focus(); }
+    }
+
+    cancelBtn.addEventListener('click', close);
+    backdrop.addEventListener('click', close);
+    document.addEventListener('keydown', function(e){ if(modal.style.display !== 'none' && e.key === 'Escape') close(); });
+
+    document.addEventListener('click', function(e){
+        var btn = e.target.closest('[data-confirm-delete]');
+        if(!btn) return;
+        e.preventDefault();
+        window._confirmDeleteTrigger = btn;
+        open(btn.dataset.url, btn.dataset.label);
+    });
+
+    // Intercepts form submit buttons — shows styled modal instead of confirm()
+    document.addEventListener('click', function(e){
+        var btn = e.target.closest('[data-confirm-submit]');
+        if(!btn || btn._confirmed) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        var msg = btn.dataset.confirmMsg || 'Tem certeza que deseja realizar esta ação?';
+        window._confirmDeleteTrigger = btn;
+        // Show modal with custom confirm action
+        body.textContent = msg;
+        form.action = '';
+        // Override submit to click the original button
+        form.onsubmit = function(ev){
+            ev.preventDefault();
+            modal.hidden = true;
+            btn._confirmed = true;
+            btn.click();
+            btn._confirmed = false;
+            form.onsubmit = null;
+            return false;
+        };
+        modal.hidden = false;
+        cancelBtn.focus();
+    }, true);
+})();
+</script>
 
 {% block extra_body %}{% endblock %}
 </body>

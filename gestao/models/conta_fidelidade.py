@@ -56,6 +56,13 @@ class ContaFidelidade(models.Model):
     data_inicio_clube = models.DateField(null=True, blank=True)
     validade = models.DateField(null=True, blank=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["cliente", "programa"]),
+            models.Index(fields=["conta_administrada", "programa"]),
+            models.Index(fields=["programa"]),
+        ]
+
     def clean(self):
         super().clean()
         if bool(self.cliente) == bool(self.conta_administrada):

@@ -56,7 +56,11 @@
                 {% else %}
                 <li>Os telefones institucionais ainda n&atilde;o foram publicados aqui.</li>
                 {% endif %}
-                <li>Se o assunto for privacidade e dados pessoais, a NC Fly pode complementar esta p&aacute;gina com um canal espec&iacute;fico depois.</li>
+                {% if portal_dpo_email or portal_contact_email %}
+                <li>Privacidade e dados pessoais: <a href="mailto:{{ portal_dpo_email|default:portal_contact_email }}">{{ portal_dpo_email|default:portal_contact_email }}</a>.</li>
+                {% else %}
+                <li>Privacidade e dados pessoais devem ser tratados pelos canais oficiais informados pela NC Fly.</li>
+                {% endif %}
             </ul>
         </section>
 

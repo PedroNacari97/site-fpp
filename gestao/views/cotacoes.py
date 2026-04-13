@@ -251,6 +251,8 @@ def admin_cotacoes(request):
 
 @login_required
 def deletar_cotacao(request, cotacao_id):
+    if request.method != "POST":
+        return redirect("admin_cotacoes")
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
@@ -567,6 +569,8 @@ def editar_cotacao_voo(request, cotacao_id):
 
 @login_required
 def deletar_cotacao_voo(request, cotacao_id):
+    if request.method != "POST":
+        return redirect("admin_cotacoes_voo")
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")

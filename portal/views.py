@@ -60,7 +60,7 @@ CATEGORY_CONFIGS = {
     "cartoes-credito": {
         "label": "Cartões de Crédito",
         "hero_title": "Cartões de Crédito",
-        "hero_description": "Reviews completos, comparativos, dicas para aprovação e tudo sobre os melhores cartões de crédito do mercado.",
+        "hero_description": "Análises completas, comparativos, dicas para aprovação e tudo sobre os melhores cartões de crédito do mercado.",
         "hero_class": "portal-category-hero--cards",
         "icon_variant": "cards",
         "card_class": "news-category-card--purple",
@@ -238,12 +238,19 @@ def _build_organization_schema(request):
         "name": settings.PORTAL_SITE_NAME,
         "url": base_url,
     }
-    logo_url = _absolute_image_url(request, settings.PORTAL_SITE_LOGO_URL)
+    logo_url = _absolute_image_url(
+        request,
+        getattr(settings, "PORTAL_SITE_FAVICON_URL", "") or settings.PORTAL_SITE_LOGO_URL,
+    )
     if logo_url:
         schema["logo"] = {
             "@type": "ImageObject",
             "url": logo_url,
+            "contentUrl": logo_url,
+            "width": 512,
+            "height": 512,
         }
+        schema["image"] = logo_url
     contact_points = []
     if settings.PORTAL_CONTACT_EMAIL:
         contact_points.append(
@@ -325,13 +332,15 @@ def _build_schema_graph(*nodes):
     graph_nodes = [node for node in nodes if node]
     if not graph_nodes:
         return ""
-    return json.dumps(
+    raw = json.dumps(
         {
             "@context": "https://schema.org",
             "@graph": graph_nodes,
         },
         ensure_ascii=False,
     )
+    # Previne injeção de </script> em blocos inline de JSON-LD
+    return raw.replace("</", "<\\/").replace("<!--", "<\\!--")
 
 
 def _build_seo_context(
@@ -470,7 +479,7 @@ def _build_saas_page_seo(request):
             "acceptedAnswer": {
                 "@type": "Answer",
                 "text": (
-                    "A Plataforma NC Fly foi pensada para agências, consultorias e operações B2B "
+                    "A Plataforma NC Fly foi pensada para agências, consultorias e operações entre empresas "
                     "que precisam centralizar cotações, emissões, clientes, alertas e contas fidelidade."
                 ),
             },
@@ -548,9 +557,9 @@ def _build_saas_page_seo(request):
         keywords=[
             "Plataforma NC Fly",
             "software para agência de viagens",
-            "plataforma SaaS para emissões",
+            "plataforma como serviço para emissões",
             "gestão de cotações e emissão",
-            "operação B2B de viagens",
+            "operação de viagens entre empresas",
         ],
     )
 
@@ -578,7 +587,7 @@ def _build_saas_contact_page_seo(request):
             "@id": f"{canonical_url}#service",
             "name": "Apresentacao comercial da plataforma NC Fly",
             "provider": {"@id": f"{_public_base_url(request)}#organization"},
-            "serviceType": "Plataforma SaaS para operação de viagens",
+            "serviceType": "Plataforma como serviço para operação de viagens",
             "url": canonical_url,
             "description": description,
         },
@@ -596,12 +605,12 @@ def _build_saas_contact_page_seo(request):
         description=description,
         canonical_url=canonical_url,
         schema_json=schema_json,
-        section="Plataforma SaaS",
+        section="Plataforma NC Fly",
         robots="noindex,nofollow",
         keywords=[
             "demonstracao plataforma NC Fly",
             "contato comercial software para viagens",
-            "plataforma SaaS para agencia de viagens",
+            "plataforma como serviço para agência de viagens",
             "gestão de cotações e emissões",
         ],
     )
@@ -1379,7 +1388,7 @@ def plataforma_saas(request):
             },
             {
                 "title": "Seu relacionamento evolui",
-                "description": "Clientes, interesses e oportunidades ficam organizados para a equipe agir com mais timing.",
+                "description": "Clientes, interesses e oportunidades ficam organizados para a equipe agir no momento certo.",
             },
         ],
         "saas_audience": [
@@ -1582,7 +1591,7 @@ def noticia_detalhe(request, categoria_slug, slug):
 
 def sobre_nos(request):
     context = {
-        "page_title": "Sobre Nós",
+        "page_title": "Sobre a empresa",
         "page_eyebrow": "Institucional",
         "page_intro": "Conheça o posicionamento editorial, os princípios de transparência e a proposta do portal público da NC Fly News.",
         "page_updated_at": timezone.localdate(),
@@ -1591,7 +1600,7 @@ def sobre_nos(request):
         _build_static_page_seo(
             request,
             route_name="portal_sobre",
-            title="Sobre Nós",
+            title="Sobre a empresa",
             description="Conheça a proposta editorial, os critérios de transparência e a forma como o portal NC Fly News organiza seu conteúdo público.",
         )
     )
@@ -1601,17 +1610,17 @@ def sobre_nos(request):
 
 def sobre_empresa_publica(request):
     context = {
-        "page_title": "Sobre NÃ³s",
+        "page_title": "Sobre a empresa",
         "page_eyebrow": "Institucional",
-        "page_intro": "ConheÃ§a a NC Fly, a forma como a empresa organiza sua atuaÃ§Ã£o e o papel do portal pÃºblico dentro desse ecossistema.",
+        "page_intro": "Conheça a NC Fly, a forma como a empresa organiza sua atuação e o papel do portal público dentro desse ecossistema.",
         "page_updated_at": timezone.localdate(),
     }
     context.update(
         _build_static_page_seo(
             request,
             route_name="portal_sobre",
-            title="Sobre NÃ³s",
-            description="ConheÃ§a a NC Fly, seu posicionamento, seus princÃ­pios e a relaÃ§Ã£o entre o portal pÃºblico, os alertas e a plataforma.",
+            title="Sobre a empresa",
+            description="Conheça a NC Fly, seu posicionamento, seus princípios e a relação entre o portal público, os alertas e a plataforma.",
         )
     )
     track_page_view(request.path, request=request, section="static")
@@ -1630,7 +1639,7 @@ def fale_conosco(request):
             request,
             route_name="portal_fale_conosco",
             title="Fale Conosco",
-            description="PÃ¡gina institucional da NC Fly para contato, assuntos comerciais, parcerias e orientaÃ§Ãµes gerais sobre a empresa.",
+            description="Página institucional da NC Fly para contato, assuntos comerciais, parcerias e orientações gerais sobre a empresa.",
         )
     )
     track_page_view(request.path, request=request, section="static")
@@ -1641,7 +1650,7 @@ def politica_privacidade(request):
     context = {
         "page_title": "Política de Privacidade",
         "page_eyebrow": "Privacidade",
-        "page_intro": "Entenda como o portal trata dados pessoais, informações de navegação, analytics e exercício de direitos do titular.",
+        "page_intro": "Entenda como o portal trata dados pessoais, informações de navegação, métricas de acesso e exercício de direitos do titular.",
         "page_updated_at": timezone.localdate(),
     }
     context.update(
@@ -1649,7 +1658,7 @@ def politica_privacidade(request):
             request,
             route_name="portal_privacidade",
             title="Política de Privacidade",
-            description="Política de privacidade do portal NC Fly News, com bases legais, direitos do titular, cookies, analytics e compartilhamento de dados.",
+            description="Política de privacidade do portal NC Fly News, com bases legais, direitos do titular, cookies, métricas de acesso e compartilhamento de dados.",
         )
     )
     track_page_view(request.path, request=request, section="static")
@@ -1756,7 +1765,7 @@ def privacidade_plataforma(request):
         "page_title": "Privacidade da Plataforma",
         "page_eyebrow": "Área logada",
         "page_intro": (
-            "Aviso de privacidade específico para login, painel, administração, auditoria, "
+            "Aviso de privacidade específico para acesso autenticado, painel, administração, auditoria, "
             "operação de clientes, emissões, cotações e demais fluxos autenticados."
         ),
         "page_updated_at": timezone.localdate(),
@@ -1768,7 +1777,7 @@ def privacidade_plataforma(request):
             title="Privacidade da Plataforma",
             description=(
                 "Aviso de privacidade da área logada da NC Fly, com tratamento de dados "
-                "operacionais, logs de acesso, segurança, auditoria e execução contratual."
+                "operacionais, registros técnicos de acesso, segurança, auditoria e execução contratual."
             ),
             robots="noindex,follow",
         )
@@ -1794,7 +1803,7 @@ def termos_plataforma(request):
             route_name="portal_termos_plataforma",
             title="Termos da Plataforma",
             description=(
-                "Termos da plataforma autenticada da NC Fly para login, área logada, "
+                "Termos da plataforma autenticada da NC Fly para acesso, área logada, "
                 "segurança, perfis, auditoria, uso operacional e responsabilidade do usuário."
             ),
             robots="noindex,follow",
@@ -1807,11 +1816,11 @@ def termos_plataforma(request):
 
 def dpa_plataforma(request):
     context = {
-        "page_title": "DPA / Aditivo de Tratamento de Dados",
+        "page_title": "Aditivo de Tratamento de Dados",
         "page_eyebrow": "Área logada",
         "page_intro": (
             "Documento-base para distribuição de papéis, instruções, suboperadores, "
-            "incidentes e obrigações de proteção de dados na plataforma SaaS da NC Fly."
+            "incidentes e obrigações de proteção de dados na plataforma como serviço da NC Fly."
         ),
         "page_updated_at": timezone.localdate(),
     }
@@ -1819,10 +1828,10 @@ def dpa_plataforma(request):
         _build_static_page_seo(
             request,
             route_name="portal_dpa_plataforma",
-            title="DPA / Aditivo de Tratamento de Dados",
+            title="Aditivo de Tratamento de Dados",
             description=(
                 "Documento-base da plataforma NC Fly sobre controlador, operador, "
-                "suboperadores, incidentes, segurança e tratamento de dados no contexto SaaS."
+                "suboperadores, incidentes, segurança e tratamento de dados no contexto da plataforma como serviço."
             ),
             robots="noindex,follow",
         )
@@ -1939,7 +1948,7 @@ def llms_txt(request):
             f"- Sobre nós: {base_url}{reverse('portal_sobre')}",
             f"- Política de Privacidade: {base_url}{reverse('portal_privacidade')}",
             f"- Termos de Uso: {base_url}{reverse('portal_termos')}",
-            f"- Plataforma SaaS: {base_url}{reverse('portal_plataforma_saas')}",
+            f"- Plataforma NC Fly: {base_url}{reverse('portal_plataforma_saas')}",
             "",
             "## Categorias",
             "- Milhas e Pontos",

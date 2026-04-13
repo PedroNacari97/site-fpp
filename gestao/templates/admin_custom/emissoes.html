@@ -13,6 +13,15 @@
 <link rel="stylesheet" href="{% static 'gestao/css/emissoes_figma.css' %}">
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+        <li aria-current="page">Emissões</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="emissions-page">
   <section class="home-ops__filters">
@@ -60,7 +69,7 @@
         <tbody>
           {% for e in emissoes %}
             <tr>
-              <td>
+              <td data-label="Cliente/Titular">
                 {% if e.cliente %}
                   {{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}
                 {% elif e.conta_administrada %}
@@ -71,14 +80,14 @@
                   -
                 {% endif %}
               </td>
-              <td>{{ e.programa|default:"-" }}</td>
-              <td>{{ e.aeroporto_partida|default:"-" }}</td>
-              <td>{{ e.aeroporto_destino|default:"-" }}</td>
-              <td>{{ e.data_ida|date:"d/m/Y H:i" }}</td>
-              <td>{{ e.companhia_aerea|default:"-" }}</td>
-              <td>{{ e.localizador|yesno:"Emitido,Pendente" }}</td>
-              <td>R$ {{ e.lucro|default:0|floatformat:2 }}</td>
-              <td>
+              <td data-label="Programa">{{ e.programa|default:"-" }}</td>
+              <td data-label="Origem">{{ e.aeroporto_partida|default:"-" }}</td>
+              <td data-label="Destino">{{ e.aeroporto_destino|default:"-" }}</td>
+              <td data-label="Data ida">{{ e.data_ida|date:"d/m/Y H:i" }}</td>
+              <td data-label="Companhia">{{ e.companhia_aerea|default:"-" }}</td>
+              <td data-label="Status">{{ e.localizador|yesno:"Emitido,Pendente" }}</td>
+              <td data-label="Lucro">R$ {{ e.lucro|default:0|floatformat:2 }}</td>
+              <td data-label="Ações">
                 <div class="emissions-page__row-actions">
                   <a href="{% url 'admin_emissao_detalhe' e.id %}" class="emissions-page__row-button">Visualizar Emissao</a>
                   <a href="{% url 'admin_editar_emissao' e.id %}" class="emissions-page__row-button">Editar</a>
@@ -87,7 +96,10 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="9" class="emissions-page__empty">Nenhuma emissao encontrada.</td>
+              <td colspan="9" class="emissions-page__empty">
+                Nenhuma emissão encontrada.
+                <a href="{% url 'admin_nova_emissao' %}" class="emissions-page__empty-cta">Nova emissão</a>
+              </td>
             </tr>
           {% endfor %}
         </tbody>

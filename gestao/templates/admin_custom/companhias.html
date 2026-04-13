@@ -17,6 +17,15 @@
 <link rel="stylesheet" href="{% static 'gestao/css/companhias_aereas_figma.css' %}">
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+        <li aria-current="page">Companhias Aéreas</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="airlines-page">
   <section class="airlines-page__filters-card">
@@ -54,18 +63,18 @@
         <tbody>
           {% for companhia in companhias %}
           <tr>
-            <td class="airlines-page__name">{{ companhia.nome }}</td>
-            <td>
+            <td data-label="Nome" class="airlines-page__name">{{ companhia.nome }}</td>
+            <td data-label="Site">
               {% if companhia.site_url %}
               <a href="{{ companhia.site_url }}" target="_blank" rel="noopener noreferrer" class="airlines-page__link">{{ companhia.site_url }}</a>
               {% else %}
               —
               {% endif %}
             </td>
-            <td>
+            <td data-label="Ações">
               <div class="airlines-page__actions">
                 <a href="{% url 'admin_editar_companhia' companhia.id %}" class="airlines-page__action">Editar</a>
-                <a href="{% url 'admin_deletar_companhia' companhia.id %}" class="airlines-page__action">Deletar</a>
+                <button type="button" class="airlines-page__action airlines-page__action--danger" data-confirm-delete data-url="{% url 'admin_deletar_companhia' companhia.id %}" data-label="{{ companhia.nome }}">Deletar</button>
               </div>
             </td>
           </tr>

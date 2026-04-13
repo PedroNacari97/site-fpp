@@ -1,6 +1,6 @@
 {% extends "portal/base_public.html" %}
 {% load portal_extras %}
-{% block title %}{{ seo_title|default:"DPA da Plataforma | NC Fly" }}{% endblock %}
+{% block title %}{{ seo_title|default:"Aditivo de Tratamento de Dados da Plataforma | NC Fly" }}{% endblock %}
 {% block content %}
 <div class="portal-static-page">
     <section class="portal-static-page__shell">
@@ -8,53 +8,73 @@
             <nav class="portal-static-page__breadcrumbs">
                 <a href="{% url 'login_custom' %}">Entrar</a>
                 <span>/</span>
-                <span>DPA da Plataforma</span>
+                <span>Aditivo de Tratamento de Dados</span>
             </nav>
             <span class="news-pill news-pill--primary">{{ page_eyebrow }}</span>
-            <h1>DPA / Aditivo de Tratamento de Dados</h1>
+            <h1>Aditivo de Tratamento de Dados</h1>
             <p>{{ page_intro }}</p>
             {% if documento_versao %}
-                <p class="portal-static-page__updated">Versao {{ documento_versao }}{% if documento_vigencia %} • vigente desde {{ documento_vigencia|br_date_long }}{% endif %}.</p>
+                <p class="portal-static-page__updated">Vers&atilde;o {{ documento_versao }}{% if documento_vigencia %} &bull; vigente desde {{ documento_vigencia|br_date_long }}{% endif %}.</p>
             {% endif %}
         </header>
 
         <section class="portal-static-page__section">
             <h2>1. Finalidade do documento</h2>
-            <p>Este documento serve como base para contratos, propostas, onboarding comercial e relacoes B2B envolvendo a plataforma NC Fly. Ele organiza o tratamento de dados no contexto do SaaS, especialmente quando a empresa contratante utiliza a plataforma para operar dados de clientes, passageiros, emissoes, cotacoes, documentos e historicos operacionais.</p>
+            <p>Este documento serve como base para contratos, propostas, integra&ccedil;&atilde;o comercial e rela&ccedil;&otilde;es entre empresas envolvendo a plataforma NC Fly. Ele organiza o tratamento de dados no contexto da plataforma como servi&ccedil;o, especialmente quando a empresa contratante utiliza a plataforma para operar dados de clientes, passageiros, emiss&otilde;es, cota&ccedil;&otilde;es, documentos e hist&oacute;ricos operacionais.</p>
+            <p>Este aditivo n&atilde;o substitui o contrato comercial assinado entre as partes. Cl&aacute;usulas de pre&ccedil;o, n&iacute;vel de servi&ccedil;o, responsabilidade, foro, rescis&atilde;o e anexos operacionais devem constar do instrumento contratual aplic&aacute;vel.</p>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>2. Distribuicao de papeis</h2>
+            <h2>2. Distribui&ccedil;&atilde;o de pap&eacute;is</h2>
             <ul class="portal-static-page__list">
-                <li>A empresa contratante pode atuar como controladora dos dados pessoais tratados em sua operacao.</li>
-                <li>A NC Fly pode atuar como operadora quando tratar dados pessoais por conta e ordem do contratante, conforme o escopo do servico.</li>
-                <li>Em situacoes especificas, a NC Fly pode assumir papel proprio de controladora em temas de seguranca, login, auditoria, obrigacoes legais e operacao da propria plataforma.</li>
+                <li>A empresa contratante atua, em regra, como controladora dos dados pessoais tratados em sua opera&ccedil;&atilde;o e define as finalidades do tratamento.</li>
+                <li>A NC Fly atua como operadora quando tratar dados pessoais por conta e ordem da contratante, dentro do escopo do servi&ccedil;o contratado.</li>
+                <li>A NC Fly pode atuar como controladora independente em temas pr&oacute;prios, como seguran&ccedil;a da conta, acesso autenticado, auditoria, preven&ccedil;&atilde;o de fraude, cobran&ccedil;a, obriga&ccedil;&otilde;es legais e opera&ccedil;&atilde;o da pr&oacute;pria plataforma.</li>
             </ul>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>3. Instrucoes e limites</h2>
-            <p>O contratante deve fornecer instrucoes legitimas, compatíveis com a legislacao aplicavel e coerentes com a finalidade da plataforma. A NC Fly pode recusar instrucao manifestamente ilicita, tecnicamente inviavel ou que coloque em risco a seguranca, a integridade do servico ou os direitos dos titulares.</p>
+            <h2>3. Instru&ccedil;&otilde;es e limites do tratamento</h2>
+            <p>A contratante deve fornecer instru&ccedil;&otilde;es documentadas, l&iacute;citas, compat&iacute;veis com a legisla&ccedil;&atilde;o aplic&aacute;vel e coerentes com a finalidade da plataforma. A NC Fly tratar&aacute; os dados conforme essas instru&ccedil;&otilde;es, o contrato e os limites t&eacute;cnicos do servi&ccedil;o.</p>
+            <p>A NC Fly poder&aacute; recusar instru&ccedil;&atilde;o manifestamente il&iacute;cita, excessiva, tecnicamente invi&aacute;vel ou que coloque em risco a seguran&ccedil;a, a integridade do servi&ccedil;o ou os direitos dos titulares.</p>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>4. Suboperadores e fornecedores</h2>
-            <p>A NC Fly pode utilizar suboperadores, infraestrutura em nuvem, provedores de e-mail, monitoramento, hospedagem, seguranca, analytics consentido e fornecedores tecnicos necessarios a execucao do servico, observados criterios de necessidade, seguranca e compatibilidade juridica. A contratante reconhece que parte da cadeia operacional do SaaS depende desses prestadores.</p>
+            <h2>4. Confidencialidade e seguran&ccedil;a</h2>
+            <p>A NC Fly deve adotar medidas administrativas, t&eacute;cnicas e organizacionais razo&aacute;veis para proteger dados pessoais contra acesso n&atilde;o autorizado, perda, altera&ccedil;&atilde;o, divulga&ccedil;&atilde;o indevida e uso incompat&iacute;vel com a finalidade contratada.</p>
+            <p>Pessoas com acesso aos dados devem estar sujeitas a deveres de confidencialidade e atuar apenas dentro do escopo de permiss&atilde;o concedido.</p>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>5. Incidentes e cooperacao</h2>
-            <p>Em caso de incidente de seguranca com potencial impacto a dados pessoais no escopo da plataforma, a NC Fly deve atuar com diligencia razoavel para avaliar o fato, mitigar impacto, preservar evidencias, cooperar com o contratante dentro do contexto aplicavel e adotar os encaminhamentos exigidos pela legislacao e pelas circunstâncias do evento.</p>
+            <h2>5. Suboperadores e fornecedores</h2>
+            <p>A NC Fly pode utilizar suboperadores, infraestrutura em nuvem, provedores de e-mail, monitoramento, hospedagem, seguran&ccedil;a, m&eacute;tricas de acesso consentidas e fornecedores t&eacute;cnicos necess&aacute;rios &agrave; execu&ccedil;&atilde;o do servi&ccedil;o, observados crit&eacute;rios de necessidade, seguran&ccedil;a e compatibilidade jur&iacute;dica.</p>
+            <p>Quando houver tratamento por suboperador em nome da contratante, a NC Fly dever&aacute; buscar obriga&ccedil;&otilde;es contratuais compat&iacute;veis com este aditivo e com a legisla&ccedil;&atilde;o aplic&aacute;vel.</p>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>6. Retencao e encerramento</h2>
-            <p>Os dados podem ser mantidos pelo periodo necessario a execucao do contrato, seguranca da plataforma, suporte, auditoria, defesa de direitos e cumprimento de obrigacoes legais. Regras especificas de descarte, devolucao, retencao tecnica e trilha de auditoria devem observar o contrato comercial e a legislacao aplicavel.</p>
+            <h2>6. Transfer&ecirc;ncia internacional</h2>
+            <p>Dependendo da infraestrutura, alguns fornecedores podem armazenar ou processar dados fora do Brasil. Nesses casos, a NC Fly deve adotar medidas compat&iacute;veis com a LGPD, com o contrato e com o risco da opera&ccedil;&atilde;o, incluindo salvaguardas contratuais quando aplic&aacute;vel.</p>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>7. Natureza contratual</h2>
-            <p>Este texto funciona como base documental do produto, mas o instrumento contratual comercial pode complementar, restringir ou detalhar obrigacoes, anexos, SLAs, niveis de servico, seguranca, onboarding, suporte e responsabilidades entre as partes.</p>
+            <h2>7. Incidentes e coopera&ccedil;&atilde;o</h2>
+            <p>Em caso de incidente de seguran&ccedil;a com potencial impacto a dados pessoais no escopo da plataforma, a NC Fly dever&aacute; avaliar o fato, mitigar riscos, preservar evid&ecirc;ncias, cooperar com a contratante e informar sem demora injustificada as informa&ccedil;&otilde;es razoavelmente necess&aacute;rias ao cumprimento das obriga&ccedil;&otilde;es legais.</p>
+            <p>A comunica&ccedil;&atilde;o formal &agrave; ANPD e aos titulares, quando exigida, cabe ao controlador. A NC Fly cooperar&aacute; para que a contratante possa observar os prazos e requisitos legais aplic&aacute;veis, inclusive a regulamenta&ccedil;&atilde;o da ANPD sobre incidentes de seguran&ccedil;a.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>8. Direitos dos titulares</h2>
+            <p>Quando a NC Fly atuar como operadora, pedidos de titulares relacionados a dados sob controle da contratante poder&atilde;o ser direcionados &agrave; contratante, salvo instru&ccedil;&atilde;o contratual diversa. A NC Fly deve cooperar de forma razo&aacute;vel para viabilizar acesso, corre&ccedil;&atilde;o, elimina&ccedil;&atilde;o, informa&ccedil;&otilde;es sobre compartilhamento, portabilidade quando cab&iacute;vel e demais direitos previstos na LGPD.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>9. Reten&ccedil;&atilde;o e encerramento</h2>
+            <p>Os dados podem ser mantidos pelo per&iacute;odo necess&aacute;rio &agrave; execu&ccedil;&atilde;o do contrato, seguran&ccedil;a da plataforma, suporte, auditoria, defesa de direitos e cumprimento de obriga&ccedil;&otilde;es legais. Regras espec&iacute;ficas de descarte, devolu&ccedil;&atilde;o, reten&ccedil;&atilde;o t&eacute;cnica e trilha de auditoria devem observar o contrato comercial e a legisla&ccedil;&atilde;o aplic&aacute;vel.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>10. Revis&atilde;o jur&iacute;dica</h2>
+            <p>Este texto funciona como base documental do produto. Contratos com ag&ecirc;ncias internacionais, dados de menores, responsabilidade financeira relevante, foro, arbitragem, transfer&ecirc;ncia internacional complexa ou incidentes relevantes devem passar por revis&atilde;o jur&iacute;dica humana antes de assinatura.</p>
             <p class="portal-static-page__updated">Atualizado em {{ page_updated_at|br_date_long }}.</p>
         </section>
     </section>

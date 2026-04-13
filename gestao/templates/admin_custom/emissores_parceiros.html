@@ -17,6 +17,15 @@
 <link rel="stylesheet" href="{% static 'gestao/css/emissores_parceiros_figma.css' %}">
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+        <li aria-current="page">Emissores Parceiros</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="partner-page">
   <section class="partner-page__filters-card">
@@ -55,22 +64,22 @@
         <tbody>
           {% for emissor in emissores %}
           <tr>
-            <td>
+            <td data-label="Nome do Emissor">
               <div class="partner-page__name">
                 <span class="partner-page__name-badge">{{ emissor.nome|first|upper }}</span>
                 <span class="partner-page__name-text">{{ emissor.nome }}</span>
               </div>
             </td>
-            <td>
+            <td data-label="Status">
               <span class="partner-page__status {% if emissor.ativo %}is-active{% else %}is-inactive{% endif %}">
                 {% if emissor.ativo %}Ativo{% else %}Inativo{% endif %}
               </span>
             </td>
-            <td>
+            <td data-label="Ações">
               <div class="partner-page__actions">
                 <a href="{% url 'admin_emissoes' %}?emissor_parceiro_id={{ emissor.id }}" class="partner-page__action">Emissoes</a>
                 <a href="{% url 'admin_editar_emissor_parceiro' emissor.id %}" class="partner-page__action">Editar</a>
-                <a href="{% url 'admin_deletar_emissor_parceiro' emissor.id %}" class="partner-page__action">Deletar</a>
+                <button type="button" class="partner-page__action partner-page__action--danger" data-confirm-delete data-url="{% url 'admin_deletar_emissor_parceiro' emissor.id %}" data-label="{{ emissor.nome }}">Deletar</button>
               </div>
             </td>
           </tr>

@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import datetime
 from uuid import uuid4
@@ -6,6 +7,16 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.sessions.models import Session
 from django.utils import timezone
+
+
+def safe_json_dumps(data) -> str:
+    """json.dumps com escape de caracteres HTML para uso seguro em blocos <script>."""
+    return (
+        json.dumps(data)
+        .replace("&", "\\u0026")
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+    )
 
 
 def normalize_cpf(cpf: str) -> str:

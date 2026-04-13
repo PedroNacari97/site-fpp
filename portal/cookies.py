@@ -8,7 +8,7 @@ from django.conf import settings
 
 DEFAULT_COOKIE_PREFERENCES = {
     "essential": True,
-    "analytics": True,
+    "analytics": False,
 }
 
 
@@ -23,7 +23,7 @@ def normalize_cookie_preferences(preferences: dict | None) -> dict[str, bool]:
 def get_cookie_preferences_from_request(request) -> dict[str, bool]:
     raw_value = request.COOKIES.get(settings.PORTAL_COOKIE_CONSENT_COOKIE_NAME, "")
     if not raw_value:
-        return dict(DEFAULT_COOKIE_PREFERENCES)  # aceito tudo por padrão
+        return dict(DEFAULT_COOKIE_PREFERENCES)  # sem preferência = analytics desativado (opt-in LGPD)
 
     try:
         parsed = json.loads(unquote(raw_value))

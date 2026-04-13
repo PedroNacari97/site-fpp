@@ -247,7 +247,10 @@ body:not(.dark-mode) .admin-managed,
 body:not(.dark-mode) .admin-managed-form,
 body:not(.dark-mode) .admin-users,
 body:not(.dark-mode) .client-form,
-body:not(.dark-mode) .detail-client {
+body:not(.dark-mode) .detail-client,
+body:not(.dark-mode) .movement-page,
+body:not(.dark-mode) .movement-form-page,
+body:not(.dark-mode) .transfer-page {
   color: var(--color-heading) !important;
 }
 
@@ -324,7 +327,10 @@ body:not(.dark-mode) :is(
   .hotel-form,
   .alerts-page,
   .account-form,
-  .wizard-page
+  .wizard-page,
+  .movement-page,
+  .movement-form-page,
+  .transfer-page
 ) {
   color: var(--color-heading) !important;
 }
@@ -352,7 +358,10 @@ body:not(.dark-mode) :is(
   .hotel-form,
   .alerts-page,
   .account-form,
-  .wizard-page
+  .wizard-page,
+  .movement-page,
+  .movement-form-page,
+  .transfer-page
 ) :is(
   h1,
   h2,
@@ -389,7 +398,10 @@ body:not(.dark-mode) :is(
   .hotel-form,
   .alerts-page,
   .account-form,
-  .wizard-page
+  .wizard-page,
+  .movement-page,
+  .movement-form-page,
+  .transfer-page
 ) :is(
   p,
   small,
@@ -430,7 +442,10 @@ body:not(.dark-mode) :is(
   .hotel-form,
   .alerts-page,
   .account-form,
-  .wizard-page
+  .wizard-page,
+  .movement-page,
+  .movement-form-page,
+  .transfer-page
 ) :is(
   [class*="__card"],
   [class*="__panel"],
@@ -474,7 +489,10 @@ body:not(.dark-mode) :is(
   .hotel-form,
   .alerts-page,
   .account-form,
-  .wizard-page
+  .wizard-page,
+  .movement-page,
+  .movement-form-page,
+  .transfer-page
 ) :is(input, select, textarea) {
   background: var(--color-input-bg) !important;
   border-color: var(--color-input-border) !important;
@@ -504,7 +522,10 @@ body:not(.dark-mode) :is(
   .hotel-form,
   .alerts-page,
   .account-form,
-  .wizard-page
+  .wizard-page,
+  .movement-page,
+  .movement-form-page,
+  .transfer-page
 ) :is(table thead, [class*="__table"] thead) {
   background: var(--color-surface-muted) !important;
 }
@@ -532,7 +553,10 @@ body:not(.dark-mode) :is(
   .hotel-form,
   .alerts-page,
   .account-form,
-  .wizard-page
+  .wizard-page,
+  .movement-page,
+  .movement-form-page,
+  .transfer-page
 ) :is(td, [class*="__table"] td, [class*="__row-button"], [class*="__button--ghost"]) {
   color: var(--color-heading) !important;
 }
@@ -571,12 +595,16 @@ body:not(.dark-mode) :is(
   .airport-page__search-button,
   .airlines-page__search-button,
   .points-program__search-button,
-  .hotel-page__filters button
+  .hotel-page__filters button,
+  .movement-page__primary-action,
+  .movement-form-page__submit,
+  .partner-form__submit,
+  .btn-primary
 ) {
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent))) !important;
+  background: linear-gradient(135deg, #ff6b6b 0%, #f5a623 100%) !important;
   color: #fff !important;
-  border: 1px solid transparent !important;
-  box-shadow: 0 12px 24px rgba(255, 107, 107, 0.18) !important;
+  border: 1px solid rgba(255, 107, 107, 0.4) !important;
+  box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3) !important;
 }
 
 body:not(.dark-mode) :is(
@@ -591,10 +619,15 @@ body:not(.dark-mode) :is(
   .airport-page__search-button,
   .airlines-page__search-button,
   .points-program__search-button,
-  .hotel-page__filters button
+  .hotel-page__filters button,
+  .movement-page__primary-action,
+  .movement-form-page__submit,
+  .partner-form__submit,
+  .btn-primary
 ):hover {
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent))) !important;
-  filter: saturate(1.02) brightness(0.98) !important;
+  background: linear-gradient(135deg, #ff5252 0%, #f59f00 100%) !important;
+  color: #fff !important;
+  filter: none !important;
 }
 
 body:not(.dark-mode) :is(

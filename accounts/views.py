@@ -2,9 +2,17 @@ from django.contrib import messages
 from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.password_validation import validate_password
+from django.core.mail import send_mail
+from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.contrib.sessions.models import Session
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 from gestao.models import Cliente, EmissorParceiro, Empresa
 from gestao.utils import normalize_cpf, sync_cliente_activation
@@ -13,14 +21,86 @@ from .access import get_user_operational_role
 from .forms import ClientePublicoForm, UsuarioForm
 from .security import (
     format_lockout_message,
+    get_client_ip,
     get_pending_superadmin_mfa,
     is_login_allowed,
+    is_security_action_allowed,
     log_security_event,
     register_login_failure,
+    register_security_action_attempt,
     reset_login_failures,
     start_superadmin_mfa_challenge,
     verify_superadmin_mfa_code,
 )
+from .models import ActiveUserSession
+
+
+_LOGIN_ERROR_MSG = "CPF e/ou senha invalidos. Tente novamente."
+_RESET_GENERIC_MSG = (
+    "Se o CPF estiver cadastrado com um email valido, voce recebera as instrucoes em instantes."
+)
+
+
+def verify_turnstile_token(token, remote_ip):
+    """Valida token do Cloudflare Turnstile. Sem chave configurada, nao bloqueia."""
+    if not settings.TURNSTILE_SECRET_KEY:
+        return True
+    if not token:
+        return False
+    try:
+        import requests as req_lib
+        resp = req_lib.post(
+            settings.TURNSTILE_API_URL,
+            data={
+                "secret": settings.TURNSTILE_SECRET_KEY,
+                "response": token,
+                "remoteip": remote_ip,
+            },
+            timeout=5,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return data.get("success", False)
+    except Exception:
+        return bool(getattr(settings, "TURNSTILE_FAIL_OPEN", False))
+
+
+def _validate_turnstile_or_message(request, *, identifier="", scope="default"):
+    turnstile_token = request.POST.get("cf-turnstile-response", "")
+    if verify_turnstile_token(turnstile_token, get_client_ip(request)):
+        return True
+    log_security_event(
+        "turnstile_failed",
+        request=request,
+        identifier=identifier,
+        details={"scope": scope},
+    )
+    messages.error(request, "Verificacao de seguranca falhou. Tente novamente.")
+    return False
+
+
+def _reset_timeout_label():
+    total_seconds = int(getattr(settings, "PASSWORD_RESET_TIMEOUT", 0) or 0)
+    total_minutes = max(1, total_seconds // 60)
+    if total_minutes >= 120 and total_minutes % 60 == 0:
+        return f"{total_minutes // 60} horas"
+    if total_minutes >= 60:
+        hours = total_minutes // 60
+        minutes = total_minutes % 60
+        suffix = f" e {minutes} minuto(s)" if minutes else ""
+        return f"{hours} hora(s){suffix}"
+    return f"{total_minutes} minuto(s)"
+
+
+def _invalidate_user_sessions(user):
+    user_id = str(user.pk)
+    for session in Session.objects.filter(expire_date__gte=timezone.now()):
+        try:
+            if session.get_decoded().get("_auth_user_id") == user_id:
+                session.delete()
+        except Exception:
+            continue
+    ActiveUserSession.objects.filter(user=user).delete()
 
 
 def _build_login_context(mode="default", **extra):
@@ -41,6 +121,7 @@ def _build_login_context(mode="default", **extra):
         "selected_profile": "cliente",
         "mfa_pending": False,
         "mfa_masked_email": "",
+        "turnstile_site_key": getattr(settings, "TURNSTILE_SITE_KEY", "") or "",
     }
     context.update(extra)
     return context
@@ -93,6 +174,16 @@ def custom_login(request):
                 ),
             )
 
+        if not _validate_turnstile_or_message(request, identifier=identifier, scope=lock_scope):
+            return render(
+                request,
+                "accounts/login.html",
+                _build_login_context(
+                    entered_identifier=identifier,
+                    selected_profile=perfil,
+                ),
+            )
+
         cpf = normalize_cpf(identifier)
         user = authenticate(request, cpf=cpf, password=password)
         if user:
@@ -118,7 +209,7 @@ def custom_login(request):
             messages.error(request, "Tipo de usuario invalido para esse acesso.")
         else:
             register_login_failure(request, identifier, lock_scope)
-            messages.error(request, "Usuario/CPF ou senha invalidos.")
+            messages.error(request, _LOGIN_ERROR_MSG)
     return render(
         request,
         "accounts/login.html",
@@ -150,6 +241,13 @@ def superadmin_login(request):
         login_allowed, remaining_seconds = is_login_allowed(request, identifier, "superadmin")
         if not login_allowed:
             messages.error(request, format_lockout_message(remaining_seconds))
+            return render(
+                request,
+                "accounts/login.html",
+                _build_login_context("superadmin", entered_identifier=identifier),
+            )
+
+        if not _validate_turnstile_or_message(request, identifier=identifier, scope="superadmin"):
             return render(
                 request,
                 "accounts/login.html",
@@ -200,6 +298,159 @@ def superadmin_login(request):
 
 def password_help(request):
     return render(request, "accounts/password_help.html")
+
+
+def password_reset_request(request):
+    """Formulario de solicitacao de reset de senha via CPF."""
+    context = {
+        "turnstile_site_key": getattr(settings, "TURNSTILE_SITE_KEY", "") or "",
+    }
+
+    if request.method == "POST":
+        cpf_raw = request.POST.get("cpf", "")
+        cpf = normalize_cpf(cpf_raw)
+        reset_identifier = cpf or cpf_raw.strip() or "<vazio>"
+
+        reset_allowed, remaining_seconds = is_security_action_allowed(
+            request, reset_identifier, "password_reset"
+        )
+        if not reset_allowed:
+            messages.error(
+                request,
+                "Muitas solicitacoes de redefinicao. Aguarde "
+                f"{max(1, (remaining_seconds + 59) // 60)} minuto(s) antes de tentar novamente.",
+            )
+            return render(request, "accounts/password_reset_request.html", context)
+
+        if not _validate_turnstile_or_message(
+            request, identifier=reset_identifier, scope="password_reset"
+        ):
+            return render(request, "accounts/password_reset_request.html", context)
+
+        register_security_action_attempt(
+            request,
+            reset_identifier,
+            "password_reset",
+            limit=settings.SECURITY_PASSWORD_RESET_LIMIT,
+            lockout_minutes=settings.SECURITY_PASSWORD_RESET_LOCKOUT_MINUTES,
+            event_prefix="password_reset_request",
+        )
+
+        if cpf:
+            try:
+                cliente = Cliente.objects.select_related("usuario").get(cpf=cpf, ativo=True)
+                user = cliente.usuario
+                if user.email and user.is_active:
+                    uid = urlsafe_base64_encode(force_bytes(user.pk))
+                    token = default_token_generator.make_token(user)
+                    reset_link = request.build_absolute_uri(
+                        reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token})
+                    )
+                    send_mail(
+                        subject="Redefinicao de senha - NC Fly",
+                        message=(
+                            f"Ola,\n\n"
+                            f"Recebemos uma solicitacao de redefinicao de senha para a sua conta NC Fly.\n\n"
+                            f"Clique no link abaixo para criar uma nova senha (valido por ate {_reset_timeout_label()}):\n\n"
+                            f"{reset_link}\n\n"
+                            f"Se voce nao solicitou isso, ignore este email.\n\n"
+                            f"Equipe NC Fly"
+                        ),
+                        from_email=settings.PASSWORD_RESET_FROM_EMAIL,
+                        recipient_list=[user.email],
+                        fail_silently=True,
+                    )
+                    log_security_event(
+                        "password_reset_email_sent",
+                        request=request,
+                        user=user,
+                        identifier=cpf,
+                    )
+            except Cliente.DoesNotExist:
+                log_security_event(
+                    "password_reset_unknown_identifier",
+                    request=request,
+                    identifier=reset_identifier,
+                )
+
+        messages.success(request, _RESET_GENERIC_MSG)
+        return redirect("password_reset_request")
+
+    return render(request, "accounts/password_reset_request.html", context)
+
+
+def password_reset_confirm(request, uidb64, token):
+    """Formulario para definir nova senha via link de reset."""
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    invalid_context = {"token_invalid": True}
+
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        log_security_event(
+            "password_reset_invalid_token",
+            request=request,
+            identifier=uidb64,
+            details={"reason": "user_decode_failed"},
+        )
+        return render(request, "accounts/password_reset_confirm.html", invalid_context)
+
+    if not user.is_active:
+        log_security_event(
+            "password_reset_inactive_user",
+            request=request,
+            user=user,
+            identifier=str(user.pk),
+            details={"reason": "user_inactive"},
+        )
+        return render(request, "accounts/password_reset_confirm.html", invalid_context)
+
+    if not default_token_generator.check_token(user, token):
+        log_security_event(
+            "password_reset_invalid_token",
+            request=request,
+            user=user,
+            identifier=str(user.pk),
+            details={"reason": "token_check_failed"},
+        )
+        return render(request, "accounts/password_reset_confirm.html", invalid_context)
+
+    if request.method == "POST":
+        nova_senha = request.POST.get("nova_senha", "")
+        confirmar_senha = request.POST.get("confirmar_senha", "")
+
+        try:
+            validate_password(nova_senha, user=user)
+        except ValidationError as exc:
+            messages.error(request, " ".join(exc.messages))
+            return render(
+                request,
+                "accounts/password_reset_confirm.html",
+                {"uidb64": uidb64, "token": token},
+            )
+
+        if nova_senha != confirmar_senha:
+            messages.error(request, "As senhas nao coincidem.")
+            return render(
+                request,
+                "accounts/password_reset_confirm.html",
+                {"uidb64": uidb64, "token": token},
+            )
+
+        user.set_password(nova_senha)
+        user.save(update_fields=["password"])
+        _invalidate_user_sessions(user)
+        log_security_event("password_reset_completed", request=request, user=user)
+        messages.success(request, "Senha redefinida com sucesso. Faca login com a nova senha.")
+        return redirect("login_custom")
+
+    return render(
+        request,
+        "accounts/password_reset_confirm.html",
+        {"uidb64": uidb64, "token": token},
+    )
 
 
 def _get_user_scope(request):

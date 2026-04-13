@@ -1,6 +1,6 @@
 {% extends "portal/base_public.html" %}
 {% load portal_extras %}
-{% block title %}{{ seo_title|default:"Seguranca da Plataforma | NC Fly" }}{% endblock %}
+{% block title %}{{ seo_title|default:"Seguran&ccedil;a da Plataforma | NC Fly" }}{% endblock %}
 {% block content %}
 <div class="portal-static-page">
     <section class="portal-static-page__shell">
@@ -8,48 +8,50 @@
             <nav class="portal-static-page__breadcrumbs">
                 <a href="{% url 'login_custom' %}">Entrar</a>
                 <span>/</span>
-                <span>Seguranca da Plataforma</span>
+                <span>Seguran&ccedil;a da Plataforma</span>
             </nav>
             <span class="news-pill news-pill--primary">{{ page_eyebrow }}</span>
-            <h1>Politica de Seguranca e Uso Aceitavel</h1>
+            <h1>Pol&iacute;tica de Seguran&ccedil;a e Uso Aceit&aacute;vel</h1>
             <p>{{ page_intro }}</p>
             {% if documento_versao %}
-                <p class="portal-static-page__updated">Versao {{ documento_versao }}{% if documento_vigencia %} • vigente desde {{ documento_vigencia|br_date_long }}{% endif %}.</p>
+                <p class="portal-static-page__updated">Vers&atilde;o {{ documento_versao }}{% if documento_vigencia %} &bull; vigente desde {{ documento_vigencia|br_date_long }}{% endif %}.</p>
             {% endif %}
         </header>
 
         <section class="portal-static-page__section">
-            <h2>1. Principios</h2>
-            <p>A plataforma NC Fly adota principios de minimo privilegio, segregacao por empresa, trilha de auditoria, autenticacao, protecao de sessao, controle de acesso por perfil e medidas razoaveis de seguranca tecnica e administrativa proporcionais ao risco e ao contexto da operacao.</p>
+            <h2>1. Princ&iacute;pios</h2>
+            <p>A plataforma NC Fly adota princ&iacute;pios de m&iacute;nimo privil&eacute;gio, segrega&ccedil;&atilde;o por empresa, trilha de auditoria, autentica&ccedil;&atilde;o, prote&ccedil;&atilde;o de sess&atilde;o, controle de acesso por perfil e medidas razo&aacute;veis de seguran&ccedil;a t&eacute;cnica e administrativa proporcionais ao risco da opera&ccedil;&atilde;o.</p>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>2. Responsabilidades do usuario autenticado</h2>
+            <h2>2. Responsabilidades do usu&aacute;rio autenticado</h2>
             <ul class="portal-static-page__list">
-                <li>Manter sigilo de senha, codigos de verificacao e dispositivos utilizados no acesso.</li>
-                <li>Evitar compartilhamento de credenciais, contas ou sessoes com terceiros.</li>
-                <li>Registrar somente dados necessarios e agir dentro do perfil autorizado.</li>
-                <li>Comunicar suspeitas de incidente, uso indevido, exposicao de dados ou comportamento anormal.</li>
+                <li>Manter sigilo de senha, c&oacute;digos de verifica&ccedil;&atilde;o, dispositivos e sess&otilde;es.</li>
+                <li>Evitar compartilhamento de credenciais, contas ou acessos com terceiros.</li>
+                <li>Registrar somente dados necess&aacute;rios e agir dentro do perfil autorizado.</li>
+                <li>Comunicar suspeitas de incidente, uso indevido, exposi&ccedil;&atilde;o de dados, perda de credencial ou comportamento anormal.</li>
             </ul>
         </section>
 
         <section class="portal-static-page__section">
             <h2>3. Uso vedado</h2>
             <ul class="portal-static-page__list">
-                <li>Tentar acessar dados, empresas, clientes, contas, emissoes ou cotacoes sem permissao.</li>
-                <li>Executar scraping, automacao abusiva, engenharia reversa, exploracao de vulnerabilidades ou qualquer tentativa de contornar controles de seguranca.</li>
-                <li>Inserir dados falsos, ilicitos, excessivos ou incompatíveis com a finalidade da plataforma.</li>
+                <li>Tentar acessar dados, empresas, clientes, contas, emiss&otilde;es ou cota&ccedil;&otilde;es sem permiss&atilde;o.</li>
+                <li>Executar extra&ccedil;&atilde;o automatizada indevida, automa&ccedil;&atilde;o abusiva, engenharia reversa, explora&ccedil;&atilde;o de vulnerabilidades ou qualquer tentativa de contornar controles de seguran&ccedil;a.</li>
+                <li>Inserir dados falsos, il&iacute;citos, excessivos ou incompat&iacute;veis com a finalidade da plataforma.</li>
+                <li>Usar a plataforma para fraude, concorr&ecirc;ncia desleal, viola&ccedil;&atilde;o de direitos de terceiros ou atividade incompat&iacute;vel com o contrato.</li>
             </ul>
         </section>
 
         <section class="portal-static-page__section">
             <h2>4. Controles operacionais</h2>
-            <p>A plataforma pode aplicar expiracao por inatividade, encerramento de sessao concorrente, MFA em perfis criticos, bloqueio por tentativas excessivas, isolamento por empresa, logs de seguranca, controles de acesso a rotas e outras medidas compativeis com o risco operacional.</p>
+            <p>A plataforma pode aplicar expira&ccedil;&atilde;o por inatividade, encerramento de sess&atilde;o concorrente, autentica&ccedil;&atilde;o em m&uacute;ltiplos fatores em perfis cr&iacute;ticos, bloqueio por tentativas excessivas, isolamento por empresa, registros de seguran&ccedil;a, controles de acesso a rotas e outras medidas compat&iacute;veis com o risco operacional.</p>
         </section>
 
         <section class="portal-static-page__section">
             <h2>5. Incidentes e resposta</h2>
-            <p>Eventos relevantes podem gerar registro tecnico, trilha de auditoria, notificacao interna, analise de impacto, medidas de contencao e comunicacoes adicionais conforme a criticidade do incidente, a legislacao aplicavel e a relacao contratual entre as partes.</p>
+            <p>Eventos relevantes podem gerar registro t&eacute;cnico, trilha de auditoria, notifica&ccedil;&atilde;o interna, an&aacute;lise de impacto, medidas de conten&ccedil;&atilde;o e comunica&ccedil;&otilde;es adicionais conforme a criticidade do incidente, a legisla&ccedil;&atilde;o aplic&aacute;vel e a rela&ccedil;&atilde;o contratual entre as partes.</p>
+            <p>Quando houver potencial impacto a dados pessoais, a NC Fly avaliar&aacute; o evento e cooperar&aacute; para que a controladora cumpra suas obriga&ccedil;&otilde;es legais, inclusive comunica&ccedil;&otilde;es exigidas pela LGPD e pela ANPD quando aplic&aacute;veis.</p>
             <p class="portal-static-page__updated">Atualizado em {{ page_updated_at|br_date_long }}.</p>
         </section>
     </section>

@@ -1,64 +1,81 @@
 {% extends "admin_custom/base_admin.html" %}
 {% load static %}
 
-{% block title %}Movimentações do Emissor Parceiro{% endblock %}
-{% block header_title %}Movimentações{% endblock %}
+{% block title %}Movimentações — {{ emissor.nome }}{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/emissores_parceiros_figma.css' %}">
+{% endblock %}
+{% block header_title %}Movimentações do Emissor{% endblock %}
+{% block header_subtitle %}<span>Histórico de emissões vinculadas ao parceiro <strong>{{ emissor.nome }}</strong>.</span>{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+        <li><a href="{% url 'admin_emissores_parceiros' %}">Emissores Parceiros</a></li>
+        <li aria-current="page">{{ emissor.nome }}</li>
+    </ol>
+</nav>
+{% endblock %}
 
 {% block content %}
-<section class="surface-card stacked">
-  <div class="section-heading">
-    <div>
-      <p class="eyebrow">Emissor parceiro</p>
-      <h2 class="section-title">{{ emissor.nome }}</h2>
-    </div>
-  </div>
-  <div class="dashboard-table-wrapper">
-    <table class="emissions-table emissions-table--wide">
-      <thead>
-        <tr>
-          <th>Data da emissão</th>
-          <th>ID</th>
-          <th>Origem</th>
-          <th>Destino</th>
-          <th>Total de milhas</th>
-          <th>Valor pago ao parceiro</th>
-          <th>Valor final ao cliente</th>
-          <th>Valor total final</th>
-          <th>Economia obtida</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for emissao in emissoes %}
+<div class="partner-page">
+
+  <section class="partner-page__table-card">
+    <header class="partner-page__table-head">
+      <p class="partner-page__eyebrow">Emissões vinculadas</p>
+      <h2>{{ emissor.nome }}</h2>
+    </header>
+
+    <div class="partner-page__table-wrap">
+      <table class="partner-page__table partner-page__table--wide">
+        <thead>
           <tr>
-            <td>{{ emissao.criado_em|date:"d/m/Y" }}</td>
-            <td>{{ emissao.id }}</td>
-            <td>{{ emissao.aeroporto_partida }}</td>
-            <td>{{ emissao.aeroporto_destino }}</td>
-            <td>{{ emissao.pontos_utilizados|default:0 }}</td>
-            <td>R$ {{ emissao.custo_total|floatformat:2 }}</td>
-            <td>
+            <th>Data</th>
+            <th>ID</th>
+            <th>Origem</th>
+            <th>Destino</th>
+            <th>Milhas</th>
+            <th>Custo parceiro</th>
+            <th>Valor cliente</th>
+            <th>Valor total</th>
+            <th>Economia</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for emissao in emissoes %}
+          <tr>
+            <td data-label="Data">{{ emissao.criado_em|date:"d/m/Y" }}</td>
+            <td data-label="ID">{{ emissao.id }}</td>
+            <td data-label="Origem">{{ emissao.aeroporto_partida }}</td>
+            <td data-label="Destino">{{ emissao.aeroporto_destino }}</td>
+            <td data-label="Milhas">{{ emissao.pontos_utilizados|default:0 }}</td>
+            <td data-label="Custo parceiro">R$ {{ emissao.custo_total|floatformat:2 }}</td>
+            <td data-label="Valor cliente">
               {% if emissao.valor_venda_final is not None %}
                 R$ {{ emissao.valor_venda_final|floatformat:2 }}
               {% else %}
-                —
+                <span class="partner-page__empty" style="text-align:left;">—</span>
               {% endif %}
             </td>
-            <td>
+            <td data-label="Valor total">
               {% if emissao.valor_total_final is not None %}
                 R$ {{ emissao.valor_total_final|floatformat:2 }}
               {% else %}
-                —
+                <span class="partner-page__empty" style="text-align:left;">—</span>
               {% endif %}
             </td>
-            <td>R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
+            <td data-label="Economia">R$ {{ emissao.economia_obtida|floatformat:2 }}</td>
           </tr>
-        {% empty %}
+          {% empty %}
           <tr>
-            <td colspan="9" class="text-center text-zinc-400 py-4">Nenhuma emissão encontrada.</td>
+            <td colspan="9" class="partner-page__empty">Nenhuma emissão encontrada para este parceiro.</td>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</section>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
 {% endblock %}

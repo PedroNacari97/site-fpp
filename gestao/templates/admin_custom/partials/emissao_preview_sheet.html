@@ -107,7 +107,7 @@
                         <span>Destino</span>
                         <strong>{{ voo.destino_label }}</strong>
                         <small>{{ voo.destino_data }}</small>
-                        <b>{{ voo.destino_hora }}</b>
+                        {% if voo.destino_hora != "--:--" %}<b>{{ voo.destino_hora }}</b>{% endif %}
                     </div>
                 </div>
 

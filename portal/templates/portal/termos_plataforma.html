@@ -14,13 +14,14 @@
             <h1>Termos da Plataforma</h1>
             <p>{{ page_intro }}</p>
             {% if documento_versao %}
-                <p class="portal-static-page__updated">Versao {{ documento_versao }}{% if documento_vigencia %} • vigente desde {{ documento_vigencia|br_date_long }}{% endif %}.</p>
+                <p class="portal-static-page__updated">Vers&atilde;o {{ documento_versao }}{% if documento_vigencia %} &bull; vigente desde {{ documento_vigencia|br_date_long }}{% endif %}.</p>
             {% endif %}
         </header>
 
         <section class="portal-static-page__section">
             <h2>1. Objeto</h2>
-            <p>Estes termos regulam especificamente o acesso e o uso da plataforma autenticada da NC Fly, incluindo login, painel, administra&ccedil;&atilde;o, opera&ccedil;&otilde;es internas, controles empresariais, emiss&otilde;es, cota&ccedil;&otilde;es, alertas, auditoria e demais recursos restritos.</p>
+            <p>Estes termos regulam especificamente o acesso e o uso da plataforma autenticada da NC Fly, incluindo acesso, painel, administra&ccedil;&atilde;o, opera&ccedil;&otilde;es internas, controles empresariais, emiss&otilde;es, cota&ccedil;&otilde;es, alertas, auditoria e demais recursos restritos.</p>
+            <p>A plataforma &eacute; voltada a rela&ccedil;&otilde;es entre empresas. Condi&ccedil;&otilde;es comerciais, planos, faturamento, n&iacute;vel de servi&ccedil;o, suporte, rescis&atilde;o e responsabilidade devem observar o contrato ou proposta comercial aplic&aacute;vel.</p>
         </section>
 
         <section class="portal-static-page__section">
@@ -48,8 +49,8 @@
         </section>
 
         <section class="portal-static-page__section">
-            <h2>6. Monitoramento, logs e auditoria</h2>
-            <p>A plataforma pode manter registros de login, a&ccedil;&otilde;es executadas, altera&ccedil;&otilde;es relevantes, tentativas de acesso, eventos de seguran&ccedil;a, aprova&ccedil;&otilde;es e trilhas de auditoria para fins de seguran&ccedil;a, suporte, governan&ccedil;a, investiga&ccedil;&atilde;o e prova.</p>
+            <h2>6. Monitoramento, registros t&eacute;cnicos e auditoria</h2>
+            <p>A plataforma pode manter registros de acesso, a&ccedil;&otilde;es executadas, altera&ccedil;&otilde;es relevantes, tentativas de acesso, eventos de seguran&ccedil;a, aprova&ccedil;&otilde;es e trilhas de auditoria para fins de seguran&ccedil;a, suporte, governan&ccedil;a, investiga&ccedil;&atilde;o e prova.</p>
         </section>
 
         <section class="portal-static-page__section">
@@ -57,7 +58,7 @@
             <ul class="portal-static-page__list">
                 <li>&Eacute; vedado tentar acessar dados, contas, empresas, fluxos ou registros sem permiss&atilde;o.</li>
                 <li>&Eacute; vedado contornar medidas de seguran&ccedil;a, automatizar de forma abusiva, extrair bases de dados ou explorar vulnerabilidades.</li>
-                <li>&Eacute; vedado utilizar a plataforma para fraude, uso il&iacute;cito, concorr&ecirc;ncia desleal, scraping indevido, engenharia reversa ou atividade incompat&iacute;vel com a finalidade contratada.</li>
+                <li>&Eacute; vedado utilizar a plataforma para fraude, uso il&iacute;cito, concorr&ecirc;ncia desleal, extra&ccedil;&atilde;o automatizada indevida, engenharia reversa ou atividade incompat&iacute;vel com a finalidade contratada.</li>
             </ul>
         </section>
 
@@ -68,12 +69,13 @@
 
         <section class="portal-static-page__section">
             <h2>9. Documentos complementares</h2>
-            <p>O uso da plataforma autenticada deve ser interpretado em conjunto com o <a href="{% url 'portal_privacidade_plataforma' %}">Aviso de Privacidade da Plataforma</a>, o <a href="{% url 'portal_dpa_plataforma' %}">DPA / Aditivo de Tratamento de Dados</a>, a <a href="{% url 'portal_seguranca_plataforma' %}">Politica de Seguranca</a>, a <a href="{% url 'portal_privacidade' %}">Pol&iacute;tica de Privacidade do portal p&uacute;blico</a> e, quando aplic&aacute;vel, os contratos e regras operacionais espec&iacute;ficas da rela&ccedil;&atilde;o comercial.</p>
+            <p>O uso da plataforma autenticada deve ser interpretado em conjunto com o <a href="{% url 'portal_privacidade_plataforma' %}">Aviso de Privacidade da Plataforma</a>, o <a href="{% url 'portal_dpa_plataforma' %}">Aditivo de Tratamento de Dados</a>, a <a href="{% url 'portal_seguranca_plataforma' %}">Pol&iacute;tica de Seguran&ccedil;a</a>, a <a href="{% url 'portal_privacidade' %}">Pol&iacute;tica de Privacidade do portal p&uacute;blico</a> e, quando aplic&aacute;vel, os contratos e regras operacionais espec&iacute;ficas da rela&ccedil;&atilde;o comercial.</p>
         </section>
 
         <section class="portal-static-page__section">
             <h2>10. Legisla&ccedil;&atilde;o aplic&aacute;vel</h2>
             <p>Estes termos devem ser interpretados segundo a legisla&ccedil;&atilde;o brasileira aplic&aacute;vel, especialmente a Lei Geral de Prote&ccedil;&atilde;o de Dados, o Marco Civil da Internet, o C&oacute;digo de Defesa do Consumidor, o Decreto do com&eacute;rcio eletr&ocirc;nico e a disciplina contratual pertinente ao servi&ccedil;o utilizado.</p>
+            <p>Cl&aacute;usulas de foro, arbitragem, limita&ccedil;&atilde;o de responsabilidade relevante, contratos internacionais e tratamento de dados de menores devem ser validadas por assessoria jur&iacute;dica humana antes de assinatura.</p>
             <p class="portal-static-page__updated">Atualizado em {{ page_updated_at|br_date_long }}.</p>
         </section>
     </section>

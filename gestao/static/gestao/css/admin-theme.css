@@ -1,17 +1,17 @@
 :root {
-  --bg: hsl(var(--background));
-  --surface: hsl(var(--card));
-  --border: hsl(var(--border));
-  --muted: hsl(var(--muted-foreground));
-  --heading: hsl(var(--foreground));
-  --admin-primary: hsl(var(--primary));
-  --primary-strong: hsl(0 96% 66%);
+  --bg: var(--color-bg);
+  --surface: var(--color-surface);
+  --border: var(--color-border);
+  --muted: var(--color-muted);
+  --heading: var(--color-heading);
+  --admin-primary: var(--color-primary);
+  --primary-strong: var(--color-primary-dark);
   --admin-accent: hsl(var(--accent));
-  --success: hsl(var(--success));
-  --warning: hsl(var(--warning));
-  --danger: hsl(var(--destructive));
-  --info: hsl(var(--primary));
-  --radius: var(--radius);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --danger: var(--color-danger);
+  --info: var(--color-primary);
+  --radius: 0.75rem;
   --shadow: var(--shadow-card);
   --page-max-width: 100%;
 }
@@ -290,14 +290,16 @@ a:hover {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-accent) 100%);
-  color: hsl(var(--primary-foreground));
-  box-shadow: 0 14px 28px hsl(var(--primary) / 0.2);
+  background: linear-gradient(135deg, #ff6b6b 0%, #f5a623 100%);
+  color: #fff;
+  border-color: rgba(255, 107, 107, 0.5);
+  box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.3), 0 4px 16px rgba(255, 107, 107, 0.3);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--primary-strong) 0%, var(--accent) 100%);
-  color: hsl(var(--primary-foreground));
+  background: linear-gradient(135deg, #ff5252 0%, #f59f00 100%);
+  color: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.5), 0 6px 20px rgba(255, 107, 107, 0.45);
 }
 
 .btn-secondary {

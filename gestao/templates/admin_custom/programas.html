@@ -17,6 +17,15 @@
 <link rel="stylesheet" href="{% static 'gestao/css/programas_pontos_figma.css' %}">
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+        <li aria-current="page">Programas de Pontos</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="points-program">
   <section class="points-program__filters-card">
@@ -58,7 +67,7 @@
         <tbody>
           {% for p in programas %}
           <tr>
-            <td>
+            <td data-label="Nome">
               <div class="points-program__identity">
                 <div class="points-program__logo" data-program-logo-preview>
                   {% if p.logo_url %}
@@ -71,14 +80,14 @@
                 </div>
               </div>
             </td>
-            <td>{{ p.get_tipo_display }}</td>
-            <td>R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
-            <td>{{ p.quantidade_cpfs_disponiveis|default:"--" }}</td>
-            <td>{{ p.descricao|default:p.programa_base|default:"--" }}</td>
-            <td>
+            <td data-label="Programa principal">{{ p.get_tipo_display }}</td>
+            <td data-label="Preço">R$ {{ p.preco_medio_milheiro|floatformat:2 }}</td>
+            <td data-label="CPFs">{{ p.quantidade_cpfs_disponiveis|default:"--" }}</td>
+            <td data-label="Base">{{ p.descricao|default:p.programa_base|default:"--" }}</td>
+            <td data-label="Ações">
               <div class="points-program__actions">
                 <a href="{% url 'admin_editar_programa' p.id %}" class="points-program__action">Editar</a>
-                <a href="{% url 'admin_deletar_programa' p.id %}" class="points-program__action">Deletar</a>
+                <button type="button" class="points-program__action points-program__action--danger" data-confirm-delete data-url="{% url 'admin_deletar_programa' p.id %}" data-label="{{ p.nome }}">Deletar</button>
               </div>
             </td>
           </tr>

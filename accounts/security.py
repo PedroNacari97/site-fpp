@@ -54,6 +54,14 @@ def _get_login_guard(identifier, ip_address, scope):
     )[0]
 
 
+def _ip_only_identifier():
+    return "<ip>"
+
+
+def _ip_only_scope(scope):
+    return f"{scope}:ip"
+
+
 def get_lockout_remaining_seconds(identifier, ip_address, scope):
     guard = LoginGuard.objects.filter(
         identifier=identifier or "<vazio>",
@@ -75,13 +83,26 @@ def get_lockout_remaining_seconds(identifier, ip_address, scope):
 
 def is_login_allowed(request, identifier, scope):
     normalized_identifier = normalize_login_identifier(identifier, scope=scope)
-    seconds = get_lockout_remaining_seconds(normalized_identifier, get_client_ip(request), scope)
+    ip_address = get_client_ip(request)
+    seconds = max(
+        get_lockout_remaining_seconds(normalized_identifier, ip_address, scope),
+        get_lockout_remaining_seconds(_ip_only_identifier(), ip_address, _ip_only_scope(scope)),
+    )
     return seconds == 0, seconds
 
 
-def register_login_failure(request, identifier, scope, *, user=None, reason="invalid_credentials"):
-    normalized_identifier = normalize_login_identifier(identifier, scope=scope)
-    guard = _get_login_guard(normalized_identifier, get_client_ip(request), scope)
+def _register_guard_failure(
+    request,
+    *,
+    identifier,
+    scope,
+    limit,
+    lockout_minutes,
+    event_prefix,
+    user=None,
+    reason="invalid_credentials",
+):
+    guard = _get_login_guard(identifier, get_client_ip(request), scope)
     guard.failed_attempts += 1
     details = {
         "scope": scope,
@@ -89,28 +110,50 @@ def register_login_failure(request, identifier, scope, *, user=None, reason="inv
         "reason": reason,
     }
 
-    if guard.failed_attempts >= settings.SECURITY_LOGIN_FAILURE_LIMIT:
-        guard.locked_until = timezone.now() + timedelta(
-            minutes=settings.SECURITY_LOGIN_LOCKOUT_MINUTES
-        )
+    if guard.failed_attempts >= limit:
+        guard.locked_until = timezone.now() + timedelta(minutes=lockout_minutes)
         details["locked_until"] = guard.locked_until.isoformat()
         log_security_event(
-            "login_locked",
+            f"{event_prefix}_locked",
             request=request,
             user=user,
-            identifier=normalized_identifier,
+            identifier=identifier,
             details=details,
         )
     else:
         log_security_event(
-            "login_failed",
+            f"{event_prefix}_failed",
             request=request,
             user=user,
-            identifier=normalized_identifier,
+            identifier=identifier,
             details=details,
         )
 
     guard.save(update_fields=["failed_attempts", "locked_until", "updated_at"])
+
+
+def register_login_failure(request, identifier, scope, *, user=None, reason="invalid_credentials"):
+    normalized_identifier = normalize_login_identifier(identifier, scope=scope)
+    _register_guard_failure(
+        request,
+        identifier=normalized_identifier or "<vazio>",
+        scope=scope,
+        limit=settings.SECURITY_LOGIN_FAILURE_LIMIT,
+        lockout_minutes=settings.SECURITY_LOGIN_LOCKOUT_MINUTES,
+        event_prefix="login",
+        user=user,
+        reason=reason,
+    )
+    _register_guard_failure(
+        request,
+        identifier=_ip_only_identifier(),
+        scope=_ip_only_scope(scope),
+        limit=settings.SECURITY_LOGIN_FAILURE_LIMIT,
+        lockout_minutes=settings.SECURITY_LOGIN_LOCKOUT_MINUTES,
+        event_prefix="login_ip",
+        user=user,
+        reason=reason,
+    )
 
 
 def reset_login_failures(request, identifier, scope):
@@ -120,6 +163,47 @@ def reset_login_failures(request, identifier, scope):
         ip_address=get_client_ip(request),
         scope=scope,
     ).delete()
+
+
+def is_security_action_allowed(request, identifier, scope):
+    normalized_identifier = normalize_login_identifier(identifier, scope=scope)
+    ip_address = get_client_ip(request)
+    seconds = max(
+        get_lockout_remaining_seconds(normalized_identifier, ip_address, scope),
+        get_lockout_remaining_seconds(_ip_only_identifier(), ip_address, _ip_only_scope(scope)),
+    )
+    return seconds == 0, seconds
+
+
+def register_security_action_attempt(
+    request,
+    identifier,
+    scope,
+    *,
+    limit,
+    lockout_minutes,
+    event_prefix,
+    reason="request",
+):
+    normalized_identifier = normalize_login_identifier(identifier, scope=scope)
+    _register_guard_failure(
+        request,
+        identifier=normalized_identifier or "<vazio>",
+        scope=scope,
+        limit=limit,
+        lockout_minutes=lockout_minutes,
+        event_prefix=event_prefix,
+        reason=reason,
+    )
+    _register_guard_failure(
+        request,
+        identifier=_ip_only_identifier(),
+        scope=_ip_only_scope(scope),
+        limit=limit,
+        lockout_minutes=lockout_minutes,
+        event_prefix=f"{event_prefix}_ip",
+        reason=reason,
+    )
 
 
 def format_lockout_message(seconds):

@@ -43,6 +43,8 @@ def criar_aeroporto(request):
 
 @login_required
 def deletar_aeroporto(request, aeroporto_id):
+    if request.method != "POST":
+        return redirect("admin_aeroportos")
     if (permission_denied := require_admin_or_operator(request)):
         return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")

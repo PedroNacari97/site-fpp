@@ -1186,7 +1186,12 @@ def build_operational_dashboard_context(
         perfil = getattr(getattr(user, "cliente_gestao", None), "perfil", "cliente")
 
     contas_qs = _filter_contas(
-        ContaFidelidade.objects.select_related("programa", "programa__programa_base"),
+        ContaFidelidade.objects.select_related(
+            "programa",
+            "programa__programa_base",
+            "cliente__usuario",
+            "conta_administrada",
+        ).prefetch_related("movimentacoes"),
         cliente=cliente,
         empresa=empresa,
     )

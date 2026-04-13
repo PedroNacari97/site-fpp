@@ -17,6 +17,15 @@
 <link rel="stylesheet" href="{% static 'gestao/css/aeroporto_form_figma.css' %}">
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+        <li aria-current="page">Aeroportos</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="airport-page">
   <section class="airport-page__filters-card">
@@ -55,12 +64,12 @@
         <tbody>
           {% for a in aeroportos %}
           <tr>
-            <td class="airport-page__sigla">{{ a.sigla }}</td>
-            <td>{{ a.nome }}</td>
-            <td>
+            <td data-label="Sigla" class="airport-page__sigla">{{ a.sigla }}</td>
+            <td data-label="Nome">{{ a.nome }}</td>
+            <td data-label="Ações">
               <div class="airport-page__actions">
                 <a href="{% url 'admin_editar_aeroporto' a.id %}" class="airport-page__action">Editar</a>
-                <a href="{% url 'admin_deletar_aeroporto' a.id %}" class="airport-page__action">Deletar</a>
+                <button type="button" class="airport-page__action airport-page__action--danger" data-confirm-delete data-url="{% url 'admin_deletar_aeroporto' a.id %}" data-label="{{ a.nome }} ({{ a.sigla }})">Deletar</button>
               </div>
             </td>
           </tr>

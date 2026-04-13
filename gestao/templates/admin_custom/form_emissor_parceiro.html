@@ -9,6 +9,16 @@
 <link rel="stylesheet" href="{% static 'gestao/css/emissores_parceiros_figma.css' %}">
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+        <li><a href="{% url 'admin_emissores_parceiros' %}">Emissores Parceiros</a></li>
+        <li aria-current="page">{% if form.instance.pk %}Editar Emissor{% else %}Novo Emissor{% endif %}</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="partner-form">
   {% if form.errors %}

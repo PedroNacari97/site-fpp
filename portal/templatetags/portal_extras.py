@@ -172,18 +172,20 @@ def phone_href(value):
 
 
 def _markdown_to_html(text: str) -> str:
-    """Converte markdown simples (negrito, links) para HTML seguro."""
+    """Converte markdown simples (negrito, links) para HTML seguro.
+    O texto de entrada deve estar previamente escapado com escape()."""
     # Converte apenas **texto** para <strong>. Marcadores simples com *
     # aparecem com frequencia em textos do Telegram e estavam deixando
     # blocos inteiros em negrito no portal.
-    text = re.sub(r"\*\*(.+?)\*\*", lambda m: f"<strong>{escape(m.group(1))}</strong>", text)
+    text = re.sub(r"\*\*(.+?)\*\*", lambda m: f"<strong>{m.group(1)}</strong>", text)
     # Converte [texto](url) para <a> com rel seguro
     def _link(m):
-        label = escape(m.group(1))
+        label = m.group(1)
         url = m.group(2).strip()
         if not url.startswith(("http://", "https://")):
-            return escape(m.group(0))
-        return f'<a href="{escape(url)}" target="_blank" rel="noopener noreferrer">{label}</a>'
+            return m.group(0)
+        # url já vem pré-escapado pelo escape() aplicado antes desta função
+        return f'<a href="{url}" target="_blank" rel="noopener noreferrer">{label}</a>'
     text = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", _link, text)
     return text
 
@@ -205,6 +207,8 @@ def portal_content(value):
                 continue
             # repair só corrige mojibake e palavras — não colapsa newlines
             line = repair_portuguese_text(line)
+            # escape antes de gerar HTML para prevenir XSS
+            line = escape(line)
             line = _markdown_to_html(line)
             converted_lines.append(line)
         if converted_lines:
