@@ -6840,3 +6840,13 @@ img {
     scroll-snap-stop: always;
   }
 }
+
+/* ── Home desktop: alertas dentro do coletor, sem carousel separado ── */
+@media (min-width: 901px) {
+  .news-home-frame .news-alerts-home {
+    display: none;
+  }
+  .news-home-frame .portal-alert-signup__list {
+    display: none;
+  }
+}

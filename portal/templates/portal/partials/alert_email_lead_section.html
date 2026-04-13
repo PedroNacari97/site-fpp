@@ -26,7 +26,8 @@
                 {% endif %}
             </div>
 
-            {% if alert_email_lead_alerts %}
+            {% with signup_alerts=alert_email_lead_alerts|default:alertas_home %}
+            {% if signup_alerts %}
             <div class="portal-alert-signup__alerts">
                 <div class="portal-alert-signup__alerts-header">
                     <strong>Alertas recentes</strong>
@@ -59,7 +60,7 @@
                     </button>
                     <div class="news-alerts-carousel__viewport" data-alerts-viewport>
                         <div class="news-alerts-home__grid news-alerts-home__grid--carousel" data-alerts-track>
-                            {% for alerta in alert_email_lead_alerts %}
+                            {% for alerta in signup_alerts %}
                             <article class="news-alert-card" data-alerts-slide>
                                 <a
                                     href="{{ alerta.url }}"
@@ -154,6 +155,7 @@
                 </div>
             </div>
             {% endif %}
+            {% endwith %}
         </div>
 
         <aside class="portal-lead-form-card portal-alert-signup__form-card">
