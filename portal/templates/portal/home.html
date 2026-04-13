@@ -7,16 +7,16 @@
         {% if not is_searching %}
         <section class="news-home-hero">
             <div class="news-home-hero__copy">
-                <h1>NC Fly &mdash; Milhas, viagens e a plataforma que organiza sua opera&ccedil;&atilde;o</h1>
-                <p>Acompanhe oportunidades em tempo real e transforme cota&ccedil;&otilde;es em emiss&otilde;es organizadas.</p>
+                <h1>Encontre passagens com milhas antes que a rota feche</h1>
+                <p>Monitoramos alertas de rotas, programas de milhas e janelas de emiss&atilde;o para voc&ecirc; viajar mais gastando menos.</p>
                 <div class="news-home-hero__actions">
                     <a href="{% url 'portal_alertas' %}" class="portal-button portal-button--primary"
                         data-analytics-event="click_hero_alertas" data-analytics-category="conversion" data-analytics-section="home_hero">
-                        Ver alertas
+                        Ver alertas de passagens
                     </a>
                     <a href="{% url 'portal_plataforma_saas' %}" class="portal-button portal-button--ghost"
                         data-analytics-event="click_hero_plataforma" data-analytics-category="conversion" data-analytics-section="home_hero">
-                        Conhecer a plataforma
+                        Sou ag&ecirc;ncia de viagens
                     </a>
                 </div>
             </div>
@@ -183,6 +183,19 @@
         <section class="news-latest-block">
             <header class="news-section-bar">
                 <h2>{% if is_searching %}Resultados da busca{% else %}&Uacute;ltimas not&iacute;cias{% endif %}</h2>
+                {% if not is_searching %}
+                <a
+                    href="{% url 'portal_noticias_todas' %}"
+                    class="news-section-bar__link"
+                    data-analytics-event="click_noticias_home_ver_todas"
+                    data-analytics-category="navigation"
+                    data-analytics-label="home_noticias_ver_todas"
+                    data-analytics-section="home_latest"
+                >
+                    Ver todas
+                    <span aria-hidden="true">&rarr;</span>
+                </a>
+                {% endif %}
             </header>
             {% if noticias_visiveis or noticias_ocultas %}
             <div class="news-home-grid" id="home-latest-grid">

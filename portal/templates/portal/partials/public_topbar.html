@@ -24,6 +24,14 @@
                     </span>
                     <span>Alertas</span>
                 </a>
+                <a href="{% url 'portal_noticias_todas' %}" class="portal-topbar__nav-link portal-topbar__nav-link--desktop-only {% if request.resolver_match.url_name == 'portal_noticias_todas' %}is-active{% endif %}">
+                    <span class="portal-topbar__nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 6h16M4 10h16M4 14h10M4 18h7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                        </svg>
+                    </span>
+                    <span>Not&iacute;cias</span>
+                </a>
                 {% for category in public_nav_categories %}
                 <a
                     href="{{ category.url }}"
@@ -58,6 +66,12 @@
                                 <svg viewBox="0 0 24 24"><path d="M12 4a5 5 0 0 0-5 5v2.46c0 .53-.21 1.04-.59 1.41L5 14.29V16h14v-1.71l-1.41-1.42a1.99 1.99 0 0 1-.59-1.41V9a5 5 0 0 0-5-5Zm0 16a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 20Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
                             </span>
                             Alertas
+                        </a>
+                        <a href="{% url 'portal_noticias_todas' %}" class="portal-topbar__dropdown-item{% if request.resolver_match.url_name == 'portal_noticias_todas' %} is-active{% endif %}">
+                            <span class="portal-topbar__nav-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h10M4 18h7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                            </span>
+                            Not&iacute;cias
                         </a>
                         {% for category in public_nav_categories %}
                         <a href="{{ category.url }}" class="portal-topbar__dropdown-item{% if request.resolver_match.url_name == 'portal_categoria' and request.resolver_match.kwargs.categoria_slug == category.slug %} is-active{% endif %}">

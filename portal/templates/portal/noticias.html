@@ -1,0 +1,277 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ seo_title|default:"Notícias de Milhas e Passagens | NC Fly" }}{% endblock %}
+{% block content %}
+<div class="portal-category-page">
+    <section class="portal-category-hero portal-category-hero--noticias">
+        <div class="portal-category-hero__icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 6h16M4 10h16M4 14h10M4 18h7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+            </svg>
+        </div>
+        <div>
+            <span class="news-kicker">NC Fly Editorial</span>
+            <h1>Tudo que você precisa saber para voar mais barato e acumular mais milhas</h1>
+            <p>Not&iacute;cias, an&aacute;lises e estrat&eacute;gias sobre milhas, cart&otilde;es e hospedagem sem enrola&ccedil;&atilde;o.</p>
+        </div>
+    </section>
+
+    {% if noticias_featured or noticias_sidebar %}
+    <section class="portal-category-featured">
+        {% if noticias_featured %}
+        <article class="portal-category-featured__main">
+            {% if noticias_featured.imagem_exibicao %}
+            <a
+                href="{{ noticias_featured.get_absolute_url }}"
+                class="portal-category-featured__image"
+                data-analytics-event="click_noticia_todas_destaque"
+                data-analytics-category="content"
+                data-analytics-label="{{ noticias_featured.titulo|portal_text }}"
+                data-analytics-section="noticias_todas_featured"
+            >
+                <img src="{{ noticias_featured.imagem_exibicao }}" alt="{{ noticias_featured.titulo }}" width="1600" height="860" fetchpriority="high" decoding="async">
+            </a>
+            {% endif %}
+            <div class="portal-category-featured__body">
+                <span class="news-pill news-pill--primary">Destaque</span>
+                {% if noticias_featured.topico %}
+                <span class="news-pill news-pill--topic">{{ noticias_featured.topico|portal_text }}</span>
+                {% endif %}
+                {% if noticias_featured.categoria %}
+                <span class="news-pill news-pill--muted">{{ noticias_featured.categoria|portal_text }}</span>
+                {% endif %}
+                <h2>
+                    <a
+                        href="{{ noticias_featured.get_absolute_url }}"
+                        data-analytics-event="click_noticia_todas_destaque"
+                        data-analytics-category="content"
+                        data-analytics-label="{{ noticias_featured.titulo|portal_text }}"
+                        data-analytics-section="noticias_todas_featured"
+                    >
+                        {{ noticias_featured.titulo|portal_text }}
+                    </a>
+                </h2>
+                <p>{{ noticias_featured.resumo|portal_text }}</p>
+                <div class="news-meta">
+                    <span>Reda&ccedil;&atilde;o NC Fly</span>
+                    <span>{{ noticias_featured.publicada_em|br_date_long }}</span>
+                </div>
+            </div>
+        </article>
+        {% endif %}
+
+        {% if noticias_sidebar %}
+        <aside class="portal-category-featured__sidebar">
+            {% for noticia in noticias_sidebar %}
+            <article class="news-card news-card--compact">
+                {% if noticia.imagem_exibicao %}
+                <a
+                    href="{{ noticia.get_absolute_url }}"
+                    class="news-card__image"
+                    data-analytics-event="click_noticia_todas_sidebar"
+                    data-analytics-category="content"
+                    data-analytics-label="{{ noticia.titulo|portal_text }}"
+                    data-analytics-section="noticias_todas_sidebar"
+                >
+                    <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}" width="1600" height="1000" loading="lazy" decoding="async">
+                </a>
+                {% endif %}
+                <div class="news-card__body">
+                    {% if noticia.topico %}
+                    <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
+                    {% endif %}
+                    {% if noticia.categoria %}
+                    <span class="news-pill news-pill--muted">{{ noticia.categoria|portal_text }}</span>
+                    {% endif %}
+                    <h3>
+                        <a
+                            href="{{ noticia.get_absolute_url }}"
+                            data-analytics-event="click_noticia_todas_sidebar"
+                            data-analytics-category="content"
+                            data-analytics-label="{{ noticia.titulo|portal_text }}"
+                            data-analytics-section="noticias_todas_sidebar"
+                        >
+                            {{ noticia.titulo|portal_text }}
+                        </a>
+                    </h3>
+                    <p>{{ noticia.resumo|portal_text|truncatechars:88 }}</p>
+                    <div class="news-meta">
+                        <span>Reda&ccedil;&atilde;o NC Fly</span>
+                        <span>{{ noticia.publicada_em|br_date_long }}</span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </aside>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    {% if noticias_grid or noticias_hidden %}
+    <section class="portal-category-grid" id="portal-noticias-grid" data-load-more-grid>
+        {% for noticia in noticias_grid %}
+        <article class="news-card">
+            {% if noticia.imagem_exibicao %}
+            <a
+                href="{{ noticia.get_absolute_url }}"
+                class="news-card__image"
+                data-analytics-event="click_noticia_todas_grid"
+                data-analytics-category="content"
+                data-analytics-label="{{ noticia.titulo|portal_text }}"
+                data-analytics-section="noticias_todas_grid"
+            >
+                <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}" width="1600" height="1000" loading="lazy" decoding="async">
+            </a>
+            {% endif %}
+            <div class="news-card__body">
+                {% if noticia.topico %}
+                <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
+                {% endif %}
+                {% if noticia.categoria %}
+                <span class="news-pill news-pill--muted">{{ noticia.categoria|portal_text }}</span>
+                {% endif %}
+                <h3>
+                    <a
+                        href="{{ noticia.get_absolute_url }}"
+                        data-analytics-event="click_noticia_todas_grid"
+                        data-analytics-category="content"
+                        data-analytics-label="{{ noticia.titulo|portal_text }}"
+                        data-analytics-section="noticias_todas_grid"
+                    >
+                        {{ noticia.titulo|portal_text }}
+                    </a>
+                </h3>
+                <p>{{ noticia.resumo|portal_text|truncatechars:100 }}</p>
+                <div class="news-meta">
+                    <span>Reda&ccedil;&atilde;o NC Fly</span>
+                    <span>{{ noticia.publicada_em|br_date_long }}</span>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+        {% for noticia in noticias_hidden %}
+        <article class="news-card is-hidden" data-load-more-item>
+            {% if noticia.imagem_exibicao %}
+            <a
+                href="{{ noticia.get_absolute_url }}"
+                class="news-card__image"
+                data-analytics-event="click_noticia_todas_grid"
+                data-analytics-category="content"
+                data-analytics-label="{{ noticia.titulo|portal_text }}"
+                data-analytics-section="noticias_todas_grid_hidden"
+            >
+                <img src="{{ noticia.imagem_exibicao }}" alt="{{ noticia.titulo }}" width="1600" height="1000" loading="lazy" decoding="async">
+            </a>
+            {% endif %}
+            <div class="news-card__body">
+                {% if noticia.topico %}
+                <span class="news-pill news-pill--topic">{{ noticia.topico|portal_text }}</span>
+                {% endif %}
+                {% if noticia.categoria %}
+                <span class="news-pill news-pill--muted">{{ noticia.categoria|portal_text }}</span>
+                {% endif %}
+                <h3>
+                    <a
+                        href="{{ noticia.get_absolute_url }}"
+                        data-analytics-event="click_noticia_todas_grid"
+                        data-analytics-category="content"
+                        data-analytics-label="{{ noticia.titulo|portal_text }}"
+                        data-analytics-section="noticias_todas_grid_hidden"
+                    >
+                        {{ noticia.titulo|portal_text }}
+                    </a>
+                </h3>
+                <p>{{ noticia.resumo|portal_text|truncatechars:100 }}</p>
+                <div class="news-meta">
+                    <span>Reda&ccedil;&atilde;o NC Fly</span>
+                    <span>{{ noticia.publicada_em|br_date_long }}</span>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+    {% else %}
+    <section class="news-empty">
+        <div class="news-empty__card">
+            <h2>As not&iacute;cias est&atilde;o a caminho</h2>
+            <p>Em breve voc&ecirc; encontra aqui an&aacute;lises e estrat&eacute;gias sobre milhas, cart&otilde;es e hospedagem.</p>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if show_load_more %}
+    <div class="portal-category-loadmore">
+        <button
+            type="button"
+            class="portal-button portal-button--ghost"
+            data-load-more-button
+            data-load-more-target="portal-noticias-grid"
+            data-batch-size="6"
+            data-label-default="Carregar mais not&iacute;cias"
+            data-analytics-event="click_carregar_mais_noticias_todas"
+            data-analytics-category="engagement"
+            data-analytics-label="noticias_todas"
+        >
+            Carregar mais not&iacute;cias
+        </button>
+    </div>
+    {% endif %}
+
+    <section class="news-platform-spotlight portal-deferred-section portal-deferred-section--md">
+        <div class="news-platform-spotlight__copy">
+            <span class="news-kicker">Plataforma NC Fly</span>
+            <h2>Conhe&ccedil;a a Plataforma NC Fly</h2>
+            <p>
+                Entenda como a Plataforma NC Fly ajuda empresas a organizar cota&ccedil;&otilde;es,
+                emiss&otilde;es, alertas, clientes e contas fidelidade em um &uacute;nico fluxo.
+            </p>
+            <ul class="news-platform-spotlight__list">
+                <li>Cota&ccedil;&atilde;o para emiss&atilde;o sem retrabalho.</li>
+                <li>Alertas, clientes e contexto no mesmo lugar.</li>
+                <li>Mais padr&atilde;o operacional para o time inteiro.</li>
+            </ul>
+            <div class="news-platform-spotlight__actions">
+                <a
+                    href="{% url 'portal_plataforma_saas' %}"
+                    class="portal-button portal-button--primary"
+                    data-analytics-event="click_saas_teaser"
+                    data-analytics-category="conversion"
+                    data-analytics-label="noticias_spotlight"
+                    data-analytics-section="noticias_saas_spotlight"
+                >
+                    Conhecer a plataforma
+                </a>
+            </div>
+        </div>
+        <div class="news-platform-spotlight__panel">
+            <div class="news-platform-spotlight__card">
+                <span>Plataforma NC Fly</span>
+                <strong>Mais velocidade comercial em um &uacute;nico lugar</strong>
+                <p>Clientes, cota&ccedil;&otilde;es, emiss&otilde;es, alertas e fidelidade organizados no mesmo ambiente.</p>
+            </div>
+            <div class="news-platform-spotlight__grid">
+                <article>
+                    <strong>Cota&ccedil;&otilde;es</strong>
+                    <p>PDF comercial, resumo claro e passagem de contexto para emiss&atilde;o.</p>
+                </article>
+                <article>
+                    <strong>Alertas</strong>
+                    <p>Oportunidades, interesses e momento comercial organizados em um &uacute;nico painel.</p>
+                </article>
+                <article>
+                    <strong>Clientes</strong>
+                    <p>Interesses, passageiros frequentes e contas fidelidade por empresa.</p>
+                </article>
+                <article>
+                    <strong>Controle</strong>
+                    <p>Processo mais claro para o time responder r&aacute;pido e manter padr&atilde;o operacional.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block footer %}
+{% include "portal/partials/home_footer.html" %}
+{% endblock %}

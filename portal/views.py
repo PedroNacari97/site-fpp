@@ -1197,6 +1197,7 @@ def alertas_publicos(request):
         "alert_email_lead_section_id": "alertas-email-lead",
         "alert_email_lead_title": "Quer receber novos alertas?",
         "alert_email_lead_compact_copy": True,
+        "alertas_home": [],
     }
     context["page_intro"] = "Acompanhe oportunidades de emiss\u00e3o com programas de fidelidade"
     context.update(_build_alerts_list_seo(request, alert_cards=alert_cards))
@@ -1508,9 +1509,119 @@ def plataforma_contato(request):
     return render(request, "portal/plataforma_contato.html", context)
 
 
+def _build_all_news_seo(request, featured=None, listed_items=None):
+    canonical_url = _absolute_public_url(request, reverse("portal_noticias_todas"))
+    home_url = _absolute_public_url(request, reverse("portal_home"))
+    title = "Notícias de Milhas e Passagens | NC Fly"
+    description = (
+        "Acompanhe as últimas notícias sobre milhas aéreas, cartões de crédito e hotéis. "
+        "Estratégias práticas para viajar gastando menos."
+    )
+    item_list_schema = _build_item_list_schema(
+        canonical_url,
+        "Notícias NC Fly",
+        [
+            {"name": item.titulo, "url": _absolute_public_url(request, item.get_absolute_url())}
+            for item in (listed_items or [])[:12]
+            if item
+        ],
+    )
+    schema_json = _build_schema_graph(
+        _build_organization_schema(request),
+        _build_website_schema(request),
+        {
+            "@type": "CollectionPage",
+            "@id": f"{canonical_url}#webpage",
+            "url": canonical_url,
+            "name": _seo_text(title),
+            "description": _seo_description(description),
+            "isPartOf": {"@id": f"{home_url}#website"},
+            "inLanguage": "pt-BR",
+        },
+        _build_breadcrumb_schema(
+            [
+                {"name": "Início", "url": home_url},
+                {"name": "Notícias", "url": canonical_url},
+            ]
+        ),
+        item_list_schema,
+    )
+    return _build_seo_context(
+        request,
+        title=title,
+        description=description,
+        canonical_url=canonical_url,
+        image_url=featured.imagem_exibicao if featured else "",
+        robots="index,follow",
+        schema_json=schema_json,
+        section="Notícias",
+        keywords=["notícias", "milhas", "passagens", "cartões de crédito", "hotéis"],
+    )
+
+
+def noticias_todas(request):
+    alert_email_lead_form, alert_email_lead_submitted, alert_email_lead_redirect = _handle_alert_email_lead_form(
+        request,
+        source_page=LeadAlertaEmail.ORIGEM_ALERTAS,
+        success_anchor="alertas-email-lead",
+    )
+    if alert_email_lead_redirect:
+        return alert_email_lead_redirect
+
+    noticias = _get_published_news()
+    GRID_INITIAL = 8
+    featured = noticias[0] if noticias else None
+    sidebar_cards = noticias[1:2]
+    grid_cards = noticias[2:GRID_INITIAL]
+    visible_count = (1 if featured else 0) + len(sidebar_cards) + len(grid_cards)
+    hidden_cards = noticias[visible_count:]
+    remaining_count = max(len(noticias) - visible_count, 0)
+    listed_items = [item for item in [featured, *sidebar_cards, *grid_cards] if item]
+    context = {
+        "noticias_featured": featured,
+        "noticias_sidebar": sidebar_cards,
+        "noticias_grid": grid_cards,
+        "noticias_hidden": hidden_cards,
+        "noticias_total": len(noticias),
+        "remaining_count": remaining_count,
+        "show_load_more": remaining_count > 0,
+        "alertas_home": [],
+        "alert_email_lead_form": alert_email_lead_form,
+        "alert_email_lead_submitted": alert_email_lead_submitted,
+        "alert_email_lead_consent_version": ALERT_EMAIL_LEAD_CONSENT_VERSION,
+        "alert_email_lead_section_id": "noticias-alertas-email",
+        "alert_email_lead_title": "Quer receber alertas por e-mail?",
+        "alert_email_lead_compact_copy": True,
+    }
+    context.update(_build_all_news_seo(request, featured=featured, listed_items=listed_items))
+    track_page_view(request.path, request=request, section="noticias_todas")
+    return render(request, "portal/noticias.html", context)
+
+
 def categoria_lista(request, categoria_slug):
+    alert_email_lead_form, alert_email_lead_submitted, alert_email_lead_redirect = _handle_alert_email_lead_form(
+        request,
+        source_page=LeadAlertaEmail.ORIGEM_ALERTAS,
+        success_anchor="alertas-email-lead",
+    )
+    if alert_email_lead_redirect:
+        return alert_email_lead_redirect
+
     selected_topic_slug = slugify((request.GET.get("topico") or "").strip())
     context = _build_category_page_context(categoria_slug, selected_topic_slug)
+    alertas_home = build_public_alert_cards(
+        list_visible_public_alerts(limit=5, max_age_days=PUBLIC_HOME_ALERT_MAX_AGE_DAYS)
+    )
+    context.update(
+        {
+            "alertas_home": alertas_home,
+            "alert_email_lead_form": alert_email_lead_form,
+            "alert_email_lead_submitted": alert_email_lead_submitted,
+            "alert_email_lead_consent_version": ALERT_EMAIL_LEAD_CONSENT_VERSION,
+            "alert_email_lead_section_id": f"categoria-{categoria_slug}-alertas-email",
+            "alert_email_lead_compact_copy": True,
+        }
+    )
     context.update(
         _build_category_seo(
             request,
