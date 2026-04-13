@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
@@ -105,6 +106,8 @@ def emissor_parceiro_movimentacoes(request, emissor_id):
 
 @login_required
 def deletar_emissor_parceiro(request, emissor_id):
+    if request.method != "POST":
+        return redirect("admin_emissores_parceiros")
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
@@ -112,4 +115,5 @@ def deletar_emissor_parceiro(request, emissor_id):
     if empresa and emissor.empresa != empresa:
         return render(request, "sem_permissao.html")
     emissor.delete()
+    messages.success(request, "Emissor parceiro deletado com sucesso.")
     return redirect("admin_emissores_parceiros")

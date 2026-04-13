@@ -167,7 +167,7 @@ class PlataformaQuickLeadForm(forms.Form):
         self.fields["email"].label = "E-mail"
         self.fields["telefone"].label = "Telefone"
         self.fields["aceite_contato"].label = (
-            "Autorizo o contato da NC Fly sobre a plataforma e li a Política de Privacidade."
+            "Autorizo a NC Fly a entrar em contato por e-mail e/ou telefone sobre a plataforma. Li e aceito a Política de Privacidade, os Termos de Contato e o Aditivo de Dados."
         )
 
     def clean_telefone(self):

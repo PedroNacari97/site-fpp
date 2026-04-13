@@ -5,6 +5,8 @@ from .views import (
     cliente_create,
     operator_list,
     password_help,
+    password_reset_confirm,
+    password_reset_request,
     user_create,
     user_delete,
     user_edit,
@@ -14,6 +16,8 @@ from .views import (
 urlpatterns = [
     path("login/", RedirectView.as_view(pattern_name="login_custom", permanent=False), name="login_legacy"),
     path("login/ajuda-senha/", password_help, name="password_help"),
+    path("redefinir-senha/", password_reset_request, name="password_reset_request"),
+    path("redefinir-senha/<uidb64>/<token>/", password_reset_confirm, name="password_reset_confirm"),
     path("usuarios/", user_list, name="user_list"),
     path("usuarios/operadores/", operator_list, name="operator_list"),
     path("usuarios/novo/", user_create, name="user_create"),

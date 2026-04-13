@@ -10,6 +10,16 @@
 <link rel="stylesheet" href="{% static 'gestao/css/cliente_dashboard_figma.css' %}">
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+        <li><a href="{% url 'admin_clientes' %}">Clientes</a></li>
+        <li aria-current="page">{{ cliente_obj }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="detail-client">
   <div class="detail-client__shell">
@@ -178,7 +188,7 @@
                     <form method="post" style="display:inline;">
                       {% csrf_token %}
                       <input type="hidden" name="passageiro_id" value="{{ item.id }}">
-                      <button type="submit" name="action" value="delete_passageiro" class="detail-client__remove-button" onclick="return confirm('Remover passageiro frequente?');">Remover</button>
+                      <button type="submit" name="action" value="delete_passageiro" class="detail-client__remove-button" data-confirm-submit data-confirm-msg="Remover o passageiro &quot;{{ item.nome }}&quot;? Esta ação não pode ser desfeita.">Remover</button>
                     </form>
                   </div>
                 </div>
@@ -397,7 +407,7 @@
                   <form method="post">
                     {% csrf_token %}
                     <input type="hidden" name="interesse_id" value="{{ item.id }}">
-                    <button type="submit" name="action" value="delete_interesse_viagem" class="detail-client__remove-button" onclick="return confirm('Remover interesse de viagem?');">Remover</button>
+                    <button type="submit" name="action" value="delete_interesse_viagem" class="detail-client__remove-button" data-confirm-submit data-confirm-msg="Remover o interesse &quot;{{ item.nome }}&quot;? Esta ação não pode ser desfeita.">Remover</button>
                   </form>
                 </div>
 

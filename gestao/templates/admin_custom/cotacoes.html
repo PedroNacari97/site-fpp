@@ -2,6 +2,15 @@
 {% block title %}Cotações do Milheiro{% endblock %}
 {% block header_title %}Cotações do Milheiro{% endblock %}
 {% block header_subtitle %}<p class="page-subtitle">Valores atualizados de mercado com formulários e listas alinhados.</p>{% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+        <li aria-current="page">Cotações do Milheiro</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="stacked">
     <section class="surface-card stacked">
@@ -75,10 +84,10 @@
                 <tbody>
                     {% for cot in cotacoes %}
                     <tr>
-                        <td>{{ cot.programa_nome }}</td>
-                        <td>R$ {{ cot.valor_mercado|floatformat:2 }}</td>
-                        <td>{{ cot.atualizado_em|date:"d/m/Y" }}</td>
-                        <td><a href="{% url 'admin_deletar_cotacao' cot.id %}" class="btn btn--ghost">Deletar</a></td>
+                        <td data-label="Programa">{{ cot.programa_nome }}</td>
+                        <td data-label="Cotação Mercado">R$ {{ cot.valor_mercado|floatformat:2 }}</td>
+                        <td data-label="Última atualização">{{ cot.atualizado_em|date:"d/m/Y" }}</td>
+                        <td data-label="Ações"><button type="button" class="btn btn--ghost" data-confirm-delete data-url="{% url 'admin_deletar_cotacao' cot.id %}" data-label="{{ cot.programa_nome }}">Deletar</button></td>
                     </tr>
                     {% empty %}
                     <tr>

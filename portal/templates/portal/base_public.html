@@ -22,6 +22,8 @@
     {% if seo_canonical_url %}
     <link rel="canonical" href="{{ seo_canonical_url }}">
     {% endif %}
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ portal_site_favicon_url|default:'/static/portal/img/nacari-fly-favicon.png' }}">
+    <link rel="apple-touch-icon" sizes="512x512" href="{{ portal_site_favicon_url|default:'/static/portal/img/nacari-fly-favicon.png' }}">
     <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs.txt">
 
     <meta property="og:locale" content="pt_BR">
@@ -137,7 +139,7 @@
         <div class="portal-cookie-banner__content">
             <strong>Privacidade e cookies</strong>
             <p>
-                Usamos cookies essenciais e, com sua permiss&atilde;o, analytics.
+                Usamos cookies essenciais e, com sua permiss&atilde;o, m&eacute;tricas de acesso.
                 Voc&ecirc; pode revisar sua escolha em
                 <a href="{% url 'portal_privacidade' %}#cookies">Pol&iacute;tica de Privacidade</a>.
             </p>
@@ -163,7 +165,7 @@
                 </button>
             </div>
             <div class="portal-cookie-modal__body">
-                <p>Os cookies essenciais mant&ecirc;m o site operacional. Os cookies de analytics s&oacute; ser&atilde;o ativados com sua autoriza&ccedil;&atilde;o e podem ser revogados depois.</p>
+                <p>Os cookies essenciais mant&ecirc;m o site operacional. Os cookies de m&eacute;tricas de acesso s&oacute; ser&atilde;o ativados com sua autoriza&ccedil;&atilde;o e podem ser revogados depois.</p>
                 <label class="portal-cookie-option">
                     <span>
                         <strong>Essenciais</strong>

@@ -175,22 +175,22 @@ class WizardManager {
     const programa = document.querySelector('[name="programa"]');
 
     if (!tipoEmissao?.value) {
-      this.showError('Selecione o tipo de emissão');
+      this.showError('Selecione o tipo de emissão', 'tipo_emissao');
       return false;
     }
 
     if (tipoEmissao.value === 'cliente' && !cliente?.value) {
-      this.showError('Selecione o cliente');
+      this.showError('Selecione o cliente', 'cliente');
       return false;
     }
 
     if (tipoEmissao.value === 'administrada' && !contaAdm?.value) {
-      this.showError('Selecione a conta administrada');
+      this.showError('Selecione a conta administrada', 'conta_administrada');
       return false;
     }
 
     if (!programa?.value) {
-      this.showError('Selecione o programa');
+      this.showError('Selecione o programa', 'programa');
       return false;
     }
 
@@ -205,22 +205,22 @@ class WizardManager {
     const data = document.querySelector('[name="data_ida"]');
 
     if (!origem?.value) {
-      this.showError('Informe o aeroporto de partida');
+      this.showError('Informe o aeroporto de partida', 'aeroporto_partida');
       return false;
     }
 
     if (!destino?.value) {
-      this.showError('Informe o aeroporto de destino');
+      this.showError('Informe o aeroporto de destino', 'aeroporto_destino');
       return false;
     }
 
     if (!companhia?.value) {
-      this.showError('Selecione a companhia aérea');
+      this.showError('Selecione a companhia aérea', 'companhia_aerea');
       return false;
     }
 
     if (!data?.value) {
-      this.showError('Informe a data e horário da ida');
+      this.showError('Informe a data e horário da ida', 'data_ida');
       return false;
     }
 
@@ -266,16 +266,10 @@ class WizardManager {
 
   validateStep5() {
     // Valores
-    const localizador = document.querySelector('[name="localizador"]');
     const valorRef = document.querySelector('[name="valor_referencia"]');
 
-    if (!localizador?.value?.trim()) {
-      this.showError('Informe o localizador');
-      return false;
-    }
-
     if (!valorRef?.value) {
-      this.showError('Informe o valor de referência');
+      this.showError('Informe o valor de referência', 'valor_referencia');
       return false;
     }
 
@@ -468,24 +462,34 @@ class WizardManager {
     }
   }
 
-  showError(message) {
-    const alert = document.createElement('div');
-    alert.className = 'alert-error';
-    alert.innerHTML = `<p>❌ ${message}</p>`;
-    alert.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #EF4444;
-      color: white;
-      padding: 1rem 1.5rem;
-      border-radius: 6px;
-      z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    `;
-    document.body.appendChild(alert);
+  showError(message, fieldName) {
+    // Use global toast if available, else fallback
+    if (window.__adminToast) {
+      window.__adminToast(message, 'error');
+    } else {
+      const alert = document.createElement('div');
+      alert.innerHTML = `<p>${message}</p>`;
+      alert.style.cssText = 'position:fixed;top:20px;right:20px;background:#EF4444;color:white;padding:1rem 1.5rem;border-radius:8px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.3);';
+      document.body.appendChild(alert);
+      setTimeout(() => alert.remove(), 5000);
+    }
 
-    setTimeout(() => alert.remove(), 5000);
+    // Highlight invalid field
+    if (fieldName) {
+      const field = document.querySelector(`[name="${fieldName}"]`);
+      if (field) {
+        field.style.borderColor = '#EF4444';
+        field.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.2)';
+        field.addEventListener('input', function clear() {
+          field.style.borderColor = '';
+          field.style.boxShadow = '';
+          field.removeEventListener('input', clear);
+        }, { once: true });
+        if (field.offsetParent !== null) {
+          field.focus();
+        }
+      }
+    }
   }
 }
 

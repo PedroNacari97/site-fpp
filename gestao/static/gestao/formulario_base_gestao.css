@@ -1,12 +1,13 @@
 :root {
-  --bg: hsl(var(--background));
-  --surface: hsl(var(--card));
-  --border: hsl(var(--border));
-  --muted: hsl(var(--muted-foreground));
-  --heading: hsl(var(--foreground));
-  --primary: hsl(var(--primary));
-  --primary-strong: hsl(var(--primary));
-  --danger: hsl(var(--destructive));
+  --bg: var(--color-bg);
+  --surface: var(--color-surface);
+  --border: var(--color-border);
+  --muted: var(--color-muted);
+  --heading: var(--color-heading);
+  /* --primary: não sobrescrever aqui — herdado de variables.css como tuple HSL "0 100% 71%"
+     sobrescrever com var(--color-primary) cria referência circular e invalida hsl(var(--primary)) */
+  --primary-strong: var(--color-primary-dark);
+  --danger: var(--color-danger);
   --radius: 6px;
 }
 
@@ -238,8 +239,8 @@ textarea:focus {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary-strong));
-  color: hsl(var(--primary-foreground));
+  background: linear-gradient(135deg, #ff6b6b 0%, #f5a623 100%);
+  color: #fff;
   font-weight: 600;
   border: none;
   border-radius: 6px;

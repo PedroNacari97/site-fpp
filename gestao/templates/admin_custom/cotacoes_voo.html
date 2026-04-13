@@ -10,6 +10,15 @@
 <link rel="stylesheet" href="{% static 'gestao/css/emissoes_figma.css' %}">
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+        <li aria-current="page">Cotações de Voo</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="emissions-page">
     <section class="home-ops__filters">
@@ -38,15 +47,15 @@
                 <tbody>
                     {% for c in cotacoes %}
                     <tr>
-                        <td>{{ c.cliente.usuario.get_full_name|default:c.cliente.usuario.username|default:'-' }}</td>
-                        <td>{{ c.conta_administrada|default:'-' }}</td>
-                        <td>{{ c.programa|default:'-' }}</td>
-                        <td>{{ c.origem }}</td>
-                        <td>{{ c.destino }}</td>
-                        <td>{{ c.data_ida|date:"d/m/Y H:i" }}</td>
-                        <td>{{ c.get_status_display }}</td>
-                        <td>{% if c.economia_total is not None %}R$ {{ c.economia_total|floatformat:2 }}{% else %}—{% endif %}</td>
-                        <td>
+                        <td data-label="Cliente">{{ c.cliente.usuario.get_full_name|default:c.cliente.usuario.username|default:'-' }}</td>
+                        <td data-label="Conta">{{ c.conta_administrada|default:'-' }}</td>
+                        <td data-label="Programa">{{ c.programa|default:'-' }}</td>
+                        <td data-label="Origem">{{ c.origem }}</td>
+                        <td data-label="Destino">{{ c.destino }}</td>
+                        <td data-label="Data ida">{{ c.data_ida|date:"d/m/Y H:i" }}</td>
+                        <td data-label="Status">{{ c.get_status_display }}</td>
+                        <td data-label="Economia">{% if c.economia_total is not None %}R$ {{ c.economia_total|floatformat:2 }}{% else %}—{% endif %}</td>
+                        <td data-label="Ações">
                             <div class="emissions-page__row-actions">
                                 <a href="{% url 'admin_visualizar_cotacao_voo' c.id %}" class="emissions-page__row-button">Visualizar Cotacao</a>
                                 <a href="{% url 'admin_editar_cotacao_voo' c.id %}" class="emissions-page__row-button">Editar</a>
@@ -55,13 +64,16 @@
                                 {% elif c.emissao_id %}
                                 <a href="{% url 'admin_editar_emissao' c.emissao_id %}" class="emissions-page__row-button">Ver Emissao</a>
                                 {% endif %}
-                                <a href="{% url 'admin_deletar_cotacao_voo' c.id %}" class="emissions-page__row-button">Deletar</a>
+                                <button type="button" class="emissions-page__row-button emissions-page__row-button--danger" data-confirm-delete data-url="{% url 'admin_deletar_cotacao_voo' c.id %}" data-label="{{ c.programa }} — {{ c.data_ida|date:'d/m/Y' }}">Deletar</button>
                             </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9" class="emissions-page__empty">Nenhuma cotacao encontrada.</td>
+                        <td colspan="9" class="emissions-page__empty">
+                            Nenhuma cotação encontrada.
+                            <a href="{% url 'admin_nova_cotacao_voo' %}" class="emissions-page__empty-cta">Nova cotação</a>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

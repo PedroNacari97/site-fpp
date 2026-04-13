@@ -251,6 +251,35 @@
   padding: 40px 16px;
 }
 
+.emissions-page__empty-cta {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  background: hsl(var(--primary, 25 100% 67%));
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity .15s;
+}
+
+.emissions-page__empty-cta:hover {
+  opacity: .85;
+}
+
+.emissions-page__row-button--danger {
+  background: #7f1d1d;
+  color: #fca5a5;
+  border: none;
+  cursor: pointer;
+}
+
+.emissions-page__row-button--danger:hover {
+  background: #991b1b;
+  color: #fff;
+}
+
 @media (max-width: 1200px) {
   .emissions-page__filters-form {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -291,5 +320,89 @@
   .emissions-page__filters-actions {
     grid-column: auto;
     justify-content: stretch;
+  }
+
+  /* ── Tabela responsiva: card-view em mobile ── */
+  .emissions-page__table-wrap {
+    overflow-x: unset;
+  }
+
+  .emissions-page__table,
+  .emissions-page__table thead,
+  .emissions-page__table tbody,
+  .emissions-page__table th,
+  .emissions-page__table td,
+  .emissions-page__table tr {
+    display: block;
+  }
+
+  .emissions-page__table {
+    min-width: 0;
+  }
+
+  .emissions-page__table thead {
+    /* Oculta o cabeçalho e usa data-label nas células */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .emissions-page__table tr {
+    background: var(--color-surface, #1a2332);
+    border: 1px solid var(--color-border, #2d3748);
+    border-radius: .75rem;
+    margin-bottom: .75rem;
+    padding: .75rem 1rem;
+  }
+
+  .emissions-page__table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .5rem;
+    padding: .35rem 0;
+    border-top: none;
+    font-size: 13px;
+    min-height: 0;
+  }
+
+  .emissions-page__table td:not(:last-child) {
+    border-bottom: 1px solid var(--color-border, #2d3748);
+    padding-bottom: .5rem;
+    margin-bottom: .1rem;
+  }
+
+  .emissions-page__table td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--color-muted, #99a1af);
+    flex-shrink: 0;
+    min-width: 90px;
+  }
+
+  .emissions-page__table td:last-child {
+    text-align: left;
+    padding-top: .75rem;
+    justify-content: flex-end;
+  }
+
+  .emissions-page__row-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Linha vazia */
+  .emissions-page__table tr:has(.emissions-page__empty) {
+    border-radius: .75rem;
+  }
+
+  .emissions-page__table td.emissions-page__empty::before {
+    display: none;
   }
 }

@@ -6,6 +6,16 @@
 <link rel="stylesheet" href="{% static 'gestao/css/wizard.css' %}">
 <script src="{% static 'gestao/js/form_save_handler.js' %}"></script>
 {% endblock %}
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+        <li><a href="{% url 'admin_emissoes' %}">Emissões</a></li>
+        <li aria-current="page">{% if form.instance.pk %}Editar Emissão #{{ form.instance.pk }}{% else %}Nova Emissão{% endif %}</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="emission-page">
     <form method="post" enctype="multipart/form-data" class="emission-form-shell" novalidate>

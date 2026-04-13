@@ -63,6 +63,8 @@ def editar_companhia(request, companhia_id):
 
 @login_required
 def deletar_companhia(request, companhia_id):
+    if request.method != "POST":
+        return redirect("admin_companhias")
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     perfil = getattr(

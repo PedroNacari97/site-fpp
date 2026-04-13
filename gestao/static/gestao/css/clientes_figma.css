@@ -1,19 +1,19 @@
 :root {
-  --clients-bg: #f4f7fb;
-  --clients-surface: #ffffff;
-  --clients-surface-2: #f8fafc;
-  --clients-border: #dbe3ee;
-  --clients-border-soft: #d2dce8;
-  --clients-text: #0f1b2d;
-  --clients-text-soft: #425466;
-  --clients-text-muted: #708198;
-  --clients-text-dim: #8c9aae;
-  --clients-blue: #ff6b6b;
-  --clients-blue-2: #f5a623;
-  --clients-green: #f5a623;
-  --clients-green-bg: rgba(245, 166, 35, 0.16);
-  --clients-red: #f87171;
-  --clients-red-bg: rgba(248, 113, 113, 0.16);
+  --clients-bg: var(--color-bg, #f4f7fb);
+  --clients-surface: var(--color-surface, #ffffff);
+  --clients-surface-2: var(--color-surface-muted, #f8fafc);
+  --clients-border: var(--color-border, #dbe3ee);
+  --clients-border-soft: var(--color-border, #d2dce8);
+  --clients-text: var(--color-heading, #0f1b2d);
+  --clients-text-soft: var(--color-text, #425466);
+  --clients-text-muted: var(--color-muted, #708198);
+  --clients-text-dim: var(--color-muted, #8c9aae);
+  --clients-blue: hsl(var(--primary, 0 100% 71%));
+  --clients-blue-2: hsl(var(--accent, 37 91% 55%));
+  --clients-green: hsl(var(--accent, 37 91% 55%));
+  --clients-green-bg: hsl(var(--accent, 37 91% 55%) / 0.16);
+  --clients-red: hsl(var(--destructive, 0 84% 60%));
+  --clients-red-bg: hsl(var(--destructive, 0 84% 60%) / 0.16);
 }
 
 .clients-page {

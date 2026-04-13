@@ -11,6 +11,15 @@
 <link rel="stylesheet" href="{% static 'gestao/css/emissoes_figma.css' %}">
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+        <li aria-current="page">Hotéis</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="emissions-page">
   <section class="home-ops__filters">
@@ -58,23 +67,26 @@
         <tbody>
           {% for e in emissoes %}
           <tr>
-            <td>{{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}</td>
-            <td>{{ e.nome_hotel }}</td>
-            <td>{{ e.check_in|date:"d/m/Y" }}</td>
-            <td>{{ e.check_out|date:"d/m/Y" }}</td>
-            <td>R$ {{ e.valor_referencia|floatformat:2 }}</td>
-            <td>R$ {{ e.valor_pago|floatformat:2 }}</td>
-            <td>R$ {{ e.economia_obtida|floatformat:2 }}</td>
-            <td>
+            <td data-label="Cliente">{{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}</td>
+            <td data-label="Hotel">{{ e.nome_hotel }}</td>
+            <td data-label="Check-in">{{ e.check_in|date:"d/m/Y" }}</td>
+            <td data-label="Check-out">{{ e.check_out|date:"d/m/Y" }}</td>
+            <td data-label="Valor ref.">R$ {{ e.valor_referencia|floatformat:2 }}</td>
+            <td data-label="Pago">R$ {{ e.valor_pago|floatformat:2 }}</td>
+            <td data-label="Economia">R$ {{ e.economia_obtida|floatformat:2 }}</td>
+            <td data-label="Ações">
               <div class="emissions-page__row-actions">
                 <a href="{% url 'admin_editar_emissao_hotel' e.id %}" class="emissions-page__row-button">Editar</a>
-                <a href="{% url 'admin_deletar_emissao_hotel' e.id %}" class="emissions-page__row-button">Deletar</a>
+                <button type="button" class="emissions-page__row-button emissions-page__row-button--danger" data-confirm-delete data-url="{% url 'admin_deletar_emissao_hotel' e.id %}" data-label="{{ e.nome_hotel }} — {{ e.check_in|date:'d/m/Y' }}">Deletar</button>
               </div>
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="8" class="emissions-page__empty">Nenhuma emissao encontrada.</td>
+            <td colspan="8" class="emissions-page__empty">
+              Nenhuma emissão de hotel encontrada.
+              <a href="{% url 'admin_nova_emissao_hotel' %}" class="emissions-page__empty-cta">Nova emissão de hotel</a>
+            </td>
           </tr>
           {% endfor %}
         </tbody>

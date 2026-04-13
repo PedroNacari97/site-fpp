@@ -10,6 +10,15 @@
 <link rel="stylesheet" href="{% static 'gestao/css/contas_fidelidade_figma.css' %}">
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+        <li aria-current="page">Contas de Fidelidade</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="loyalty-accounts">
   <div class="loyalty-accounts__shell">
@@ -72,21 +81,21 @@
           <tbody>
             {% for conta in page_obj %}
               <tr>
-                <td>{{ conta.cliente.usuario.get_full_name|default:conta.cliente.usuario.username }}</td>
-                <td>{{ conta.programa.nome }}</td>
-                <td>{{ conta.saldo_pontos }}</td>
-                <td>R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
-                <td>R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
-                <td>{{ conta.cpfs_usados }}</td>
-                <td>{{ conta.cpfs_disponiveis|default:"Ilimitado" }}</td>
-                <td>
+                <td data-label="Cliente">{{ conta.cliente.usuario.get_full_name|default:conta.cliente.usuario.username }}</td>
+                <td data-label="Programa">{{ conta.programa.nome }}</td>
+                <td data-label="Pontos">{{ conta.saldo_pontos }}</td>
+                <td data-label="Valor pago">R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
+                <td data-label="Valor médio">R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
+                <td data-label="CPFs usados">{{ conta.cpfs_usados }}</td>
+                <td data-label="CPFs disponíveis">{{ conta.cpfs_disponiveis|default:"Ilimitado" }}</td>
+                <td data-label="Status">
                   <span class="loyalty-accounts__badge loyalty-accounts__badge--{{ conta.status_cpf.tone }}">{{ conta.status_cpf.label }}</span>
                 </td>
-                <td>
+                <td data-label="Ações">
                   <div class="loyalty-accounts__row-actions">
                     <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="loyalty-accounts__row-button loyalty-accounts__row-button--secondary">Programas</a>
                     <a href="{% url 'admin_editar_conta' conta.id %}" class="loyalty-accounts__row-button loyalty-accounts__row-button--secondary">Editar</a>
-                    <a href="{% url 'admin_deletar_conta' conta.id %}" class="loyalty-accounts__row-button loyalty-accounts__row-button--danger">Excluir</a>
+                    <button type="button" class="loyalty-accounts__row-button loyalty-accounts__row-button--danger" data-confirm-delete data-url="{% url 'admin_deletar_conta' conta.id %}" data-label="{{ conta.programa.nome }} — {{ conta.cliente.usuario.get_full_name|default:conta.cliente.usuario.username }}">Excluir</button>
                   </div>
                 </td>
               </tr>

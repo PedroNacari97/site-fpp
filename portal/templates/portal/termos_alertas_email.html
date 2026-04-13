@@ -19,42 +19,52 @@
 
         <section class="portal-static-page__section">
             <h2>1. Finalidade do cadastro</h2>
-            <p>Este cadastro existe para registrar o interesse do usuário em receber alertas de passagens, oportunidades relacionadas a programas de fidelidade e comunicações diretamente associadas a esse acompanhamento editorial da NC Fly.</p>
+            <p>Este cadastro registra o interesse expl&iacute;cito do usu&aacute;rio em receber alertas por e-mail sobre passagens, milhas, programas de fidelidade e oportunidades relacionadas ao conte&uacute;do editorial da NC Fly.</p>
+            <p>O aceite destes termos &eacute; espec&iacute;fico para alertas por e-mail e n&atilde;o cria conta, acesso, assinatura paga ou interesse comercial autom&aacute;tico na plataforma da NC Fly.</p>
         </section>
 
         <section class="portal-static-page__section">
             <h2>2. Dados coletados</h2>
-            <p>Ao preencher o formulário, o usuário informa nome, e-mail e telefone. Esses dados são usados para identificar o cadastro, viabilizar o envio de alertas e, quando necessário, permitir contato operacional ou comercial relacionado a esse interesse.</p>
+            <p>Ao preencher o formul&aacute;rio, o usu&aacute;rio informa nome, e-mail e telefone. A NC Fly tamb&eacute;m pode registrar data e hora do aceite, vers&atilde;o do termo, IP, identifica&ccedil;&atilde;o t&eacute;cnica do navegador, origem da p&aacute;gina e, em caso de descadastro, o motivo selecionado.</p>
+            <p>Esses dados s&atilde;o tratados para identificar o cadastro, comprovar o consentimento, evitar envios duplicados, enviar alertas futuros e manter registros m&iacute;nimos de auditoria.</p>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>3. Natureza das comunicações</h2>
+            <h2>3. Natureza das comunica&ccedil;&otilde;es</h2>
             <ul class="portal-static-page__list">
-                <li>O e-mail é o canal principal para recebimento dos alertas.</li>
-                <li>O telefone pode ser usado como apoio em contato relacionado ao cadastro ou à comunicação da NC Fly.</li>
-                <li>Este aceite é específico para alertas e não substitui, nem se confunde, com o aceite de interesse comercial na plataforma.</li>
+                <li>O e-mail &eacute; o canal principal de envio dos alertas.</li>
+                <li>O telefone pode ser usado apenas como apoio operacional ou contato relacionado ao cadastro, quando necess&aacute;rio.</li>
+                <li>Os alertas enviados ao usu&aacute;rio consideram oportunidades identificadas ap&oacute;s o cadastro ativo, respeitadas as regras t&eacute;cnicas da fila de envio.</li>
+                <li>O cadastro n&atilde;o autoriza envio de comunica&ccedil;&otilde;es sem rela&ccedil;&atilde;o com alertas, salvo se houver outra base legal ou outro aceite espec&iacute;fico.</li>
             </ul>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>4. Disponibilidade e responsabilidade</h2>
-            <p>Os alertas possuem natureza informativa e podem refletir disponibilidade sujeita a alteração, esgotamento, limitação de estoque, mudança de regra, suspensão promocional ou remoção na origem. O recebimento do alerta não garante a manutenção da oferta nas mesmas condições.</p>
+            <h2>4. Disponibilidade, milhas e fontes</h2>
+            <p>Os alertas t&ecirc;m natureza informativa. Milhas, trechos, datas, classes, companhias, regras, taxas, disponibilidade e links podem mudar, esgotar ou ser removidos pela fonte da oferta sem aviso pr&eacute;vio.</p>
+            <p>A NC Fly n&atilde;o &eacute; companhia a&eacute;rea, banco, programa de fidelidade ou ag&ecirc;ncia emissora da oferta final. Antes de comprar, emitir ou transferir pontos, o usu&aacute;rio deve conferir as condi&ccedil;&otilde;es diretamente na origem da oferta.</p>
         </section>
 
         <section class="portal-static-page__section">
             <h2>5. Registro do aceite</h2>
-            <p>Ao enviar o formulário, a NC Fly registra a versão do termo aceita, a data e hora do aceite, o IP e a identificação técnica básica do navegador utilizada no envio.</p>
-            <p>Versão atual do termo: <strong>{{ alert_email_lead_consent_version }}</strong>.</p>
+            <p>Ao enviar o formul&aacute;rio, a NC Fly registra a vers&atilde;o do termo aceita, a data e hora do aceite, o IP e a identifica&ccedil;&atilde;o t&eacute;cnica b&aacute;sica do navegador utilizado no envio.</p>
+            <p>Vers&atilde;o atual do termo: <strong>{{ alert_email_lead_consent_version }}</strong>.</p>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>6. Privacidade e cancelamento</h2>
-            <p>O tratamento desses dados deve ser lido em conjunto com a <a href="{% url 'portal_privacidade' %}">Política de Privacidade</a>. Se o usuário não quiser mais receber esse tipo de comunicação, poderá solicitar a interrupção pelos canais oficiais da NC Fly.</p>
+            <h2>6. Cancelamento da inscri&ccedil;&atilde;o</h2>
+            <p>Todo e-mail de alerta deve conter link de descadastro. O usu&aacute;rio pode cancelar a inscri&ccedil;&atilde;o a qualquer momento, sem precisar criar acesso ou solicitar atendimento manual.</p>
+            <p>Ap&oacute;s a confirma&ccedil;&atilde;o do descadastro, novos envios de alertas devem ser interrompidos. A NC Fly pode manter registros m&iacute;nimos do cadastro e do cancelamento para auditoria, preven&ccedil;&atilde;o de abuso, comprova&ccedil;&atilde;o de consentimento e exerc&iacute;cio regular de direitos.</p>
         </section>
 
         <section class="portal-static-page__section">
-            <h2>7. Atualização</h2>
-            <p>Estes termos podem ser revisados para refletir mudanças operacionais, jurídicas ou técnicas no fluxo de alertas.</p>
+            <h2>7. Privacidade e direitos do titular</h2>
+            <p>O tratamento dos dados de alertas deve ser lido em conjunto com a <a href="{% url 'portal_privacidade' %}">Pol&iacute;tica de Privacidade</a>. O usu&aacute;rio pode solicitar acesso, corre&ccedil;&atilde;o, elimina&ccedil;&atilde;o, informa&ccedil;&otilde;es sobre compartilhamento, portabilidade quando cab&iacute;vel e revoga&ccedil;&atilde;o de consentimento pelos canais oficiais.</p>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>8. Atualiza&ccedil;&atilde;o</h2>
+            <p>Estes termos podem ser revisados para refletir mudan&ccedil;as operacionais, jur&iacute;dicas ou t&eacute;cnicas no fluxo de alertas. A vers&atilde;o vigente ser&aacute; indicada nesta p&aacute;gina.</p>
             <p class="portal-static-page__updated">Atualizado em {{ page_updated_at|br_date_long }}.</p>
         </section>
     </section>

@@ -32,6 +32,7 @@ def portal_public_settings(request):
         "portal_company_address": settings.PORTAL_COMPANY_ADDRESS,
         "portal_dpo_email": settings.PORTAL_DPO_EMAIL,
         "portal_site_logo_url": settings.PORTAL_SITE_LOGO_URL,
+        "portal_site_favicon_url": settings.PORTAL_SITE_FAVICON_URL,
         "portal_cookie_consent_name": settings.PORTAL_COOKIE_CONSENT_COOKIE_NAME,
         "portal_cookie_consent_version": settings.PORTAL_COOKIE_CONSENT_VERSION,
         "portal_cookie_consent_max_age_days": settings.PORTAL_COOKIE_CONSENT_MAX_AGE_DAYS,

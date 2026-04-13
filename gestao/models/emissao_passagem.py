@@ -1,5 +1,6 @@
 from decimal import Decimal
 from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils import timezone
 from .cliente import Cliente
@@ -9,6 +10,20 @@ from .aeroporto import Aeroporto
 from .companhia_aerea import CompanhiaAerea
 from .emissor_parceiro import EmissorParceiro
 from .emissao_hotel import EmissaoHotel
+
+
+MAX_COMPROVANTE_SIZE = 10 * 1024 * 1024  # 10 MB
+
+
+def validate_comprovante(file_obj):
+    if not file_obj:
+        return
+    if getattr(file_obj, "size", 0) > MAX_COMPROVANTE_SIZE:
+        raise ValidationError("O comprovante deve ter no maximo 10MB.")
+    content_type = getattr(file_obj, "content_type", "")
+    allowed_types = {"image/jpeg", "image/png", "application/pdf"}
+    if content_type and content_type not in allowed_types:
+        raise ValidationError("Envie o comprovante em PDF, JPG ou PNG.")
 
 
 class EmissaoPassagem(models.Model):
@@ -124,6 +139,10 @@ class EmissaoPassagem(models.Model):
         null=True,
         blank=True,
         verbose_name="Comprovante de pagamento",
+        validators=[
+            FileExtensionValidator(allowed_extensions=["pdf", "jpg", "jpeg", "png"]),
+            validate_comprovante,
+        ],
     )
 
     def clean(self):
@@ -165,6 +184,15 @@ class EmissaoPassagem(models.Model):
         else:
             self.economia_obtida = None
         super().save(*args, **kwargs)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["cliente", "criado_em"]),
+            models.Index(fields=["conta_administrada", "criado_em"]),
+            models.Index(fields=["programa", "criado_em"]),
+            models.Index(fields=["emissor_parceiro"]),
+            models.Index(fields=["criado_em"]),
+        ]
 
     def __str__(self):
         titular = self.cliente or self.conta_administrada

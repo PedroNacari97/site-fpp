@@ -1,9 +1,13 @@
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
 from django.core.exceptions import ValidationError
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from unittest.mock import patch
 
 from gestao.models import AlertaViagem, Cliente, Empresa
 from gestao.utils import validate_cpf_digits
@@ -96,6 +100,144 @@ class LoginSecurityFlowTest(TestCase):
 
         locked_response = self.client.post(login_url, payload)
         self.assertContains(locked_response, "Muitas tentativas de acesso", status_code=200)
+
+
+class TurnstileProtectionTest(TestCase):
+    @override_settings(TURNSTILE_SECRET_KEY="secret", TURNSTILE_SITE_KEY="site")
+    @patch("accounts.views.verify_turnstile_token", return_value=False)
+    def test_superadmin_login_requires_turnstile_when_configured(self, mock_turnstile):
+        User.objects.create_superuser(
+            username="root-turnstile",
+            email="root-turnstile@example.com",
+            password="secret123",
+        )
+
+        response = self.client.post(
+            reverse("superadmin_login"),
+            {
+                "identifier": "root-turnstile",
+                "password": "secret123",
+                "perfil": "superadmin",
+            },
+        )
+
+        self.assertContains(response, "Verificacao de seguranca falhou", status_code=200)
+        self.assertNotIn("_auth_user_id", self.client.session)
+        mock_turnstile.assert_called_once()
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+        TURNSTILE_SECRET_KEY="secret",
+        TURNSTILE_SITE_KEY="site",
+    )
+    @patch("accounts.views.verify_turnstile_token", return_value=False)
+    def test_password_reset_request_requires_turnstile_when_configured(self, mock_turnstile):
+        user = User.objects.create_user(
+            username="reset-turnstile",
+            email="reset-turnstile@example.com",
+            password="secret123",
+        )
+        Cliente.objects.create(
+            usuario=user,
+            cpf="12345678901",
+            perfil="cliente",
+            ativo=True,
+        )
+
+        response = self.client.post(
+            reverse("password_reset_request"),
+            {"cpf": "123.456.789-01"},
+        )
+
+        self.assertContains(response, "Verificacao de seguranca falhou", status_code=200)
+        self.assertEqual(len(mail.outbox), 0)
+        mock_turnstile.assert_called_once()
+
+
+class PasswordResetSecurityTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="reset-client",
+            email="reset-client@example.com",
+            password="OldSecret123!",
+        )
+        self.cliente = Cliente.objects.create(
+            usuario=self.user,
+            cpf="12345678901",
+            perfil="cliente",
+            ativo=True,
+        )
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_password_reset_request_uses_generic_response_and_sends_email(self):
+        response = self.client.post(
+            reverse("password_reset_request"),
+            {"cpf": "123.456.789-01"},
+            follow=True,
+        )
+
+        self.assertContains(response, "Se o CPF estiver cadastrado", status_code=200)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Redefinicao de senha", mail.outbox[0].subject)
+
+        unknown_response = self.client.post(
+            reverse("password_reset_request"),
+            {"cpf": "000.000.000-00"},
+            follow=True,
+        )
+        self.assertContains(unknown_response, "Se o CPF estiver cadastrado", status_code=200)
+        self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(
+        EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+        SECURITY_PASSWORD_RESET_LIMIT=2,
+        SECURITY_PASSWORD_RESET_LOCKOUT_MINUTES=10,
+    )
+    def test_password_reset_request_is_rate_limited(self):
+        reset_url = reverse("password_reset_request")
+
+        self.client.post(reset_url, {"cpf": "123.456.789-01"})
+        self.client.post(reset_url, {"cpf": "123.456.789-01"})
+        locked_response = self.client.post(reset_url, {"cpf": "123.456.789-01"})
+
+        self.assertContains(locked_response, "Muitas solicitacoes de redefinicao", status_code=200)
+        self.assertEqual(len(mail.outbox), 2)
+
+    def test_password_reset_confirm_uses_django_password_validators(self):
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        token = default_token_generator.make_token(self.user)
+
+        response = self.client.post(
+            reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token}),
+            {
+                "nova_senha": "12345678",
+                "confirmar_senha": "12345678",
+            },
+        )
+
+        self.user.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self.user.check_password("OldSecret123!"))
+
+    def test_password_reset_confirm_invalidates_existing_sessions(self):
+        logged_client = Client()
+        self.assertTrue(logged_client.login(username="reset-client", password="OldSecret123!"))
+        self.assertIn("_auth_user_id", logged_client.session)
+
+        uid = urlsafe_base64_encode(force_bytes(self.user.pk))
+        token = default_token_generator.make_token(self.user)
+        response = self.client.post(
+            reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token}),
+            {
+                "nova_senha": "RotaAzul@9472xQ!",
+                "confirmar_senha": "RotaAzul@9472xQ!",
+            },
+        )
+
+        self.user.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(self.user.check_password("RotaAzul@9472xQ!"))
+        self.assertNotIn("_auth_user_id", logged_client.session)
 
 
 class SuperadminMfaTest(TestCase):

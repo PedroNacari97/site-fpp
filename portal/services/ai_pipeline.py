@@ -22,6 +22,60 @@ from django.template.defaultfilters import slugify
 from django.utils import timezone
 
 
+_SYSTEM_PROMPT_REWRITE = (
+    "Você é editor-chefe de um portal premium de milhas, cartões e viagens. "
+    "Seu público são viajantes e investidores em programas de fidelidade.\n\n"
+
+    "## TAREFA\n"
+    "Reescreva o artigo para ser completamente original. Não copie trechos. "
+    "Responda em JSON estruturado com 13 campos obrigatórios.\n\n"
+
+    "## PROCESSO\n"
+    "1. Identifique o tipo de conteúdo: é notícia de promoção com prazo? análise? guia?\n"
+    "2. Escolha categoria com base no tipo (não em keywords aleatórias)\n"
+    "3. Escreva texto original mantendo fatos exatos (datas, %, valores, nomes)\n"
+    "4. Revise para PT-BR correto antes de gerar JSON\n\n"
+
+    "## REGRAS DE CATEGORIZAÇÃO\n"
+    "- PROMOÇÕES: tem prazo, bônus temporário, oferta com data-limite (mesmo se envolve viagem/hotel)\n"
+    "- MILHAS E PONTOS: transferências/programas sem prazo, emissões, resgates\n"
+    "- CARTÕES DE CRÉDITO: análises, lançamentos, bônus adesão, anuidade, aprovação\n"
+    "- HOTÉIS E RESORTS: programas hoteleiros, hospedagem com pontos (sem prazo especial)\n"
+    "- VIAGENS: editorial puro (destinos, roteiros, guias, cruzeiros) — NUNCA para promoção com prazo\n\n"
+
+    "## ESTRUTURA DE TEXTO\n"
+    "- Parágrafo 1: responda a pergunta principal do leitor (tipo FAQ/snippet)\n"
+    "- Corpo: 3-6 parágrafos com contexto, detalhes práticos, restrições importantes\n"
+    "- Feche com valor real ou próximos passos\n"
+    "- Sem 'traços isolados' (- ) no meio de frases\n"
+    "- Sem tom robótico\n\n"
+
+    "## CAMPOS JSON\n"
+    "- titulo: até 220 caracteres, sem asteriscos\n"
+    "- resumo: até 280 caracteres, até 2 frases, sem asteriscos\n"
+    "- conteudo: corpo completo em markdown, use **palavra** raramente (só termos-chave)\n"
+    "- seo_title: 60-68 chars, com palavra-chave principal, sem asteriscos\n"
+    "- meta_description: 150-160 chars, complementa seo_title, sem asteriscos\n"
+    "- confianca: 0.0 a 1.0 (0.85+ = fatos verificados, 0.50 = parcialmente claro, 0.30 = especulativo)\n"
+    "- cta_url: URL da melhor ação (oferta oficial, regulamento). Vazio se não houver.\n"
+    "- cta_label: rótulo de CTA (máx 40 chars). Vazio se cta_url vazio.\n"
+    "- tags: até 5 tags (marcas, programas, tópicos principais)\n"
+    "- slug: lowercase com hífens, até 220 chars\n"
+    "- topico: subcategoria editorial\n"
+    "- imagem_prompt: descrição 2-3 linhas de cena visual que capture o tema, "
+    "com estilo fotorrealístico ou ilustração moderna, composição clean, sem textos ou watermarks\n"
+    "- categoria: uma das 5 categorias acima\n\n"
+
+    "## CHECKLIST ANTES DE RESPONDER\n"
+    "✓ Nenhum trecho copiado da fonte\n"
+    "✓ Fatos numéricos exatos (datas, %, valores)\n"
+    "✓ Acentuação e ortografia PT-BR\n"
+    "✓ Restrições e público elegível mencionados\n"
+    "✓ Categoria justificada pela lógica acima\n"
+    "✓ Meta-description diferente do título\n"
+    "✓ JSON válido e completo"
+)
+
 OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
 OPENAI_IMAGES_GENERATIONS_URL = "https://api.openai.com/v1/images/generations"
 OPENAI_IMAGES_EDITS_URL = "https://api.openai.com/v1/images/edits"
@@ -788,22 +842,22 @@ def _build_cover_focus_prompt(title: str, summary: str, category: str) -> str:
 
     if label:
         instructions.append(
-            f"Priorize um unico elemento hero claramente ligado a {label}, com identidade visual reconhecivel e protagonismo na composicao."
+            f"Priorize um único elemento hero claramente ligado a {label}, com identidade visual reconhecível e protagonismo na composição."
         )
         instructions.append(
-            f"Se houver marcas, programas, cartoes, companhias ou aeronaves relacionados a {label}, mantenha o foco neles e evite dispersar a cena em muitos assuntos ao mesmo tempo."
+            f"Se houver marcas, programas, cartões, companhias ou aeronaves relacionados a {label}, mantenha o foco neles e evite dispersar a cena em muitos assuntos ao mesmo tempo."
         )
 
     if any(keyword in lowered for keyword in ("promocode", "cupom", "coupon", "% off", "desconto")):
         instructions.append(
-            "Se a pauta envolver cupom, promocode ou desconto, represente isso com um unico elemento visual de voucher, ticket ou selo promocional discreto e elegante."
+            "Se a pauta envolver cupom, promocode ou desconto, represente isso com um único elemento visual de voucher, ticket ou selo promocional discreto e elegante."
         )
 
     instructions.append(
-        "Evite colagens genericas com excesso de malas, carros, onibus, baloes, presentes, hoteis ou varios objetos ao mesmo tempo, a menos que eles sejam essenciais para entender a pauta."
+        "Evite colagens genéricas com excesso de malas, carros, ônibus, balões, presentes, hotéis ou vários objetos ao mesmo tempo, a menos que sejam essenciais para entender a pauta."
     )
     instructions.append(
-        "Prefira uma direcao de arte mais limpa, com poucos elementos fortes, boa hierarquia visual e cara de capa editorial premium."
+        "Prefira uma direção de arte mais limpa, com poucos elementos fortes, boa hierarquia visual e cara de capa editorial premium."
     )
 
     return " ".join(instructions)
@@ -811,29 +865,30 @@ def _build_cover_focus_prompt(title: str, summary: str, category: str) -> str:
 
 def _build_cover_prompt(title: str, summary: str, category: str) -> str:
     return (
-        f"Capa editorial premium para uma noticia de {category}. "
+        f"Capa editorial premium para uma notícia de {category}. "
         f"Tema principal: {title}. "
         f"Contexto: {summary[:220]}. "
-        "A imagem deve manter a mesma ideia editorial central da materia, com os mesmos produtos, marcas, programas, companhias, cartoes, aeronaves ou destinos quando eles forem parte essencial da noticia. "
-        "Pode mostrar logos, marcas e produtos reais de forma contextual e jornalistica, se isso fizer sentido para o tema. "
-        "Mas a composicao final precisa ser uma nova variacao visual, nao uma copia da capa vista no site de referencia. "
-        "Altere enquadramento, perspectiva, crop, distribuicao dos elementos, distancia da camera, profundidade, proporcao entre objetos, luz, textura e pequenos detalhes visuais. "
-        "O resultado pode lembrar a mesma campanha ou assunto, mas nao deve reproduzir exatamente a arte promocional original. "
+        "A imagem deve manter a mesma ideia editorial central da matéria, com os mesmos produtos, marcas, programas, companhias, cartões, aeronaves ou destinos quando forem parte essencial da notícia. "
+        "Pode mostrar logos, marcas e produtos reais de forma contextual e jornalística, se isso fizer sentido para o tema. "
+        "A composição final deve ser uma nova variação visual, não uma cópia da capa vista no site de referência. "
+        "Altere enquadramento, perspectiva, crop, distribuição dos elementos, distância da câmera, profundidade, proporção entre objetos, luz, textura e pequenos detalhes visuais. "
+        "O resultado pode lembrar a mesma campanha ou assunto, mas não deve reproduzir exatamente a arte promocional original. "
         f"{_build_cover_focus_prompt(title, summary, category)} "
-        "Visual sofisticado, limpo, com cara de capa de portal premium. Sem texto, sem marcas d'agua, sem interface, sem branding do site-fonte."
+        "Estilo fotorrealístico ou ilustração moderna, composição clean com poucos elementos fortes e boa hierarquia visual. "
+        "Visual sofisticado, com cara de capa de portal premium. Sem texto, sem marcas d'água, sem interface, sem branding do site-fonte."
     )
 
 
 def _build_cover_reference_prompt(title: str, summary: str, category: str) -> str:
     return (
-        f"Edite a imagem de referencia para criar uma nova capa editorial premium de {category}. "
+        f"Edite a imagem de referência para criar uma nova capa editorial premium de {category}. "
         f"Tema principal: {title}. "
         f"Contexto: {summary[:220]}. "
-        "Mantenha a mesma ideia central, os mesmos produtos, marcas, programas, companhias, cartoes, aeronaves ou destinos que forem relevantes na materia. "
-        "A nova capa deve continuar reconhecivel em relacao ao tema original, mas com alteracoes controladas no enquadramento, crop, perspectiva, organizacao dos elementos, luz, profundidade, textura e pequenos detalhes. "
-        "Nao copie a arte exatamente como esta. Gere uma variacao editorial refinada e propria, como se fosse uma nova versao da mesma campanha ou assunto. "
+        "Mantenha a mesma ideia central, os mesmos produtos, marcas, programas, companhias, cartões, aeronaves ou destinos que forem relevantes na matéria. "
+        "A nova capa deve continuar reconhecível em relação ao tema original, mas com alterações controladas no enquadramento, crop, perspectiva, organização dos elementos, luz, profundidade, textura e pequenos detalhes. "
+        "Não copie a arte exatamente como está. Gere uma variação editorial refinada e própria, como se fosse uma nova versão da mesma campanha ou assunto. "
         f"{_build_cover_focus_prompt(title, summary, category)} "
-        "Sem texto adicional, sem marcas d'agua, sem interface, sem branding do site-fonte."
+        "Sem texto adicional, sem marcas d'água, sem interface, sem branding do site-fonte."
     )
 
 
@@ -1117,6 +1172,40 @@ def _apply_quality_rules(draft: NewsDraft, raw_article: dict) -> NewsDraft:
     )
 
 
+NEWS_JSON_FIELDS = (
+    "titulo, resumo, conteudo, categoria, topico, tags, cta_url, cta_label, "
+    "slug, confianca, seo_title, meta_description, imagem_prompt"
+)
+
+
+def _build_news_system_prompt(*, schema_mode: bool) -> str:
+    output_rule = (
+        "Responda apenas com o JSON aceito pelo schema informado. Não inclua texto fora do JSON."
+        if schema_mode
+        else f"Responda apenas com JSON válido contendo exatamente estes campos: {NEWS_JSON_FIELDS}. Não inclua texto fora do JSON."
+    )
+    return f"{_SYSTEM_PROMPT_REWRITE}\n\n{output_rule}"
+
+
+def _build_news_user_prompt(source_name: str, raw_article: dict) -> str:
+    return textwrap.dedent(
+        f"""
+        Fonte: {source_name}
+        URL original: {raw_article.get('url_original')}
+        Titulo base: {raw_article.get('titulo_extraido')}
+        Data atual: {timezone.localdate().isoformat()}
+        Data base: {raw_article.get('data_publicacao_original')}
+        Resumo base: {raw_article.get('resumo_base')}
+        Categoria sugerida pela fonte: {raw_article.get('categoria_padrao')}
+        Links externos relevantes:
+        {json.dumps(raw_article.get('outbound_links') or [], ensure_ascii=False)}
+
+        Texto base:
+        {raw_article.get('texto_base')}
+        """
+    ).strip()
+
+
 def _rewrite_with_openai_schema(source_name: str, raw_article: dict) -> NewsDraft:
     payload = {
         "model": DEFAULT_NEWS_MODEL,
@@ -1126,39 +1215,7 @@ def _rewrite_with_openai_schema(source_name: str, raw_article: dict) -> NewsDraf
                 "content": [
                     {
                         "type": "input_text",
-                        "text": (
-                            "Você é editor-chefe sênior de um portal premium de milhas, cartões e viagens em português do Brasil. "
-                            "Leia o conteúdo de referência, interprete as informações e redija um texto jornalístico completamente original com suas próprias palavras. "
-                            "Não copie trechos da fonte. Construa uma narrativa nova a partir do que você entendeu do assunto. "
-                            "Comece o primeiro parágrafo respondendo diretamente à pergunta principal que o leitor teria sobre o assunto — como faria um bom FAQ ou snippet para buscadores e IAs. "
-                            "Entregue um texto completo, preciso, elegante e útil para o leitor, com abertura forte, contexto, desdobramentos práticos e fechamento objetivo. "
-                            "Prefira de 4 a 7 parágrafos bem escritos quando o material permitir, sem enrolação e sem tom robótico. "
-                            "Não invente fatos. Se um dado não estiver claro, omita. "
-                            "Preserve com exatidão porcentagens, datas, prazos, programas, aeroportos, companhias, valores e condições quando estiverem na fonte. "
-                            "Se houver promoção com prazo, destaque isso no resumo ou no corpo de forma natural. "
-                            "Se houver regra, restrição, público elegível, limite de uso ou observação importante, inclua isso de forma editorial. "
-                            "Destaque o que muda na prática para o leitor e, quando houver, o valor real da oportunidade ou do risco. "
-                            "Se citar outro site de referência no corpo do texto, use o nome completo do veículo e inclua o link no formato markdown: [Nome do Veículo](URL). "
-                            "NUNCA use traços isolados ' - ' no meio de frases como separador artificial. Escreva frases completas e naturais. "
-                            "No campo conteudo, use **palavra** para destacar em negrito termos importantes como nomes de programas, percentuais e datas-chave. Use com moderação, apenas onde realmente agrega. "
-                            "Nos campos titulo, resumo, seo_title e meta_description NUNCA use asteriscos — escreva em texto puro. "
-                            "Crie um seo_title que inclua a palavra-chave principal de forma natural, seja claro e direto para buscadores, sem clickbait exagerado. "
-                            "Crie uma meta_description objetiva e informativa com boa intenção de busca em até 160 caracteres, que complemente o seo_title sem repetir as mesmas palavras. "
-                            "Classifique a notícia em uma categoria canônica do portal seguindo estas regras com prioridade: "
-                            "use 'Promocoes' quando houver oferta com prazo, bônus temporário de transferência, passagem aérea em promoção, cashback ou desconto com data de validade — mesmo que o assunto envolva viagem ou hotel; "
-                            "use 'Milhas e Pontos' para transferências sem prazo especial, programas de fidelidade, emissão de passagens com pontos e compra/venda de pontos; "
-                            "use 'Cartoes de Credito' para análises, lançamentos, bônus de adesão, anuidade e aprovação de cartões; "
-                            "use 'Hoteis e Resorts' para programas hoteleiros e hospedagem com pontos sem prazo de oferta; "
-                            "use 'Viagens' APENAS para conteúdo editorial sem oferta: destinos, roteiros, dicas de viagem, guias, cruzeiros e pacotes sem prazo limitado. NUNCA use Viagens para notícias de promoção ou oferta com prazo. "
-                            "Classifique também em um tópico editorial interno compatível com a categoria escolhida. "
-                            "Se houver links externos relevantes de promoção ou ação oficial, escolha o melhor CTA e retorne esse link. "
-                            "Nunca use links de redes sociais, compartilhamento ou navegação. "
-                            "Antes de responder, revise todo o texto para garantir ortografia correta, acentuação correta, concordância natural e fluidez real em PT-BR. "
-                            "Corrija qualquer erro de português antes de devolver o JSON final. "
-                            "Ao criar o campo imagem_prompt, descreva uma capa editorial premium que mantenha a mesma ideia central do assunto e possa usar marcas, produtos e companhias reais citadas na noticia. "
-                            "Ela pode lembrar a mesma campanha ou contexto visual, mas precisa mudar enquadramento, composicao, perspectiva, crop, paleta secundaria, luz e pequenos detalhes para não virar cópia da imagem de referência. "
-                            "A imagem precisa parecer uma nova variação editorial do tema, não a mesma arte promocional do site de origem."
-                        ),
+                        "text": _build_news_system_prompt(schema_mode=True),
                     }
                 ],
             },
@@ -1167,26 +1224,7 @@ def _rewrite_with_openai_schema(source_name: str, raw_article: dict) -> NewsDraf
                 "content": [
                     {
                         "type": "input_text",
-                        "text": textwrap.dedent(
-                            f"""
-                            Fonte: {source_name}
-                            URL original: {raw_article.get('url_original')}
-                            Titulo base: {raw_article.get('titulo_extraido')}
-                            Data atual: {timezone.localdate().isoformat()}
-                            Data base: {raw_article.get('data_publicacao_original')}
-                            Resumo base: {raw_article.get('resumo_base')}
-                            Links externos relevantes:
-                            {json.dumps(raw_article.get('outbound_links') or [], ensure_ascii=False)}
-                            Categorias e topicos do portal:
-                            - Milhas e Pontos: Transferencias Bonificadas; Programas de Fidelidade; Emissoes e Resgates; Clubes e Assinaturas; Salas VIP e Beneficios; Compra e Venda de Pontos
-                            - Cartoes de Credito: Lancamentos e Analises; Bonus de Adesao; Salas VIP e Beneficios; Anuidade e Isencao; Aprovacao e Renda
-                            - Hoteis e Resorts: Programas Hoteleiros; Hospedagem com Pontos; Resorts e Experiencias; Destinos e Guias; Promocoes de Hospedagem
-                            - Promocoes: Transferencias e Bonus; Passagens Aereas; Hoteis e Resorts; Cartoes e Cashback; Ofertas Relampago
-                            - Viagens: Destinos e Roteiros; Passagens e Voos; Hospedagem; Dicas de Viagem; Cruzeiros e Pacotes
-                            Texto base:
-                            {raw_article.get('texto_base')}
-                            """
-                        ).strip(),
+                        "text": _build_news_user_prompt(source_name, raw_article),
                     }
                 ],
             },
@@ -1277,31 +1315,7 @@ def _rewrite_with_openai(source_name: str, raw_article: dict) -> NewsDraft:
                 "content": [
                     {
                         "type": "input_text",
-                        "text": (
-                            "Você reescreve notícias para um portal premium sobre milhas, cartões e viagens. "
-                            "Responda em JSON com os campos: titulo, resumo, conteudo, categoria, topico, tags, cta_url, cta_label, slug, confianca, seo_title, meta_description, imagem_prompt. "
-                            "Leia o conteúdo de referência, interprete as informações e redija um texto jornalístico completamente original com suas próprias palavras. Não copie trechos da fonte. "
-                            "Comece o primeiro parágrafo respondendo diretamente à pergunta principal que o leitor teria sobre o assunto — como faria um bom FAQ ou snippet para buscadores e IAs. "
-                            "Escreva como um editor experiente, com narrativa completa, contexto prático e boa densidade informativa. "
-                            "Preserve datas, prazos, percentuais, valores, programas e condições exatamente quando existirem. "
-                            "Se citar outro veículo no texto, use o nome completo e inclua o link no formato markdown: [Nome do Veículo](URL). "
-                            "NUNCA use traços isolados ' - ' como separador artificial de frases. Escreva em prosa natural e fluente. "
-                            "No campo conteudo, use **palavra** para destacar em negrito termos importantes como nomes de programas, percentuais e datas-chave. Use com moderação, apenas onde realmente agrega. "
-                            "Nos campos titulo, resumo, seo_title e meta_description NUNCA use asteriscos — escreva em texto puro. "
-                            "Crie um seo_title que inclua a palavra-chave principal de forma natural, seja claro e direto para buscadores, sem clickbait. "
-                            "Crie uma meta_description objetiva com boa intenção de busca em até 160 caracteres, que complemente o seo_title sem repetir as mesmas palavras. "
-                            "Slug em minúsculo com hífens. Confianca vai de 0.0 a 1.0. "
-                            "Categorias disponíveis e quando usar cada uma: "
-                            "'Promocoes' quando houver oferta com prazo, bônus temporário, passagem em promoção, cashback ou desconto — mesmo que envolva viagem ou hotel; "
-                            "'Milhas e Pontos' para transferências sem prazo especial, programas de fidelidade, emissão e resgate de passagens com pontos; "
-                            "'Cartoes de Credito' para análises, lançamentos, bônus de adesão, anuidade e aprovação de cartões; "
-                            "'Hoteis e Resorts' para programas hoteleiros e hospedagem com pontos sem prazo de oferta; "
-                            "'Viagens' APENAS para conteúdo editorial: destinos, roteiros, dicas, guias e pacotes sem prazo limitado. NUNCA use para promoções ou ofertas com prazo. "
-                            "Antes de responder, revise todo o texto para garantir ortografia correta, acentuação correta, concordância natural e fluidez real em PT-BR. "
-                            "Corrija qualquer erro de português antes de devolver o JSON final. "
-                            "No imagem_prompt, proponha uma capa editorial premium que mantenha a mesma ideia central da noticia e possa usar marcas, produtos e logos reais citados no tema. "
-                            "Não copie a arte da fonte: mude composicao, enquadramento, paleta secundaria, proporcao dos elementos e pequenos detalhes para gerar uma variacao própria."
-                        ),
+                        "text": _build_news_system_prompt(schema_mode=False),
                     }
                 ],
             },
@@ -1310,20 +1324,7 @@ def _rewrite_with_openai(source_name: str, raw_article: dict) -> NewsDraft:
                 "content": [
                     {
                         "type": "input_text",
-                        "text": textwrap.dedent(
-                            f"""
-                            Fonte: {source_name}
-                            URL original: {raw_article.get('url_original')}
-                            Titulo base: {raw_article.get('titulo_extraido')}
-                            Data atual: {timezone.localdate().isoformat()}
-                            Data base: {raw_article.get('data_publicacao_original')}
-                            Resumo base: {raw_article.get('resumo_base')}
-                            Links externos relevantes:
-                            {json.dumps(raw_article.get('outbound_links') or [], ensure_ascii=False)}
-                            Texto base:
-                            {raw_article.get('texto_base')}
-                            """
-                        ).strip(),
+                        "text": _build_news_user_prompt(source_name, raw_article),
                     }
                 ],
             },

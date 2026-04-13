@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Sum, Case, When, DecimalField, Value
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -563,11 +563,18 @@ def visualizar_cliente(request, cliente_id):
             }
         )
 
-    total_preco_cheio = sum(float(e.valor_referencia or 0) for e in EmissaoPassagem.objects.filter(cliente=cliente))
-    total_pago_cliente = sum(
-        float((e.valor_total_final if e.valor_total_final not in (None, "") else (e.valor_venda_final or 0)) or 0)
-        for e in EmissaoPassagem.objects.filter(cliente=cliente)
+    _stats = EmissaoPassagem.objects.filter(cliente=cliente).aggregate(
+        total_preco=Sum("valor_referencia"),
+        total_final=Sum(
+            Case(
+                When(valor_total_final__isnull=False, then="valor_total_final"),
+                default="valor_venda_final",
+                output_field=DecimalField(),
+            )
+        ),
     )
+    total_preco_cheio = float(_stats["total_preco"] or 0)
+    total_pago_cliente = float(_stats["total_final"] or 0)
     economia_cliente = total_preco_cheio - total_pago_cliente
     detail_kpis = list(context["management_dashboard"]["kpis"][:4])
     detail_kpis.append(

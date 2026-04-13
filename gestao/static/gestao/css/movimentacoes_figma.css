@@ -1,21 +1,21 @@
 :root {
-  --movement-bg: #0f1724;
-  --movement-surface: #222c3b;
-  --movement-surface-soft: #131c2c;
-  --movement-border: #334155;
-  --movement-border-soft: #41516a;
-  --movement-text: #f8fafc;
-  --movement-text-soft: #cbd5e1;
-  --movement-text-muted: #8fa0b7;
-  --movement-blue: #2f6fed;
-  --movement-blue-strong: #1859da;
-  --movement-success: #00a63e;
-  --movement-success-strong: #008b34;
-  --movement-green: #22c55e;
-  --movement-red: #ef4444;
-  --movement-amber-bg: rgba(245, 158, 11, 0.14);
-  --movement-amber-border: rgba(245, 158, 11, 0.35);
-  --movement-amber-text: #fbbf24;
+  --movement-bg: var(--color-bg);
+  --movement-surface: var(--color-surface);
+  --movement-surface-soft: var(--color-bg);
+  --movement-border: var(--color-border);
+  --movement-border-soft: var(--color-input-border);
+  --movement-text: var(--color-heading);
+  --movement-text-soft: var(--color-muted);
+  --movement-text-muted: var(--color-muted);
+  --movement-blue: hsl(var(--primary));
+  --movement-blue-strong: hsl(var(--primary) / 0.85);
+  --movement-success: hsl(var(--success, 142 71% 45%));
+  --movement-success-strong: hsl(var(--success, 142 71% 38%));
+  --movement-green: hsl(var(--success, 142 71% 45%));
+  --movement-red: hsl(var(--destructive));
+  --movement-amber-bg: hsl(var(--warning, 38 92% 50%) / 0.14);
+  --movement-amber-border: hsl(var(--warning, 38 92% 50%) / 0.35);
+  --movement-amber-text: hsl(var(--warning, 38 92% 50%));
 }
 
 .movement-page,
@@ -48,7 +48,8 @@
 
 .movement-page__notice span {
   margin-top: 4px;
-  color: #fde68a;
+  color: var(--movement-amber-text);
+  opacity: 0.85;
 }
 
 .movement-page__notice-link {
@@ -62,11 +63,9 @@
 .movement-page__card,
 .movement-form-page__card {
   border: 1px solid var(--movement-border);
-  border-radius: 18px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
-    var(--movement-surface);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+  border-radius: 16px;
+  background: var(--movement-surface);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
 }
 
@@ -112,38 +111,40 @@
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .movement-page__primary-action,
 .movement-form-page__submit {
-  border: 0;
-  background: var(--movement-blue);
-  color: var(--movement-text);
+  border: 1px solid hsl(var(--primary) / 0.5);
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent, var(--primary))) 100%);
+  color: hsl(var(--primary-foreground, 0 0% 100%));
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3), 0 4px 12px hsl(var(--primary) / 0.3);
 }
 
 .movement-page__primary-action:hover,
 .movement-form-page__submit:hover {
-  background: var(--movement-blue-strong);
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.5), 0 6px 20px hsl(var(--primary) / 0.45);
 }
 
 .movement-page__secondary-action {
   border: 1px solid var(--movement-border-soft);
-  background: rgba(15, 23, 36, 0.82);
+  background: var(--movement-surface);
   color: var(--movement-text);
 }
 
 .movement-page__secondary-action:hover {
-  background: rgba(24, 35, 52, 0.92);
+  background: hsl(var(--muted));
 }
 
 .movement-page__secondary-action--success {
-  border: 0;
-  background: var(--movement-success);
+  border: 1px solid hsl(var(--success, 142 71% 45%) / 0.5);
+  background: hsl(var(--success, 142 71% 45%));
+  color: #fff;
 }
 
 .movement-page__secondary-action--success:hover {
-  background: var(--movement-success-strong);
+  opacity: 0.9;
 }
 
 .movement-page__actions {
@@ -164,7 +165,7 @@
 
 .movement-page__table thead th {
   padding: 14px 18px;
-  background: var(--movement-bg);
+  background: hsl(var(--background));
   border-bottom: 1px solid var(--movement-border);
   color: var(--movement-text-muted);
   text-align: left;
@@ -176,7 +177,7 @@
 
 .movement-page__table tbody td {
   padding: 18px;
-  border-bottom: 1px solid rgba(51, 65, 85, 0.78);
+  border-bottom: 1px solid hsl(var(--border) / 0.78);
   color: var(--movement-text-soft);
   font-size: 14px;
   line-height: 1.5;
@@ -217,7 +218,7 @@
   padding: 0 16px;
   border: 1px solid var(--movement-border-soft);
   border-radius: 10px;
-  background: rgba(15, 23, 36, 0.56);
+  background: var(--movement-surface);
   color: var(--movement-text);
   display: inline-flex;
   align-items: center;
@@ -226,6 +227,14 @@
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.movement-page__row-action:hover,
+.movement-page__back-action:hover,
+.movement-form-page__cancel:hover {
+  background: hsl(var(--muted));
 }
 
 .movement-page__empty-action {
@@ -273,10 +282,10 @@
 .movement-form-page__errors {
   margin-bottom: 18px;
   padding: 14px 16px;
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  border: 1px solid hsl(var(--destructive) / 0.35);
   border-radius: 12px;
-  background: rgba(127, 29, 29, 0.24);
-  color: #fecaca;
+  background: hsl(var(--destructive) / 0.12);
+  color: hsl(var(--destructive));
   font-size: 13px;
 }
 
@@ -295,6 +304,7 @@
 .movement-form-page__field input,
 .movement-form-page__field select,
 .movement-form-page__field textarea {
+  width: 100%;
   min-height: 48px;
   border: 1px solid var(--movement-border);
   border-radius: 12px;
@@ -302,6 +312,7 @@
   color: var(--movement-text);
   font-size: 14px;
   padding: 12px 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .movement-form-page__field textarea {
@@ -312,13 +323,14 @@
 .movement-form-page__field input:focus,
 .movement-form-page__field select:focus,
 .movement-form-page__field textarea:focus {
-  border-color: var(--movement-blue);
-  box-shadow: 0 0 0 1px var(--movement-blue);
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 1px hsl(var(--primary));
 }
 
 .movement-form-page__field-error {
   margin-top: 6px;
-  color: #fca5a5;
+  color: hsl(var(--destructive));
   font-size: 12px;
 }
 
@@ -342,7 +354,7 @@
   padding: 0 16px;
   border: 1px solid var(--movement-border-soft);
   border-radius: 8px;
-  background: rgba(15, 23, 36, 0.82);
+  background: var(--movement-surface);
   color: var(--movement-text);
   display: inline-flex;
   align-items: center;
@@ -350,6 +362,11 @@
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.transfer-page__back:hover {
+  background: hsl(var(--muted));
 }
 
 .transfer-page__card {
@@ -387,10 +404,10 @@
 .transfer-page__errors {
   margin-bottom: 18px;
   padding: 14px 16px;
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  border: 1px solid hsl(var(--destructive) / 0.35);
   border-radius: 12px;
-  background: rgba(127, 29, 29, 0.24);
-  color: #fecaca;
+  background: hsl(var(--destructive) / 0.12);
+  color: hsl(var(--destructive));
   font-size: 13px;
 }
 
@@ -423,30 +440,33 @@
 .transfer-page__field input,
 .transfer-page__field select,
 .transfer-page__field textarea {
+  width: 100%;
   min-height: 40px;
   border: 1px solid var(--movement-border-soft);
   border-radius: 8px;
-  background: var(--movement-bg);
+  background: var(--movement-surface-soft);
   color: var(--movement-text);
   font-size: 14px;
   padding: 8px 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .transfer-page__field input::placeholder,
 .transfer-page__field textarea::placeholder {
-  color: #717182;
+  color: var(--movement-text-muted);
 }
 
 .transfer-page__field input:focus,
 .transfer-page__field select:focus,
 .transfer-page__field textarea:focus {
-  border-color: var(--movement-blue);
-  box-shadow: 0 0 0 1px var(--movement-blue);
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 1px hsl(var(--primary));
 }
 
 .transfer-page__field-error {
   margin-top: 6px;
-  color: #fca5a5;
+  color: hsl(var(--destructive));
   font-size: 12px;
 }
 
@@ -460,17 +480,19 @@
 .transfer-page__submit {
   min-height: 36px;
   padding: 0 24px;
-  border: 0;
+  border: 1px solid hsl(var(--primary) / 0.5);
   border-radius: 8px;
-  background: var(--movement-blue);
-  color: var(--movement-text);
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent, var(--primary))) 100%);
+  color: hsl(var(--primary-foreground, 0 0% 100%));
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3), 0 4px 12px hsl(var(--primary) / 0.3);
+  transition: box-shadow 0.2s ease;
 }
 
 .transfer-page__submit:hover {
-  background: var(--movement-blue-strong);
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.5), 0 6px 20px hsl(var(--primary) / 0.45);
 }
 
 @media (max-width: 900px) {

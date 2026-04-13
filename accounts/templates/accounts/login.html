@@ -9,6 +9,54 @@
   <title>{{ login_title|default:"Login - NCFly" }} - NCFly</title>
   <link rel="stylesheet" href="{% static 'portal/css/portal.css' %}">
   <link rel="stylesheet" href="{% static 'gestao/css/login.css' %}">
+  <style>
+    .login-form__submit:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .login-form__password-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .login-form__password-wrap input {
+      flex: 1;
+      padding-right: 2.75rem;
+    }
+    .login-form__toggle-password {
+      position: absolute;
+      right: 0.625rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.25rem;
+      color: inherit;
+      opacity: 0.6;
+      line-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-form__toggle-password:hover {
+      opacity: 1;
+    }
+    .login-form__toggle-password svg {
+      width: 1.125rem;
+      height: 1.125rem;
+      display: block;
+    }
+    .login-form__submit-spinner {
+      display: inline-block;
+      width: 0.85em;
+      height: 0.85em;
+      vertical-align: -0.15em;
+      margin-right: 0.4em;
+      animation: login-spin 0.7s linear infinite;
+    }
+    @keyframes login-spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body class="login-page{% if login_mode == 'superadmin' %} login-page--superadmin{% endif %}" data-default-theme="light">
   {% include "portal/partials/public_topbar.html" %}
@@ -90,7 +138,7 @@
               />
             </div>
             <div class="login-form__actions">
-              <button type="submit" class="login-form__submit">Validar codigo</button>
+              <button type="submit" class="login-form__submit" data-submit-button>Validar codigo</button>
               <a href="{% url 'superadmin_login' %}?reset_mfa=1" class="login-form__secondary">Usar outra conta</a>
             </div>
           {% else %}
@@ -109,7 +157,28 @@
 
             <div class="login-form__field">
               <label for="password">Senha</label>
-              <input type="password" id="password" name="password" placeholder="Digite sua senha" required />
+              <div class="login-form__password-wrap">
+                <input type="password" id="password" name="password" placeholder="Digite sua senha" required autocomplete="current-password" />
+                <button
+                  type="button"
+                  class="login-form__toggle-password"
+                  aria-label="Mostrar senha"
+                  aria-pressed="false"
+                  data-toggle-password
+                >
+                  <!-- icone olho aberto (senha oculta) -->
+                  <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  <!-- icone olho fechado (senha visivel) -->
+                  <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                </button>
+              </div>
             </div>
 
             {% if show_access_select %}
@@ -126,12 +195,17 @@
               <input type="hidden" name="perfil" value="superadmin" />
             {% endif %}
 
-            <button type="submit" class="login-form__submit">Entrar</button>
+            {% if turnstile_site_key %}
+            <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="dark"></div>
+            <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+            {% endif %}
+
+            <button type="submit" class="login-form__submit" data-submit-button>Entrar</button>
           {% endif %}
         </form>
 
         <div class="login-card__footer">
-          <a href="{% url 'password_help' %}" class="login-card__link">Esqueceu sua senha?</a>
+          <a href="{% url 'password_reset_request' %}" class="login-card__link">Esqueceu sua senha?</a>
           <div class="login-card__register">
             <a href="{{ alternate_login_url }}" class="login-card__link login-card__link--strong">{{ alternate_login_label }}</a>
           </div>
@@ -157,5 +231,40 @@
 
   <script src="{% static 'portal/js/portal.js' %}" defer></script>
   <script type="module" src="{% static 'painel_cliente/js/app.js' %}" defer></script>
+  <script>
+  (function () {
+    // Tarefa 1: Loading state no submit
+    var form = document.querySelector('[data-login-form]');
+    if (form) {
+      form.addEventListener('submit', function () {
+        var btn = form.querySelector('[data-submit-button]');
+        if (!btn) return;
+        btn.disabled = true;
+        btn.innerHTML =
+          '<svg class="login-form__submit-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">' +
+          '<circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>' +
+          '<path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/>' +
+          '</svg>Entrando...';
+      });
+    }
+
+    // Tarefa 2: Toggle mostrar/ocultar senha
+    var toggleBtn = document.querySelector('[data-toggle-password]');
+    if (toggleBtn) {
+      var passwordInput = document.getElementById('password');
+      var iconEye = toggleBtn.querySelector('.icon-eye');
+      var iconEyeOff = toggleBtn.querySelector('.icon-eye-off');
+
+      toggleBtn.addEventListener('click', function () {
+        var isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        toggleBtn.setAttribute('aria-label', isPassword ? 'Ocultar senha' : 'Mostrar senha');
+        toggleBtn.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
+        iconEye.style.display = isPassword ? 'none' : '';
+        iconEyeOff.style.display = isPassword ? '' : 'none';
+      });
+    }
+  })();
+  </script>
 </body>
 </html>

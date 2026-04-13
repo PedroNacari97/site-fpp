@@ -94,6 +94,8 @@ def editar_programa(request, programa_id):
 
 @login_required
 def deletar_programa(request, programa_id):
+    if request.method != "POST":
+        return redirect("admin_programas")
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")

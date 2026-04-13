@@ -394,7 +394,11 @@ const setupAutopreenchimento = () => {
     const rawField = form.querySelector('[name="alerta_bruto"]');
     const parsed = parseAlertaBruto(rawField ? rawField.value : "");
     if (!parsed.titulo && !parsed.origem && !parsed.destino && !parsed.programa_fidelidade) {
-      window.alert("Não foi possível interpretar esse alerta nesse formato.");
+      if (window.__adminToast) {
+        window.__adminToast("Não foi possível interpretar esse alerta nesse formato.", "error");
+      } else {
+        window.alert("Não foi possível interpretar esse alerta nesse formato.");
+      }
       return;
     }
 

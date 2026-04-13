@@ -55,7 +55,7 @@ from gestao.services.clientes_programas import (
     build_empresa_programas_map,
 )
 from gestao.services.cpf_limite import get_cpf_control_data, registrar_uso_cpfs, validar_limite_cpfs
-from gestao.utils import parse_br_date, validate_cpf_digits
+from gestao.utils import parse_br_date, safe_json_dumps, validate_cpf_digits
 from gestao.services.dashboard import (
     _current_management_filters,
     _management_filter_list,
@@ -131,14 +131,14 @@ def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=
         'form': form,
         'emissoes': emissoes if emissoes is not None else EmissaoPassagem.objects.all().order_by('-data_ida'),
         'passageiros_json': passageiros_json,
-        'escalas_ida_json': json.dumps(escalas_por_tipo['ida']),
-        'escalas_volta_json': json.dumps(escalas_por_tipo['volta']),
-        'aeroportos_json': json.dumps(aeroportos),
+        'escalas_ida_json': safe_json_dumps(escalas_por_tipo['ida']),
+        'escalas_volta_json': safe_json_dumps(escalas_por_tipo['volta']),
+        'aeroportos_json': safe_json_dumps(aeroportos),
         'cliente_id': cliente_id,
-        'cliente_programas_json': json.dumps(cliente_programas),
-        'contas_adm_programas_json': json.dumps(contas_adm_programas),
-        'empresa_programas_json': json.dumps(empresa_programas),
-        'cpf_controle_json': json.dumps(controle or {}),
+        'cliente_programas_json': safe_json_dumps(cliente_programas),
+        'contas_adm_programas_json': safe_json_dumps(contas_adm_programas),
+        'empresa_programas_json': safe_json_dumps(empresa_programas),
+        'cpf_controle_json': safe_json_dumps(controle or {}),
         'cliente_context_url_template': cliente_context_url_template,
         'passageiro_frequente_url_template': passageiro_frequente_url_template,
         'cotacao_conversion': cotacao_conversion,
@@ -378,7 +378,7 @@ def _validate_passageiros(passageiros):
 
 
 def _build_passageiros_json_for_context(post_data):
-    return json.dumps(_serialize_passageiros_list(_parse_passageiros(post_data)))
+    return safe_json_dumps(_serialize_passageiros_list(_parse_passageiros(post_data)))
 
 
 def _resolve_cotacao_for_conversion(request):
@@ -523,7 +523,7 @@ def admin_emissoes(request):
         EmissaoPassagem.objects.filter(
             Q(cliente__perfil="cliente", cliente__ativo=True) | Q(conta_administrada__isnull=False)
         ).select_related(
-            "cliente",
+            "cliente__usuario",
             "programa",
             "aeroporto_partida",
             "aeroporto_destino",
@@ -937,7 +937,7 @@ def editar_emissao(request, emissao_id):
                                 form=form,
                                 empresa=empresa,
                                 emissoes=EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida"),
-                                passageiros_json=json.dumps(passageiros),
+                                passageiros_json=safe_json_dumps(passageiros),
                                 escalas_por_tipo=escalas_por_tipo,
                             ),
                         )
@@ -1014,7 +1014,7 @@ def editar_emissao(request, emissao_id):
                                 form=form,
                                 empresa=empresa,
                                 emissoes=EmissaoPassagem.objects.exclude(id=emissao_id).order_by("-data_ida"),
-                                passageiros_json=json.dumps(passageiros),
+                                passageiros_json=safe_json_dumps(passageiros),
                                 escalas_por_tipo=escalas_por_tipo,
                             ),
                         )
@@ -1103,7 +1103,7 @@ def editar_emissao(request, emissao_id):
             form=form,
             empresa=empresa,
             emissoes=emissoes,
-            passageiros_json=json.dumps(passageiros),
+            passageiros_json=safe_json_dumps(passageiros),
             escalas_por_tipo=escalas_por_tipo,
         ),
     )
@@ -1178,6 +1178,8 @@ def emissao_acompanhamento(request, emissao_id):
 
 @login_required
 def deletar_emissao(request, emissao_id):
+    if request.method != "POST":
+        return redirect("admin_emissoes")
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
@@ -1286,6 +1288,8 @@ def editar_emissao_hotel(request, emissao_id):
 
 @login_required
 def deletar_emissao_hotel(request, emissao_id):
+    if request.method != "POST":
+        return redirect("admin_hoteis")
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
@@ -1296,5 +1300,5 @@ def deletar_emissao_hotel(request, emissao_id):
         id=emissao_id,
     )
     emissao.delete()
-    messages.success(request, "Emissão deletada com sucesso.")
+    messages.success(request, "Emissão de hotel deletada com sucesso.")
     return redirect("admin_hoteis")

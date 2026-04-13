@@ -225,6 +225,9 @@ PORTAL_SITE_LOGO_URL = os.environ.get(
 PORTAL_SITE_LOGO_LIGHT_URL = os.environ.get(
     "PORTAL_SITE_LOGO_LIGHT_URL", "/static/portal/img/nacari-fly-logo.webp"
 ).strip()
+PORTAL_SITE_FAVICON_URL = os.environ.get(
+    "PORTAL_SITE_FAVICON_URL", "/static/portal/img/nacari-fly-favicon.png"
+).strip()
 PORTAL_DEFAULT_META_DESCRIPTION = (
     os.environ.get(
         "PORTAL_DEFAULT_META_DESCRIPTION",
@@ -281,6 +284,10 @@ else:
 
 SECURITY_LOGIN_FAILURE_LIMIT = int(os.environ.get("SECURITY_LOGIN_FAILURE_LIMIT", "5"))
 SECURITY_LOGIN_LOCKOUT_MINUTES = int(os.environ.get("SECURITY_LOGIN_LOCKOUT_MINUTES", "15"))
+SECURITY_PASSWORD_RESET_LIMIT = int(os.environ.get("SECURITY_PASSWORD_RESET_LIMIT", "3"))
+SECURITY_PASSWORD_RESET_LOCKOUT_MINUTES = int(
+    os.environ.get("SECURITY_PASSWORD_RESET_LOCKOUT_MINUTES", "30")
+)
 ADMIN_SESSION_IDLE_TIMEOUT_SECONDS = int(
     os.environ.get("ADMIN_SESSION_IDLE_TIMEOUT_SECONDS", str(30 * 60))
 )
@@ -294,6 +301,13 @@ SUPERADMIN_MFA_CODE_TTL_MINUTES = int(
 SUPERADMIN_MFA_ATTEMPT_LIMIT = int(
     os.environ.get("SUPERADMIN_MFA_ATTEMPT_LIMIT", "5")
 )
+
+TURNSTILE_SITE_KEY = os.environ.get("TURNSTILE_SITE_KEY", "").strip()
+TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY", "").strip()
+TURNSTILE_API_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+TURNSTILE_FAIL_OPEN = _env_bool("TURNSTILE_FAIL_OPEN", DEBUG)
+
+PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", str(2 * 60 * 60)))
 
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "").strip()
 RESEND_API_URL = os.environ.get("RESEND_API_URL", "https://api.resend.com/emails").strip()
@@ -338,6 +352,7 @@ DEFAULT_FROM_EMAIL = (
     or EMAIL_HOST_USER.strip()
     or _default_outbound_email()
 )
+PASSWORD_RESET_FROM_EMAIL = os.environ.get("PASSWORD_RESET_FROM_EMAIL", "").strip() or DEFAULT_FROM_EMAIL
 PORTAL_ALERTS_FROM_EMAIL = (
     os.environ.get("PORTAL_ALERTS_FROM_EMAIL", "alertas@ncfly.com.br").strip()
     or DEFAULT_FROM_EMAIL

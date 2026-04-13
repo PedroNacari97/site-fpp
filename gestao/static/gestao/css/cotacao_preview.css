@@ -5,27 +5,30 @@
     min-height: 42px;
     padding: 0.7rem 1.15rem;
     border-radius: 0.85rem;
-    border: 1px solid rgba(148, 163, 184, 0.32);
-    background: rgba(15, 23, 42, 0.22);
-    color: #f8fafc;
+    border: 1px solid hsl(var(--color-border, 215 28% 25%));
+    background: hsl(var(--color-surface, 215 28% 17%));
+    color: hsl(var(--color-heading, 210 40% 96%));
     font-size: 0.9rem;
     font-weight: 600;
     text-decoration: none;
+    cursor: pointer;
     transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
 .quote-preview__toolbar-link:hover {
     transform: translateY(-1px);
-    border-color: rgba(148, 163, 184, 0.55);
+    background: hsl(var(--color-surface-muted, 215 28% 22%));
 }
 
 .quote-preview__toolbar-link--ghost {
-    cursor: default;
+    cursor: pointer;
 }
 
 .quote-preview__toolbar-link--primary {
-    border-color: rgba(99, 102, 241, 0.55);
-    background: linear-gradient(135deg, #ff6b6b 0%, #f5a623 100%);
+    background: linear-gradient(135deg, hsl(var(--primary, 25 100% 67%)) 0%, hsl(var(--accent, 35 100% 60%)) 100%);
+    border-color: hsl(var(--primary, 25 100% 67%) / 0.5);
+    color: #fff;
+    box-shadow: 0 0 0 1px hsl(var(--primary, 25 100% 67%) / 0.3), 0 4px 12px hsl(var(--primary, 25 100% 67%) / 0.3);
 }
 
 .quote-preview-page {
@@ -205,13 +208,13 @@
 }
 
 .quote-preview-section__icon--blue {
-    background: rgba(255, 107, 107, 0.12);
-    color: #ff6b6b;
+    background: rgba(249, 115, 22, 0.12);
+    color: #f97316;
 }
 
 .quote-preview-section__icon--violet {
-    background: rgba(245, 166, 35, 0.12);
-    color: #f5a623;
+    background: rgba(249, 115, 22, 0.12);
+    color: #f97316;
 }
 
 .quote-preview-section__icon--green {
@@ -616,10 +619,17 @@
     }
 }
 
+/* Ocultar no print */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}
+
 @media print {
     @page {
         size: A4;
-        margin: 12mm;
+        margin: 15mm;
     }
 
     html,
@@ -630,6 +640,7 @@
     .admin-page-main,
     .quote-preview-page {
         background: #ffffff !important;
+        color: #000000 !important;
     }
 
     html,
@@ -652,7 +663,10 @@
     .admin-sidebar,
     .admin-topbar,
     .admin-sidebar-overlay,
-    .quote-preview__back-link {
+    .admin-topbar__actions,
+    .admin-notifications-panel,
+    .quote-preview__back-link,
+    .no-print {
         display: none !important;
     }
 
@@ -740,5 +754,43 @@
     .quote-preview-price-highlight {
         flex-direction: row;
         align-items: center;
+    }
+
+    /* Reduzir padding das seções para economizar espaço no PDF */
+    .quote-preview-section {
+        padding: 0.85rem 1.25rem;
+    }
+
+    .quote-preview-section__heading {
+        margin-bottom: 0.6rem;
+    }
+
+    .quote-preview-meta {
+        padding: 0.75rem 1.25rem;
+    }
+
+    .quote-preview-hero {
+        padding: 1rem 1.25rem;
+        gap: 1rem;
+    }
+
+    .quote-preview-values {
+        gap: 0.4rem;
+    }
+
+    .quote-preview-page {
+        gap: 0;
+    }
+
+    /* Localizador e meta em linha horizontal */
+    .emission-preview-meta {
+        display: flex;
+        flex-direction: row;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .emission-preview-meta__item {
+        flex: 1;
     }
 }

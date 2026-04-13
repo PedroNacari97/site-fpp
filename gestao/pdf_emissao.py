@@ -6,7 +6,6 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.platypus import PageBreak
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 
 from gestao.services.empresa_contact import (
@@ -42,7 +41,7 @@ def gerar_pdf_emissao(emissao):
     cor_texto_principal = colors.Color(0.15, 0.15, 0.2, 1)
     cor_texto_secundario = colors.Color(0.4, 0.4, 0.5, 1)
 
-    # Estilos premium refinados
+    # Estilos premium refinados - AJUSTADOS PARA COMPACTAÇÃO
     titulo_principal = ParagraphStyle(
         'TituloPrincipal',
         parent=styles['Heading1'],
@@ -60,8 +59,8 @@ def gerar_pdf_emissao(emissao):
         parent=styles['Heading2'],
         fontSize=16,
         textColor=cor_primaria,
-        spaceAfter=12,
-        spaceBefore=20,
+        spaceAfter=4,
+        spaceBefore=8,
         fontName='Helvetica-Bold'
     )
 
@@ -72,8 +71,8 @@ def gerar_pdf_emissao(emissao):
         textColor=cor_texto_secundario,
         fontName='Helvetica-Bold',
         alignment=TA_LEFT,
-        spaceBefore=1,
-        spaceAfter=1
+        spaceBefore=0,
+        spaceAfter=0
     )
 
     estilo_valor = ParagraphStyle(
@@ -83,8 +82,8 @@ def gerar_pdf_emissao(emissao):
         textColor=cor_texto_principal,
         fontName='Helvetica',
         alignment=TA_LEFT,
-        spaceBefore=1,
-        spaceAfter=6
+        spaceBefore=0,
+        spaceAfter=2
     )
 
     estilo_valor_destaque = ParagraphStyle(
@@ -113,14 +112,14 @@ def gerar_pdf_emissao(emissao):
     header_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), cor_primaria),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('TOPPADDING', (0, 0), (-1, -1), 15),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 15),
+        ('TOPPADDING', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
         ('LEFTPADDING', (0, 0), (-1, -1), 20),
         ('RIGHTPADDING', (0, 0), (-1, -1), 20),
         ('ROUNDEDCORNERS', (0, 0), (-1, -1), 6),
     ]))
     elements.append(header_table)
-    elements.append(Spacer(1, 25))
+    elements.append(Spacer(1, 8))
 
     # INFORMAÇÕES DO CLIENTE
     elements.append(Paragraph("Informações do Cliente", titulo_secao))
@@ -137,15 +136,15 @@ def gerar_pdf_emissao(emissao):
     cliente_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), cor_fundo_claro),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('TOPPADDING', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ('LEFTPADDING', (0, 0), (-1, -1), 12),
         ('RIGHTPADDING', (0, 0), (-1, -1), 12),
         ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
         ('LINEBELOW', (0, 0), (-1, 0), 0.5, cor_texto_secundario),
     ]))
     elements.append(cliente_table)
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 5))
 
     # DADOS DA EMISSÃO
     elements.append(Paragraph("Dados da Emissão", titulo_secao))
@@ -181,8 +180,8 @@ def gerar_pdf_emissao(emissao):
     emissao_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), cor_fundo_claro),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('TOPPADDING', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ('LEFTPADDING', (0, 0), (-1, -1), 12),
         ('RIGHTPADDING', (0, 0), (-1, -1), 12),
         ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
@@ -190,7 +189,7 @@ def gerar_pdf_emissao(emissao):
         ('LINEBELOW', (0, 2), (-1, 2), 0.5, cor_texto_secundario),
     ]))
     elements.append(emissao_table)
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 5))
 
     # INFORMAÇÕES FINANCEIRAS
     elements.append(Paragraph("Informações Financeiras", titulo_secao))
@@ -252,8 +251,8 @@ def gerar_pdf_emissao(emissao):
         ('BACKGROUND', (0, 0), (-1, 1), cor_fundo_claro),
         ('BACKGROUND', (0, 2), (-1, -1), colors.Color(0.99, 0.96, 0.96, 1)),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('TOPPADDING', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ('LEFTPADDING', (0, 0), (-1, -1), 12),
         ('RIGHTPADDING', (0, 0), (-1, -1), 12),
         ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
@@ -262,9 +261,10 @@ def gerar_pdf_emissao(emissao):
         ('LINEBELOW', (0, 2), (-1, 2), 0.5, cor_texto_secundario),
     ]))
     elements.append(financeiro_table)
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 5))
 
-    # --- INFORMAÇÕES DO VOO (DATA E HORA LADO A LADO, PADRÃO BR) ---
+    # INFORMAÇÕES DO VOO
+    elements.append(Paragraph("Informações do Voo", titulo_secao))
     aeroporto_partida = getattr(emissao, 'aeroporto_partida', None)
     aeroporto_destino = getattr(emissao, 'aeroporto_destino', None)
     origem_str = (
@@ -276,9 +276,9 @@ def gerar_pdf_emissao(emissao):
         (f" - {getattr(aeroporto_destino, 'nome', '-')}" if aeroporto_destino else "")
     ) if aeroporto_destino else "-"
 
-    data_ida = getattr(emissao, 'data_ida', None)
-    data_volta = getattr(emissao, 'data_volta', None)
+    data_ida = getattr(emissao, 'data_ida', None)  # datetime
     data_ida_str = data_ida.strftime("%d/%m/%Y às %H:%M") if data_ida else "-"
+    data_volta = getattr(emissao, 'data_volta', None)
     data_volta_str = data_volta.strftime("%d/%m/%Y às %H:%M") if data_volta else "-"
 
     voo_data = [
@@ -291,19 +291,17 @@ def gerar_pdf_emissao(emissao):
     voo_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), cor_fundo_claro),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('TOPPADDING', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-        ('LEFTPADDING', (0, 0), (-1, -1), 12),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
         ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
         ('LINEBELOW', (0, 0), (-1, 0), 0.5, cor_texto_secundario),
     ]))
-    elements.append(PageBreak())
-    elements.append(Paragraph("Informações do Voo", titulo_secao))
     elements.append(voo_table)
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 5))
 
-# Escalas (após tabela de voo)
+    # Escalas (após tabela de voo)
     escalas = getattr(emissao, "escalas", None)
     if escalas and hasattr(escalas, "exists") and escalas.exists():
         escalas_por_tipo = {"ida": [], "volta": []}
@@ -318,9 +316,9 @@ def gerar_pdf_emissao(emissao):
             for escala in lista:
                 escala_aeroporto = getattr(escala, 'aeroporto', None)
                 aeroporto_escala_str = (
-                f"{getattr(escala_aeroporto, 'sigla', '-')}" +
-                (f" - {getattr(escala_aeroporto, 'nome', '-')}" if escala_aeroporto else "")
-            ) if escala_aeroporto else "-"
+                    f"{getattr(escala_aeroporto, 'sigla', '-')}" +
+                    (f" - {getattr(escala_aeroporto, 'nome', '-')}" if escala_aeroporto else "")
+                ) if escala_aeroporto else "-"
 
                 duracao_escala = getattr(escala, 'duracao', None)
                 duracao_total = int(duracao_escala.total_seconds()) if duracao_escala else 0
@@ -337,19 +335,18 @@ def gerar_pdf_emissao(emissao):
                 escala_table.setStyle(TableStyle([
                     ('BACKGROUND', (0, 0), (-1, -1), cor_fundo_claro),
                     ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-                    ('TOPPADDING', (0, 0), (-1, -1), 10),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
-                    ('LEFTPADDING', (0, 0), (-1, -1), 12),
-                    ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+                    ('TOPPADDING', (0, 0), (-1, -1), 2),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 10),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 10),
                     ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
                     ('LINEBELOW', (0, 0), (-1, 0), 0.5, cor_texto_secundario),
                 ]))
                 elements.append(escala_table)
                 elements.append(Spacer(1, 5))
 
-
     # PASSAGEIROS
-    elements.append(Spacer(1, 15))
+    elements.append(Spacer(1, 8))
     elements.append(Paragraph("Passageiros", titulo_secao))
 
     total_passageiros = f"Adultos: {getattr(emissao, 'qtd_adultos', 0)} | Crianças: {getattr(emissao, 'qtd_criancas', 0)} | Bebês: {getattr(emissao, 'qtd_bebes', 0)}"
@@ -363,15 +360,15 @@ def gerar_pdf_emissao(emissao):
     total_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), colors.Color(0.96, 0.97, 0.99, 1)),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ('LEFTPADDING', (0, 0), (-1, -1), 12),
         ('RIGHTPADDING', (0, 0), (-1, -1), 12),
         ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
         ('LINEBELOW', (0, 0), (-1, 0), 0.5, cor_texto_secundario),
     ]))
     elements.append(total_table)
-    elements.append(Spacer(1, 10))
+    elements.append(Spacer(1, 5))
 
     # Tabela de passageiros
     passageiros_data = [
@@ -417,19 +414,19 @@ def gerar_pdf_emissao(emissao):
 
     detalhes = getattr(emissao, "detalhes", None)
     if detalhes and str(detalhes).strip():
-        elements.append(Spacer(1, 20))
+        elements.append(Spacer(1, 5))
         elements.append(Paragraph("Observações da Emissão", titulo_secao))
         detalhes_texto = str(detalhes).strip().replace('\n', '<br/>')
-    # Usando Table para padronizar borda, fundo e espaçamento
+        # Usando Table para padronizar borda, fundo e espaçamento
         detalhes_table = Table(
-                [[Paragraph(detalhes_texto, estilo_valor)]],
+            [[Paragraph(detalhes_texto, estilo_valor)]],
             colWidths=[160 * mm]
         )
         detalhes_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, -1), cor_fundo_claro),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('TOPPADDING', (0, 0), (-1, -1), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
             ('LEFTPADDING', (0, 0), (-1, -1), 12),
             ('RIGHTPADDING', (0, 0), (-1, -1), 12),
             ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
@@ -437,11 +434,8 @@ def gerar_pdf_emissao(emissao):
         ]))
         elements.append(detalhes_table)
 
-
-
-
     # Rodapé premium, com data/hora no padrão BR
-    elements.append(Spacer(1, 30))
+    elements.append(Spacer(1, 20))
     rodape_contact = Paragraph(
         f"Contato: {empresa_contato['telefone']} | {empresa_contato['email']} | {empresa_contato['website']}",
         ParagraphStyle(
@@ -470,8 +464,8 @@ def gerar_pdf_emissao(emissao):
     rodape_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), cor_fundo_claro),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('TOPPADDING', (0, 0), (-1, -1), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ('LEFTPADDING', (0, 0), (-1, -1), 15),
         ('RIGHTPADDING', (0, 0), (-1, -1), 15),
         ('ROUNDEDCORNERS', (0, 0), (-1, -1), 3),
