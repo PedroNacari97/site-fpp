@@ -204,11 +204,33 @@ def _get_public_image_url(storage_path: str) -> str:
 
 def _resolve_instagram_image(noticia, retries: int = 3) -> tuple[str | None, str | None]:
     """
-    Tenta gerar imagem original para Instagram.
-    Fallback: imagem AI existente da notícia (se ilustrativa).
+    Resolve a imagem para publicação no Instagram.
+
+    Ordem de prioridade:
+    1. Imagem já salva no storage do site (PNG/JPG gerada por IA) — proporção 1536x1024
+       que é 1.5:1, dentro do limite aceito pelo Instagram (máx 1.91:1). Sem corte.
+    2. imagem_url da notícia (se existir e não for SVG).
+    3. Geração de nova imagem via OpenAI (fallback quando não há imagem no storage).
+
     Retorna (storage_path_or_None, public_url).
     """
+    # 1. Imagem salva no storage — prioridade máxima (original, sem corte no Instagram)
+    if noticia.imagem and noticia.imagem.name:
+        image_name = noticia.imagem.name
+        if not image_name.lower().endswith(".svg"):
+            public_url = _get_public_image_url(image_name)
+            logger.info("Instagram: usando imagem do site: %s", public_url)
+            return None, public_url
+        logger.debug("Instagram: imagem do site é SVG, não suportado pela Meta. Buscando alternativa.")
+
+    # 2. imagem_url externa (apenas se não for de terceiro — respeita imagem_ilustrativa)
+    if noticia.imagem_url and noticia.imagem_ilustrativa:
+        logger.info("Instagram: usando imagem_url ilustrativa: %s", noticia.imagem_url)
+        return None, noticia.imagem_url
+
+    # 3. Fallback: gera nova imagem via OpenAI
     if os.environ.get("OPENAI_API_KEY"):
+        logger.info("Instagram: nenhuma imagem no storage — gerando via IA.")
         image_prompt = _build_instagram_image_prompt(noticia)
         try:
             return _with_retry(
@@ -217,21 +239,14 @@ def _resolve_instagram_image(noticia, retries: int = 3) -> tuple[str | None, str
             )
         except Exception as exc:
             logger.warning(
-                "Instagram: geração de imagem falhou após %d tentativas: %s. "
-                "Tentando fallback.",
+                "Instagram: geração de imagem via IA falhou após %d tentativas: %s.",
                 retries,
                 exc,
             )
 
-    # Fallback: imagem AI já existente na notícia (apenas se ilustrativa — não copiada de terceiro)
-    if noticia.imagem_ilustrativa and noticia.imagem:
-        fallback_url = _get_public_image_url(noticia.imagem.name)
-        logger.info("Instagram: usando imagem ilustrativa existente como fallback: %s", fallback_url)
-        return None, fallback_url
-
     raise ValueError(
-        "Não foi possível gerar ou obter imagem para Instagram. "
-        "Configure OPENAI_API_KEY ou PORTAL_GENERATE_AI_IMAGES=1."
+        "Sem imagem disponível para Instagram. "
+        "A notícia precisa ter uma imagem salva no storage ou OPENAI_API_KEY configurada."
     )
 
 
