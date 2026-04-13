@@ -673,15 +673,18 @@ def _run_telegram_news_update_background(payload, chat_id):
     def _on_news_published(noticia):
         nonlocal published_count
         published_count += 1
-        if chat_id:
-            try:
-                url = noticia.get_absolute_url()
-                telegram_news_send_message(
-                    chat_id,
-                    f"{published_count}. {noticia.titulo}\n{noticia.categoria}\nhttps://www.ncfly.com.br{url}",
-                )
-            except Exception:
-                pass
+        if not chat_id:
+            return
+        try:
+            url = noticia.get_absolute_url()
+            evento_ig = noticia.instagram_eventos.filter(status="publicado").order_by("-criado_em").first()
+            ig_status = "Instagram: publicado" if evento_ig else "Instagram: nao publicado"
+            telegram_news_send_message(
+                chat_id,
+                f"{published_count}. {noticia.titulo}\n{noticia.categoria}\nhttps://www.ncfly.com.br{url}\n{ig_status}",
+            )
+        except Exception:
+            pass
 
     try:
         event, outcome, meta = process_telegram_news_update(payload, on_published=_on_news_published)

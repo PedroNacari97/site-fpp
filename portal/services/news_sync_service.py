@@ -170,16 +170,17 @@ def sync_news_progressive(limit: int = 10, on_published=None):
                     processed += 1
                     if status == "published":
                         published += 1
-                        if on_published:
-                            try:
-                                on_published(noticia)
-                            except Exception:
-                                pass
+                        # Instagram primeiro — assim o on_published já sabe o resultado
                         try:
                             from gestao.services.instagram_publisher import publish_noticia_to_instagram
                             publish_noticia_to_instagram(noticia)
                         except Exception:
                             pass
+                        if on_published:
+                            try:
+                                on_published(noticia)
+                            except Exception:
+                                pass
 
                 except Exception as exc:
                     errors.append(f"[{source.nome}] erro: {exc}")
