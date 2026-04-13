@@ -61,6 +61,7 @@ def get_instagram_config() -> dict:
         "ig_user_id": getattr(settings, "INSTAGRAM_IG_USER_ID", "").strip(),
         "access_token": getattr(settings, "INSTAGRAM_ACCESS_TOKEN", "").strip(),
         "auto_publish": getattr(settings, "INSTAGRAM_AUTO_PUBLISH", True),
+        "publish_story": getattr(settings, "INSTAGRAM_PUBLISH_STORY", True),
         "retries": int(getattr(settings, "INSTAGRAM_PUBLISH_RETRIES", 3)),
     }
 
@@ -323,10 +324,7 @@ def _graph_post(path: str, access_token: str, data: dict, timeout: int = 60) -> 
 
 
 def _create_media_container(ig_user_id: str, access_token: str, image_url: str, caption: str) -> str:
-    """
-    Cria container de mídia no Instagram.
-    Retorna o container ID.
-    """
+    """Cria container de feed no Instagram. Retorna o container ID."""
     result = _graph_post(
         f"{ig_user_id}/media",
         access_token,
@@ -378,6 +376,81 @@ def _publish_media_container(ig_user_id: str, access_token: str, container_id: s
     if not post_id:
         raise ValueError(f"Meta API não retornou post ID. Resposta: {result}")
     return post_id
+
+
+# ─── STORY ───────────────────────────────────────────────────────────────────
+
+
+def _should_publish_story(noticia) -> bool:
+    """
+    Decide se a notícia deve ser republicada no Story com base nos critérios
+    definidos em instagram_prompts.STORY_CRITERIA.
+    """
+    from portal.services.instagram_prompts import STORY_CRITERIA
+
+    categoria_raw = (noticia.categoria or "").strip()
+    categoria_lower = categoria_raw.lower()
+
+    # Regra 3: categorias que NUNCA vão para Story
+    never_keywords = STORY_CRITERIA.get("categoria_never_story", [])
+    if any(kw in categoria_lower for kw in never_keywords):
+        logger.debug("Instagram Story: categoria '%s' bloqueada para Story.", categoria_raw)
+        return False
+
+    # Regra 1: categorias com urgência (contém "promo") → sempre Story
+    story_keywords = STORY_CRITERIA.get("categoria_story_keywords", [])
+    if any(kw in categoria_lower for kw in story_keywords):
+        logger.info("Instagram Story: categoria '%s' → publicar Story.", categoria_raw)
+        return True
+
+    # Regra 2: confiança alta → Story
+    confianca_min = STORY_CRITERIA.get("confianca_min_story", 0.85)
+    confianca = float((noticia.metadata_json or {}).get("confianca", 0))
+    if confianca >= confianca_min:
+        logger.info(
+            "Instagram Story: confiança %.2f >= %.2f → publicar Story.", confianca, confianca_min
+        )
+        return True
+
+    logger.debug(
+        "Instagram Story: notícia %s não atende critérios de Story (cat=%s, confiança=%.2f).",
+        getattr(noticia, "pk", "?"),
+        categoria_raw,
+        confianca,
+    )
+    return False
+
+
+def _create_story_container(ig_user_id: str, access_token: str, feed_post_id: str) -> str:
+    """
+    Cria container de Story repostando o post do Feed (source_media_id).
+    Retorna o container ID do Story.
+    """
+    result = _graph_post(
+        f"{ig_user_id}/media",
+        access_token,
+        {"media_type": "STORIES", "source_media_id": feed_post_id},
+    )
+    container_id = result.get("id")
+    if not container_id:
+        raise ValueError(f"Meta API não retornou container ID para Story. Resposta: {result}")
+    return container_id
+
+
+def _publish_story(ig_user_id: str, access_token: str, feed_post_id: str, retries: int = 3) -> str:
+    """
+    Republica o post do Feed como Story.
+    Retorna o Story post ID.
+    """
+    story_container_id = _with_retry(
+        lambda: _create_story_container(ig_user_id, access_token, feed_post_id),
+        retries=retries,
+    )
+    _wait_for_container_ready(ig_user_id, access_token, story_container_id)
+    return _with_retry(
+        lambda: _publish_media_container(ig_user_id, access_token, story_container_id),
+        retries=retries,
+    )
 
 
 # ─── RETRY ───────────────────────────────────────────────────────────────────
@@ -501,6 +574,28 @@ def publish_noticia_to_instagram(noticia) -> None:
             noticia.pk,
             post_id,
         )
+
+        # Etapa 7 (opcional): Story — repostagem do Feed
+        if config.get("publish_story", True) and _should_publish_story(noticia):
+            try:
+                story_post_id = _publish_story(ig_user_id, access_token, post_id, retries=retries)
+                logger.info(
+                    "Instagram Story: notícia %s publicada no Story. Story ID: %s",
+                    noticia.pk,
+                    story_post_id,
+                )
+                evento.payload_json = {
+                    **(evento.payload_json or {}),
+                    "story_post_id": story_post_id,
+                }
+                evento.save(update_fields=["payload_json"])
+            except Exception as story_exc:
+                # Story falhou — não cancela o sucesso do Feed
+                logger.warning(
+                    "Instagram Story: falha ao publicar Story para notícia %s: %s",
+                    noticia.pk,
+                    story_exc,
+                )
 
     except Exception as exc:
         logger.error(

@@ -1,15 +1,59 @@
 """
 Agente: Engenheiro de Prompts — NCfly
-Prompts para publicação automática no Instagram.
+Prompts e critérios de publicação automática no Instagram.
 
 Formação jornalística: pirâmide invertida, gancho forte, apuração honesta.
 Especialização em tráfego pago: CTA claro, headline que para o scroll,
 urgência real, SEO semântico, adaptação por canal.
 
 Arquitetura:
-  IMAGE_SYSTEM / IMAGE_USER_TEMPLATE  → geração de imagem original 1:1
-  CAPTION_SYSTEM / CAPTION_USER_TEMPLATE → legenda adaptada ao Instagram
+  IMAGE_SYSTEM / IMAGE_USER_TEMPLATE      → geração de imagem original 1:1 para Feed
+  CAPTION_SYSTEM / CAPTION_USER_TEMPLATE  → legenda adaptada ao Instagram Feed
+  STORY_CRITERIA                          → regras de decisão para publicar no Story
+
+─── ESTRATÉGIA DE STORY ────────────────────────────────────────────────────────
+
+O Story é uma repostagem do post do Feed — mesma imagem, sem nova geração de conteúdo.
+Ao tocar no Story, o seguidor vai direto para o post do Feed.
+
+Por que essa abordagem:
+  - Zero custo extra de IA (sem nova imagem, sem nova legenda)
+  - Aumenta frequência de exposição sem aumentar esforço de produção
+  - Story não suporta hashtag via API — o alcance vem do Feed, o Story reforça lembrança
+
+Critérios para publicar no Story (definidos pelo Agente de Prompts):
+
+  REGRA 1 — Promoções com urgência:
+    categoria normalizada contém "promo" → Story sempre
+    Justificativa: promoções têm prazo, exigem ação imediata,
+    o Story reforça a urgência para quem já segue o perfil.
+
+  REGRA 2 — Conteúdo de alta confiança:
+    confianca >= 0.85 → Story
+    Justificativa: nota alta indica fatos verificados, dado concreto
+    e texto sem ambiguidade — exatamente o perfil que para o scroll
+    num Story. Conteúdo especulativo ou genérico não merece Story.
+
+  REGRA 3 — Viagens editoriais:
+    categoria == "Viagens" → NÃO vai para Story
+    Justificativa: conteúdo editorial sem urgência ou dado concreto
+    tem performance baixa em Story. Fica só no Feed para SEO e busca.
+
+  REGRA 4 — Alertas:
+    Não implementado ainda — layout em definição.
+────────────────────────────────────────────────────────────────────────────────
 """
+
+# ─── CRITÉRIOS DE STORY ──────────────────────────────────────────────────────
+
+STORY_CRITERIA = {
+    # categorias que sempre vão para o Story (contém "promo" normalizado)
+    "categoria_story_keywords": ["promo"],
+    # categorias que NUNCA vão para o Story
+    "categoria_never_story": ["viagens"],
+    # confiança mínima para Story (quando não é promoção)
+    "confianca_min_story": 0.85,
+}
 
 # ─── CONFIGURAÇÃO ────────────────────────────────────────────────────────────
 
