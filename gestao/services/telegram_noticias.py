@@ -178,7 +178,7 @@ def _build_sync_batch_message(limit: int, processed: int, published: int, errors
     return "\n".join(lines)
 
 
-def process_telegram_news_update(update):
+def process_telegram_news_update(update, on_published=None):
     from portal.services.news_sync_service import (
         sync_news_from_text,
         sync_news_from_url,
@@ -238,7 +238,7 @@ def process_telegram_news_update(update):
     try:
         news_limit = _parse_news_command(raw_text)
         if news_limit is not None:
-            processed, published, errors = sync_news_progressive(limit=news_limit)
+            processed, published, errors = sync_news_progressive(limit=news_limit, on_published=on_published)
             invalidate_news_cache()
             event.status = TelegramNoticiaEvento.STATUS_PROCESSADO
             event.processado_em = timezone.now()

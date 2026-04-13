@@ -668,8 +668,23 @@ def _build_telegram_alert_feedback(outcome, event, *, request=None):
 
 
 def _run_telegram_news_update_background(payload, chat_id):
+    published_count = 0
+
+    def _on_news_published(noticia):
+        nonlocal published_count
+        published_count += 1
+        if chat_id:
+            try:
+                url = noticia.get_absolute_url()
+                telegram_news_send_message(
+                    chat_id,
+                    f"{published_count}. {noticia.titulo}\n{noticia.categoria}\nhttps://www.ncfly.com.br{url}",
+                )
+            except Exception:
+                pass
+
     try:
-        event, outcome, meta = process_telegram_news_update(payload)
+        event, outcome, meta = process_telegram_news_update(payload, on_published=_on_news_published)
         message = meta.get("message")
         if not message and outcome == "ignored_unknown_format":
             message = "Formato nao suportado. Envie 'atualizar 10', um link ou um texto promocional."
@@ -759,32 +774,7 @@ def telegram_alertas_webhook(request):
     except Exception:
         return JsonResponse({"ok": False, "error": "invalid_json"}, status=400)
 
-    msg = payload.get("message") or payload.get("channel_post") or {}
-    raw_text = (msg.get("text") or "").strip()
     chat_id = _extract_chat_id(payload)
-
-    news_limit = _parse_news_command(raw_text)
-    if news_limit is not None:
-        if chat_id:
-            try:
-                telegram_send_message(
-                    chat_id,
-                    f"🔍 Recebi! Vou buscar {news_limit} notícia(s) agora.\n"
-                    f"Vou te avisando conforme cada uma for publicada no site. Aguarde..."
-                )
-            except Exception:
-                pass
-
-        # Roda em background para retornar 200 imediatamente ao Telegram
-        # (evita retries do Telegram por timeout)
-        thread = threading.Thread(
-            target=_run_news_sync_background,
-            args=(news_limit, chat_id),
-            daemon=True,
-        )
-        thread.start()
-
-        return JsonResponse({"ok": True, "outcome": "news_sync_started"})
 
     try:
         event, outcome = process_telegram_alert_update(payload)
