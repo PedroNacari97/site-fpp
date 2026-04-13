@@ -865,30 +865,53 @@ def _build_cover_focus_prompt(title: str, summary: str, category: str) -> str:
 
 def _build_cover_prompt(title: str, summary: str, category: str) -> str:
     return (
-        f"Capa editorial premium para uma notícia de {category}. "
-        f"Tema principal: {title}. "
+        f"Crie uma imagem para um post de Instagram da marca NCfly. "
+        f"Tema: {title}. "
         f"Contexto: {summary[:220]}. "
-        "A imagem deve manter a mesma ideia editorial central da matéria, com os mesmos produtos, marcas, programas, companhias, cartões, aeronaves ou destinos quando forem parte essencial da notícia. "
-        "Pode mostrar logos, marcas e produtos reais de forma contextual e jornalística, se isso fizer sentido para o tema. "
-        "A composição final deve ser uma nova variação visual, não uma cópia da capa vista no site de referência. "
-        "Altere enquadramento, perspectiva, crop, distribuição dos elementos, distância da câmera, profundidade, proporção entre objetos, luz, textura e pequenos detalhes visuais. "
-        "O resultado pode lembrar a mesma campanha ou assunto, mas não deve reproduzir exatamente a arte promocional original. "
-        f"{_build_cover_focus_prompt(title, summary, category)} "
-        "Estilo fotorrealístico ou ilustração moderna, composição clean com poucos elementos fortes e boa hierarquia visual. "
-        "Visual sofisticado, com cara de capa de portal premium. Sem texto, sem marcas d'água, sem interface, sem branding do site-fonte."
-    )
 
+        "Regras obrigatórias: "
+        "- NÃO usar o mesmo enquadramento de imagens comuns de notícias "
+        "- Criar uma composição visual totalmente nova "
+        "- Pode usar elementos relacionados (avião, aeroporto, viagem), mas em cena diferente "
+        "- Alterar ângulo, iluminação e perspectiva "
+        "- Usar uma abordagem mais criativa ou editorial "
+
+        "Objetivo: "
+        "A imagem deve parecer original, como se tivesse sido criada do zero para a marca. "
+        "Não deve lembrar diretamente nenhuma imagem específica de outro site. "
+
+        "Estilo: "
+        "Fotografia moderna ou ilustração realista, com composição limpa e profissional. "
+
+        "Proibido: "
+        "- copiar composição de imagens existentes "
+        "- reproduzir campanhas conhecidas "
+        "- manter ângulo ou estrutura comum de fotos de notícia "
+
+        "Sem texto, sem watermark, sem interface."
+    )
 
 def _build_cover_reference_prompt(title: str, summary: str, category: str) -> str:
     return (
-        f"Edite a imagem de referência para criar uma nova capa editorial premium de {category}. "
-        f"Tema principal: {title}. "
-        f"Contexto: {summary[:220]}. "
-        "Mantenha a mesma ideia central, os mesmos produtos, marcas, programas, companhias, cartões, aeronaves ou destinos que forem relevantes na matéria. "
-        "A nova capa deve continuar reconhecível em relação ao tema original, mas com alterações controladas no enquadramento, crop, perspectiva, organização dos elementos, luz, profundidade, textura e pequenos detalhes. "
-        "Não copie a arte exatamente como está. Gere uma variação editorial refinada e própria, como se fosse uma nova versão da mesma campanha ou assunto. "
-        f"{_build_cover_focus_prompt(title, summary, category)} "
-        "Sem texto adicional, sem marcas d'água, sem interface, sem branding do site-fonte."
+        f"Edite a imagem de referência para criar um post de Instagram original da marca NCfly. "
+        f"Tema: {title}. Contexto: {summary[:220]}. "
+
+        "Regras obrigatórias: "
+        "- NÃO manter o mesmo enquadramento da imagem original "
+        "- Aplicar crop diferente ou zoom criativo "
+        "- Alterar iluminação e contraste para criar nova identidade visual "
+        "- Aplicar overlay escuro ou gradiente para dar destaque "
+        "- Reorganizar completamente a composição visual "
+
+        "Objetivo: "
+        "A imagem final deve parecer um post de marca próprio, e NÃO uma variação da imagem original. "
+
+        "Proibido: "
+        "- manter mesma composição "
+        "- manter mesmo ângulo "
+        "- parecer cópia da imagem original "
+
+        "Sem texto, sem watermark."
     )
 
 
