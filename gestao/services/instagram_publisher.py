@@ -421,15 +421,15 @@ def _should_publish_story(noticia) -> bool:
     return False
 
 
-def _create_story_container(ig_user_id: str, access_token: str, feed_post_id: str) -> str:
+def _create_story_container(ig_user_id: str, access_token: str, image_url: str) -> str:
     """
-    Cria container de Story repostando o post do Feed (source_media_id).
+    Cria container de Story com image_url.
     Retorna o container ID do Story.
     """
     result = _graph_post(
         f"{ig_user_id}/media",
         access_token,
-        {"media_type": "STORIES", "source_media_id": feed_post_id},
+        {"media_type": "STORIES", "image_url": image_url},
     )
     container_id = result.get("id")
     if not container_id:
@@ -437,13 +437,13 @@ def _create_story_container(ig_user_id: str, access_token: str, feed_post_id: st
     return container_id
 
 
-def _publish_story(ig_user_id: str, access_token: str, feed_post_id: str, retries: int = 3) -> str:
+def _publish_story(ig_user_id: str, access_token: str, image_url: str, retries: int = 3) -> str:
     """
-    Republica o post do Feed como Story.
+    Publica Story com a mesma imagem do Feed.
     Retorna o Story post ID.
     """
     story_container_id = _with_retry(
-        lambda: _create_story_container(ig_user_id, access_token, feed_post_id),
+        lambda: _create_story_container(ig_user_id, access_token, image_url),
         retries=retries,
     )
     _wait_for_container_ready(ig_user_id, access_token, story_container_id)
@@ -575,10 +575,10 @@ def publish_noticia_to_instagram(noticia) -> None:
             post_id,
         )
 
-        # Etapa 7 (opcional): Story — repostagem do Feed
+        # Etapa 7 (opcional): Story — mesma imagem do Feed
         if config.get("publish_story", True) and _should_publish_story(noticia):
             try:
-                story_post_id = _publish_story(ig_user_id, access_token, post_id, retries=retries)
+                story_post_id = _publish_story(ig_user_id, access_token, image_url, retries=retries)
                 logger.info(
                     "Instagram Story: notícia %s publicada no Story. Story ID: %s",
                     noticia.pk,
