@@ -405,7 +405,7 @@ def _should_publish_story(noticia) -> bool:
 
     # Regra 2: confiança alta → Story
     confianca_min = STORY_CRITERIA.get("confianca_min_story", 0.85)
-    confianca = float((noticia.metadata_json or {}).get("confianca", 0))
+    confianca = float(getattr(noticia, "confianca", 0) or 0)
     if confianca >= confianca_min:
         logger.info(
             "Instagram Story: confiança %.2f >= %.2f → publicar Story.", confianca, confianca_min
