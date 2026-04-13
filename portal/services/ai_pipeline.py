@@ -1676,13 +1676,8 @@ def _save_generated_file(name: str, content: bytes) -> str:
 
 def _generate_ai_cover(prompt: str, reference_image_url: str = "") -> tuple[str | None, bool]:
     try:
-        if reference_image_url:
-            try:
-                response_json = _openai_image_edit_request(prompt, reference_image_url)
-            except Exception:
-                response_json = _openai_image_generation_request(prompt)
-        else:
-            response_json = _openai_image_generation_request(prompt)
+        # 🔥 SEMPRE gerar imagem nova
+        response_json = _openai_image_generation_request(prompt)
 
         image_bytes = _extract_generated_image_bytes(response_json)
         if image_bytes:
