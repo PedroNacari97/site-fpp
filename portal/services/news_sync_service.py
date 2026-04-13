@@ -175,6 +175,11 @@ def sync_news_progressive(limit: int = 10, on_published=None):
                                 on_published(noticia)
                             except Exception:
                                 pass
+                        try:
+                            from gestao.services.instagram_publisher import publish_noticia_to_instagram
+                            publish_noticia_to_instagram(noticia)
+                        except Exception:
+                            pass
 
                 except Exception as exc:
                     errors.append(f"[{source.nome}] erro: {exc}")
@@ -639,6 +644,14 @@ def _upsert_news_from_article(
 
     if status == "published":
         outcome = "updated" if existing_news or not created else "published"
+        # Publicar no Instagram apenas para notícias novas (outcome == "published"),
+        # evitando re-publicar atualizações editoriais.
+        if outcome == "published":
+            try:
+                from gestao.services.instagram_publisher import publish_noticia_to_instagram
+                publish_noticia_to_instagram(noticia)
+            except Exception:
+                pass
     else:
         outcome = "draft"
 

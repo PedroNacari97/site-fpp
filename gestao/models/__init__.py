@@ -24,6 +24,7 @@ from .notificacao_sistema import NotificacaoSistema
 from .acompanhamento_passagem import AcompanhamentoPassagem
 from .interesse_viagem_cliente import InteresseViagemCliente, InteresseViagemMatch
 from .documento_plataforma import DocumentoPlataforma, AceiteDocumentoPlataforma
+from .instagram_noticia_evento import InstagramNoticiaEvento
 
 __all__ = [
     'Cliente',
@@ -54,4 +55,5 @@ __all__ = [
     'InteresseViagemMatch',
     'DocumentoPlataforma',
     'AceiteDocumentoPlataforma',
+    'InstagramNoticiaEvento',
 ]
