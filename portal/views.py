@@ -1184,29 +1184,35 @@ def alertas_publicos(request):
     filters_active = any(selected_filters.values())
 
     # Build origem/destino dropdown options from ALL visible cards (unfiltered)
+    # Formato padronizado: "Cidade (IATA)" — evita repetição e fallback só-IATA
+    def _airport_dropdown_label(cidade: str, codigo: str) -> str:
+        cidade = (cidade or "").strip()
+        if cidade and cidade.upper() != codigo.upper():
+            return f"{cidade} ({codigo})"
+        return codigo
+
     origens_seen = {}
     for card in visible_alert_cards:
         cod = card.get("origem_codigo", "")
         if cod and cod not in origens_seen:
-            origens_seen[cod] = card.get("origem_label") or cod
-    origens = [{"value": k, "label": v} for k, v in sorted(origens_seen.items())]
+            origens_seen[cod] = _airport_dropdown_label(card.get("origem_cidade", ""), cod)
+    origens = [{"value": k, "label": v} for k, v in sorted(origens_seen.items(), key=lambda x: x[1])]
 
     destinos_por_origem = {}
     for card in visible_alert_cards:
         orig = card.get("origem_codigo", "")
         dest = card.get("destino_codigo", "")
-        lbl = card.get("destino_label") or dest
         if orig and dest:
             if orig not in destinos_por_origem:
                 destinos_por_origem[orig] = {}
-            destinos_por_origem[orig][dest] = lbl
+            destinos_por_origem[orig][dest] = _airport_dropdown_label(card.get("destino_cidade", ""), dest)
 
     destinos_all_seen = {}
     for card in visible_alert_cards:
         cod = card.get("destino_codigo", "")
         if cod and cod not in destinos_all_seen:
-            destinos_all_seen[cod] = card.get("destino_label") or cod
-    destinos_all = [{"value": k, "label": v} for k, v in sorted(destinos_all_seen.items())]
+            destinos_all_seen[cod] = _airport_dropdown_label(card.get("destino_cidade", ""), cod)
+    destinos_all = [{"value": k, "label": v} for k, v in sorted(destinos_all_seen.items(), key=lambda x: x[1])]
 
     destinos_por_origem_json = json.dumps(
         {k: [{"value": d, "label": l} for d, l in sorted(v.items())] for k, v in destinos_por_origem.items()},
