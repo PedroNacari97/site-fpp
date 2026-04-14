@@ -19,6 +19,7 @@ urlpatterns = [
     path("termos-de-uso/", views.termos_de_uso, name="portal_termos"),
     path("categorias/<slug:categoria_slug>/", views.categoria_lista, name="portal_categoria"),
     path("categorias/<slug:categoria_slug>/<slug:slug>/", views.noticia_detalhe, name="portal_noticia_detalhe"),
+    path("artigos/", views.artigos_lista, name="portal_artigos"),
     path("noticias/", views.noticias_todas, name="portal_noticias_todas"),
     path("noticias/<slug:slug>/", views.noticia_redirect, name="portal_noticia_redirect"),
 ]

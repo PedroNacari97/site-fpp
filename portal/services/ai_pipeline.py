@@ -1732,20 +1732,74 @@ def ensure_cover_for_news(draft: NewsDraft) -> tuple[str | None, bool]:
         return None, False
 
     if _env_flag("PORTAL_GENERATE_AI_IMAGES") and os.environ.get("OPENAI_API_KEY"):
-        # Sempre constrói o prompt base contextualizado por título/categoria.
-        # O imagem_prompt do LLM é usado apenas como detalhamento adicional,
-        # nunca como substituto — evita cenas genéricas quando o LLM é vago.
-        base_prompt = _build_cover_prompt(draft.titulo, draft.resumo, draft.categoria)
-        llm_detail = (draft.imagem_prompt or "").strip()
-        if llm_detail and llm_detail.lower() not in base_prompt.lower():
-            prompt = f"{base_prompt} Detalhes visuais adicionais: {llm_detail}"
+        # 🔥 NOVA LÓGICA DE PROMPT
+
+        llm_prompt = (draft.imagem_prompt or "").strip()
+        titulo = (draft.titulo or "").lower()
+
+        # 🔒 Regra obrigatória de contexto (anti-festa)
+        context_guardrail = (
+            "A imagem deve representar contexto de milhas, pontos, cartões ou viagens. "
+            "Evite completamente elementos de festa, comemoração, balões, confetes ou eventos festivos. "
+            "Promoções devem ser representadas como ofertas financeiras ou oportunidades de viagem."
+        )
+
+        # 🧠 Contexto de marca (ESSENCIAL)
+        brand_context = ""
+
+        # ✈️ Companhias aéreas (mais livre)
+        if any(p in titulo for p in ["latam", "gol", "azul", "avianca"]):
+            brand_context = (
+                "Contexto de viagem aérea, com aeronaves, aeroportos, céu, cenas realistas de aviação, "
+                "ambiente profissional e moderno."
+            )
+
+        # 💳 Programas de pontos / milhas (mais controlado)
+        elif any(p in titulo for p in ["livelo", "esfera", "smiles", "pontos", "milhas"]):
+            brand_context = (
+                "Contexto de programa de pontos ou milhas, com interface digital, aplicativos, "
+                "cartões de crédito, elementos financeiros e tecnologia. "
+                "Visual moderno e limpo, sem elementos de festa ou comemoração."
+            )
+
+        # 🎨 Estilo padrão
+        base_style = (
+            "Imagem estilo editorial, moderna, alta qualidade, iluminação profissional, "
+            "sem textos, sem marcas, composição limpa, formato horizontal."
+        )
+
+        # 🚀 LLM como principal
+        if llm_prompt:
+            prompt = f"{llm_prompt}. {context_guardrail} {brand_context} {base_style}"
         else:
-            prompt = base_prompt
-        reference_prompt = _build_cover_reference_prompt(draft.titulo, draft.resumo, draft.categoria)
-        reference_image_url = draft.imagem_url if has_source_image and force_original_cover and use_source_reference else ""
-        storage_path, generated = _generate_ai_cover(reference_prompt if reference_image_url else prompt, reference_image_url=reference_image_url)
+            fallback = _build_cover_prompt(
+                draft.titulo,
+                draft.resumo,
+                draft.categoria
+            )
+            prompt = f"{fallback}. {context_guardrail} {brand_context} {base_style}"
+
+        # 📌 Referência de imagem
+        reference_image_url = (
+            draft.imagem_url
+            if has_source_image and force_original_cover and use_source_reference
+            else ""
+        )
+
+        final_prompt = (
+            prompt
+            if not reference_image_url
+            else f"{prompt}. Use a imagem de referência apenas como base visual, sem copiar."
+        )
+
+        storage_path, generated = _generate_ai_cover(
+            final_prompt,
+            reference_image_url=reference_image_url
+        )
+
         if not storage_path and reference_image_url:
             storage_path, generated = _generate_ai_cover(prompt)
+
         if storage_path:
             return storage_path, generated
 
@@ -1754,7 +1808,6 @@ def ensure_cover_for_news(draft: NewsDraft) -> tuple[str | None, bool]:
 
     file_name = f"portal/noticias/generated/{timezone.now():%Y%m%d%H%M%S}_{draft.slug[:50]}.svg"
     return _save_generated_file(file_name, _render_svg_cover_for_draft(draft)), True
-
 
 def build_hash_from_article(url_original: str, title: str, text: str) -> str:
     digest = hashlib.sha256()

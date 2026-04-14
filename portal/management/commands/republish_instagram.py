@@ -125,7 +125,7 @@ class Command(BaseCommand):
                         slug=noticia.slug,
                         confianca=noticia.confianca,
                         imagem_url="",  # força geração original — não usa imagem de terceiro
-                        imagem_prompt=metadata.get("imagem_prompt", ""),
+                        imagem_prompt=(metadata.get("raw_response", {}) or {}).get("imagem_prompt", ""),
                         metadata=metadata,
                     )
 

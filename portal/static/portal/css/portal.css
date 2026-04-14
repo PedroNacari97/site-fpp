@@ -1442,6 +1442,10 @@ img {
   background: linear-gradient(135deg, #9554ff 0%, #4285f4 100%);
 }
 
+.news-category-card--artigos {
+  background: linear-gradient(135deg, #1a3a5c 0%, #2563eb 100%);
+}
+
 .news-category-card--green {
   background: linear-gradient(135deg, #2d7cff 0%, #05b2d6 100%);
 }
@@ -2584,6 +2588,23 @@ img {
 
 .portal-category-hero--noticias {
   background: linear-gradient(90deg, var(--brand-navy) 0%, var(--brand-coral) 100%);
+}
+
+.portal-category-hero--artigos {
+  background: linear-gradient(90deg, #1a3a5c 0%, #2563eb 100%);
+}
+
+.news-pill--artigo {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+}
+
+.artigo-reading-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .portal-category-featured {

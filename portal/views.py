@@ -1648,6 +1648,23 @@ def noticias_todas(request):
     return render(request, "portal/noticias.html", context)
 
 
+def artigos_lista(request):
+    artigos = (
+        NoticiaPublicada.objects.filter(status="published", categoria="Artigos")
+        .order_by("-publicada_em")
+    )
+    featured = artigos[0] if artigos else None
+    sidebar = list(artigos[1:3])
+    grid = list(artigos[3:])
+    track_page_view(request.path, request=request, section="artigos_lista")
+    return render(request, "portal/artigos.html", {
+        "seo_title": "Artigos & Guias sobre Milhas e Viagens | NC Fly",
+        "artigos_featured": featured,
+        "artigos_sidebar": sidebar,
+        "artigos_grid": grid,
+    })
+
+
 def categoria_lista(request, categoria_slug):
     alert_email_lead_form, alert_email_lead_submitted, alert_email_lead_redirect = _handle_alert_email_lead_form(
         request,

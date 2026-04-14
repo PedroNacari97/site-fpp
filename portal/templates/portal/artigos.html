@@ -1,0 +1,154 @@
+{% extends "portal/base_public.html" %}
+{% load portal_extras %}
+{% block title %}{{ seo_title|default:"Artigos & Guias sobre Milhas e Viagens | NC Fly" }}{% endblock %}
+{% block content %}
+<div class="portal-category-page">
+    <section class="portal-category-hero portal-category-hero--artigos">
+        <h1>
+            <span class="portal-category-hero__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                </svg>
+            </span>
+            Artigos &amp; Guias
+        </h1>
+    </section>
+
+    {% if artigos_featured or artigos_sidebar %}
+    <section class="portal-category-featured">
+        {% if artigos_featured %}
+        <article class="portal-category-featured__main">
+            {% if artigos_featured.imagem_exibicao %}
+            <a href="{{ artigos_featured.get_absolute_url }}" class="portal-category-featured__image">
+                <img src="{{ artigos_featured.imagem_exibicao }}" alt="{{ artigos_featured.titulo }}" width="1600" height="860" fetchpriority="high" decoding="async">
+            </a>
+            {% endif %}
+            <div class="portal-category-featured__body">
+                <span class="news-pill news-pill--artigo">Artigo</span>
+                {% if artigos_featured.topico %}
+                <span class="news-pill news-pill--topic">{{ artigos_featured.topico|portal_text }}</span>
+                {% endif %}
+                <h2>
+                    <a href="{{ artigos_featured.get_absolute_url }}">
+                        {{ artigos_featured.titulo|portal_text }}
+                    </a>
+                </h2>
+                <p>{{ artigos_featured.resumo|portal_text }}</p>
+                <div class="news-meta">
+                    <span>Reda&ccedil;&atilde;o NC Fly</span>
+                    <span class="artigo-reading-time">
+                        <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5l2 1.5" stroke-linecap="round"/></svg>
+                        {{ artigos_featured.publicada_em|br_date_long }}
+                    </span>
+                </div>
+            </div>
+        </article>
+        {% endif %}
+
+        {% if artigos_sidebar %}
+        <aside class="portal-category-featured__sidebar">
+            {% for artigo in artigos_sidebar %}
+            <article class="news-card news-card--compact">
+                {% if artigo.imagem_exibicao %}
+                <a href="{{ artigo.get_absolute_url }}" class="news-card__image">
+                    <img src="{{ artigo.imagem_exibicao }}" alt="{{ artigo.titulo }}" width="800" height="500" loading="lazy" decoding="async">
+                </a>
+                {% endif %}
+                <div class="news-card__body">
+                    <span class="news-pill news-pill--artigo">Artigo</span>
+                    {% if artigo.topico %}
+                    <span class="news-pill news-pill--muted">{{ artigo.topico|portal_text }}</span>
+                    {% endif %}
+                    <h3>
+                        <a href="{{ artigo.get_absolute_url }}">{{ artigo.titulo|portal_text }}</a>
+                    </h3>
+                    <p>{{ artigo.resumo|portal_text|truncatechars:88 }}</p>
+                    <div class="news-meta">
+                        <span>Reda&ccedil;&atilde;o NC Fly</span>
+                        <span class="artigo-reading-time">
+                            <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5l2 1.5" stroke-linecap="round"/></svg>
+                            {{ artigo.publicada_em|br_date_long }}
+                        </span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </aside>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    {% if artigos_grid %}
+    <section class="portal-category-grid">
+        {% for artigo in artigos_grid %}
+        <article class="news-card">
+            {% if artigo.imagem_exibicao %}
+            <a href="{{ artigo.get_absolute_url }}" class="news-card__image">
+                <img src="{{ artigo.imagem_exibicao }}" alt="{{ artigo.titulo }}" width="1600" height="1000" loading="lazy" decoding="async">
+            </a>
+            {% endif %}
+            <div class="news-card__body">
+                <span class="news-pill news-pill--artigo">Artigo</span>
+                {% if artigo.topico %}
+                <span class="news-pill news-pill--muted">{{ artigo.topico|portal_text }}</span>
+                {% endif %}
+                <h3>
+                    <a href="{{ artigo.get_absolute_url }}">{{ artigo.titulo|portal_text }}</a>
+                </h3>
+                <p>{{ artigo.resumo|portal_text|truncatechars:100 }}</p>
+                <div class="news-meta">
+                    <span>Reda&ccedil;&atilde;o NC Fly</span>
+                    <span class="artigo-reading-time">
+                        <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5l2 1.5" stroke-linecap="round"/></svg>
+                        {{ artigo.publicada_em|br_date_long }}
+                    </span>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if not artigos_featured and not artigos_sidebar and not artigos_grid %}
+    <section class="news-empty">
+        <div class="news-empty__card">
+            <h2>Mais guias chegando em breve</h2>
+            <p>Nossa equipe est&aacute; preparando an&aacute;lises aprofundadas, tutoriais e guias pr&aacute;ticos sobre milhas, cart&otilde;es e viagens.</p>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="news-platform-spotlight portal-deferred-section portal-deferred-section--md">
+        <div class="news-platform-spotlight__copy">
+            <span class="news-kicker">Plataforma NC Fly</span>
+            <h2>Conhe&ccedil;a a Plataforma NC Fly</h2>
+            <p>Entenda como a Plataforma NC Fly ajuda empresas a organizar cota&ccedil;&otilde;es, emiss&otilde;es, alertas, clientes e contas fidelidade em um &uacute;nico fluxo.</p>
+            <ul class="news-platform-spotlight__list">
+                <li>Cota&ccedil;&atilde;o para emiss&atilde;o sem retrabalho.</li>
+                <li>Alertas, clientes e contexto no mesmo lugar.</li>
+                <li>Mais padr&atilde;o operacional para o time inteiro.</li>
+            </ul>
+            <div class="news-platform-spotlight__actions">
+                <a href="{% url 'portal_plataforma_saas' %}" class="portal-button portal-button--primary">Conhecer a plataforma</a>
+            </div>
+        </div>
+        <div class="news-platform-spotlight__panel">
+            <div class="news-platform-spotlight__card">
+                <span>Plataforma NC Fly</span>
+                <strong>Mais velocidade comercial em um &uacute;nico lugar</strong>
+                <p>Clientes, cota&ccedil;&otilde;es, emiss&otilde;es, alertas e fidelidade organizados no mesmo ambiente.</p>
+            </div>
+            <div class="news-platform-spotlight__grid">
+                <article><strong>Cota&ccedil;&otilde;es</strong><p>PDF comercial, resumo claro e passagem de contexto para emiss&atilde;o.</p></article>
+                <article><strong>Alertas</strong><p>Oportunidades, interesses e momento comercial organizados em um &uacute;nico painel.</p></article>
+                <article><strong>Clientes</strong><p>Interesses, passageiros frequentes e contas fidelidade por empresa.</p></article>
+                <article><strong>Controle</strong><p>Processo mais claro para o time responder r&aacute;pido e manter padr&atilde;o operacional.</p></article>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block footer %}
+{% include "portal/partials/home_footer.html" %}
+{% endblock %}
