@@ -1,9 +1,11 @@
 import json
 import logging
+import os
 import re
 import threading
 from datetime import date, timedelta
 from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 from django.conf import settings
 from django.contrib import messages
@@ -673,6 +675,15 @@ def _run_telegram_news_update_background(payload, chat_id):
     def _on_news_published(noticia):
         nonlocal published_count
         published_count += 1
+
+        # Publicar no Instagram automaticamente
+        try:
+            from gestao.services.instagram_publisher import is_instagram_configured, publish_noticia_to_instagram
+            if is_instagram_configured():
+                publish_noticia_to_instagram(noticia)
+        except Exception:
+            pass
+
         if not chat_id:
             return
         try:
@@ -841,3 +852,130 @@ def telegram_noticias_webhook(request):
     thread.start()
 
     return JsonResponse({"ok": True, "outcome": "news_processing_started"})
+
+
+# ---------------------------------------------------------------------------
+# Webhook de artigos via Telegram — processa texto longo com IA e salva draft
+# ---------------------------------------------------------------------------
+
+_TELEGRAM_ARTIGOS_SECRET = os.environ.get("TELEGRAM_ARTIGOS_SECRET", "")
+_ARTIGO_MIN_CHARS = 200
+
+
+def _telegram_artigos_send_message(chat_id, text):
+    """Envia mensagem de texto para um chat via Telegram Bot API."""
+    bot_token = os.environ.get("TELEGRAM_ARTIGOS_BOT_TOKEN", "")
+    if not bot_token or not chat_id:
+        return
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    payload = json.dumps({"chat_id": chat_id, "text": text}).encode("utf-8")
+    req = Request(url, data=payload, headers={"Content-Type": "application/json"})
+    try:
+        urlopen(req, timeout=10)
+    except Exception:
+        logger.exception("Falha ao enviar mensagem pelo bot de artigos Telegram.")
+
+
+def _run_artigo_pipeline_background(raw_text, chat_id):
+    """Chama o pipeline de IA, salva o rascunho e notifica o remetente."""
+    from portal.services.ai_pipeline import build_news_draft
+    from portal.models import NoticiaPublicada
+
+    try:
+        raw_article = {
+            "titulo_extraido": raw_text[:220],
+            "texto_base": raw_text,
+            "url_original": "",
+            "imagem_url": "",
+        }
+        draft = build_news_draft("telegram_artigos", raw_article)
+
+        noticia = NoticiaPublicada(
+            titulo=draft.titulo,
+            resumo=draft.resumo,
+            conteudo=draft.conteudo,
+            categoria=draft.categoria,
+            topico=draft.topico,
+            tags_json=draft.tags,
+            imagem_url=draft.imagem_url,
+            imagem_ilustrativa=draft.imagem_ilustrativa,
+            url_fonte="",
+            status="published",
+            confianca=draft.confianca,
+            metadata_json={
+                **(draft.metadata or {}),
+                "origem": "telegram_artigos",
+                "seo_title": draft.seo_title,
+                "meta_description": draft.meta_description,
+                "cta_url": draft.cta_url,
+                "cta_label": draft.cta_label,
+                "imagem_prompt": draft.imagem_prompt,
+            },
+        )
+        noticia.save()
+
+        mensagem = (
+            f"Artigo publicado com sucesso!\n"
+            f"Titulo: {noticia.titulo}\n"
+            f"Categoria: {noticia.categoria}\n"
+            f"URL: /home/artigos/"
+        )
+        _telegram_artigos_send_message(chat_id, mensagem)
+        logger.info("telegram_artigos_webhook: artigo publicado %s (id=%s).", noticia.titulo, noticia.id)
+
+    except Exception as exc:
+        logger.exception("telegram_artigos_webhook: erro no pipeline de IA.")
+        _telegram_artigos_send_message(chat_id, f"Erro ao processar o artigo: {exc}")
+
+
+@csrf_exempt
+def telegram_artigos_webhook(request):
+    """Recebe artigos via Telegram, processa com IA e salva como rascunho."""
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    expected_secret = _TELEGRAM_ARTIGOS_SECRET
+    if expected_secret:
+        received_secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+        if received_secret != expected_secret:
+            logger.warning("telegram_artigos_webhook: secret invalido recebido.")
+            return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8") or "{}")
+    except Exception:
+        return JsonResponse({"ok": False, "error": "invalid_json"}, status=400)
+
+    chat_id = _extract_chat_id(payload)
+    msg = payload.get("message") or payload.get("channel_post") or {}
+    raw_text = (msg.get("text") or msg.get("caption") or "").strip()
+
+    if len(raw_text) < _ARTIGO_MIN_CHARS:
+        logger.info(
+            "telegram_artigos_webhook: mensagem muito curta (%d chars), ignorada.",
+            len(raw_text),
+        )
+        if chat_id:
+            _telegram_artigos_send_message(
+                chat_id,
+                f"Mensagem muito curta. Envie um artigo com pelo menos {_ARTIGO_MIN_CHARS} caracteres.",
+            )
+        return JsonResponse({"ok": False, "error": "text_too_short"}, status=200)
+
+    if chat_id:
+        try:
+            _telegram_artigos_send_message(
+                chat_id,
+                "Recebi o artigo. Estou processando com IA e vou salvar o rascunho em instantes.",
+            )
+        except Exception:
+            logger.exception("telegram_artigos_webhook: falha ao enviar confirmacao imediata.")
+
+    thread = threading.Thread(
+        target=_run_artigo_pipeline_background,
+        args=(raw_text, chat_id),
+        daemon=True,
+    )
+    thread.start()
+
+    return JsonResponse({"ok": True, "outcome": "artigo_processing_started"})
