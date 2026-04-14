@@ -62,8 +62,19 @@ _SYSTEM_PROMPT_REWRITE = (
     "- tags: até 5 tags (marcas, programas, tópicos principais)\n"
     "- slug: lowercase com hífens, até 220 chars\n"
     "- topico: subcategoria editorial\n"
-    "- imagem_prompt: descrição 2-3 linhas de cena visual que capture o tema, "
-    "com estilo fotorrealístico ou ilustração moderna, composição clean, sem textos ou watermarks\n"
+    "- imagem_prompt: OBRIGATÓRIO: descrição visual detalhada (3-5 frases) para geração de imagem via DALL-E/gpt-image-1. "
+    "REGRA CRÍTICA: o prompt DEVE descrever uma cena diretamente relacionada ao TEMA REAL do artigo (use o título e as marcas/programas mencionados como base). "
+    "NÃO gere cenas genéricas de avião ou aeroporto para artigos sobre cashback, cartões ou recompensas. "
+    "Escolha a cena pela categoria E pelas marcas/programas identificados no título: "
+    "'Promoções' → smartphone moderno exibindo oferta de viagem na tela, confetes coloridos, urgência visual, bokeh vermelho-dourado; "
+    "'Milhas e Pontos' → se mencionar Livelo: cena de recompensas cashback com tons azul-coral, pessoa em ambiente urbano segurando celular com pontos na tela; "
+    "se mencionar transferência bonificada: painel digital de pontos subindo com efeito holográfico, confetes dourados; "
+    "caso geral de Milhas e Pontos: boarding pass estilizado com cartão de fidelidade, aeroporto ao amanhecer; "
+    "'Cartões de Crédito' → cartão premium em destaque sobre mármore escuro, lifestyle financeiro urbano sofisticado; "
+    "'Hotéis e Resorts' → piscina infinita com vista para o mar, hotel de luxo, luz dourada ao pôr do sol; "
+    "'Viagens' → destino geográfico específico se mencionado no título (praia, montanha, cidade), viajante em aeroporto moderno; "
+    "Estilo: fotografia editorial profissional, luz natural, composição limpa como capa de revista premium. "
+    "Proibido: texto visível, logos de marcas reais, rostos identificáveis, watermark\n"
     "- categoria: uma das 5 categorias acima\n\n"
 
     "## CHECKLIST ANTES DE RESPONDER\n"
@@ -864,31 +875,55 @@ def _build_cover_focus_prompt(title: str, summary: str, category: str) -> str:
 
 
 def _build_cover_prompt(title: str, summary: str, category: str) -> str:
+    """Constrói prompt de imagem contextualizado por título e categoria."""
+    title_lower = (title + " " + summary).lower()
+
+    # Visual temático por categoria e marcas mencionadas
+    if "livelo" in title_lower:
+        scene = (
+            "Cena vibrante de recompensas e cashback: uma pessoa em ambiente urbano brasileiro "
+            "segurando um smartphone com tela brilhante exibindo pontos acumulados e um presente "
+            "sendo entregue. Paleta de cores azul royal e coral vibrante da marca Livelo, "
+            "confetes dourados ao fundo, sensação de conquista e alegria urbana."
+        )
+    elif category == "Promoções" or "promoç" in title_lower or "oferta" in title_lower or "desconto" in title_lower:
+        scene = (
+            "Cena de compra digital com urgência visual: smartphone moderno em destaque com tela "
+            "iluminada mostrando uma promoção de passagem aérea, confetes coloridos ao redor, "
+            "relógio digital indicando tempo limitado, fundo com luzes bokeh em vermelho e dourado, "
+            "composição dinâmica e energética que transmite oportunidade e urgência."
+        )
+    elif "transferên" in title_lower or "bonificad" in title_lower or "transfer" in title_lower:
+        scene = (
+            "Painel digital futurista com placar de pontos de milhas subindo rapidamente, "
+            "efeito de holografia sobre teclado iluminado, confetes dourados e azuis voando, "
+            "sensação de multiplicação e ganho, cores azul elétrico e dourado, ambiente tech moderno."
+        )
+    elif category == "Milhas e Pontos" or "milhas" in title_lower or "pontos" in title_lower or "fidelidade" in title_lower:
+        scene = (
+            "Aeroporto moderno ao amanhecer: pista de pouso iluminada com avião decolando ao fundo, "
+            "boarding pass estilizado e cartão de fidelidade em primeiro plano sobre superfície reflexiva, "
+            "iluminação quente e dourada, composição ampla e aspiracional que transmite liberdade de viajar."
+        )
+    elif category == "Cartões de Crédito" or "cartão" in title_lower or "cartao" in title_lower:
+        scene = (
+            "Cartão de crédito premium em destaque sobre mesa de mármore escuro, "
+            "ambiente sofisticado de lifestyle financeiro urbano, iluminação de estúdio com reflexo suave, "
+            "fundo desfocado com cidade noturna ao fundo, sensação de exclusividade e poder de compra."
+        )
+    else:
+        scene = (
+            "Avião comercial moderno em voo sobre paisagem urbana ao entardecer, "
+            "céu em tons de laranja e azul profundo, composição aérea ampla e aspiracional, "
+            "sensação de viagem e descoberta, fotorrealístico de alta qualidade."
+        )
+
     return (
-        f"Crie uma imagem para um post de Instagram da marca NCfly. "
-        f"Tema: {title}. "
-        f"Contexto: {summary[:220]}. "
-
-        "Regras obrigatórias: "
-        "- NÃO usar o mesmo enquadramento de imagens comuns de notícias "
-        "- Criar uma composição visual totalmente nova "
-        "- Pode usar elementos relacionados (avião, aeroporto, viagem), mas em cena diferente "
-        "- Alterar ângulo, iluminação e perspectiva "
-        "- Usar uma abordagem mais criativa ou editorial "
-
-        "Objetivo: "
-        "A imagem deve parecer original, como se tivesse sido criada do zero para a marca. "
-        "Não deve lembrar diretamente nenhuma imagem específica de outro site. "
-
-        "Estilo: "
-        "Fotografia moderna ou ilustração realista, com composição limpa e profissional. "
-
-        "Proibido: "
-        "- copiar composição de imagens existentes "
-        "- reproduzir campanhas conhecidas "
-        "- manter ângulo ou estrutura comum de fotos de notícia "
-
-        "Sem texto, sem watermark, sem interface."
+        f"Crie uma imagem editorial fotorrealística para o artigo: '{title}'. "
+        f"{scene} "
+        f"Contexto adicional: {summary[:180]}. "
+        "Regras absolutas: sem texto visível, sem logos de marcas reais, sem rostos identificáveis, "
+        "sem watermark, composição profissional e limpa como capa de revista de viagens premium."
     )
 
 def _build_cover_reference_prompt(title: str, summary: str, category: str) -> str:
@@ -1697,7 +1732,15 @@ def ensure_cover_for_news(draft: NewsDraft) -> tuple[str | None, bool]:
         return None, False
 
     if _env_flag("PORTAL_GENERATE_AI_IMAGES") and os.environ.get("OPENAI_API_KEY"):
-        prompt = draft.imagem_prompt or _build_cover_prompt(draft.titulo, draft.resumo, draft.categoria)
+        # Sempre constrói o prompt base contextualizado por título/categoria.
+        # O imagem_prompt do LLM é usado apenas como detalhamento adicional,
+        # nunca como substituto — evita cenas genéricas quando o LLM é vago.
+        base_prompt = _build_cover_prompt(draft.titulo, draft.resumo, draft.categoria)
+        llm_detail = (draft.imagem_prompt or "").strip()
+        if llm_detail and llm_detail.lower() not in base_prompt.lower():
+            prompt = f"{base_prompt} Detalhes visuais adicionais: {llm_detail}"
+        else:
+            prompt = base_prompt
         reference_prompt = _build_cover_reference_prompt(draft.titulo, draft.resumo, draft.categoria)
         reference_image_url = draft.imagem_url if has_source_image and force_original_cover and use_source_reference else ""
         storage_path, generated = _generate_ai_cover(reference_prompt if reference_image_url else prompt, reference_image_url=reference_image_url)
