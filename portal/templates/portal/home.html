@@ -43,6 +43,104 @@
         </section>
         {% endif %}
 
+        {% if not is_searching %}
+        <section class="portal-home-pillars">
+            <header class="news-section-bar news-section-bar--stacked">
+                <div>
+                    <h2>O que voc&ecirc; encontra aqui</h2>
+                </div>
+            </header>
+            <div class="scroll-hint-wrap">
+            <div class="portal-home-pillars__track">
+                <a href="{% url 'portal_alertas' %}" class="news-category-card portal-home-pillar-card"
+                    data-analytics-event="click_pillar" data-analytics-category="navigation"
+                    data-analytics-label="Alertas" data-analytics-section="home_pillars">
+                    <div class="portal-home-pillar-card__header">
+                        <div class="news-category-card__icon news-category-card--blue">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a5 5 0 0 0-5 5v2.46c0 .53-.21 1.04-.59 1.41L5 14.29V16h14v-1.71l-1.41-1.42a1.99 1.99 0 0 1-.59-1.41V9a5 5 0 0 0-5-5Zm0 16a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 20Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                        </div>
+                        <strong>Alertas de passagens</strong>
+                    </div>
+                    <p class="news-category-card__desc">Monitoramos rotas e programas de fidelidade. Quando aparece uma janela para emitir com milhas, voc&ecirc; sabe antes que ela feche.</p>
+                    <span class="news-category-card__cta">Ver alertas <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a href="{% url 'portal_categoria' 'milhas-e-pontos' %}" class="news-category-card portal-home-pillar-card"
+                    data-analytics-event="click_pillar" data-analytics-category="navigation"
+                    data-analytics-label="Milhas e Pontos" data-analytics-section="home_pillars">
+                    <div class="portal-home-pillar-card__header">
+                        <div class="news-category-card__icon news-category-card--purple">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                        </div>
+                        <strong>Milhas &amp; Pontos</strong>
+                    </div>
+                    <p class="news-category-card__desc">Tudo sobre programas de fidelidade, ac&uacute;mulo de milhas, transfer&ecirc;ncias e as melhores estrat&eacute;gias para viajar mais pagando menos.</p>
+                    <span class="news-category-card__cta">Explorar <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a href="{% url 'portal_categoria' 'cartoes-credito' %}" class="news-category-card portal-home-pillar-card"
+                    data-analytics-event="click_pillar" data-analytics-category="navigation"
+                    data-analytics-label="Cartões de Crédito" data-analytics-section="home_pillars">
+                    <div class="portal-home-pillar-card__header">
+                        <div class="news-category-card__icon news-category-card--orange">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6" width="16" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"></rect><path d="M4 10h16" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg>
+                        </div>
+                        <strong>Cart&otilde;es de Cr&eacute;dito</strong>
+                    </div>
+                    <p class="news-category-card__desc">An&aacute;lises completas, comparativos, dicas para aprova&ccedil;&atilde;o e tudo sobre os melhores cart&otilde;es de cr&eacute;dito do mercado.</p>
+                    <span class="news-category-card__cta">Explorar <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a href="{% url 'portal_categoria' 'hoteis-resorts' %}" class="news-category-card portal-home-pillar-card"
+                    data-analytics-event="click_pillar" data-analytics-category="navigation"
+                    data-analytics-label="Hotéis e Resorts" data-analytics-section="home_pillars">
+                    <div class="portal-home-pillar-card__header">
+                        <div class="news-category-card__icon news-category-card--blue">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                        </div>
+                        <strong>Hot&eacute;is &amp; Resorts</strong>
+                    </div>
+                    <p class="news-category-card__desc">Descubra os melhores hot&eacute;is e resorts que aceitam pontos, com dicas de hospedagem e reviews dos melhores destinos.</p>
+                    <span class="news-category-card__cta">Explorar <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a href="{% url 'portal_categoria' 'promocoes' %}" class="news-category-card portal-home-pillar-card"
+                    data-analytics-event="click_pillar" data-analytics-category="navigation"
+                    data-analytics-label="Promoções" data-analytics-section="home_pillars">
+                    <div class="portal-home-pillar-card__header">
+                        <div class="news-category-card__icon news-category-card--purple">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                        </div>
+                        <strong>Promo&ccedil;&otilde;es</strong>
+                    </div>
+                    <p class="news-category-card__desc">As melhores promo&ccedil;&otilde;es de milhas, passagens, cart&otilde;es e hospedagens para voc&ecirc; aproveitar agora.</p>
+                    <span class="news-category-card__cta">Explorar <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a href="{% url 'portal_categoria' 'viagens' %}" class="news-category-card portal-home-pillar-card"
+                    data-analytics-event="click_pillar" data-analytics-category="navigation"
+                    data-analytics-label="Viagens" data-analytics-section="home_pillars">
+                    <div class="portal-home-pillar-card__header">
+                        <div class="news-category-card__icon news-category-card--orange">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                        </div>
+                        <strong>Viagens</strong>
+                    </div>
+                    <p class="news-category-card__desc">Destinos, roteiros, dicas de viagem e tudo que voc&ecirc; precisa saber para planejar sua pr&oacute;xima aventura.</p>
+                    <span class="news-category-card__cta">Explorar <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a href="{% url 'portal_noticias_todas' %}" class="news-category-card portal-home-pillar-card"
+                    data-analytics-event="click_pillar" data-analytics-category="navigation"
+                    data-analytics-label="Notícias" data-analytics-section="home_pillars">
+                    <div class="portal-home-pillar-card__header">
+                        <div class="news-category-card__icon news-category-card--blue">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 10h16M4 14h10M4 18h8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                        </div>
+                        <strong>Not&iacute;cias</strong>
+                    </div>
+                    <p class="news-category-card__desc">An&aacute;lises, estrat&eacute;gias e o que est&aacute; mudando no mundo das milhas, cart&otilde;es e hospedagem. Direto ao ponto.</p>
+                    <span class="news-category-card__cta">Ver not&iacute;cias <span aria-hidden="true">&rarr;</span></span>
+                </a>
+            </div>
+            </div>
+        </section>
+        {% endif %}
+
         {% if alertas_home and not is_searching %}
         <section class="news-alerts-home">
             <header class="news-section-bar news-section-bar--alerts">
@@ -381,65 +479,6 @@
                         <p>Processo mais claro para o time responder r&aacute;pido e manter padr&atilde;o operacional.</p>
                     </article>
                 </div>
-            </div>
-        </section>
-
-        <section class="news-categories-strip portal-deferred-section portal-deferred-section--md" id="explore-categorias">
-            <header class="news-section-bar news-section-bar--stacked">
-                <div>
-                    <h2>Explore por categoria</h2>
-                    <p>Encontre as melhores ofertas por categoria</p>
-                </div>
-            </header>
-            <div class="scroll-hint-wrap">
-            <div class="news-categories-grid">
-                {% for item in explore_categories %}
-                <a
-                    href="{% url 'portal_categoria' item.slug %}"
-                    class="news-category-card"
-                    data-analytics-event="click_categoria"
-                    data-analytics-category="navigation"
-                    data-analytics-label="{{ item.label }}"
-                    data-analytics-section="home_categories"
-                >
-                    <div class="news-category-card__icon {{ item.css_class }}">
-                        {% if item.icon_variant == "miles" %}
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-                        </svg>
-                        {% elif item.icon_variant == "cards" %}
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <rect x="4" y="6" width="16" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"></rect>
-                            <path d="M4 10h16" fill="none" stroke="currentColor" stroke-width="1.8"></path>
-                        </svg>
-                        {% elif item.icon_variant == "hotels" %}
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-                        </svg>
-                        {% elif item.icon_variant == "promos" %}
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-                        </svg>
-                        {% elif item.icon_variant == "travel" %}
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
-                            <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-                        </svg>
-                        {% else %}
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="m5 15 4-4 3 3 7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-                            <path d="M19 7h-5v5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-                        </svg>
-                        {% endif %}
-                    </div>
-                    <strong>{{ item.label }}</strong>
-                    <span class="news-category-card__cta">
-                        Explorar
-                        <span aria-hidden="true">&rarr;</span>
-                    </span>
-                </a>
-                {% endfor %}
-            </div>
             </div>
         </section>
     </section>

@@ -755,11 +755,13 @@ def _alert_class_filter_options(alertas):
     return [{"value": value, "label": label} for value, label in sorted(seen.items(), key=lambda item: _normalize_text(item[1]))]
 
 
-def _filter_public_alerts(alertas, aeroporto="", programa="", companhia="", classe=""):
+def _filter_public_alerts(alertas, aeroporto="", programa="", companhia="", classe="", origem="", destino=""):
     selected_airport = _normalize_text(aeroporto)
     selected_program = _normalize_text(programa)
     selected_airline = _normalize_text(companhia)
     selected_class = _normalize_text(classe)
+    selected_origem = origem.strip().upper()
+    selected_destino = destino.strip().upper()
 
     filtered = []
     for alerta in alertas:
@@ -780,6 +782,10 @@ def _filter_public_alerts(alertas, aeroporto="", programa="", companhia="", clas
             value for value in (_normalize_text(item) for item in airport_search_values) if value
         )
         if selected_airport and selected_airport not in airport_search_text:
+            continue
+        if selected_origem and alerta.get("origem_codigo", "").upper() != selected_origem:
+            continue
+        if selected_destino and alerta.get("destino_codigo", "").upper() != selected_destino:
             continue
         if selected_program and _normalize_text(alerta.get("programa")) != selected_program:
             continue
@@ -1162,6 +1168,8 @@ def alertas_publicos(request):
         "programa": (request.GET.get("programa") or "").strip(),
         "companhia": (request.GET.get("companhia") or "").strip(),
         "classe": (request.GET.get("classe") or "").strip(),
+        "origem": (request.GET.get("origem") or "").strip().upper(),
+        "destino": (request.GET.get("destino") or "").strip().upper(),
     }
     visible_alert_cards = build_public_alert_cards(visible_alerts)
     alert_cards = _filter_public_alerts(
@@ -1170,8 +1178,41 @@ def alertas_publicos(request):
         programa=selected_filters["programa"],
         companhia=selected_filters["companhia"],
         classe=selected_filters["classe"],
+        origem=selected_filters["origem"],
+        destino=selected_filters["destino"],
     )
     filters_active = any(selected_filters.values())
+
+    # Build origem/destino dropdown options from ALL visible cards (unfiltered)
+    origens_seen = {}
+    for card in visible_alert_cards:
+        cod = card.get("origem_codigo", "")
+        if cod and cod not in origens_seen:
+            origens_seen[cod] = card.get("origem_label") or cod
+    origens = [{"value": k, "label": v} for k, v in sorted(origens_seen.items())]
+
+    destinos_por_origem = {}
+    for card in visible_alert_cards:
+        orig = card.get("origem_codigo", "")
+        dest = card.get("destino_codigo", "")
+        lbl = card.get("destino_label") or dest
+        if orig and dest:
+            if orig not in destinos_por_origem:
+                destinos_por_origem[orig] = {}
+            destinos_por_origem[orig][dest] = lbl
+
+    destinos_all_seen = {}
+    for card in visible_alert_cards:
+        cod = card.get("destino_codigo", "")
+        if cod and cod not in destinos_all_seen:
+            destinos_all_seen[cod] = card.get("destino_label") or cod
+    destinos_all = [{"value": k, "label": v} for k, v in sorted(destinos_all_seen.items())]
+
+    destinos_por_origem_json = json.dumps(
+        {k: [{"value": d, "label": l} for d, l in sorted(v.items())] for k, v in destinos_por_origem.items()},
+        ensure_ascii=False,
+    )
+
     context = {
         "page_title": "Alertas de passagens",
         "page_eyebrow": "Alertas NC Fly",
@@ -1189,6 +1230,9 @@ def alertas_publicos(request):
             "programas": _alert_filter_option_values([alerta.programa_fidelidade for alerta in visible_alerts]),
             "companhias": _alert_filter_option_values([alerta.companhia_aerea for alerta in visible_alerts]),
             "classes": _alert_class_filter_options(visible_alerts),
+            "origens": origens,
+            "destinos_all": destinos_all,
+            "destinos_por_origem_json": destinos_por_origem_json,
         },
         "alert_results_total": len(alert_cards),
         "alert_email_lead_form": alert_email_lead_form,

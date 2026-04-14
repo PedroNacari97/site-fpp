@@ -10,22 +10,40 @@
         <div class="portal-alerts-page__filters">
             <form
                 method="get"
-                class="portal-alerts-page__filter-form{% if selected_alert_filters.aeroporto or selected_alert_filters.programa or selected_alert_filters.companhia or selected_alert_filters.classe %} is-expanded{% endif %}"
+                class="portal-alerts-page__filter-form{% if selected_alert_filters.origem or selected_alert_filters.destino or selected_alert_filters.aeroporto or selected_alert_filters.programa or selected_alert_filters.companhia or selected_alert_filters.classe %} is-expanded{% endif %}"
                 data-alerts-filter-form
             >
+                {# Hidden field for backward compat with old bookmarks that use ?aeroporto= #}
+                {% if selected_alert_filters.aeroporto %}<input type="hidden" name="aeroporto" value="{{ selected_alert_filters.aeroporto }}">{% endif %}
                 <div class="portal-lead-field">
-                    <label for="alert-filter-aeroporto">Aeroporto</label>
-                    <input
-                        id="alert-filter-aeroporto"
-                        type="text"
-                        name="aeroporto"
+                    <label for="alert-filter-origem">Origem</label>
+                    <select
+                        id="alert-filter-origem"
+                        name="origem"
                         class="portal-lead-field__input"
-                        maxlength="120"
-                        placeholder="Ex.: GRU, Guarulhos, Miami"
-                        value="{{ selected_alert_filters.aeroporto|default:'' }}"
-                        data-alerts-airport-filter
+                        data-alerts-origem-filter
                     >
+                        <option value="">Todas as origens</option>
+                        {% for option in alert_filter_options.origens %}
+                        <option value="{{ option.value }}" {% if selected_alert_filters.origem == option.value %}selected{% endif %}>{{ option.label }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
+                <div class="portal-lead-field">
+                    <label for="alert-filter-destino">Destino</label>
+                    <select
+                        id="alert-filter-destino"
+                        name="destino"
+                        class="portal-lead-field__input"
+                        data-alerts-destino-filter
+                    >
+                        <option value="">Todos os destinos</option>
+                        {% for option in alert_filter_options.destinos_all %}
+                        <option value="{{ option.value }}" {% if selected_alert_filters.destino == option.value %}selected{% endif %}>{{ option.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <script id="alerts-destinos-data" type="application/json">{{ alert_filter_options.destinos_por_origem_json|safe }}</script>
                 <div class="portal-lead-field portal-alerts-page__advanced-filter">
                     <label for="alert-filter-programa">Programa</label>
                     <select id="alert-filter-programa" name="programa" class="portal-lead-field__input">
@@ -189,4 +207,56 @@
     </section>
     {% endif %}
 </div>
+<script>
+(function () {
+    var origemSel = document.querySelector('[data-alerts-origem-filter]');
+    var destinoSel = document.querySelector('[data-alerts-destino-filter]');
+    var form = document.querySelector('[data-alerts-filter-form]');
+    if (!origemSel || !destinoSel || !form) return;
+
+    var destinosPorOrigem = {};
+    try {
+        var raw = document.getElementById('alerts-destinos-data');
+        if (raw) destinosPorOrigem = JSON.parse(raw.textContent);
+    } catch (e) {}
+
+    // Snapshot of all destino options (populated from server-rendered HTML)
+    var allOptions = Array.from(destinoSel.options).map(function (o) {
+        return { value: o.value, label: o.text };
+    });
+
+    function updateDestinos(origem) {
+        var options = origem
+            ? (destinosPorOrigem[origem] || [])
+            : allOptions.filter(function (o) { return o.value !== ''; });
+
+        var prev = destinoSel.value;
+        while (destinoSel.options.length > 1) destinoSel.remove(1);
+        options.forEach(function (opt) {
+            var o = document.createElement('option');
+            o.value = opt.value;
+            o.textContent = opt.label;
+            if (opt.value === prev) o.selected = true;
+            destinoSel.appendChild(o);
+        });
+    }
+
+    // Init: if an origem is already selected (from query string), narrow destinos immediately
+    if (origemSel.value) updateDestinos(origemSel.value);
+
+    origemSel.addEventListener('change', function () {
+        updateDestinos(this.value);
+        // Clear destino if no longer in the narrowed list
+        var found = Array.from(destinoSel.options).some(function (o) {
+            return o.value === destinoSel.value;
+        });
+        if (!found) destinoSel.value = '';
+        form.submit();
+    });
+
+    destinoSel.addEventListener('change', function () {
+        form.submit();
+    });
+})();
+</script>
 {% endblock %}

@@ -4,40 +4,39 @@
 {% block content %}
 <div class="portal-category-page">
     <section class="portal-category-hero {{ categoria_config.hero_class }}">
-        <div class="portal-category-hero__icon">
-            {% if categoria_config.icon_variant == "miles" %}
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-            </svg>
-            {% elif categoria_config.icon_variant == "cards" %}
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <rect x="4" y="6" width="16" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"></rect>
-                <path d="M4 10h16" fill="none" stroke="currentColor" stroke-width="1.8"></path>
-            </svg>
-            {% elif categoria_config.icon_variant == "hotels" %}
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-            </svg>
-            {% elif categoria_config.icon_variant == "promos" %}
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-            </svg>
-            {% elif categoria_config.icon_variant == "travel" %}
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
-                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-            </svg>
-            {% else %}
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m5 15 4-4 3 3 7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-                <path d="M19 7h-5v5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
-            </svg>
-            {% endif %}
-        </div>
-        <div>
-            <h1>{{ categoria_config.hero_title }}</h1>
-            <p>{{ categoria_config.hero_description }}</p>
-        </div>
+        <h1>
+            <span class="portal-category-hero__icon" aria-hidden="true">
+                {% if categoria_config.icon_variant == "miles" %}
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 13.5 20 6l-5.5 12-2.75-4.25L7.5 17 4 13.5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                </svg>
+                {% elif categoria_config.icon_variant == "cards" %}
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="4" y="6" width="16" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"></rect>
+                    <path d="M4 10h16" fill="none" stroke="currentColor" stroke-width="1.8"></path>
+                </svg>
+                {% elif categoria_config.icon_variant == "hotels" %}
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                </svg>
+                {% elif categoria_config.icon_variant == "promos" %}
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                </svg>
+                {% elif categoria_config.icon_variant == "travel" %}
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+                    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                </svg>
+                {% else %}
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m5 15 4-4 3 3 7-7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                    <path d="M19 7h-5v5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                </svg>
+                {% endif %}
+            </span>
+            {{ categoria_config.hero_title }}
+        </h1>
     </section>
 
     {% if topicos_disponiveis %}
