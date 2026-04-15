@@ -304,7 +304,7 @@ ADMIN_SESSION_IDLE_TIMEOUT_SECONDS = int(
 USER_SESSION_IDLE_TIMEOUT_SECONDS = int(
     os.environ.get("USER_SESSION_IDLE_TIMEOUT_SECONDS", str(60 * 60))
 )
-# Superadmin painel interno — somente este e-mail acessa /painel-ncfly/
+# Superadmin painel interno — somente este e-mail acessa /ncadm/
 # Variavel de ambiente: SUPERADMIN_EMAIL
 SUPERADMIN_EMAIL = os.environ.get("SUPERADMIN_EMAIL", "pedro@ncfly.com.br").strip().lower()
 

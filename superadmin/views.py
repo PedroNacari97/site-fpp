@@ -2,7 +2,7 @@
 Views do painel superadmin NCfly.
 
 Acesso restrito via SuperAdminRequiredMixin — somente pedro@ncfly.com.br.
-URL base: /painel-ncfly/
+URL base: /ncadm/
 """
 import json
 import logging

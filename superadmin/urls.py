@@ -1,7 +1,7 @@
 """
 URLs do painel superadmin NCfly.
 
-Path base: /painel-ncfly/   (registrado em core/urls.py)
+Path base: /ncadm/   (registrado em core/urls.py)
 """
 from django.urls import path
 

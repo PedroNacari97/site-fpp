@@ -47,7 +47,7 @@ urlpatterns = [
     path("plataforma/seguranca/", portal_views.seguranca_plataforma, name="portal_seguranca_plataforma"),
     path("plataforma/aceite/", portal_views.aceite_documentos_plataforma, name="portal_aceite_plataforma"),
     path("login/", custom_login, name="login_custom"),
-    path("superadmin/login/", superadmin_login, name="superadmin_login"),
+    path("ncadm/login/", superadmin_login, name="superadmin_login"),
     path("integracoes/telegram/alertas/webhook/", telegram_alertas_webhook, name="telegram_alertas_webhook"),
     path("integracoes/telegram/noticias/webhook/", telegram_noticias_webhook, name="telegram_noticias_webhook"),
     path("integracoes/telegram/artigos/webhook/", telegram_artigos_webhook, name="telegram_artigos_webhook"),
@@ -56,7 +56,7 @@ urlpatterns = [
     path("adm/", include("gestao.urls_admin")),
     path("accounts/", include("accounts.urls")),
     path("home/", include("portal.urls")),
-    path("painel-ncfly/", include("superadmin.urls")),
+    path("ncadm/", include("superadmin.urls")),
     # django-allauth — Google OAuth callback (path separado para nao conflitar com accounts/)
     path("auth/", include("allauth.urls")),
     path("", RedirectView.as_view(pattern_name="portal_home", permanent=False)),

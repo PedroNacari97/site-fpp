@@ -3,7 +3,7 @@ Adapter do django-allauth que restringe o login via Google OAuth
 exclusivamente ao e-mail configurado em settings.SUPERADMIN_EMAIL.
 
 Qualquer tentativa de login social com outro e-mail e rejeitada com
-ImmediateHttpResponse (redirect para /painel-ncfly/ com mensagem de erro).
+ImmediateHttpResponse (redirect para /ncadm/ com mensagem de erro).
 """
 import logging
 

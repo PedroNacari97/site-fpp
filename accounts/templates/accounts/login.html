@@ -56,6 +56,14 @@
     @keyframes login-spin {
       to { transform: rotate(360deg); }
     }
+    .login-form__turnstile {
+      display: flex;
+      justify-content: center;
+      margin: 0.25rem 0;
+    }
+    .login-form__turnstile .cf-turnstile {
+      display: inline-block;
+    }
   </style>
 </head>
 <body class="login-page{% if login_mode == 'superadmin' %} login-page--superadmin{% endif %}" data-default-theme="light">
@@ -196,7 +204,9 @@
             {% endif %}
 
             {% if turnstile_site_key %}
-            <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="dark"></div>
+            <div class="login-form__turnstile">
+              <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="dark"></div>
+            </div>
             <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
             {% endif %}
 
@@ -206,9 +216,11 @@
 
         <div class="login-card__footer">
           <a href="{% url 'password_reset_request' %}" class="login-card__link">Esqueceu sua senha?</a>
+          {% if alternate_login_url %}
           <div class="login-card__register">
             <a href="{{ alternate_login_url }}" class="login-card__link login-card__link--strong">{{ alternate_login_label }}</a>
           </div>
+          {% endif %}
           {% if show_register %}
             <div class="login-card__register">
               <span>Nao tem uma conta?</span>
