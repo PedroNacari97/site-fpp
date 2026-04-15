@@ -472,6 +472,12 @@ def _resolve_target_slot_count(total_pending: int) -> int:
     return 4
 
 
+# Teto absoluto por email: evita enviar dezenas de alertas em uma unica mensagem
+# quando o volume do dia e alto. O que exceder esse cap fica na fila e sai nas
+# proximas janelas (ou no dia seguinte).
+DIGEST_HARD_CAP_PER_BATCH = 5
+
+
 def _resolve_digest_batch_size(total_pending: int, *, max_items: int | None = None, remaining_slots: int | None = None) -> int:
     if total_pending <= 0:
         return 0
@@ -483,13 +489,13 @@ def _resolve_digest_batch_size(total_pending: int, *, max_items: int | None = No
         )
         computed = int(math.ceil(total_pending / slot_count))
         if max_items:
-            return min(max(1, int(max_items)), computed)
-        return max(1, computed)
+            computed = min(max(1, int(max_items)), computed)
+        return max(1, min(computed, DIGEST_HARD_CAP_PER_BATCH))
 
     if max_items:
-        return max(1, int(max_items))
+        return max(1, min(int(max_items), DIGEST_HARD_CAP_PER_BATCH))
 
-    return total_pending
+    return min(total_pending, DIGEST_HARD_CAP_PER_BATCH)
 
 
 def _eligible_digest_items_for_lead(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem]) -> list[AlertEmailDigestItem]:
