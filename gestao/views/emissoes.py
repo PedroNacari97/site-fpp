@@ -403,6 +403,14 @@ def _resolve_cotacao_for_conversion(request):
     )
 
 
+def _format_duration_hhmm(total_minutes):
+    minutes = int(total_minutes or 0)
+    if minutes <= 0:
+        return ""
+    hours, remaining = divmod(minutes, 60)
+    return f"{hours:02d}:{remaining:02d}"
+
+
 def _build_emissao_initial_from_cotacao(cotacao):
     companhia = None
     companhia_nome = (cotacao.companhia_aerea or "").strip()
@@ -434,6 +442,10 @@ def _build_emissao_initial_from_cotacao(cotacao):
         "aeroporto_destino": cotacao.destino_id,
         "data_ida": cotacao.data_ida.strftime("%Y-%m-%dT%H:%M") if cotacao.data_ida else "",
         "data_volta": cotacao.data_volta.strftime("%Y-%m-%dT%H:%M") if cotacao.data_volta else "",
+        "duracao_voo_ida_minutos": _format_duration_hhmm(getattr(cotacao, "duracao_voo_ida_minutos", 0)),
+        "fuso_horario_ida": getattr(cotacao, "fuso_horario_ida", 0) or 0,
+        "duracao_voo_volta_minutos": _format_duration_hhmm(getattr(cotacao, "duracao_voo_volta_minutos", 0)),
+        "fuso_horario_volta": getattr(cotacao, "fuso_horario_volta", 0) or 0,
         "qtd_adultos": cotacao.qtd_passageiros or 1,
         "qtd_criancas": 0,
         "qtd_bebes": 0,

@@ -592,14 +592,25 @@
         print-color-adjust: exact !important;
     }
 
+    /* Cards individuais ficam atomicos para nao cortar no meio. As secoes, porem,
+       podem quebrar entre cards para evitar paginas em branco enormes. */
     .emission-preview-meta,
     .emission-preview-passenger-card,
     .emission-preview-flight-card,
     .emission-preview-baggage-card,
     .emission-preview-total-card,
+    .quote-preview-value-row,
     .quote-preview-contact {
         break-inside: avoid;
         page-break-inside: avoid;
+    }
+
+    /* Seções podem quebrar internamente — evita meia-folha em branco entre
+       "Passageiros" e "Detalhes dos Voos" quando o conteúdo não cabe inteiro. */
+    .emission-preview-page .quote-preview-section,
+    .emission-preview-sheet .quote-preview-section {
+        break-inside: auto !important;
+        page-break-inside: auto !important;
     }
 
     /* Localizador, PNR e Data em linha horizontal */
@@ -618,15 +629,55 @@
 
     /* Reduzir padding das seções no PDF */
     .quote-preview-section {
-        padding: 0.85rem 1.25rem;
+        padding: 0.75rem 1.25rem;
     }
 
     .quote-preview-section__heading {
-        margin-bottom: 0.6rem;
+        margin-bottom: 0.55rem;
     }
 
     .emission-preview-hero {
         padding: 1rem 1.25rem;
+    }
+
+    /* Lista de passageiros mais compacta — cabe mais de um por bloco e reduz
+       paginas em branco. */
+    .emission-preview-passengers {
+        gap: 0.55rem !important;
+    }
+
+    .emission-preview-passenger-card {
+        padding: 0.85rem 1rem !important;
+    }
+
+    .emission-preview-passenger-card__header {
+        margin-bottom: 0.55rem !important;
+    }
+
+    .emission-preview-passenger-card__grid {
+        gap: 0.55rem !important;
+    }
+
+    /* Detalhes do voo (cartao com rota): rota em 3 colunas mesmo quando A4,
+       evitando que a coluna divisoria/tempo-de-voo empurre o cartao para nova
+       linha e duplique o tamanho. */
+    .emission-preview-flight-card__route {
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+        gap: 0.75rem !important;
+        padding: 0.85rem 1rem 0.7rem !important;
+    }
+
+    .emission-preview-flight-card__header {
+        padding: 0.6rem 1rem !important;
+    }
+
+    .emission-preview-flight-divider {
+        min-width: 120px !important;
+        font-size: 0.72rem !important;
+    }
+
+    .emission-preview-flight-stop b {
+        font-size: 1.3rem !important;
     }
 
     /* Bagagem em linha horizontal */

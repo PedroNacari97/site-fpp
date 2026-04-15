@@ -183,6 +183,26 @@
                         </div>
                     </div>
 
+                    <div class="wizard-grid wizard-grid--triple">
+                        <div>
+                            <label class="wizard-label" for="{{ form.duracao_voo_ida_minutos.id_for_label }}">Tempo de voo da ida</label>
+                            {{ form.duracao_voo_ida_minutos }}
+                            <p class="wizard-helper">Use HH:MM para calcular automaticamente o horário de chegada.</p>
+                        </div>
+                        <div>
+                            <label class="wizard-label" for="{{ form.fuso_horario_ida.id_for_label }}">Diferença de fuso da ida</label>
+                            {{ form.fuso_horario_ida }}
+                            <p class="wizard-helper">Exemplo: +1 se o destino estiver uma hora à frente.</p>
+                        </div>
+                        <div>
+                            <label class="wizard-label">Chegada prevista</label>
+                            <div class="wizard-arrival-card">
+                                <strong id="route-preview-arrival-ida">--</strong>
+                                <small>Calculado com base na partida, duração e fuso.</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="wizard-grid wizard-grid--double">
                         <div>
                             <label class="wizard-label" for="{{ form.bagagem_mao.id_for_label }}">Bagagem de mao</label>
@@ -225,6 +245,26 @@
                                 Possui escala?
                             </label>
                             <p class="wizard-helper">Ative para adicionar escalas no voo de volta.</p>
+                        </div>
+                    </div>
+
+                    <div class="wizard-grid wizard-grid--triple">
+                        <div>
+                            <label class="wizard-label" for="{{ form.duracao_voo_volta_minutos.id_for_label }}">Tempo de voo da volta</label>
+                            {{ form.duracao_voo_volta_minutos }}
+                            <p class="wizard-helper">Preencha quando a proposta incluir retorno.</p>
+                        </div>
+                        <div>
+                            <label class="wizard-label" for="{{ form.fuso_horario_volta.id_for_label }}">Diferença de fuso da volta</label>
+                            {{ form.fuso_horario_volta }}
+                            <p class="wizard-helper">Use sinal negativo se o destino voltar no horário local.</p>
+                        </div>
+                        <div>
+                            <label class="wizard-label">Chegada prevista</label>
+                            <div class="wizard-arrival-card">
+                                <strong id="route-preview-arrival-volta">--</strong>
+                                <small>Calculado automaticamente quando houver volta.</small>
+                            </div>
                         </div>
                     </div>
                 </section>

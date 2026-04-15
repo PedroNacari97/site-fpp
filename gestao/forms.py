@@ -542,6 +542,28 @@ class EmissaoPassagemForm(forms.ModelForm):
     criar_hotel_nome = forms.CharField(required=False)
     criar_hotel_check_in = forms.DateField(required=False, input_formats=["%Y-%m-%d"])
     criar_hotel_check_out = forms.DateField(required=False, input_formats=["%Y-%m-%d"])
+    duracao_voo_ida_minutos = forms.CharField(
+        required=False,
+        widget=forms.TimeInput(attrs={"type": "time", "step": "60"}),
+    )
+    fuso_horario_ida = forms.TypedChoiceField(
+        choices=[("", "+0h")] + TIMEZONE_OFFSET_CHOICES,
+        coerce=int,
+        required=False,
+        empty_value=0,
+        initial=0,
+    )
+    duracao_voo_volta_minutos = forms.CharField(
+        required=False,
+        widget=forms.TimeInput(attrs={"type": "time", "step": "60"}),
+    )
+    fuso_horario_volta = forms.TypedChoiceField(
+        choices=[("", "+0h")] + TIMEZONE_OFFSET_CHOICES,
+        coerce=int,
+        required=False,
+        empty_value=0,
+        initial=0,
+    )
 
     def __init__(self, *args, **kwargs):
         empresa = kwargs.pop("empresa", None)
@@ -553,6 +575,10 @@ class EmissaoPassagemForm(forms.ModelForm):
             'qtd_adultos',
             'qtd_criancas',
             'qtd_bebes',
+            'duracao_voo_ida_minutos',
+            'fuso_horario_ida',
+            'duracao_voo_volta_minutos',
+            'fuso_horario_volta',
         ]:
             self.fields[f].required = False
         self.fields['companhia_aerea'].queryset = CompanhiaAerea.objects.all()
@@ -585,6 +611,15 @@ class EmissaoPassagemForm(forms.ModelForm):
         if empresa:
             hoteis_qs = hoteis_qs.filter(cliente__empresa=empresa)
         self.fields["hotel_vinculado"].queryset = hoteis_qs.order_by("-check_in")
+
+        self.initial["duracao_voo_ida_minutos"] = _format_duration_from_minutes(
+            getattr(self.instance, "duracao_voo_ida_minutos", 0) or 0
+        )
+        self.initial["duracao_voo_volta_minutos"] = _format_duration_from_minutes(
+            getattr(self.instance, "duracao_voo_volta_minutos", 0) or 0
+        )
+        self.fields["duracao_voo_ida_minutos"].widget.attrs.update({"placeholder": "Ex: 05:30"})
+        self.fields["duracao_voo_volta_minutos"].widget.attrs.update({"placeholder": "Ex: 04:45"})
 
         selected_tipo = self.data.get("tipo_emissao")
         if not selected_tipo:
@@ -660,6 +695,10 @@ class EmissaoPassagemForm(forms.ModelForm):
         hotel_vinculado = cleaned.get("hotel_vinculado")
         if criar_nome and hotel_vinculado:
             raise forms.ValidationError("Escolha um hotel existente ou crie um novo, não ambos.")
+        cleaned["duracao_voo_ida_minutos"] = _parse_duration_to_minutes(cleaned.get("duracao_voo_ida_minutos"))
+        cleaned["duracao_voo_volta_minutos"] = _parse_duration_to_minutes(cleaned.get("duracao_voo_volta_minutos"))
+        cleaned["fuso_horario_ida"] = int(cleaned.get("fuso_horario_ida") or 0)
+        cleaned["fuso_horario_volta"] = int(cleaned.get("fuso_horario_volta") or 0)
         return cleaned
 
     class Meta:
@@ -674,6 +713,10 @@ class EmissaoPassagemForm(forms.ModelForm):
             'aeroporto_destino',
             'data_ida',
             'data_volta',
+            'duracao_voo_ida_minutos',
+            'fuso_horario_ida',
+            'duracao_voo_volta_minutos',
+            'fuso_horario_volta',
             'bagagem_mao',
             'bagagem_despachada',
             'qtd_adultos',

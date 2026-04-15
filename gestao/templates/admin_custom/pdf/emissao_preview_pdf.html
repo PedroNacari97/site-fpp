@@ -20,7 +20,6 @@
             margin: 0;
             padding: 0;
             width: 210mm;
-            min-height: 297mm;
             background: #ffffff;
         }
 
@@ -32,9 +31,9 @@
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         }
 
+        /* Sem min-height fixo: o conteudo flui naturalmente e nao gera folha em branco. */
         .pdf-preview-document {
             width: 210mm;
-            min-height: 297mm;
             padding: 6.5mm;
             background: #ffffff;
             overflow: visible;
@@ -43,9 +42,23 @@
         .pdf-preview-document .quote-preview-page {
             max-width: none;
             margin: 0;
-            transform: scale(0.89);
-            transform-origin: top left;
-            width: calc(100% / 0.89);
+            width: 100%;
+        }
+
+        /* Permite quebras entre cards dentro das secoes para nao deixar meia folha em branco. */
+        .pdf-preview-document .quote-preview-section {
+            break-inside: auto;
+            page-break-inside: auto;
+        }
+
+        .pdf-preview-document .emission-preview-passenger-card,
+        .pdf-preview-document .emission-preview-flight-card,
+        .pdf-preview-document .emission-preview-baggage-card,
+        .pdf-preview-document .emission-preview-total-card,
+        .pdf-preview-document .quote-preview-value-row,
+        .pdf-preview-document .quote-preview-contact {
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
 
         .pdf-preview-document .quote-preview__back-link {
@@ -189,17 +202,20 @@
         }
 
         .pdf-preview-document .emission-preview-flight-card__route {
-            gap: 0.8rem;
-            padding: 0.9rem 0.95rem 0.75rem;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.75rem 0.9rem 0.65rem;
         }
 
         .pdf-preview-document .emission-preview-flight-stop b {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
         }
 
         .pdf-preview-document .emission-preview-flight-divider {
-            min-width: 128px;
-            font-size: 0.72rem;
+            min-width: 110px;
+            font-size: 0.7rem;
         }
 
         .pdf-preview-document .emission-preview-flight-divider::before,

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from decimal import Decimal
 
 from django.utils import timezone
@@ -39,6 +40,27 @@ def _format_date(value):
 def _format_time(value):
     value = _localtime(value)
     return value.strftime("%H:%M") if value else "--:--"
+
+
+def _format_duration_minutes(total_minutes):
+    minutes = int(total_minutes or 0)
+    if minutes <= 0:
+        return "Duracao a confirmar"
+    hours, remaining_minutes = divmod(minutes, 60)
+    return f"{hours:02d}h{remaining_minutes:02d}"
+
+
+def _format_timezone_offset(offset):
+    hours = int(offset or 0)
+    if hours == 0:
+        return ""
+    return f"Fuso {hours:+d}h"
+
+
+def _calculate_arrival(departure, duration_minutes, timezone_offset):
+    if not departure or not duration_minutes:
+        return None
+    return departure + timedelta(minutes=int(duration_minutes or 0)) + timedelta(hours=int(timezone_offset or 0))
 
 
 def _format_airport_label(aeroporto, *, fallback):
@@ -116,6 +138,17 @@ def _build_flight_context(emissao, empresa):
     voos = []
 
     ida_escalas = list(emissao.escalas.filter(tipo="ida").select_related("aeroporto"))
+    ida_duracao = getattr(emissao, "duracao_voo_ida_minutos", 0) or 0
+    ida_fuso = getattr(emissao, "fuso_horario_ida", 0) or 0
+    ida_chegada = _calculate_arrival(emissao.data_ida, ida_duracao, ida_fuso)
+    ida_duration_label = _format_duration_minutes(ida_duracao)
+    ida_timezone_label = _format_timezone_offset(ida_fuso)
+    ida_hint_parts = ["Voo direto" if not ida_escalas else f"{len(ida_escalas)} escala(s)"]
+    if ida_duration_label != "Duracao a confirmar":
+        ida_hint_parts.append(ida_duration_label)
+    if ida_timezone_label:
+        ida_hint_parts.append(ida_timezone_label)
+
     voos.append(
         {
             "label": "Ida",
@@ -126,9 +159,11 @@ def _build_flight_context(emissao, empresa):
             "origem_data": _format_date(emissao.data_ida),
             "origem_hora": _format_time(emissao.data_ida),
             "destino_label": _format_airport_label(emissao.aeroporto_destino, fallback="Destino a confirmar"),
-            "destino_data": _format_date(emissao.data_ida),
-            "destino_hora": "--:--",
-            "trajeto_hint": "Voo direto" if not ida_escalas else f"{len(ida_escalas)} escala(s)",
+            "destino_data": _format_date(ida_chegada or emissao.data_ida),
+            "destino_hora": _format_time(ida_chegada) if ida_chegada else "--:--",
+            "trajeto_hint": " • ".join(ida_hint_parts),
+            "duracao_label": ida_duration_label,
+            "timezone_label": ida_timezone_label,
             "cta_url": companhia_url,
             "cta_label": _resolve_cta_label(empresa, companhia_nome),
             "escalas": [
@@ -143,6 +178,16 @@ def _build_flight_context(emissao, empresa):
 
     if emissao.data_volta:
         volta_escalas = list(emissao.escalas.filter(tipo="volta").select_related("aeroporto"))
+        volta_duracao = getattr(emissao, "duracao_voo_volta_minutos", 0) or 0
+        volta_fuso = getattr(emissao, "fuso_horario_volta", 0) or 0
+        volta_chegada = _calculate_arrival(emissao.data_volta, volta_duracao, volta_fuso)
+        volta_duration_label = _format_duration_minutes(volta_duracao)
+        volta_timezone_label = _format_timezone_offset(volta_fuso)
+        volta_hint_parts = ["Voo direto" if not volta_escalas else f"{len(volta_escalas)} escala(s)"]
+        if volta_duration_label != "Duracao a confirmar":
+            volta_hint_parts.append(volta_duration_label)
+        if volta_timezone_label:
+            volta_hint_parts.append(volta_timezone_label)
         voos.append(
             {
                 "label": "Volta",
@@ -153,9 +198,11 @@ def _build_flight_context(emissao, empresa):
                 "origem_data": _format_date(emissao.data_volta),
                 "origem_hora": _format_time(emissao.data_volta),
                 "destino_label": _format_airport_label(emissao.aeroporto_partida, fallback="Destino a confirmar"),
-                "destino_data": _format_date(emissao.data_volta),
-                "destino_hora": "--:--",
-                "trajeto_hint": "Voo direto" if not volta_escalas else f"{len(volta_escalas)} escala(s)",
+                "destino_data": _format_date(volta_chegada or emissao.data_volta),
+                "destino_hora": _format_time(volta_chegada) if volta_chegada else "--:--",
+                "trajeto_hint": " • ".join(volta_hint_parts),
+                "duracao_label": volta_duration_label,
+                "timezone_label": volta_timezone_label,
                 "cta_url": companhia_url,
                 "cta_label": _resolve_cta_label(empresa, companhia_nome),
                 "escalas": [
