@@ -32,6 +32,7 @@
                     </span>
                     <span>Not&iacute;cias</span>
                 </a>
+                {# Artigos oculto temporariamente ate subirmos conteudo (ver home.html tambem)
                 <a href="{% url 'portal_artigos' %}" class="portal-topbar__nav-link portal-topbar__nav-link--desktop-only {% if request.resolver_match.url_name == 'portal_artigos' %}is-active{% endif %}">
                     <span class="portal-topbar__nav-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24">
@@ -40,6 +41,7 @@
                     </span>
                     <span>Artigos</span>
                 </a>
+                #}
                 {% for category in public_nav_categories %}
                 <a
                     href="{{ category.url }}"
@@ -81,12 +83,14 @@
                             </span>
                             Not&iacute;cias
                         </a>
+                        {# Artigos oculto temporariamente
                         <a href="{% url 'portal_artigos' %}" class="portal-topbar__dropdown-item{% if request.resolver_match.url_name == 'portal_artigos' %} is-active{% endif %}">
                             <span class="portal-topbar__nav-icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24"><path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
                             </span>
                             Artigos &amp; Guias
                         </a>
+                        #}
                         {% for category in public_nav_categories %}
                         <a href="{{ category.url }}" class="portal-topbar__dropdown-item{% if request.resolver_match.url_name == 'portal_categoria' and request.resolver_match.kwargs.categoria_slug == category.slug %} is-active{% endif %}">
                             <span class="portal-topbar__nav-icon" aria-hidden="true">
