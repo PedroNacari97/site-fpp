@@ -1,8 +1,8 @@
 {% extends "admin_custom/base_admin.html" %}
 {% load static %}
 {% block title %}Clientes{% endblock %}
-{% block header_title %}Gestao de Clientes{% endblock %}
-{% block header_subtitle %}<span>Seus registros de clientes com filtros, acoes e paginacao nesta.</span>{% endblock %}
+{% block header_title %}Gestão de Clientes{% endblock %}
+{% block header_subtitle %}<span>Seus registros de clientes com filtros, ações e paginação.</span>{% endblock %}
 {% block header_actions %}
 <a href="{% url 'admin_novo_cliente' %}" class="btn btn-primary">+ Novo Cliente</a>
 {% endblock %}
@@ -97,7 +97,10 @@
             </div>
           </article>
         {% empty %}
-          <div class="clients-page__empty">Nenhum cliente encontrado com os filtros atuais.</div>
+          <div class="clients-page__empty">
+            <p>Nenhum cliente encontrado com os filtros atuais.</p>
+            <a href="{% url 'admin_novo_cliente' %}" class="clients-page__row-button">+ Cadastrar cliente</a>
+          </div>
         {% endfor %}
       </div>
 

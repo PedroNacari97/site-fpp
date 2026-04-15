@@ -85,7 +85,10 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="3" class="partner-page__empty">Nenhum emissor parceiro cadastrado.</td>
+            <td colspan="3" class="partner-page__empty">
+              Nenhum emissor parceiro cadastrado ainda.
+              <a href="{% url 'admin_novo_emissor_parceiro' %}" class="partner-page__action">+ Novo emissor parceiro</a>
+            </td>
           </tr>
           {% endfor %}
         </tbody>

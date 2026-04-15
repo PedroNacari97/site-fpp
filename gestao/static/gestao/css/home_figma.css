@@ -121,8 +121,12 @@
 }
 
 .home-ops__kpi {
-  min-height: 112px;
-  padding: 16px 18px;
+  min-height: 0;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
 }
 
 .home-ops__kpi-label {
@@ -134,9 +138,9 @@
 }
 
 .home-ops__kpi-value {
-  margin-top: 20px;
-  font-size: 38px;
-  line-height: 1;
+  margin-top: 4px;
+  font-size: 26px;
+  line-height: 1.1;
   font-weight: 700;
 }
 

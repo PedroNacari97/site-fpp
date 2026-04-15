@@ -49,21 +49,21 @@
 
   <section class="emissions-page__panel emissions-page__table-panel">
     <div class="emissions-page__table-head">
-      <h3>Lista de emissoes</h3>
+      <h3>Lista de emissões</h3>
     </div>
     <div class="emissions-page__table-wrap">
       <table class="emissions-page__table">
         <thead>
           <tr>
-            <th>Cliente</th>
-            <th>Programa</th>
-            <th>Origem</th>
-            <th>Destino</th>
-            <th>Data Ida</th>
-            <th>Companhia</th>
-            <th>Status</th>
-            <th>Lucro</th>
-            <th>Acoes</th>
+            <th scope="col">Cliente</th>
+            <th scope="col">Programa</th>
+            <th scope="col">Origem</th>
+            <th scope="col">Destino</th>
+            <th scope="col">Data de ida</th>
+            <th scope="col">Companhia</th>
+            <th scope="col">Status</th>
+            <th scope="col">Lucro</th>
+            <th scope="col">Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -89,7 +89,7 @@
               <td data-label="Lucro">R$ {{ e.lucro|default:0|floatformat:2 }}</td>
               <td data-label="Ações">
                 <div class="emissions-page__row-actions">
-                  <a href="{% url 'admin_emissao_detalhe' e.id %}" class="emissions-page__row-button">Visualizar Emissao</a>
+                  <a href="{% url 'admin_emissao_detalhe' e.id %}" class="emissions-page__row-button">Visualizar emissão</a>
                   <a href="{% url 'admin_editar_emissao' e.id %}" class="emissions-page__row-button">Editar</a>
                 </div>
               </td>

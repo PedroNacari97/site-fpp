@@ -1,12 +1,36 @@
 .partner-page,
 .partner-form {
   color: var(--color-heading);
+  background: transparent;
 }
 
 .partner-page {
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+/* Garante tema claro, evitando que estilos herdados deixem cards/tabelas azul-escuro. */
+body:not(.dark-mode) .partner-page,
+body:not(.dark-mode) .partner-form {
+  background: transparent;
+  color: var(--color-heading);
+}
+
+body:not(.dark-mode) .partner-page__filters-card,
+body:not(.dark-mode) .partner-page__table-card,
+body:not(.dark-mode) .partner-form__card {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-heading);
+}
+
+body:not(.dark-mode) .partner-page__table thead tr {
+  background: var(--color-surface-muted);
+}
+
+body:not(.dark-mode) .partner-page__table td {
+  color: var(--color-heading);
 }
 
 .partner-page__header-action {

@@ -21,11 +21,37 @@
 .movement-page,
 .movement-form-page {
   color: var(--movement-text);
+  background: transparent;
 }
 
 .movement-page *,
 .movement-form-page * {
   box-sizing: border-box;
+}
+
+/* Garante tema claro do admin, independente de overrides externos. */
+body:not(.dark-mode) .movement-page,
+body:not(.dark-mode) .movement-form-page,
+body:not(.dark-mode) .transfer-page {
+  background: transparent;
+  color: var(--color-heading);
+}
+
+body:not(.dark-mode) .movement-page__card,
+body:not(.dark-mode) .movement-form-page__card,
+body:not(.dark-mode) .transfer-page__card {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-heading);
+}
+
+body:not(.dark-mode) .movement-page__table thead th {
+  background: var(--color-surface-muted);
+  color: var(--color-muted);
+}
+
+body:not(.dark-mode) .movement-page__table tbody td {
+  color: var(--color-heading);
 }
 
 .movement-page__notice {

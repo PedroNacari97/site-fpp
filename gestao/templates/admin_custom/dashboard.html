@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}Dashboard{% endblock %}
 {% block header_title %}Dashboard{% endblock %}
-{% block header_subtitle %}<span>Visao consolidada da operacao com foco financeiro, emissoes e desempenho.</span>{% endblock %}
+{% block header_subtitle %}<span>Visão consolidada da operação com foco financeiro, emissões e desempenho.</span>{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/css/home_figma.css' %}">
 <link rel="stylesheet" href="{% static 'gestao/css/dashboard_figma.css' %}">
@@ -11,10 +11,7 @@
 {% block content %}
 <div class="miles-dashboard">
   <div class="miles-dashboard__shell">
-    <div class="miles-dashboard__intro">
-      <h2 class="miles-dashboard__page-title">Dashboard</h2>
-      <p class="miles-dashboard__page-subtitle">Visao consolidada da operacao com foco financeiro, emissoes e desempenho.</p>
-    </div>
+    {# Titulo e subtitulo ja renderizados na top bar (header_title/header_subtitle) — bloco intro removido para evitar duplicacao. #}
 
     <section class="home-ops__filters">
       {% include "admin_custom/partials/home_management_filters.html" %}
@@ -24,12 +21,12 @@
       <article class="miles-dashboard__card">
         <p class="miles-dashboard__metric-label">Total de milhas</p>
         <div class="miles-dashboard__metric-value">{{ management_dashboard.summary.milhas_utilizadas }}</div>
-        <p class="miles-dashboard__metric-note">Consumo consolidado no periodo filtrado.</p>
+        <p class="miles-dashboard__metric-note">Consumo consolidado no período filtrado.</p>
       </article>
       <article class="miles-dashboard__card">
         <p class="miles-dashboard__metric-label">Taxas pagas</p>
         <div class="miles-dashboard__metric-value">{{ management_dashboard.summary.total_taxas }}</div>
-        <p class="miles-dashboard__metric-note">Custos adicionais cobrados nas emissoes.</p>
+        <p class="miles-dashboard__metric-note">Custos adicionais cobrados nas emissões.</p>
       </article>
       <article class="miles-dashboard__card">
         <p class="miles-dashboard__metric-label">Receita bruta</p>
@@ -37,9 +34,9 @@
         <p class="miles-dashboard__metric-note">Valor comercializado no recorte atual.</p>
       </article>
       <article class="miles-dashboard__card">
-        <p class="miles-dashboard__metric-label">Lucro liquido</p>
+        <p class="miles-dashboard__metric-label">Lucro líquido</p>
         <div class="miles-dashboard__metric-value">{{ management_dashboard.summary.lucro_total }}</div>
-        <p class="miles-dashboard__metric-note">Resultado final apos custos e taxas.</p>
+        <p class="miles-dashboard__metric-note">Resultado final após custos e taxas.</p>
       </article>
     </section>
 

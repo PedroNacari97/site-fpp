@@ -75,7 +75,10 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="3" class="airport-page__empty">Nenhum aeroporto cadastrado.</td>
+            <td colspan="3" class="airport-page__empty">
+              Nenhum aeroporto cadastrado ainda.
+              <a href="{% url 'admin_novo_aeroporto' %}" class="airport-page__action">+ Novo aeroporto</a>
+            </td>
           </tr>
           {% endfor %}
         </tbody>

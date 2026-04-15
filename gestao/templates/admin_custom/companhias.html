@@ -80,7 +80,10 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="3" class="airlines-page__empty">Nenhuma companhia cadastrada.</td>
+            <td colspan="3" class="airlines-page__empty">
+              Nenhuma companhia aérea cadastrada ainda.
+              <a href="{% url 'admin_nova_companhia' %}" class="airlines-page__action">+ Nova companhia</a>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
