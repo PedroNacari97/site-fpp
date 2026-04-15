@@ -105,9 +105,11 @@ def _resolve_airport_city(info: dict[str, str], city_override: str = "") -> str:
 
 
 def _build_airport_label(info: dict[str, str], city_override: str = "") -> str:
-    # Retorna apenas a cidade — o IATA já é exibido separadamente nos cards
     city = _resolve_airport_city(info, city_override)
-    return city or info.get("display", "") or info.get("fallback", "")
+    name = info.get("name", "")
+    if name and city and name != city:
+        return f"{name} - {city}"
+    return city or name or info.get("display", "") or info.get("fallback", "")
 
 
 def _format_milhas(value: int | None) -> str:

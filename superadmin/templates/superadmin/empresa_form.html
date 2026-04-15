@@ -1,0 +1,88 @@
+{% extends "superadmin/base.html" %}
+{% block title %}{% if editando %}Editar{% else %}Nova{% endif %} Empresa — Painel NCfly{% endblock %}
+{% block page_title %}{% if editando %}Editar Empresa: {{ empresa.nome }}{% else %}Nova Empresa{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto card p-6">
+    <form method="post" class="space-y-5">
+        {% csrf_token %}
+
+        <div>
+            <label for="nome">Nome da empresa *</label>
+            <input type="text" id="nome" name="nome" required
+                value="{% if editando %}{{ empresa.nome }}{% else %}{{ form_data.nome|default:'' }}{% endif %}"
+                placeholder="Nome da agencia ou empresa">
+        </div>
+
+        <div>
+            <label for="responsavel_nome">Nome do responsavel</label>
+            <input type="text" id="responsavel_nome" name="responsavel_nome"
+                value="{% if editando %}{{ empresa.responsavel_nome }}{% else %}{{ form_data.responsavel_nome|default:'' }}{% endif %}"
+                placeholder="Nome completo">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="email_contato">E-mail de contato</label>
+                <input type="email" id="email_contato" name="email_contato"
+                    value="{% if editando %}{{ empresa.email_contato }}{% else %}{{ form_data.email_contato|default:'' }}{% endif %}">
+            </div>
+            <div>
+                <label for="telefone_contato">Telefone</label>
+                <input type="text" id="telefone_contato" name="telefone_contato"
+                    value="{% if editando %}{{ empresa.telefone_contato }}{% else %}{{ form_data.telefone_contato|default:'' }}{% endif %}">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="whatsapp">WhatsApp</label>
+                <input type="text" id="whatsapp" name="whatsapp"
+                    value="{% if editando %}{{ empresa.whatsapp }}{% else %}{{ form_data.whatsapp|default:'' }}{% endif %}">
+            </div>
+            <div>
+                <label for="website">Website</label>
+                <input type="url" id="website" name="website"
+                    value="{% if editando %}{{ empresa.website }}{% else %}{{ form_data.website|default:'' }}{% endif %}"
+                    placeholder="https://...">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="cidade">Cidade</label>
+                <input type="text" id="cidade" name="cidade"
+                    value="{% if editando %}{{ empresa.cidade }}{% else %}{{ form_data.cidade|default:'' }}{% endif %}">
+            </div>
+            <div>
+                <label for="estado">Estado</label>
+                <input type="text" id="estado" name="estado"
+                    value="{% if editando %}{{ empresa.estado }}{% else %}{{ form_data.estado|default:'' }}{% endif %}"
+                    placeholder="ex: SP">
+            </div>
+        </div>
+
+        <div>
+            <label for="limite_colaboradores">Limite de colaboradores</label>
+            <input type="number" id="limite_colaboradores" name="limite_colaboradores" min="0"
+                value="{% if editando %}{{ empresa.limite_colaboradores }}{% else %}{{ form_data.limite_colaboradores|default:'0' }}{% endif %}">
+        </div>
+
+        <div>
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="ativo" value="1"
+                    {% if editando and empresa.ativo %}checked{% elif not editando %}checked{% endif %}
+                    style="width:auto; padding:0;">
+                <span>Empresa ativa</span>
+            </label>
+        </div>
+
+        <div class="flex gap-3 justify-end pt-2">
+            <a href="{% url 'superadmin_empresas_list' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">
+                {% if editando %}Salvar alteracoes{% else %}Criar empresa{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

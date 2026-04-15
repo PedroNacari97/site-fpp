@@ -1,0 +1,35 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Confirmar Exclusao — Painel NCfly{% endblock %}
+{% block page_title %}Confirmar Exclusao{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto card p-6 space-y-4">
+
+    <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+            <svg class="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 9v4M12 17h.01M10.29 3.86l-7.5 13A1 1 0 003.65 18h16.7a1 1 0 00.86-1.5l-7.5-13a1 1 0 00-1.72 0Z"/>
+            </svg>
+        </div>
+        <div>
+            <h2 class="text-base font-semibold text-slate-800">Excluir noticia permanentemente?</h2>
+            <p class="text-sm text-slate-500 mt-1">Esta acao nao pode ser desfeita.</p>
+        </div>
+    </div>
+
+    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+        <p class="text-xs text-slate-500 mb-1">Titulo</p>
+        <p class="text-sm font-medium text-slate-800">{{ noticia.titulo }}</p>
+        <p class="text-xs text-slate-400 mt-1">ID: {{ noticia.pk }} &middot; Status: {{ noticia.get_status_display }} &middot; Criada em: {{ noticia.criada_em|date:"d/m/Y H:i" }}</p>
+    </div>
+
+    <div class="flex gap-3 justify-end">
+        <a href="{% url 'superadmin_noticias_list' %}" class="btn btn-secondary">Cancelar</a>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Sim, excluir</button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

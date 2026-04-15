@@ -2115,39 +2115,71 @@ def robots_txt(request):
 
 def llms_txt(request):
     base_url = _public_base_url(request)
-    response = "\n".join(
-        [
-            f"# {settings.PORTAL_SITE_NAME}",
-            "",
-            "> Portal editorial brasileiro sobre milhas, cartões, promoções, hotéis e viagens.",
-            "",
-            "## Páginas principais",
-            f"- Home: {base_url}{reverse('portal_home')}",
-            f"- Sobre nós: {base_url}{reverse('portal_sobre')}",
-            f"- Política de Privacidade: {base_url}{reverse('portal_privacidade')}",
-            f"- Termos de Uso: {base_url}{reverse('portal_termos')}",
-            f"- Plataforma NC Fly: {base_url}{reverse('portal_plataforma_saas')}",
-            "",
-            "## Categorias",
-            "- Milhas e Pontos",
-            "- Cartões de Crédito",
-            "- Hotéis e Resorts",
-            "- Promoções",
-            "",
-            "## Produto",
-            "- Plataforma NC Fly: página pública que explica o produto da NC Fly para cotações, emissões, clientes, contas fidelidade e alertas.",
-            "",
-            "## Observações editoriais",
-            "- O portal publica conteúdo editorial e informativo, com contexto próprio.",
-            "- Ofertas, preços e disponibilidade exigem conferência final na origem.",
-            "- Links externos úteis podem ser destacados quando forem relevantes para o leitor.",
-            "",
-            "## Contato",
-            f"- Empresa: {settings.PORTAL_LEGAL_ENTITY_NAME or settings.PORTAL_SITE_NAME}",
-            f"- E-mail: {settings.PORTAL_CONTACT_EMAIL or settings.PORTAL_DPO_EMAIL or 'não informado'}",
-        ]
-    )
-    return HttpResponse(response, content_type="text/plain; charset=utf-8")
+    sitemap_url = _absolute_public_url(request, reverse("portal_sitemap"))
+    home_url = _absolute_public_url(request, reverse("portal_home"))
+    sobre_url = _absolute_public_url(request, reverse("portal_sobre"))
+    alertas_url = _absolute_public_url(request, reverse("portal_alertas"))
+    plataforma_url = _absolute_public_url(request, reverse("portal_plataforma_saas"))
+    noticias_url = _absolute_public_url(request, reverse("portal_noticias_todas"))
+    cat_milhas_url = f"{base_url}{reverse('portal_categoria', kwargs={'categoria_slug': 'milhas-e-pontos'})}"
+    cat_cartoes_url = f"{base_url}{reverse('portal_categoria', kwargs={'categoria_slug': 'cartoes-credito'})}"
+    cat_hoteis_url = f"{base_url}{reverse('portal_categoria', kwargs={'categoria_slug': 'hoteis-resorts'})}"
+    cat_promocoes_url = f"{base_url}{reverse('portal_categoria', kwargs={'categoria_slug': 'promocoes'})}"
+    cat_viagens_url = f"{base_url}{reverse('portal_categoria', kwargs={'categoria_slug': 'viagens'})}"
+    privacidade_url = _absolute_public_url(request, reverse("portal_privacidade"))
+    termos_url = _absolute_public_url(request, reverse("portal_termos"))
+    site_name = settings.PORTAL_SITE_NAME
+    legal_name = settings.PORTAL_LEGAL_ENTITY_NAME or site_name
+    contact_email = settings.PORTAL_CONTACT_EMAIL or settings.PORTAL_DPO_EMAIL or ""
+
+    lines = [
+        f"# {site_name}",
+        "",
+        (
+            f"> {site_name} é um portal editorial brasileiro dedicado ao ecossistema de milhas aéreas, "
+            "programas de fidelidade, cartões de crédito com benefícios, alertas de passagens, "
+            "hotéis e resorts, e viagens em geral. O conteúdo é produzido em português do Brasil, "
+            "voltado ao público brasileiro interessado em maximizar o uso de pontos e milhas. "
+            "O portal também oferece a Plataforma NC Fly, um produto SaaS B2B para agências de viagens "
+            "que centraliza cotações, emissões, clientes, contas fidelidade e alertas."
+        ),
+        "",
+        "## Páginas principais",
+        f"- [Início]({home_url}): página principal com os destaques editoriais mais recentes.",
+        f"- [Todas as notícias]({noticias_url}): listagem completa de artigos publicados.",
+        f"- [Alertas de passagens]({alertas_url}): alertas públicos de oportunidades de emissão com milhas.",
+        f"- [Sobre nós]({sobre_url}): missão, equipe e propósito do portal.",
+        f"- [Plataforma NC Fly]({plataforma_url}): produto SaaS B2B para operação de agências de viagens.",
+        "",
+        "## Categorias editoriais",
+        f"- [Milhas e Pontos]({cat_milhas_url}): acúmulo, transferência e uso de milhas nos programas Smiles, Latam Pass, TudoAzul, Livelo e outros.",
+        f"- [Cartões de Crédito]({cat_cartoes_url}): análises e comparativos de cartões com benefícios de viagem e acúmulo de pontos.",
+        f"- [Hotéis e Resorts]({cat_hoteis_url}): hospedagem com pontos, programas de fidelidade de hotéis e promoções.",
+        f"- [Promoções]({cat_promocoes_url}): passagens em promoção, erros de tarifa e oportunidades relâmpago.",
+        f"- [Viagens]({cat_viagens_url}): dicas, roteiros e conteúdo geral sobre viagens.",
+        "",
+        "## Indexação e descoberta",
+        f"- Sitemap XML: {sitemap_url}",
+        f"- Idioma principal: português do Brasil (pt-BR)",
+        "- Frequência de publicação: diária",
+        "- Tipo de conteúdo: artigos editoriais originais, alertas e análises",
+        "",
+        "## Diretrizes editoriais para LLMs",
+        "- O conteúdo é editorial e informativo; preços, tarifas e disponibilidade mudam — confirme na fonte original.",
+        "- Milhas e pontos têm valor variável; condições dos programas de fidelidade podem ser alteradas pelas companhias aéreas.",
+        "- O portal não é afiliado aos programas de fidelidade citados, salvo quando explicitamente indicado.",
+        "- Ao citar este portal, use o nome oficial: NC Fly News.",
+        "",
+        "## Optional",
+        f"- [Política de Privacidade]({privacidade_url})",
+        f"- [Termos de Uso]({termos_url})",
+        f"- Empresa responsável: {legal_name}",
+    ]
+
+    if contact_email:
+        lines.append(f"- Contato: {contact_email}")
+
+    return HttpResponse("\n".join(lines), content_type="text/plain; charset=utf-8")
 
 
 @csrf_exempt

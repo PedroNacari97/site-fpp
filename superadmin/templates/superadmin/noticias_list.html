@@ -1,0 +1,101 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Noticias — Painel NCfly{% endblock %}
+{% block page_title %}Noticias ({{ total }}){% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+
+    <!-- Filtros -->
+    <form method="get" class="card p-4 flex flex-wrap gap-3 items-end">
+        <div class="flex-1 min-w-36">
+            <label for="q">Buscar titulo</label>
+            <input type="text" id="q" name="q" value="{{ busca }}" placeholder="Digite para buscar...">
+        </div>
+        <div>
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="">Todos</option>
+                <option value="published" {% if status_filtro == "published" %}selected{% endif %}>Publicada</option>
+                <option value="draft" {% if status_filtro == "draft" %}selected{% endif %}>Rascunho</option>
+                <option value="archived" {% if status_filtro == "archived" %}selected{% endif %}>Arquivada</option>
+            </select>
+        </div>
+        <div>
+            <label for="categoria">Categoria</label>
+            <select id="categoria" name="categoria">
+                <option value="">Todas</option>
+                {% for cat in categorias_disponiveis %}
+                <option value="{{ cat }}" {% if categoria == cat %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+            <a href="{% url 'superadmin_noticias_list' %}" class="btn btn-secondary">Limpar</a>
+        </div>
+        <a href="{% url 'superadmin_artigo_upload' %}" class="btn btn-primary ml-auto">+ Novo Artigo</a>
+    </form>
+
+    <!-- Tabela -->
+    <div class="card overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="table-header text-xs text-slate-500 uppercase">
+                <tr>
+                    <th class="px-4 py-3 text-left">Titulo</th>
+                    <th class="px-4 py-3 text-left">Categoria</th>
+                    <th class="px-4 py-3 text-left">Status</th>
+                    <th class="px-4 py-3 text-left">Publicada em</th>
+                    <th class="px-4 py-3 text-right">Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for noticia in page_obj %}
+            <tr class="border-t border-slate-50 hover:bg-slate-50">
+                <td class="px-4 py-2 max-w-sm">
+                    <span class="block truncate font-medium text-slate-800" title="{{ noticia.titulo }}">{{ noticia.titulo|truncatechars:70 }}</span>
+                    {% if noticia.fonte %}<span class="text-xs text-slate-400">{{ noticia.fonte.nome }}</span>{% endif %}
+                </td>
+                <td class="px-4 py-2 text-slate-600 text-xs">{{ noticia.categoria|default:"—" }}</td>
+                <td class="px-4 py-2">
+                    {% if noticia.status == "published" %}
+                        <span class="badge badge-green">Publicada</span>
+                    {% elif noticia.status == "draft" %}
+                        <span class="badge badge-yellow">Rascunho</span>
+                    {% else %}
+                        <span class="badge badge-gray">Arquivada</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-2 text-xs text-slate-500 whitespace-nowrap">{{ noticia.publicada_em|date:"d/m/Y H:i" }}</td>
+                <td class="px-4 py-2 text-right whitespace-nowrap">
+                    <a href="{{ noticia.get_absolute_url }}" target="_blank" class="text-blue-600 hover:underline text-xs mr-2">Ver</a>
+                    <a href="{% url 'superadmin_noticia_delete' noticia.pk %}" class="text-red-600 hover:underline text-xs">Excluir</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-4 py-8 text-center text-slate-400">Nenhuma noticia encontrada.</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Paginacao -->
+        {% if page_obj.has_other_pages %}
+        <div class="px-4 py-3 border-t border-slate-100 flex items-center justify-between text-sm">
+            <span class="text-slate-500 text-xs">
+                Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            </span>
+            <div class="flex gap-2">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&q={{ busca }}&status={{ status_filtro }}&categoria={{ categoria }}" class="btn btn-secondary text-xs">Anterior</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&q={{ busca }}&status={{ status_filtro }}&categoria={{ categoria }}" class="btn btn-secondary text-xs">Proxima</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

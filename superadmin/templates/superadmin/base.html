@@ -1,0 +1,136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Painel NCfly{% endblock %}</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { brand: { 600: '#2563eb', 700: '#1d4ed8', 50: '#eff6ff' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; }
+        .sidebar { width: 220px; min-height: 100vh; background: #0f172a; }
+        .sidebar a { display: flex; align-items: center; gap: .5rem; padding: .6rem 1rem; color: #94a3b8; font-size: .875rem; border-radius: .375rem; transition: background .15s, color .15s; text-decoration: none; }
+        .sidebar a:hover, .sidebar a.active { background: #1e293b; color: #f1f5f9; }
+        .sidebar a.active { color: #60a5fa; }
+        .badge { display: inline-flex; align-items: center; padding: .15rem .5rem; border-radius: 9999px; font-size: .7rem; font-weight: 600; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-yellow { background: #fef9c3; color: #854d0e; }
+        .badge-gray { background: #f1f5f9; color: #475569; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+        .btn { display: inline-flex; align-items: center; gap: .375rem; padding: .5rem 1rem; border-radius: .5rem; font-size: .875rem; font-weight: 500; cursor: pointer; transition: background .15s; border: none; text-decoration: none; }
+        .btn-primary { background: #2563eb; color: #fff; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-danger { background: #dc2626; color: #fff; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-secondary { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+        .btn-secondary:hover { background: #e2e8f0; }
+        .card { background: #fff; border-radius: .75rem; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+        .table-header { background: #f8fafc; }
+        input[type=text], input[type=url], input[type=email], input[type=number], select, textarea {
+            width: 100%; padding: .5rem .75rem; border: 1px solid #e2e8f0; border-radius: .5rem;
+            font-size: .875rem; color: #0f172a; background: #fff;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+        label { display: block; margin-bottom: .25rem; font-size: .8125rem; color: #64748b; font-weight: 500; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full">
+
+<div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="sidebar flex-shrink-0 flex flex-col py-4 px-2 gap-1">
+        <div class="px-3 mb-4">
+            <span class="text-white font-bold text-sm tracking-wide">NC Fly</span>
+            <span class="block text-xs text-slate-500 mt-0.5">Painel Interno</span>
+        </div>
+
+        <a href="{% url 'superadmin_dashboard' %}" class="{% if menu_ativo == 'dashboard' %}active{% endif %}">
+            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            Dashboard
+        </a>
+
+        <a href="{% url 'superadmin_noticias_list' %}" class="{% if menu_ativo == 'noticias' %}active{% endif %}">
+            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 6h16M4 10h16M4 14h10M4 18h8"/>
+            </svg>
+            Noticias
+        </a>
+
+        <a href="{% url 'superadmin_artigo_upload' %}" class="{% if menu_ativo == 'upload' %}active{% endif %}">
+            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14M5 12l7-7 7 7"/>
+            </svg>
+            Subir Artigo
+        </a>
+
+        <a href="{% url 'superadmin_empresas_list' %}" class="{% if menu_ativo == 'empresas' %}active{% endif %}">
+            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 20h16M6 20V8h12v12M9 4h6v4H9z"/>
+            </svg>
+            Empresas
+        </a>
+
+        <div class="mt-auto pt-4 border-t border-slate-700 mx-2">
+            <span class="block text-xs text-slate-500 px-2 truncate" title="{{ request.user.email }}">{{ request.user.email }}</span>
+            <a href="{% url 'logout' %}" class="mt-1 text-slate-400 hover:text-red-400">
+                <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+                </svg>
+                Sair
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="flex-1 flex flex-col min-w-0">
+
+        <!-- Topbar -->
+        <header class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between">
+            <h1 class="text-sm font-semibold text-slate-700">{% block page_title %}Painel NCfly{% endblock %}</h1>
+            <span class="text-xs text-slate-400">{{ request.user.email }}</span>
+        </header>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="px-6 pt-4 space-y-2">
+            {% for msg in messages %}
+            <div class="px-4 py-2 rounded-lg text-sm font-medium
+                {% if msg.tags == 'success' %}bg-green-50 text-green-800 border border-green-200
+                {% elif msg.tags == 'error' %}bg-red-50 text-red-800 border border-red-200
+                {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+                {{ msg }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Content -->
+        <main class="flex-1 p-6">
+            {% block content %}{% endblock %}
+        </main>
+
+    </div>
+</div>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

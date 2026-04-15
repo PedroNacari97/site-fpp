@@ -1,0 +1,61 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Subir Artigo — Painel NCfly{% endblock %}
+{% block page_title %}Subir Artigo Manual{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto card p-6">
+    <form method="post" enctype="multipart/form-data" class="space-y-5">
+        {% csrf_token %}
+
+        <div>
+            <label for="titulo">Titulo *</label>
+            <input type="text" id="titulo" name="titulo" required value="{{ form_data.titulo|default:'' }}" placeholder="Titulo do artigo">
+        </div>
+
+        <div>
+            <label for="resumo">Resumo *</label>
+            <textarea id="resumo" name="resumo" rows="3" required placeholder="Resumo curto do artigo">{{ form_data.resumo|default:'' }}</textarea>
+        </div>
+
+        <div>
+            <label for="conteudo">Conteudo *</label>
+            <textarea id="conteudo" name="conteudo" rows="10" required placeholder="Conteudo completo (HTML ou texto)">{{ form_data.conteudo|default:'' }}</textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="categoria">Categoria</label>
+                <input type="text" id="categoria" name="categoria" value="{{ form_data.categoria|default:'' }}" placeholder="ex: milhas-e-pontos">
+            </div>
+            <div>
+                <label for="topico">Topico</label>
+                <input type="text" id="topico" name="topico" value="{{ form_data.topico|default:'' }}" placeholder="ex: Smiles">
+            </div>
+        </div>
+
+        <div>
+            <label for="url_fonte">URL da fonte *</label>
+            <input type="url" id="url_fonte" name="url_fonte" required value="{{ form_data.url_fonte|default:'' }}" placeholder="https://...">
+        </div>
+
+        <div>
+            <label for="imagem">Imagem (opcional)</label>
+            <input type="file" id="imagem" name="imagem" accept="image/*" style="padding:.4rem .5rem;">
+        </div>
+
+        <div>
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="draft" {% if form_data.status == "draft" or not form_data %}selected{% endif %}>Rascunho</option>
+                <option value="published" {% if form_data.status == "published" %}selected{% endif %}>Publicada</option>
+                <option value="archived" {% if form_data.status == "archived" %}selected{% endif %}>Arquivada</option>
+            </select>
+        </div>
+
+        <div class="flex gap-3 justify-end pt-2">
+            <a href="{% url 'superadmin_noticias_list' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Publicar Artigo</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

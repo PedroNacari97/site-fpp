@@ -56,6 +56,9 @@ urlpatterns = [
     path("adm/", include("gestao.urls_admin")),
     path("accounts/", include("accounts.urls")),
     path("home/", include("portal.urls")),
+    path("painel-ncfly/", include("superadmin.urls")),
+    # django-allauth — Google OAuth callback (path separado para nao conflitar com accounts/)
+    path("auth/", include("allauth.urls")),
     path("", RedirectView.as_view(pattern_name="portal_home", permanent=False)),
 ]
 

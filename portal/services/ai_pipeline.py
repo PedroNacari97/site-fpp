@@ -6,6 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 from html import escape
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -62,19 +63,24 @@ _SYSTEM_PROMPT_REWRITE = (
     "- tags: até 5 tags (marcas, programas, tópicos principais)\n"
     "- slug: lowercase com hífens, até 220 chars\n"
     "- topico: subcategoria editorial\n"
-    "- imagem_prompt: OBRIGATÓRIO: descrição visual detalhada (3-5 frases) para geração de imagem via DALL-E/gpt-image-1. "
-    "REGRA CRÍTICA: o prompt DEVE descrever uma cena diretamente relacionada ao TEMA REAL do artigo (use o título e as marcas/programas mencionados como base). "
-    "NÃO gere cenas genéricas de avião ou aeroporto para artigos sobre cashback, cartões ou recompensas. "
-    "Escolha a cena pela categoria E pelas marcas/programas identificados no título: "
-    "'Promoções' → smartphone moderno exibindo oferta de viagem na tela, confetes coloridos, urgência visual, bokeh vermelho-dourado; "
-    "'Milhas e Pontos' → se mencionar Livelo: cena de recompensas cashback com tons azul-coral, pessoa em ambiente urbano segurando celular com pontos na tela; "
-    "se mencionar transferência bonificada: painel digital de pontos subindo com efeito holográfico, confetes dourados; "
-    "caso geral de Milhas e Pontos: boarding pass estilizado com cartão de fidelidade, aeroporto ao amanhecer; "
-    "'Cartões de Crédito' → cartão premium em destaque sobre mármore escuro, lifestyle financeiro urbano sofisticado; "
-    "'Hotéis e Resorts' → piscina infinita com vista para o mar, hotel de luxo, luz dourada ao pôr do sol; "
-    "'Viagens' → destino geográfico específico se mencionado no título (praia, montanha, cidade), viajante em aeroporto moderno; "
-    "Estilo: fotografia editorial profissional, luz natural, composição limpa como capa de revista premium. "
-    "Proibido: texto visível, logos de marcas reais, rostos identificáveis, watermark\n"
+    "- imagem_prompt: OBRIGATÓRIO: descrição visual detalhada (3-5 frases) em inglês para geração de imagem via gpt-image-1. "
+    "PASSO 1 — Identifique marcas/programas/destinos no título. "
+    "PASSO 2 — Use a cor HEX da marca como paleta dominante (referência: <<BRAND_COLORS_TABLE>>). "
+    "PASSO 3 — Se houver destino geográfico no título (cidade, país, praia), priorize uma cena desse local. "
+    "PASSO 4 — Mencione explicitamente o nome da marca/companhia na cena quando relevante "
+    "(ex: 'LATAM aircraft livery', 'Livelo loyalty app screen', 'Nubank card on marble'). "
+    "ANTI-FESTA OBRIGATÓRIO: a palavra 'promoção' NÃO significa festa. "
+    "ABSOLUTAMENTE PROIBIDO em qualquer imagem: balões, chapéus de festa, confetes, presentes, bolos, "
+    "fogos de artifício, multidão celebrando, sacolas de compras, ambiente de varejo ou supermercado. "
+    "Promoção de passagem = oportunidade de viagem → mostre aeronave, aeroporto, destino ou app de viagem. "
+    "Cenas por categoria: "
+    "'Promoções' → aircraft or destination scene with brand colors, urgency through composition not party elements; "
+    "'Milhas e Pontos' → loyalty app, boarding pass, or airport with brand color lighting; "
+    "'Cartões de Crédito' → premium card hero shot with brand accent lighting; "
+    "'Hotéis e Resorts' → luxury hotel or infinity pool with brand color tones; "
+    "'Viagens' → specific geographic landmark or destination from the article title. "
+    "Estilo: professional editorial photography, natural light, clean composition. "
+    "Permitido: brand names on objects (aircraft, cards, signage). Proibido: rostos identificáveis, watermark\n"
     "- categoria: uma das 5 categorias acima\n\n"
 
     "## CHECKLIST ANTES DE RESPONDER\n"
@@ -463,6 +469,69 @@ BRAND_COVER_THEMES = (
 )
 
 
+# ─── CATÁLOGO DE MARCAS ──────────────────────────────────────────────────────
+# Ordem importa: keywords mais específicos primeiro para evitar match errado.
+# cor_hex: usada no prompt de imagem para dar identidade visual à cena gerada.
+# logo_url: PNG/JPEG/WebP válido para uso como referência visual no GPT-image edits.
+#           SVGs e URLs vazias são omitidos — a API só aceita formatos raster.
+BRAND_CATALOG: list[dict] = [
+    # Programas de Pontos/Milhas
+    {"keywords": ["latam pass", "latampass"],         "name": "LATAM Pass",          "cor_hex": "#7000ac", "logo_url": ""},
+    {"keywords": ["azul fidelidade", "tudo azul"],    "name": "Azul Fidelidade",      "cor_hex": "#5061aa", "logo_url": ""},
+    {"keywords": ["livelo"],                          "name": "Livelo",               "cor_hex": "#df0978", "logo_url": "https://cdn.brandfetch.io/idcBSnzgu0/w/180/h/180/theme/dark/logo.png"},
+    {"keywords": ["smiles"],                          "name": "Smiles",               "cor_hex": "#eb7f02", "logo_url": "https://cdn.brandfetch.io/idGtn14sSi/w/400/h/400/theme/dark/icon.jpeg"},
+    {"keywords": ["esfera"],                          "name": "Esfera",               "cor_hex": "#2e30ad", "logo_url": "https://cdn.brandfetch.io/idw4hqM92g/w/256/h/55/theme/dark/logo.png"},
+    {"keywords": ["dotz"],                            "name": "Dotz",                 "cor_hex": "#fd7e14", "logo_url": "https://cdn.brandfetch.io/idxu_hsnK3/w/240/h/125/theme/dark/logo.png"},
+    {"keywords": ["premmia"],                         "name": "Premmia",              "cor_hex": "#31db4e", "logo_url": "https://cdn.brandfetch.io/id0LIQIb4i/w/820/h/323/theme/light/logo.png"},
+    # Companhias Aéreas
+    {"keywords": ["latam airlines", "latam"],         "name": "LATAM Airlines",       "cor_hex": "#7000ac", "logo_url": ""},
+    {"keywords": ["gol airlines", "voe gol", " gol "],"name": "GOL",                 "cor_hex": "#ff7020", "logo_url": "https://cdn.brandfetch.io/id1XOAor3l/w/400/h/400/theme/dark/icon.jpeg"},
+    {"keywords": ["azul airlines", "voe azul", " azul "], "name": "Azul Airlines",   "cor_hex": "#5061aa", "logo_url": "https://cdn.brandfetch.io/idY8UKgMnI/w/389/h/389/theme/dark/icon.jpeg"},
+    {"keywords": ["avianca"],                         "name": "Avianca",              "cor_hex": "#c8102e", "logo_url": "https://cdn.brandfetch.io/idgYzF_oJj/w/960/h/960/theme/dark/icon.jpeg"},
+    {"keywords": ["tap air", "tap portugal", " tap "],"name": "TAP Air Portugal",     "cor_hex": "#eb2d2e", "logo_url": "https://cdn.brandfetch.io/idYGJZtC7P/w/400/h/400/theme/dark/icon.jpeg"},
+    {"keywords": ["emirates"],                        "name": "Emirates",             "cor_hex": "#c60c30", "logo_url": "https://cdn.brandfetch.io/idItGcrKZZ/w/400/h/400/theme/dark/icon.jpeg"},
+    {"keywords": ["qatar airways", "qatar"],          "name": "Qatar Airways",        "cor_hex": "#8e2157", "logo_url": "https://cdn.brandfetch.io/idZKewuK9S/w/400/h/400/theme/dark/icon.jpeg"},
+    {"keywords": ["lufthansa"],                       "name": "Lufthansa",            "cor_hex": "#05164d", "logo_url": ""},
+    {"keywords": ["united airlines", "united"],       "name": "United Airlines",      "cor_hex": "#1414d2", "logo_url": ""},
+    {"keywords": ["delta airlines", "delta"],         "name": "Delta",                "cor_hex": "#e51937", "logo_url": ""},
+    {"keywords": ["american airlines"],               "name": "American Airlines",    "cor_hex": "#0078d2", "logo_url": ""},
+    {"keywords": ["british airways"],                 "name": "British Airways",      "cor_hex": "#2f5e9e", "logo_url": ""},
+    {"keywords": ["copa airlines", "copa air"],       "name": "Copa Airlines",        "cor_hex": "#0032a0", "logo_url": "https://cdn.brandfetch.io/id7Krz3SDX/w/331/h/331/theme/dark/icon.jpeg"},
+    {"keywords": ["turkish airlines", "turkish"],     "name": "Turkish Airlines",     "cor_hex": "#c70a0c", "logo_url": ""},
+    {"keywords": ["klm"],                             "name": "KLM",                  "cor_hex": "#0095db", "logo_url": "https://cdn.brandfetch.io/id6HKDgYDF/w/820/h/547/theme/dark/logo.png"},
+    {"keywords": ["iberia"],                          "name": "Iberia",               "cor_hex": "#d7192d", "logo_url": "https://cdn.brandfetch.io/id7Ift3wzp/w/400/h/400/theme/dark/icon.jpeg"},
+    {"keywords": ["swiss"],                           "name": "Swiss",                "cor_hex": "#e60005", "logo_url": ""},
+    {"keywords": ["aerolineas"],                      "name": "Aerolíneas Argentinas","cor_hex": "#f6bb60", "logo_url": "https://cdn.brandfetch.io/idh0TdD3uK/w/200/h/200/theme/dark/icon.png"},
+    # Bancos
+    {"keywords": ["nubank", "nu pagamentos"],         "name": "Nubank",               "cor_hex": "#8a05be", "logo_url": "https://cdn.brandfetch.io/idXWQ2eElW/w/1079/h/1079/theme/dark/icon.png"},
+    {"keywords": ["itau", "itaú"],                    "name": "Itaú",                 "cor_hex": "#FF6200", "logo_url": "https://cdn.brandfetch.io/idAciuyyPp/w/600/h/600/theme/light/logo.webp"},
+    {"keywords": ["bradesco"],                        "name": "Bradesco",             "cor_hex": "#ee032c", "logo_url": "https://cdn.brandfetch.io/idJ-h_LNzX/w/820/h/683/theme/dark/logo.png"},
+    {"keywords": ["santander"],                       "name": "Santander",            "cor_hex": "#ea1d25", "logo_url": "https://cdn.brandfetch.io/idex3vA3bq/w/400/h/400/theme/dark/icon.jpeg"},
+    {"keywords": ["banco do brasil", " bb "],         "name": "Banco do Brasil",      "cor_hex": "#FCFC30", "logo_url": ""},
+    {"keywords": ["caixa economica", "caixa federal"],"name": "Caixa Econômica",      "cor_hex": "#F59700", "logo_url": ""},
+    {"keywords": [" inter ", "banco inter"],          "name": "Inter",                "cor_hex": "#FF6E07", "logo_url": ""},
+    {"keywords": ["c6 bank", "c6bank"],               "name": "C6 Bank",              "cor_hex": "#FFE45C", "logo_url": "https://cdn.brandfetch.io/id9QKeTheX/w/400/h/400/theme/dark/icon.png"},
+    {"keywords": ["btg pactual", " btg "],            "name": "BTG Pactual",          "cor_hex": "#195AB4", "logo_url": "https://cdn.brandfetch.io/id2okqRkOi/w/400/h/400/theme/dark/icon.jpeg"},
+    {"keywords": ["xp investimentos", " xp "],        "name": "XP Investimentos",     "cor_hex": "#ffc60a", "logo_url": ""},
+    # Cartões
+    {"keywords": ["american express", "amex"],        "name": "American Express",     "cor_hex": "#006fcf", "logo_url": "https://cdn.brandfetch.io/idgUmCD6wN/w/820/h/820/theme/dark/logo.png"},
+    {"keywords": ["mastercard"],                      "name": "Mastercard",           "cor_hex": "#f79e1b", "logo_url": "https://cdn.brandfetch.io/idy21VLzkM/w/180/h/180/theme/dark/logo.png"},
+    {"keywords": [" visa "],                          "name": "Visa",                 "cor_hex": "#1a1f71", "logo_url": ""},
+    {"keywords": [" elo "],                           "name": "Elo",                  "cor_hex": "#003933", "logo_url": ""},
+    # Hotéis
+    {"keywords": ["marriott bonvoy", "marriott"],     "name": "Marriott Bonvoy",      "cor_hex": "#FF9962", "logo_url": "https://cdn.brandfetch.io/id0DQ-cAhI/w/360/h/360/theme/dark/icon.png"},
+    {"keywords": ["hilton honors", "hilton"],         "name": "Hilton",               "cor_hex": "#0E468B", "logo_url": ""},
+    {"keywords": ["world of hyatt", "hyatt"],         "name": "Hyatt",                "cor_hex": "#FFB612", "logo_url": "https://cdn.brandfetch.io/idW8vrk2w-/w/400/h/400/theme/dark/icon.jpeg"},
+    {"keywords": ["ihg rewards", " ihg "],            "name": "IHG",                  "cor_hex": "#1F4456", "logo_url": ""},
+    {"keywords": ["all accor", " accor "],            "name": "Accor ALL",            "cor_hex": "#B88D5B", "logo_url": "https://cdn.brandfetch.io/ido2CWqEYs/w/1980/h/521/theme/light/logo.png"},
+    # OTAs / Viagens
+    {"keywords": ["booking.com", "booking"],          "name": "Booking.com",          "cor_hex": "#0071C2", "logo_url": ""},
+    {"keywords": ["airbnb"],                          "name": "Airbnb",               "cor_hex": "#ff385c", "logo_url": "https://cdn.brandfetch.io/idqFsjQshX/w/76/h/76/theme/dark/logo.png"},
+    {"keywords": ["decolar"],                         "name": "Decolar",              "cor_hex": "#550fed", "logo_url": "https://cdn.brandfetch.io/ids1XUQPdz/w/820/h/177/theme/dark/logo.png"},
+    {"keywords": ["maxmilhas"],                       "name": "Maxmilhas",            "cor_hex": "#050c16", "logo_url": "https://cdn.brandfetch.io/idVpvUW8tj/w/400/h/400/theme/dark/icon.jpeg"},
+]
+
+
 GENERIC_COVER_PALETTES = (
     {
         "background_start": "#0f172a",
@@ -846,6 +915,98 @@ def _clean_generated_text(value: str) -> str:
     return "\n\n".join(parts)
 
 
+def _detect_brands(text: str) -> list[dict]:
+    """Detecta marcas presentes no texto usando o BRAND_CATALOG.
+    Usa word boundary (\\b) para evitar falsos positivos (ex: "gol" em "angola").
+    Retorna lista de entradas do catálogo, sem duplicatas, na ordem de detecção."""
+    normalized = _normalize_lookup(text)
+    detected: list[dict] = []
+    seen: set[str] = set()
+    for brand in BRAND_CATALOG:
+        if brand["name"] in seen:
+            continue
+        for kw in brand["keywords"]:
+            pattern = rf"\b{re.escape(_normalize_lookup(kw))}\b"
+            if re.search(pattern, normalized):
+                detected.append(brand)
+                seen.add(brand["name"])
+                break
+    return detected
+
+
+# Descrições semânticas de cor por HEX — ajudam o GPT-image a entender
+# o tom/atmosfera da cor, não apenas o valor numérico.
+_BRAND_COLOR_SEMANTICS: dict[str, str] = {
+    "#df0978": "vibrant magenta-pink (energetic, bold, modern)",
+    "#eb7f02": "warm amber-orange (friendly, dynamic)",
+    "#2e30ad": "deep royal blue (trustworthy, corporate)",
+    "#7000ac": "rich purple (premium, prestigious)",
+    "#5061aa": "medium cobalt blue (reliable, professional)",
+    "#fd7e14": "bright orange (lively, accessible)",
+    "#31db4e": "vivid green (fresh, rewarding)",
+    "#ff7020": "vibrant orange-red (energetic, bold)",
+    "#c8102e": "strong red (classic, authoritative)",
+    "#eb2d2e": "bright red (decisive, impactful)",
+    "#c60c30": "deep crimson (luxury, prestige)",
+    "#8e2157": "dark burgundy-magenta (exclusive, refined)",
+    "#05164d": "navy blue (classic, dependable)",
+    "#1414d2": "electric blue (modern, bold)",
+    "#e51937": "vivid red (iconic, powerful)",
+    "#0078d2": "sky blue (open, trustworthy)",
+    "#2f5e9e": "steel blue (reliable, British)",
+    "#0032a0": "cobalt blue (professional, stable)",
+    "#c70a0c": "rich red (bold, international)",
+    "#0095db": "bright cyan-blue (clean, Dutch)",
+    "#8a05be": "deep violet (innovative, disruptive)",
+    "#FF6200": "warm orange (approachable, Brazilian)",
+    "#ee032c": "bright red (strong, financial)",
+    "#ea1d25": "vivid red (modern banking)",
+    "#FCFC30": "bright yellow (national, institutional)",
+    "#F59700": "golden amber (accessible, inclusive)",
+    "#FF6E07": "vibrant orange (digital, modern)",
+    "#FFE45C": "soft yellow (calm, digital)",
+    "#195AB4": "strong blue (institutional, financial)",
+    "#ffc60a": "golden yellow (investment, growth)",
+    "#006fcf": "classic blue (prestige, premium)",
+    "#f79e1b": "amber-gold (global, trusted)",
+    "#1a1f71": "dark navy blue (secure, global)",
+    "#003933": "dark teal-green (solid, financial)",
+    "#FF9962": "soft peach-coral (welcoming, luxury hospitality)",
+    "#0E468B": "deep blue (elegant, established)",
+    "#FFB612": "golden yellow (warm, aspirational)",
+    "#1F4456": "dark teal (refined, international)",
+    "#B88D5B": "warm gold (sophisticated, premium hospitality)",
+    "#0071C2": "bright blue (digital, modern travel)",
+    "#ff385c": "coral-red (vibrant, community)",
+    "#550fed": "electric purple (bold, tech travel)",
+    "#050c16": "near-black navy (serious, specialist)",
+}
+
+
+def _brand_color_context(brands: list[dict]) -> str:
+    """Gera instrução de cor com contexto semântico para o prompt de imagem."""
+    if not brands:
+        return ""
+    top = brands[:3]
+    if len(top) == 1:
+        b = top[0]
+        semantic = _BRAND_COLOR_SEMANTICS.get(b["cor_hex"], "distinctive brand color")
+        return (
+            f"Use {b['name']}'s brand color {b['cor_hex']} ({semantic}) as the dominant "
+            f"color accent — apply it as atmospheric lighting, bokeh, or environmental tones. "
+            f"Keep it as accent (30-40% of composition), not a solid fill."
+        )
+    parts = []
+    for b in top:
+        semantic = _BRAND_COLOR_SEMANTICS.get(b["cor_hex"], "brand color")
+        parts.append(f"{b['name']}: {b['cor_hex']} ({semantic})")
+    colors = "; ".join(parts)
+    return (
+        f"Blend these brand color accents harmoniously in the scene: {colors}. "
+        f"Use them as atmospheric lighting and environmental tones, not solid fills."
+    )
+
+
 def _build_cover_focus_prompt(title: str, summary: str, category: str) -> str:
     label = _extract_cover_brand_label(title, summary, category)
     lowered = _normalize_lookup(f"{title} {summary}")
@@ -875,55 +1036,55 @@ def _build_cover_focus_prompt(title: str, summary: str, category: str) -> str:
 
 
 def _build_cover_prompt(title: str, summary: str, category: str) -> str:
-    """Constrói prompt de imagem contextualizado por título e categoria."""
+    """Constrói prompt de imagem contextualizado por título, categoria e marcas detectadas."""
     title_lower = (title + " " + summary).lower()
 
-    # Visual temático por categoria e marcas mencionadas
-    if "livelo" in title_lower:
+    detected_brands = _detect_brands(title + " " + summary)
+    color_instruction = _brand_color_context(detected_brands)
+
+    # Cena base por categoria/contexto
+    if category == "Promoções" or "promoç" in title_lower or "oferta" in title_lower or "desconto" in title_lower:
         scene = (
-            "Cena vibrante de recompensas e cashback: uma pessoa em ambiente urbano brasileiro "
-            "segurando um smartphone com tela brilhante exibindo pontos acumulados e um presente "
-            "sendo entregue. Paleta de cores azul royal e coral vibrante da marca Livelo, "
-            "confetes dourados ao fundo, sensação de conquista e alegria urbana."
-        )
-    elif category == "Promoções" or "promoç" in title_lower or "oferta" in title_lower or "desconto" in title_lower:
-        scene = (
-            "Cena de compra digital com urgência visual: smartphone moderno em destaque com tela "
-            "iluminada mostrando uma promoção de passagem aérea, confetes coloridos ao redor, "
-            "relógio digital indicando tempo limitado, fundo com luzes bokeh em vermelho e dourado, "
-            "composição dinâmica e energética que transmite oportunidade e urgência."
+            "Travel deal editorial scene: modern smartphone in hero position with glowing screen "
+            "showing a flight deal, dynamic composition with sense of urgency and opportunity, "
+            "bokeh lighting, clean and energetic layout."
         )
     elif "transferên" in title_lower or "bonificad" in title_lower or "transfer" in title_lower:
         scene = (
-            "Painel digital futurista com placar de pontos de milhas subindo rapidamente, "
-            "efeito de holografia sobre teclado iluminado, confetes dourados e azuis voando, "
-            "sensação de multiplicação e ganho, cores azul elétrico e dourado, ambiente tech moderno."
+            "Futuristic digital dashboard showing loyalty points multiplying rapidly, "
+            "holographic number display, sleek tech environment, sense of growth and gain."
         )
     elif category == "Milhas e Pontos" or "milhas" in title_lower or "pontos" in title_lower or "fidelidade" in title_lower:
         scene = (
-            "Aeroporto moderno ao amanhecer: pista de pouso iluminada com avião decolando ao fundo, "
-            "boarding pass estilizado e cartão de fidelidade em primeiro plano sobre superfície reflexiva, "
-            "iluminação quente e dourada, composição ampla e aspiracional que transmite liberdade de viajar."
+            "Modern international airport at dawn: illuminated runway with aircraft taking off, "
+            "stylized boarding pass and loyalty card in foreground on reflective surface, "
+            "warm golden light, wide aspirational composition evoking freedom to travel."
         )
     elif category == "Cartões de Crédito" or "cartão" in title_lower or "cartao" in title_lower:
         scene = (
-            "Cartão de crédito premium em destaque sobre mesa de mármore escuro, "
-            "ambiente sofisticado de lifestyle financeiro urbano, iluminação de estúdio com reflexo suave, "
-            "fundo desfocado com cidade noturna ao fundo, sensação de exclusividade e poder de compra."
+            "Premium credit card in hero position on dark marble surface, "
+            "sophisticated urban financial lifestyle, soft studio lighting with gentle reflection, "
+            "blurred night cityscape in background, sense of exclusivity."
+        )
+    elif category == "Hotéis e Resorts" or "hotel" in title_lower or "resort" in title_lower:
+        scene = (
+            "Infinity pool overlooking the ocean at golden hour, luxury hotel architecture, "
+            "warm sunlight reflecting on water, premium travel editorial photography style."
         )
     else:
         scene = (
-            "Avião comercial moderno em voo sobre paisagem urbana ao entardecer, "
-            "céu em tons de laranja e azul profundo, composição aérea ampla e aspiracional, "
-            "sensação de viagem e descoberta, fotorrealístico de alta qualidade."
+            "Modern commercial aircraft in flight over urban landscape at dusk, "
+            "sky in deep orange and blue tones, wide aspirational aerial composition, "
+            "sense of discovery and travel, photorealistic high quality."
         )
 
     return (
-        f"Crie uma imagem editorial fotorrealística para o artigo: '{title}'. "
+        f"Create a photorealistic editorial image for the article: '{title}'. "
         f"{scene} "
-        f"Contexto adicional: {summary[:180]}. "
-        "Regras absolutas: sem texto visível, sem logos de marcas reais, sem rostos identificáveis, "
-        "sem watermark, composição profissional e limpa como capa de revista de viagens premium."
+        f"{color_instruction} "
+        f"Additional context: {summary[:180]}. "
+        "Absolute rules: no visible text, no real brand logos, no identifiable faces, "
+        "no watermark, professional clean composition like a premium travel magazine cover."
     )
 
 def _build_cover_reference_prompt(title: str, summary: str, category: str) -> str:
@@ -1236,13 +1397,28 @@ NEWS_JSON_FIELDS = (
 )
 
 
+def _build_brand_colors_reference() -> str:
+    """Gera tabela de cores das marcas dinamicamente a partir do BRAND_CATALOG."""
+    parts = []
+    for brand in BRAND_CATALOG:
+        semantic = _BRAND_COLOR_SEMANTICS.get(brand["cor_hex"], "")
+        sem_note = f" ({semantic})" if semantic else ""
+        parts.append(f"{brand['name']}={brand['cor_hex']}{sem_note}")
+    return ", ".join(parts)
+
+
 def _build_news_system_prompt(*, schema_mode: bool) -> str:
     output_rule = (
         "Responda apenas com o JSON aceito pelo schema informado. Não inclua texto fora do JSON."
         if schema_mode
         else f"Responda apenas com JSON válido contendo exatamente estes campos: {NEWS_JSON_FIELDS}. Não inclua texto fora do JSON."
     )
-    return f"{_SYSTEM_PROMPT_REWRITE}\n\n{output_rule}"
+    brand_colors = _build_brand_colors_reference()
+    base = _SYSTEM_PROMPT_REWRITE.replace(
+        "<<BRAND_COLORS_TABLE>>",
+        brand_colors,
+    )
+    return f"{base}\n\n{output_rule}"
 
 
 def _build_news_user_prompt(source_name: str, raw_article: dict) -> str:
@@ -1709,15 +1885,63 @@ def _save_generated_file(name: str, content: bytes) -> str:
     return storage_path
 
 
-def _generate_ai_cover(prompt: str, reference_image_url: str = "") -> tuple[str | None, bool]:
+def _png_bytes_to_webp(png_bytes: bytes, quality: int = 85) -> bytes:
+    """Converte bytes PNG para WebP usando Pillow. Fallback: retorna PNG original."""
     try:
-        # 🔥 SEMPRE gerar imagem nova
-        response_json = _openai_image_generation_request(prompt)
+        from PIL import Image
+        with Image.open(io.BytesIO(png_bytes)) as img:
+            buf = io.BytesIO()
+            img.save(buf, format="WEBP", quality=quality, method=6)
+            return buf.getvalue()
+    except Exception:
+        return png_bytes
 
+
+def _generate_ai_cover(
+    prompt: str,
+    reference_image_url: str = "",
+    brand_logo_url: str = "",
+) -> tuple[str | None, bool]:
+    """Gera imagem de capa via GPT-image.
+
+    Prioridade de referência visual:
+    1. brand_logo_url  → usa /images/edits com logo da marca (melhor identidade)
+    2. reference_image_url → usa /images/edits com imagem da fonte
+    3. nenhum          → usa /images/generations puro
+    """
+    def _save(image_bytes: bytes) -> str:
+        webp_bytes = _png_bytes_to_webp(image_bytes)
+        ext = "webp" if len(webp_bytes) < len(image_bytes) else "png"
+        data = webp_bytes if ext == "webp" else image_bytes
+        name = f"portal/noticias/generated/{timezone.now():%Y%m%d%H%M%S}_{hashlib.sha1(prompt.encode('utf-8')).hexdigest()[:10]}.{ext}"
+        return _save_generated_file(name, data)
+
+    # Tentativa 1: logo da marca como referência visual
+    if brand_logo_url:
+        try:
+            response_json = _openai_image_edit_request(prompt, brand_logo_url)
+            image_bytes = _extract_generated_image_bytes(response_json)
+            if image_bytes:
+                return _save(image_bytes), True
+        except Exception:
+            pass  # Fallback para geração sem logo
+
+    # Tentativa 2: imagem da fonte como referência
+    if reference_image_url:
+        try:
+            response_json = _openai_image_edit_request(prompt, reference_image_url)
+            image_bytes = _extract_generated_image_bytes(response_json)
+            if image_bytes:
+                return _save(image_bytes), True
+        except Exception:
+            pass  # Fallback para geração pura
+
+    # Tentativa 3: geração pura sem referência
+    try:
+        response_json = _openai_image_generation_request(prompt)
         image_bytes = _extract_generated_image_bytes(response_json)
         if image_bytes:
-            file_name = f"portal/noticias/generated/{timezone.now():%Y%m%d%H%M%S}_{hashlib.sha1(prompt.encode('utf-8')).hexdigest()[:10]}.png"
-            return _save_generated_file(file_name, image_bytes), True
+            return _save(image_bytes), True
     except Exception:
         return None, False
     return None, False
@@ -1737,38 +1961,36 @@ def ensure_cover_for_news(draft: NewsDraft) -> tuple[str | None, bool]:
         llm_prompt = (draft.imagem_prompt or "").strip()
         titulo = (draft.titulo or "").lower()
 
-        # 🔒 Regra obrigatória de contexto (anti-festa)
+        # 🔒 Guardrail anti-festa (promoção de viagem ≠ festa)
         context_guardrail = (
-            "A imagem deve representar contexto de milhas, pontos, cartões ou viagens. "
-            "Evite completamente elementos de festa, comemoração, balões, confetes ou eventos festivos. "
-            "Promoções devem ser representadas como ofertas financeiras ou oportunidades de viagem."
+            "CRITICAL: This is a TRAVEL/MILES/FINANCIAL news image — NOT a party or celebration. "
+            "ABSOLUTELY FORBIDDEN: balloons, party hats, confetti, gift boxes, birthday cakes, "
+            "retail store settings, shopping bags, fireworks, crowd celebrations. "
+            "Promotion = travel deal or financial opportunity, always shown as: "
+            "aircraft, airport, destination, loyalty card, smartphone with travel app, or hotel."
         )
 
-        # 🧠 Contexto de marca (ESSENCIAL)
-        brand_context = ""
+        # 🧠 Contexto de marca — lookup automático no BRAND_CATALOG
+        tags_text = " ".join(draft.tags or [])
+        lookup_text = f"{draft.titulo or ''} {draft.resumo or ''} {tags_text}"
+        detected_brands = _detect_brands(lookup_text)
+        brand_context = _brand_color_context(detected_brands)
 
-        # ✈️ Companhias aéreas (mais livre)
-        if any(p in titulo for p in ["latam", "gol", "azul", "avianca"]):
-            brand_context = (
-                "Contexto de viagem aérea, com aeronaves, aeroportos, céu, cenas realistas de aviação, "
-                "ambiente profissional e moderno."
-            )
+        # 🏷️ Logo da marca principal para referência visual
+        brand_logo_url = ""
+        primary_brand = next((b for b in detected_brands if b.get("logo_url")), None)
+        if primary_brand:
+            brand_logo_url = primary_brand["logo_url"]
 
-        # 💳 Programas de pontos / milhas (mais controlado)
-        elif any(p in titulo for p in ["livelo", "esfera", "smiles", "pontos", "milhas"]):
-            brand_context = (
-                "Contexto de programa de pontos ou milhas, com interface digital, aplicativos, "
-                "cartões de crédito, elementos financeiros e tecnologia. "
-                "Visual moderno e limpo, sem elementos de festa ou comemoração."
-            )
-
-        # 🎨 Estilo padrão
+        # 🎨 Estilo editorial — marca pode aparecer de forma natural
         base_style = (
-            "Imagem estilo editorial, moderna, alta qualidade, iluminação profissional, "
-            "sem textos, sem marcas, composição limpa, formato horizontal."
+            "Editorial travel photography style, high quality, professional lighting, "
+            "clean composition. Brand logos and names MAY appear naturally in the scene "
+            "(e.g., on aircraft livery, loyalty card, app screen, or hotel signage) — "
+            "this is encouraged to reinforce brand recognition."
         )
 
-        # 🚀 LLM como principal
+        # 🚀 Monta prompt final
         if llm_prompt:
             prompt = f"{llm_prompt}. {context_guardrail} {brand_context} {base_style}"
         else:
@@ -1779,22 +2001,20 @@ def ensure_cover_for_news(draft: NewsDraft) -> tuple[str | None, bool]:
             )
             prompt = f"{fallback}. {context_guardrail} {brand_context} {base_style}"
 
-        # 📌 Referência de imagem
+        # 📌 Referência de imagem da fonte (quando aplicável)
         reference_image_url = (
             draft.imagem_url
             if has_source_image and force_original_cover and use_source_reference
             else ""
         )
 
-        final_prompt = (
-            prompt
-            if not reference_image_url
-            else f"{prompt}. Use a imagem de referência apenas como base visual, sem copiar."
-        )
+        if reference_image_url:
+            prompt = f"{prompt}. Use a imagem de referência apenas como base visual, sem copiar."
 
         storage_path, generated = _generate_ai_cover(
-            final_prompt,
-            reference_image_url=reference_image_url
+            prompt,
+            reference_image_url=reference_image_url,
+            brand_logo_url=brand_logo_url,
         )
 
         if not storage_path and reference_image_url:

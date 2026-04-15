@@ -29,9 +29,13 @@ from .models import (
     PortalMetricDaily,
 )
 from .services.ai_pipeline import (
+    BRAND_CATALOG,
     NewsDraft,
     _apply_quality_rules,
+    _brand_color_context,
+    _build_brand_colors_reference,
     _build_cover_prompt,
+    _detect_brands,
     _extract_cover_brand_label,
     _normalize_confidence,
     _render_svg_cover,
@@ -112,7 +116,7 @@ class PortalRoutesTest(TestCase):
         self.assertContains(response, "NC Fly")
         self.assertContains(response, self.noticia.titulo)
         self.assertContains(response, self.noticia.topico)
-        self.assertContains(response, "Quer receber novos alertas direto no seu e-mail?")
+        self.assertContains(response, "Alertas por e-mail")
         self.assertContains(response, "GRU")
         self.assertContains(response, "MIA")
         self.assertContains(response, "A partir de")
@@ -170,7 +174,8 @@ class PortalRoutesTest(TestCase):
         response = self.client.get(reverse("portal_home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content.decode().count("data-alerts-slide"), 15)
+        # Home tem 2 carrosséis de alertas (seção principal + bloco de e-mail), cada um limitado a 15
+        self.assertEqual(response.content.decode().count("data-alerts-slide"), 30)
 
     def test_home_publica_usa_nome_do_aeroporto_quando_cidade_nao_esta_disponivel(self):
         Aeroporto.objects.create(
@@ -516,8 +521,9 @@ class PortalRoutesTest(TestCase):
         response = self.client.get(reverse("portal_home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Telefone: (12) 99172-2902")
-        self.assertContains(response, 'href="tel:12991722902"', html=False)
+        self.assertContains(response, "(12) 99172-2902")
+        # Quando só o telefone é configurado, o context processor usa o número no link do WhatsApp
+        self.assertContains(response, "12991722902", html=False)
 
     @override_settings(PORTAL_CONTACT_EMAIL="atendimento@ncfly.com.br")
     def test_home_footer_exibe_email_institucional_quando_configurado(self):
@@ -562,7 +568,7 @@ class PortalRoutesTest(TestCase):
         response = self.client.get(reverse("portal_home"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Quer receber novos alertas direto no seu e-mail?")
+        self.assertContains(response, "Alertas por e-mail")
         self.assertContains(response, reverse("portal_termos_alertas_email"))
 
     def test_alertas_publicos_exibe_bloco_de_alertas_por_email(self):
@@ -860,7 +866,9 @@ class PortalCookieAndAiDiscoveryTest(TestCase):
         self.assertContains(response, "Privacidade e cookies")
         self.assertContains(response, "data-cookie-action=\"accept\"", html=False)
         self.assertContains(response, "Prefer")
-        self.assertContains(response, 'data-cookie-setting="analytics" checked', html=False)
+        # analytics é opt-in (LGPD): não marcado por padrão antes do usuário escolher
+        self.assertContains(response, 'data-cookie-setting="analytics"', html=False)
+        self.assertNotContains(response, 'data-cookie-setting="analytics" checked', html=False)
 
     def test_llms_txt_expoe_contexto_editorial(self):
         response = self.client.get(reverse("portal_llms"))
@@ -1674,12 +1682,11 @@ class PortalContentQualityTest(TestCase):
             "Campanha promocional com prazo curto e regras especificas para clientes elegiveis.",
             "Milhas e Pontos",
         )
-        self.assertIn("nova variacao visual", prompt)
-        self.assertIn("marcas, programas, companhias", prompt)
-        self.assertIn("nao uma copia da capa vista no site de referencia", prompt)
-        self.assertIn("Priorize um unico elemento hero", prompt)
-        self.assertIn("Evite colagens genericas", prompt)
-        self.assertIn("Sem texto, sem marcas d'agua", prompt)
+        self.assertIn("no visible text", prompt)
+        self.assertIn("no real brand logos", prompt)
+        self.assertIn("no watermark", prompt)
+        self.assertIn("professional clean composition", prompt)
+        self.assertIn("Transferencia bonificada de 30% entre programas", prompt)
 
     def test_render_svg_cover_quebra_titulo_em_linhas_e_escapa_caracteres(self):
         svg = _render_svg_cover(
@@ -1811,7 +1818,7 @@ class PortalContentQualityTest(TestCase):
         self.assertTrue(illustrative)
         _, kwargs = mock_generate_ai_cover.call_args
         self.assertEqual(kwargs["reference_image_url"], "https://origem.com/imagem.jpg")
-        self.assertIn("Edite a imagem de referencia", mock_generate_ai_cover.call_args.args[0])
+        self.assertIn("Use a imagem de refer", mock_generate_ai_cover.call_args.args[0])
 
     def test_sem_force_ai_images_mantem_imagem_da_fonte(self):
         draft = NewsDraft(
@@ -1840,6 +1847,115 @@ class PortalContentQualityTest(TestCase):
 
         self.assertIsNone(storage_path)
         self.assertFalse(illustrative)
+
+
+class BrandCatalogTest(TestCase):
+    """Testes unitários para _detect_brands, _brand_color_context e integração com BRAND_CATALOG."""
+
+    # ── _detect_brands ──────────────────────────────────────────────────────
+
+    def test_detect_brands_texto_vazio(self):
+        self.assertEqual(_detect_brands(""), [])
+
+    def test_detect_brands_nenhuma_marca(self):
+        self.assertEqual(_detect_brands("passagem barata para praia sem marca"), [])
+
+    def test_detect_brands_uma_marca_simples(self):
+        result = _detect_brands("Livelo lança promoção de pontos")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["name"], "Livelo")
+        self.assertEqual(result[0]["cor_hex"], "#df0978")
+
+    def test_detect_brands_case_insensitive(self):
+        result = _detect_brands("LATAM PASS com bônus de 100%")
+        names = [b["name"] for b in result]
+        self.assertIn("LATAM Pass", names)
+
+    def test_detect_brands_acentuacao(self):
+        result = _detect_brands("Itaú lança novo cartão premium")
+        names = [b["name"] for b in result]
+        self.assertIn("Itaú", names)
+
+    def test_detect_brands_multiplas_marcas(self):
+        result = _detect_brands("Transferência Smiles com cartão Nubank")
+        names = [b["name"] for b in result]
+        self.assertIn("Smiles", names)
+        self.assertIn("Nubank", names)
+
+    def test_detect_brands_sem_duplicatas_mesmo_nome(self):
+        # A mesma marca não deve aparecer duas vezes mesmo que dois keywords dela batam
+        result = _detect_brands("livelo livelo livelo")
+        names = [b["name"] for b in result]
+        self.assertEqual(names.count("Livelo"), 1)
+
+    def test_detect_brands_palavra_gol_sem_falso_positivo(self):
+        # "angola" contém "gol" mas não deve detectar GOL Airlines
+        result = _detect_brands("voos para angola com milhas")
+        names = [b["name"] for b in result]
+        self.assertNotIn("GOL", names)
+
+    def test_detect_brands_palavra_inter_sem_falso_positivo(self):
+        # "internacional" contém "inter" — não deve detectar banco Inter
+        result = _detect_brands("voos internacionais para miami")
+        names = [b["name"] for b in result]
+        self.assertNotIn("Inter", names)
+
+    def test_detect_brands_nao_altera_brand_catalog(self):
+        tamanho_antes = len(BRAND_CATALOG)
+        _detect_brands("livelo smiles nubank")
+        self.assertEqual(len(BRAND_CATALOG), tamanho_antes)
+
+    # ── _brand_color_context ────────────────────────────────────────────────
+
+    def test_brand_color_context_lista_vazia(self):
+        self.assertEqual(_brand_color_context([]), "")
+
+    def test_brand_color_context_uma_marca(self):
+        brands = [b for b in BRAND_CATALOG if b["name"] == "Livelo"]
+        context = _brand_color_context(brands)
+        self.assertIn("Livelo", context)
+        self.assertIn("#df0978", context)
+        self.assertIn("dominant", context)
+
+    def test_brand_color_context_multiplas_marcas(self):
+        brands = [b for b in BRAND_CATALOG if b["name"] in ("Livelo", "Smiles", "Nubank")]
+        context = _brand_color_context(brands)
+        self.assertIn("harmoniously", context)
+
+    def test_brand_color_context_limita_top_3(self):
+        # Com mais de 3 marcas, deve usar somente as 3 primeiras
+        top4 = BRAND_CATALOG[:4]
+        context = _brand_color_context(top4)
+        # Quarta marca não deve aparecer
+        self.assertNotIn(top4[3]["name"], context)
+
+    # ── Integração com _build_cover_prompt ───────────────────────────────────
+
+    def test_build_cover_prompt_injeta_cor_da_marca(self):
+        prompt = _build_cover_prompt(
+            "Livelo lança promoção relâmpago de cashback",
+            "Oferta válida somente hoje com 50% de desconto em pontos.",
+            "Promoções",
+        )
+        self.assertIn("#df0978", prompt)
+
+    def test_build_cover_prompt_sem_marca_nao_injeta_cor(self):
+        prompt = _build_cover_prompt(
+            "Passagem para Miami com milhas",
+            "Oportunidade de emissão com pontos acumulados.",
+            "Milhas e Pontos",
+        )
+        # Sem marca detectada, não deve ter hex de nenhuma marca
+        self.assertNotIn("#df0978", prompt)
+        self.assertNotIn("#eb7f02", prompt)
+
+    # ── _build_brand_colors_reference ────────────────────────────────────────
+
+    def test_build_brand_colors_reference_contem_todas_marcas(self):
+        ref = _build_brand_colors_reference()
+        for brand in BRAND_CATALOG:
+            self.assertIn(brand["name"], ref)
+            self.assertIn(brand["cor_hex"], ref)
 
 
 class PortalSingleUrlNewsSyncTest(TestCase):
@@ -2031,6 +2147,7 @@ class PortalSingleUrlNewsSyncTest(TestCase):
             "https://azulviagens.com.br/termos-e-condicoes",
         )
 
+    @patch.dict(os.environ, {"PORTAL_GENERATE_AI_IMAGES": "0", "OPENAI_API_KEY": ""})
     @patch("portal.services.news_sync_service.build_news_draft", side_effect=TimeoutError("timed out"))
     def test_sync_news_from_text_usa_fallback_local_quando_etapa_principal_falha(self, _mock_build_news_draft):
         from .services.news_sync_service import sync_news_from_text
@@ -2080,6 +2197,7 @@ class PortalSingleUrlNewsSyncTest(TestCase):
         self.assertEqual(noticia.metadata_json.get("cover_source"), "ai_generated")
         mock_ensure_cover.assert_called_once()
 
+    @patch.dict(os.environ, {"PORTAL_GENERATE_AI_IMAGES": "0", "OPENAI_API_KEY": ""})
     @patch("portal.services.news_sync_service.build_news_draft", side_effect=TimeoutError("timed out"))
     def test_sync_news_from_text_gera_capa_contextual_com_programa_referenciado(self, _mock_build_news_draft):
         from .services.news_sync_service import sync_news_from_text

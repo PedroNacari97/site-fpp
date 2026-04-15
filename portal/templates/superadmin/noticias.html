@@ -1,0 +1,181 @@
+{% extends "superadmin/base_superadmin.html" %}
+
+{% block title %}Not&iacute;cias — NCfly Admin{% endblock %}
+{% block breadcrumb %}Not&iacute;cias{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'superadmin_artigo_novo' %}" class="sa-btn sa-btn--primary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    Novo Artigo
+</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="sa-page-header">
+    <div>
+        <h1 class="sa-page-header__title">Not&iacute;cias Publicadas</h1>
+        <p class="sa-page-header__subtitle">
+            {% if total %}{{ total }} not&iacute;cia{{ total|pluralize:"s" }} encontrada{{ total|pluralize:"s" }}{% else %}Todas as not&iacute;cias do portal{% endif %}
+        </p>
+    </div>
+</div>
+
+<!-- FILTROS -->
+<div class="sa-card" style="margin-bottom:20px;padding:16px 20px;">
+    <form method="get" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+        <div class="sa-field" style="flex:1;min-width:200px;">
+            <label class="sa-label" for="id_q">Busca</label>
+            <input type="search" id="id_q" name="q" value="{{ request.GET.q|default:'' }}" placeholder="T&iacute;tulo ou palavra-chave..." class="sa-input">
+        </div>
+        <div class="sa-field" style="min-width:160px;">
+            <label class="sa-label" for="id_status">Status</label>
+            <select id="id_status" name="status" class="sa-select">
+                <option value="">Todos</option>
+                <option value="published" {% if request.GET.status == "published" %}selected{% endif %}>Publicadas</option>
+                <option value="draft"     {% if request.GET.status == "draft"     %}selected{% endif %}>Rascunhos</option>
+                <option value="archived"  {% if request.GET.status == "archived"  %}selected{% endif %}>Arquivadas</option>
+            </select>
+        </div>
+        <div class="sa-field" style="min-width:160px;">
+            <label class="sa-label" for="id_categoria">Categoria</label>
+            <select id="id_categoria" name="categoria" class="sa-select">
+                <option value="">Todas</option>
+                {% for cat in categorias %}
+                <option value="{{ cat }}" {% if request.GET.categoria == cat %}selected{% endif %}>{{ cat|capfirst }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <button type="submit" class="sa-btn sa-btn--primary">Filtrar</button>
+            <a href="{% url 'superadmin_noticias' %}" class="sa-btn sa-btn--ghost">Limpar</a>
+        </div>
+    </form>
+</div>
+
+<!-- TABELA -->
+<div class="sa-card" style="padding:0;">
+    {% if noticias %}
+    <div class="sa-table-wrap">
+        <table class="sa-table">
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th>T&iacute;tulo</th>
+                    <th>Categoria</th>
+                    <th>T&oacute;pico</th>
+                    <th>Status</th>
+                    <th>Publicada em</th>
+                    <th>Confiança</th>
+                    <th style="text-align:right;">A&ccedil;&otilde;es</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for noticia in noticias %}
+                <tr>
+                    <td style="color:var(--sa-text-muted);font-size:12px;">{{ noticia.pk }}</td>
+                    <td style="max-width:320px;">
+                        <div style="font-weight:500;color:var(--sa-text);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+                            {{ noticia.titulo }}
+                        </div>
+                        {% if noticia.topico %}
+                        <div style="font-size:11px;color:var(--sa-text-muted);margin-top:2px;">{{ noticia.topico }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if noticia.categoria %}
+                        <span class="sa-badge sa-badge--blue">{{ noticia.categoria }}</span>
+                        {% else %}
+                        <span style="color:var(--sa-text-muted);font-size:12px;">—</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:var(--sa-text-muted);font-size:12px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {{ noticia.topico|default:"—" }}
+                    </td>
+                    <td>
+                        {% if noticia.status == "published" %}
+                        <span class="sa-badge sa-badge--green">Publicada</span>
+                        {% elif noticia.status == "draft" %}
+                        <span class="sa-badge sa-badge--yellow">Rascunho</span>
+                        {% else %}
+                        <span class="sa-badge sa-badge--gray">Arquivada</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:var(--sa-text-muted);white-space:nowrap;font-size:12px;">
+                        {{ noticia.publicada_em|date:"d/m/Y H:i" }}
+                    </td>
+                    <td>
+                        {% with conf=noticia.confianca %}
+                        {% if conf >= 0.9 %}
+                        <span class="sa-badge sa-badge--green">{{ conf }}</span>
+                        {% elif conf >= 0.7 %}
+                        <span class="sa-badge sa-badge--yellow">{{ conf }}</span>
+                        {% else %}
+                        <span class="sa-badge sa-badge--red">{{ conf }}</span>
+                        {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:6px;justify-content:flex-end;white-space:nowrap;">
+                            <a href="{% url 'superadmin_artigo_editar' noticia.pk %}" class="sa-btn sa-btn--ghost sa-btn--sm">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"/></svg>
+                                Editar
+                            </a>
+                            <a href="{{ noticia.get_absolute_url }}" class="sa-btn sa-btn--ghost sa-btn--sm" target="_blank" rel="noopener" title="Ver no portal">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                            </a>
+                            <form method="post" action="{% url 'superadmin_noticia_excluir' noticia.pk %}" style="display:inline;" onsubmit="return confirm('Excluir esta notícia permanentemente?');">
+                                {% csrf_token %}
+                                <button type="submit" class="sa-btn sa-btn--danger sa-btn--sm" title="Excluir">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:13px;height:13px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGINAÇÃO -->
+    {% if is_paginated %}
+    <div style="padding:14px 20px;border-top:1px solid var(--sa-border);">
+        <nav class="sa-pagination" aria-label="Pagina&ccedil;&atilde;o">
+            {% if page_obj.has_previous %}
+            <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}{% if request.GET.categoria %}categoria={{ request.GET.categoria }}&{% endif %}page={{ page_obj.previous_page_number }}" class="sa-pagination__btn">
+                &laquo; Anterior
+            </a>
+            {% else %}
+            <span class="sa-pagination__btn is-disabled">&laquo; Anterior</span>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <span class="sa-pagination__btn is-active">{{ num }}</span>
+                {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}{% if request.GET.categoria %}categoria={{ request.GET.categoria }}&{% endif %}page={{ num }}" class="sa-pagination__btn">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}{% if request.GET.categoria %}categoria={{ request.GET.categoria }}&{% endif %}page={{ page_obj.next_page_number }}" class="sa-pagination__btn">
+                Pr&oacute;xima &raquo;
+            </a>
+            {% else %}
+            <span class="sa-pagination__btn is-disabled">Pr&oacute;xima &raquo;</span>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div style="padding:60px 20px;text-align:center;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:40px;height:40px;color:var(--sa-text-muted);margin:0 auto 12px;display:block;"><path d="M4 6h16M4 10h16M4 14h10M4 18h7"/></svg>
+        <p style="color:var(--sa-text-muted);font-size:14px;">Nenhuma not&iacute;cia encontrada com esses filtros.</p>
+        <a href="{% url 'superadmin_noticias' %}" class="sa-btn sa-btn--ghost" style="margin-top:14px;display:inline-flex;">Limpar filtros</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

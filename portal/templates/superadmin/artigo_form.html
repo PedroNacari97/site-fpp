@@ -1,0 +1,276 @@
+{% extends "superadmin/base_superadmin.html" %}
+
+{% block title %}{% if noticia %}Editar Artigo{% else %}Novo Artigo{% endif %} — NCfly Admin{% endblock %}
+{% block breadcrumb %}{% if noticia %}Editar Artigo{% else %}Subir Artigo{% endif %}{% endblock %}
+
+{% block topbar_actions %}
+{% if noticia %}
+<a href="{{ noticia.get_absolute_url }}" class="sa-btn sa-btn--ghost" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    Ver no portal
+</a>
+{% endif %}
+<a href="{% url 'superadmin_noticias' %}" class="sa-btn sa-btn--ghost">← Voltar</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="sa-page-header">
+    <div>
+        <h1 class="sa-page-header__title">{% if noticia %}Editar Artigo{% else %}Subir Artigo Manual{% endif %}</h1>
+        <p class="sa-page-header__subtitle">
+            {% if noticia %}Modifique os campos e salve para atualizar o portal.{% else %}Preencha os campos abaixo para publicar um artigo diretamente no portal.{% endif %}
+        </p>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" id="saArtigoForm">
+    {% csrf_token %}
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
+
+        <!-- COLUNA PRINCIPAL -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+            <!-- TITULO E SLUG -->
+            <div class="sa-card">
+                <p class="sa-card__title">Identifica&ccedil;&atilde;o</p>
+                <div class="sa-form-grid" style="gap:14px;">
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_titulo">T&iacute;tulo <span style="color:var(--sa-danger);">*</span></label>
+                        <input type="text" id="id_titulo" name="titulo"
+                               value="{{ noticia.titulo|default:'' }}"
+                               class="sa-input"
+                               placeholder="T&iacute;tulo do artigo"
+                               required maxlength="220">
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_slug">Slug</label>
+                        <input type="text" id="id_slug" name="slug"
+                               value="{{ noticia.slug|default:'' }}"
+                               class="sa-input"
+                               placeholder="gerado-automaticamente-do-titulo"
+                               maxlength="240">
+                        <span class="sa-field-hint">Deixe em branco para gerar automaticamente a partir do t&iacute;tulo.</span>
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_resumo">Resumo / Subtítulo <span style="color:var(--sa-danger);">*</span></label>
+                        <textarea id="id_resumo" name="resumo"
+                                  class="sa-textarea"
+                                  style="min-height:80px;"
+                                  placeholder="Resumo do artigo para listagens e SEO"
+                                  required>{{ noticia.resumo|default:'' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTEUDO -->
+            <div class="sa-card">
+                <p class="sa-card__title">Conte&uacute;do do Artigo <span style="color:var(--sa-danger);">*</span></p>
+                <div class="sa-field">
+                    <textarea id="id_conteudo" name="conteudo"
+                              class="sa-textarea"
+                              style="min-height:380px;font-size:14px;line-height:1.7;"
+                              placeholder="Escreva ou cole o conte&uacute;do completo aqui. HTML &eacute; suportado."
+                              required>{{ noticia.conteudo|default:'' }}</textarea>
+                    <span class="sa-field-hint">HTML &eacute; suportado. Use &lt;h2&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;a&gt;, listas, etc.</span>
+                </div>
+            </div>
+
+            <!-- IMAGEM -->
+            <div class="sa-card">
+                <p class="sa-card__title">Imagem de Capa</p>
+                <div class="sa-form-grid sa-form-grid--2" style="gap:14px;">
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_imagem">Upload de imagem</label>
+                        <input type="file" id="id_imagem" name="imagem"
+                               class="sa-input"
+                               accept="image/jpeg,image/png,image/webp">
+                        <span class="sa-field-hint">JPG, PNG ou WebP. Recomendado 1200x630px.</span>
+                        {% if noticia.imagem %}
+                        <div style="margin-top:10px;display:flex;align-items:center;gap:10px;">
+                            <img src="{{ noticia.imagem.url }}" alt="Imagem atual" style="width:80px;height:52px;object-fit:cover;border-radius:6px;border:1px solid var(--sa-border);">
+                            <div>
+                                <span style="font-size:12px;color:var(--sa-text-muted);">Imagem atual</span><br>
+                                <label style="font-size:12px;display:flex;align-items:center;gap:4px;margin-top:4px;cursor:pointer;">
+                                    <input type="checkbox" name="imagem-clear"> Remover imagem
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_imagem_url">URL externa da imagem</label>
+                        <input type="url" id="id_imagem_url" name="imagem_url"
+                               value="{{ noticia.imagem_url|default:'' }}"
+                               class="sa-input"
+                               placeholder="https://exemplo.com/imagem.jpg">
+                        <span class="sa-field-hint">Alternativa ao upload. O upload tem prioridade.</span>
+                    </div>
+                </div>
+                <div class="sa-field" style="margin-top:14px;">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--sa-text-muted);">
+                        <input type="checkbox" name="imagem_ilustrativa"
+                               {% if noticia.imagem_ilustrativa %}checked{% endif %}
+                               style="width:15px;height:15px;accent-color:var(--sa-accent);">
+                        Marcar como imagem ilustrativa (n&atilde;o representa literalmente a not&iacute;cia)
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- COLUNA LATERAL -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+            <!-- PUBLICAR -->
+            <div class="sa-card">
+                <p class="sa-card__title">Publicar</p>
+                <div class="sa-field" style="margin-bottom:14px;">
+                    <label class="sa-label" for="id_status">Status</label>
+                    <select id="id_status" name="status" class="sa-select">
+                        <option value="draft"     {% if noticia.status == "draft"     or not noticia %}selected{% endif %}>Rascunho</option>
+                        <option value="published" {% if noticia.status == "published" %}selected{% endif %}>Publicada</option>
+                        <option value="archived"  {% if noticia.status == "archived"  %}selected{% endif %}>Arquivada</option>
+                    </select>
+                </div>
+                <div class="sa-field" style="margin-bottom:16px;">
+                    <label class="sa-label" for="id_publicada_em">Data de publica&ccedil;&atilde;o</label>
+                    <input type="datetime-local" id="id_publicada_em" name="publicada_em"
+                           value="{{ noticia.publicada_em|date:'Y-m-d\TH:i'|default:'' }}"
+                           class="sa-input">
+                </div>
+                <button type="submit" name="action" value="save" class="sa-btn sa-btn--primary" style="width:100%;justify-content:center;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:15px;height:15px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    {% if noticia %}Salvar altera&ccedil;&otilde;es{% else %}Publicar artigo{% endif %}
+                </button>
+                {% if noticia %}
+                <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--sa-border);">
+                    <form method="post" action="{% url 'superadmin_noticia_excluir' noticia.pk %}"
+                          onsubmit="return confirm('Excluir este artigo permanentemente? Esta ação não pode ser desfeita.');">
+                        {% csrf_token %}
+                        <button type="submit" class="sa-btn sa-btn--danger" style="width:100%;justify-content:center;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                            Excluir artigo
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- CLASSIFICACAO -->
+            <div class="sa-card">
+                <p class="sa-card__title">Classifica&ccedil;&atilde;o</p>
+                <div class="sa-form-grid" style="gap:12px;">
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_categoria">Categoria</label>
+                        <select id="id_categoria" name="categoria" class="sa-select">
+                            <option value="">— Selecione —</option>
+                            <option value="milhas-e-pontos"  {% if noticia.categoria == "milhas-e-pontos"  %}selected{% endif %}>Milhas e Pontos</option>
+                            <option value="cartoes-credito"  {% if noticia.categoria == "cartoes-credito"  %}selected{% endif %}>Cart&otilde;es de Cr&eacute;dito</option>
+                            <option value="hoteis-resorts"   {% if noticia.categoria == "hoteis-resorts"   %}selected{% endif %}>Hot&eacute;is e Resorts</option>
+                            <option value="promocoes"        {% if noticia.categoria == "promocoes"        %}selected{% endif %}>Promo&ccedil;&otilde;es</option>
+                            <option value="viagens"          {% if noticia.categoria == "viagens"          %}selected{% endif %}>Viagens</option>
+                        </select>
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_topico">T&oacute;pico</label>
+                        <input type="text" id="id_topico" name="topico"
+                               value="{{ noticia.topico|default:'' }}"
+                               class="sa-input"
+                               placeholder="Ex: Smiles, Latam Pass, Azul..."
+                               maxlength="120">
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_tags">Tags</label>
+                        <input type="text" id="id_tags" name="tags_raw"
+                               value="{{ noticia.tags_json|join:', '|default:'' }}"
+                               class="sa-input"
+                               placeholder="milhas, smiles, promo&ccedil;&atilde;o...">
+                        <span class="sa-field-hint">Separadas por v&iacute;rgula.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FONTE -->
+            <div class="sa-card">
+                <p class="sa-card__title">Fonte</p>
+                <div class="sa-form-grid" style="gap:12px;">
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_url_fonte">URL da fonte original</label>
+                        <input type="url" id="id_url_fonte" name="url_fonte"
+                               value="{{ noticia.url_fonte|default:'' }}"
+                               class="sa-input"
+                               placeholder="https://...">
+                        <span class="sa-field-hint">Deixe em branco para artigos originais.</span>
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_confianca">Confiança (0.00 — 1.00)</label>
+                        <input type="number" id="id_confianca" name="confianca"
+                               value="{{ noticia.confianca|default:'1.00' }}"
+                               class="sa-input"
+                               min="0" max="1" step="0.01">
+                        <span class="sa-field-hint">1.00 = artigo original do NCfly.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INFO -->
+            {% if noticia %}
+            <div class="sa-card" style="padding:14px 16px;">
+                <p class="sa-card__title" style="margin-bottom:10px;">Informa&ccedil;&otilde;es</p>
+                <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--sa-text-muted);">
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>ID</span>
+                        <span style="color:var(--sa-text);">#{{ noticia.pk }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>Criado em</span>
+                        <span style="color:var(--sa-text);">{{ noticia.criada_em|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>Atualizado em</span>
+                        <span style="color:var(--sa-text);">{{ noticia.atualizada_em|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    {% if noticia.fonte %}
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>Fonte</span>
+                        <span style="color:var(--sa-text);">{{ noticia.fonte.nome }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</form>
+
+{% block extra_scripts %}
+<script>
+    // Auto-gera slug a partir do titulo (apenas quando editando um novo artigo)
+    {% if not noticia %}
+    const tituloInput = document.getElementById('id_titulo');
+    const slugInput   = document.getElementById('id_slug');
+    let slugManualmenteEditado = false;
+
+    slugInput.addEventListener('input', () => { slugManualmenteEditado = true; });
+
+    tituloInput.addEventListener('input', () => {
+        if (slugManualmenteEditado) return;
+        const slug = tituloInput.value
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .slice(0, 200);
+        slugInput.value = slug;
+    });
+    {% endif %}
+</script>
+{% endblock %}
+
+{% endblock %}

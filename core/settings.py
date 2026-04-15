@@ -99,16 +99,25 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",          # obrigatorio para django-allauth
     "portal",
     "painel_cliente",
     "gestao",
     "accounts",
     "storages",
+    "superadmin",
+    # django-allauth (Google OAuth para superadmin)
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
 ]
 
 AUTHENTICATION_BACKENDS = [
     "accounts.backends.CPFBackend",
     "django.contrib.auth.backends.ModelBackend",
+    # allauth usa ModelBackend por baixo; o adapter fica em SOCIALACCOUNT_ADAPTER
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 MIDDLEWARE = [
@@ -118,6 +127,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "allauth.account.middleware.AccountMiddleware",  # obrigatorio django-allauth >= 0.56
     "django.contrib.messages.middleware.MessageMiddleware",
     "accounts.middleware.SingleSessionMiddleware",
     "accounts.middleware.SessionInactivityMiddleware",
@@ -294,6 +304,10 @@ ADMIN_SESSION_IDLE_TIMEOUT_SECONDS = int(
 USER_SESSION_IDLE_TIMEOUT_SECONDS = int(
     os.environ.get("USER_SESSION_IDLE_TIMEOUT_SECONDS", str(60 * 60))
 )
+# Superadmin painel interno — somente este e-mail acessa /painel-ncfly/
+# Variavel de ambiente: SUPERADMIN_EMAIL
+SUPERADMIN_EMAIL = os.environ.get("SUPERADMIN_EMAIL", "pedro@ncfly.com.br").strip().lower()
+
 SUPERADMIN_MFA_ENABLED = _env_bool("SUPERADMIN_MFA_ENABLED", True)
 SUPERADMIN_MFA_CODE_TTL_MINUTES = int(
     os.environ.get("SUPERADMIN_MFA_CODE_TTL_MINUTES", "10")
@@ -425,3 +439,44 @@ LOGGING = {
 LOGIN_URL = reverse_lazy("login_custom")
 LOGIN_REDIRECT_URL = reverse_lazy("painel_dashboard")
 LOGOUT_REDIRECT_URL = reverse_lazy("login_custom")
+
+# ---------------------------------------------------------------------------
+# django-allauth — Google OAuth (usado para login do superadmin)
+# ---------------------------------------------------------------------------
+# Variaveis de ambiente necessarias no Railway:
+#   GOOGLE_OAUTH_CLIENT_ID      — Client ID do app no Google Cloud Console
+#   GOOGLE_OAUTH_CLIENT_SECRET  — Client Secret do app no Google Cloud Console
+#
+# No Google Cloud Console (console.cloud.google.com), em:
+#   APIs e servicos > Credenciais > OAuth 2.0 > URIs de redirecionamento autorizados
+# Adicionar:
+#   https://<seu-dominio>/auth/google/login/callback/
+#
+# SITE_ID=1 corresponde ao primeiro registro em django.contrib.sites.Site.
+# Em producao, ajustar o domain via shell:
+#   from django.contrib.sites.models import Site
+#   Site.objects.update_or_create(pk=1, defaults={"domain": "ncfly.com.br", "name": "NCfly"})
+# ---------------------------------------------------------------------------
+SITE_ID = 1  # obrigatorio para django-allauth
+
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": os.environ.get("GOOGLE_OAUTH_CLIENT_ID", ""),
+            "secret": os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", ""),
+            "key": "",
+        },
+        "SCOPE": ["profile", "email"],
+        "AUTH_PARAMS": {"access_type": "online"},
+    }
+}
+
+# allauth: nao criar automaticamente usuarios via social login —
+# o superadmin ja existe no banco; o login social apenas autentica.
+SOCIALACCOUNT_AUTO_SIGNUP = False
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+
+# Adapter customizado: rejeita qualquer e-mail diferente de SUPERADMIN_EMAIL
+SOCIALACCOUNT_ADAPTER = "superadmin.adapters.SuperadminOnlySocialAccountAdapter"

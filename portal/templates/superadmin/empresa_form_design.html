@@ -1,0 +1,239 @@
+{% extends "superadmin/base_superadmin.html" %}
+
+{% block title %}{% if empresa %}Editar Ag&ecirc;ncia{% else %}Nova Ag&ecirc;ncia{% endif %} — NCfly Admin{% endblock %}
+{% block breadcrumb %}{% if empresa %}Editar Ag&ecirc;ncia{% else %}Nova Ag&ecirc;ncia{% endif %}{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'superadmin_empresas' %}" class="sa-btn sa-btn--ghost">← Voltar</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="sa-page-header">
+    <div>
+        <h1 class="sa-page-header__title">{% if empresa %}Editar: {{ empresa.nome }}{% else %}Cadastrar Nova Agência{% endif %}</h1>
+        <p class="sa-page-header__subtitle">
+            {% if empresa %}Modifique os dados da agência e salve.{% else %}Preencha os dados da agência para cadastrá-la na plataforma B2B.{% endif %}
+        </p>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;">
+
+        <!-- COLUNA PRINCIPAL -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+            <!-- DADOS BASICOS -->
+            <div class="sa-card">
+                <p class="sa-card__title">Dados b&aacute;sicos</p>
+                <div class="sa-form-grid sa-form-grid--2" style="gap:14px;">
+                    <div class="sa-field" style="grid-column:1/-1;">
+                        <label class="sa-label" for="id_nome">Nome da empresa <span style="color:var(--sa-danger);">*</span></label>
+                        <input type="text" id="id_nome" name="nome"
+                               value="{{ empresa.nome|default:'' }}"
+                               class="sa-input"
+                               placeholder="Ex: Agência Voar Viagens"
+                               required maxlength="150">
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_responsavel_nome">Respons&aacute;vel</label>
+                        <input type="text" id="id_responsavel_nome" name="responsavel_nome"
+                               value="{{ empresa.responsavel_nome|default:'' }}"
+                               class="sa-input"
+                               placeholder="Nome completo do admin"
+                               maxlength="150">
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_email_contato">E-mail de contato</label>
+                        <input type="email" id="id_email_contato" name="email_contato"
+                               value="{{ empresa.email_contato|default:'' }}"
+                               class="sa-input"
+                               placeholder="contato@agencia.com.br">
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_telefone_contato">Telefone</label>
+                        <input type="tel" id="id_telefone_contato" name="telefone_contato"
+                               value="{{ empresa.telefone_contato|default:'' }}"
+                               class="sa-input"
+                               placeholder="(11) 9 0000-0000"
+                               maxlength="25">
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_whatsapp">WhatsApp</label>
+                        <input type="tel" id="id_whatsapp" name="whatsapp"
+                               value="{{ empresa.whatsapp|default:'' }}"
+                               class="sa-input"
+                               placeholder="(11) 9 0000-0000"
+                               maxlength="25">
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_website">Website</label>
+                        <input type="url" id="id_website" name="website"
+                               value="{{ empresa.website|default:'' }}"
+                               class="sa-input"
+                               placeholder="https://agencia.com.br">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ENDERECO -->
+            <div class="sa-card">
+                <p class="sa-card__title">Endere&ccedil;o</p>
+                <div class="sa-form-grid sa-form-grid--2" style="gap:14px;">
+                    <div class="sa-field" style="grid-column:1/-1;">
+                        <label class="sa-label" for="id_endereco">Endere&ccedil;o completo</label>
+                        <input type="text" id="id_endereco" name="endereco"
+                               value="{{ empresa.endereco|default:'' }}"
+                               class="sa-input"
+                               placeholder="Rua, número, complemento"
+                               maxlength="255">
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_cidade">Cidade</label>
+                        <input type="text" id="id_cidade" name="cidade"
+                               value="{{ empresa.cidade|default:'' }}"
+                               class="sa-input"
+                               placeholder="São Paulo"
+                               maxlength="120">
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_estado">Estado</label>
+                        <input type="text" id="id_estado" name="estado"
+                               value="{{ empresa.estado|default:'' }}"
+                               class="sa-input"
+                               placeholder="SP"
+                               maxlength="120">
+                    </div>
+                </div>
+            </div>
+
+            <!-- DOCUMENTOS E CUSTOMIZACAO -->
+            <div class="sa-card">
+                <p class="sa-card__title">Logo para documentos</p>
+                <div class="sa-form-grid sa-form-grid--2" style="gap:14px;">
+                    <div class="sa-field" style="grid-column:1/-1;">
+                        <label class="sa-label" for="id_logo_documentos">Arquivo de logo (PNG)</label>
+                        <input type="file" id="id_logo_documentos" name="logo_documentos"
+                               class="sa-input"
+                               accept=".png">
+                        <span class="sa-field-hint">PNG horizontal com fundo transparente. Recomendado 1200x400px, m&aacute;ximo 150KB.</span>
+                        {% if empresa.logo_documentos_url %}
+                        <div style="margin-top:12px;display:flex;align-items:center;gap:12px;">
+                            <img src="{{ empresa.logo_documentos_url }}" alt="Logo atual"
+                                 style="max-height:50px;max-width:180px;object-fit:contain;background:white;padding:6px;border-radius:6px;border:1px solid var(--sa-border);">
+                            <div>
+                                <span style="font-size:12px;color:var(--sa-text-muted);">Logo atual</span><br>
+                                <label style="font-size:12px;display:flex;align-items:center;gap:4px;margin-top:4px;cursor:pointer;">
+                                    <input type="checkbox" name="logo_documentos-clear"> Remover logo
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="sa-field" style="grid-column:1/-1;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--sa-text-muted);">
+                            <input type="checkbox" name="ocultar_logo_documentos"
+                                   {% if empresa.ocultar_logo_documentos %}checked{% endif %}
+                                   style="width:15px;height:15px;accent-color:var(--sa-accent);">
+                            Ocultar logo nos documentos gerados
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DESCRICAO -->
+            <div class="sa-card">
+                <p class="sa-card__title">Descri&ccedil;&atilde;o e observa&ccedil;&otilde;es</p>
+                <div class="sa-form-grid" style="gap:14px;">
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_descricao_rodape">Descri&ccedil;&atilde;o para rodap&eacute; de documentos</label>
+                        <textarea id="id_descricao_rodape" name="descricao_rodape"
+                                  class="sa-textarea" style="min-height:80px;">{{ empresa.descricao_rodape|default:'' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- COLUNA LATERAL -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+            <!-- STATUS E LIMITES -->
+            <div class="sa-card">
+                <p class="sa-card__title">Status e limites</p>
+                <div class="sa-form-grid" style="gap:12px;">
+                    <div class="sa-field">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--sa-text);">
+                            <input type="checkbox" name="ativo"
+                                   {% if empresa.ativo or not empresa %}checked{% endif %}
+                                   style="width:16px;height:16px;accent-color:var(--sa-accent);">
+                            <span>Empresa ativa</span>
+                        </label>
+                        <span class="sa-field-hint">Inativar bloqueia o acesso da equipe.</span>
+                    </div>
+                    <div class="sa-field">
+                        <label class="sa-label" for="id_limite_colaboradores">Limite de colaboradores</label>
+                        <input type="number" id="id_limite_colaboradores" name="limite_colaboradores"
+                               value="{{ empresa.limite_colaboradores|default:'0' }}"
+                               class="sa-input"
+                               min="0" max="9999">
+                        <span class="sa-field-hint">0 = sem limite definido.</span>
+                    </div>
+                </div>
+                <div style="margin-top:16px;">
+                    <button type="submit" class="sa-btn sa-btn--primary" style="width:100%;justify-content:center;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:15px;height:15px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        {% if empresa %}Salvar altera&ccedil;&otilde;es{% else %}Cadastrar ag&ecirc;ncia{% endif %}
+                    </button>
+                </div>
+                {% if empresa %}
+                <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--sa-border);">
+                    <form method="post" action="{% url 'superadmin_empresa_excluir' empresa.pk %}"
+                          onsubmit="return confirm('Excluir {{ empresa.nome }}? Esta ação é permanente.');">
+                        {% csrf_token %}
+                        <button type="submit" class="sa-btn sa-btn--danger" style="width:100%;justify-content:center;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                            Excluir empresa
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- INFO -->
+            {% if empresa %}
+            <div class="sa-card" style="padding:14px 16px;">
+                <p class="sa-card__title" style="margin-bottom:10px;">Informa&ccedil;&otilde;es</p>
+                <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--sa-text-muted);">
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>ID</span>
+                        <span style="color:var(--sa-text);">#{{ empresa.pk }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>Cadastrada em</span>
+                        <span style="color:var(--sa-text);">{{ empresa.criado_em|date:"d/m/Y" }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>Atualizada em</span>
+                        <span style="color:var(--sa-text);">{{ empresa.atualizado_em|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>Operadores ativos</span>
+                        <span style="color:var(--sa-text);">{{ empresa.total_operadores_ativos }}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>Clientes ativos</span>
+                        <span style="color:var(--sa-text);">{{ empresa.total_clientes_ativos }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</form>
+
+{% endblock %}

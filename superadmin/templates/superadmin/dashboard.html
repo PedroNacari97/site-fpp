@@ -1,0 +1,136 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Dashboard — Painel NCfly{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Metricas noticias -->
+    <section>
+        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Noticias</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Total</p>
+                <p class="text-2xl font-bold text-slate-800">{{ total_noticias }}</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Publicadas</p>
+                <p class="text-2xl font-bold text-green-600">{{ noticias_publicadas }}</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Rascunhos</p>
+                <p class="text-2xl font-bold text-yellow-600">{{ noticias_draft }}</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Ultimas 24h</p>
+                <p class="text-2xl font-bold text-blue-600">{{ noticias_24h }}</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Metricas empresas + leads -->
+    <section>
+        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">SaaS</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Empresas</p>
+                <p class="text-2xl font-bold text-slate-800">{{ total_empresas }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">{{ empresas_ativas }} ativas</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Leads Plataforma</p>
+                <p class="text-2xl font-bold text-slate-800">{{ total_leads_plataforma }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">{{ leads_novos }} novos · {{ leads_7d }} nos ultimos 7d</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Leads Alertas</p>
+                <p class="text-2xl font-bold text-slate-800">{{ total_leads_alertas }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">{{ alertas_ativos }} ativos</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Ultimas noticias -->
+        <div class="card md:col-span-2 overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-slate-700">Ultimas Noticias</h3>
+                <a href="{% url 'superadmin_noticias_list' %}" class="text-xs text-blue-600 hover:underline">Ver todas</a>
+            </div>
+            <table class="w-full text-sm">
+                <tbody>
+                {% for n in ultimas_noticias %}
+                <tr class="border-b border-slate-50 hover:bg-slate-50">
+                    <td class="px-4 py-2 max-w-xs">
+                        <span class="block truncate font-medium text-slate-800" title="{{ n.titulo }}">{{ n.titulo|truncatechars:60 }}</span>
+                        <span class="text-xs text-slate-400">{{ n.criada_em|date:"d/m/Y H:i" }}</span>
+                    </td>
+                    <td class="px-4 py-2 text-right whitespace-nowrap">
+                        {% if n.status == "published" %}
+                            <span class="badge badge-green">Publicada</span>
+                        {% elif n.status == "draft" %}
+                            <span class="badge badge-yellow">Rascunho</span>
+                        {% else %}
+                            <span class="badge badge-gray">Arquivada</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td class="px-4 py-4 text-slate-400 text-center" colspan="2">Nenhuma noticia ainda.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Ultimos jobs -->
+        <div class="card overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-100">
+                <h3 class="text-sm font-semibold text-slate-700">Ultimos Jobs</h3>
+            </div>
+            <ul class="divide-y divide-slate-50">
+            {% for job in ultimos_jobs %}
+            <li class="px-4 py-2">
+                <p class="text-xs font-medium text-slate-700 truncate">{{ job.job_name }}</p>
+                <p class="text-xs text-slate-400">{{ job.horario|date:"d/m H:i" }} —
+                    {% if job.status == "success" %}<span class="text-green-600">sucesso</span>
+                    {% elif job.status == "failed" %}<span class="text-red-600">falhou</span>
+                    {% elif job.status == "partial" %}<span class="text-yellow-600">parcial</span>
+                    {% else %}<span class="text-blue-600">rodando</span>{% endif %}
+                </p>
+            </li>
+            {% empty %}
+            <li class="px-4 py-4 text-xs text-slate-400">Nenhum job registrado.</li>
+            {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- Noticias por categoria -->
+    {% if noticias_por_categoria %}
+    <section>
+        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Noticias por Categoria (publicadas)</h2>
+        <div class="card overflow-hidden">
+            <table class="w-full text-sm">
+                <thead class="table-header text-xs text-slate-500 uppercase">
+                    <tr>
+                        <th class="px-4 py-2 text-left">Categoria</th>
+                        <th class="px-4 py-2 text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for row in noticias_por_categoria %}
+                <tr class="border-t border-slate-50">
+                    <td class="px-4 py-2 text-slate-700">{{ row.categoria|default:"(sem categoria)" }}</td>
+                    <td class="px-4 py-2 text-right font-semibold text-slate-800">{{ row.total }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endif %}
+
+</div>
+{% endblock %}
