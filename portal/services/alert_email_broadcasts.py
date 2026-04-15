@@ -271,10 +271,39 @@ def unsubscribe_alert_email_by_token(token: str, *, motivo: str = "") -> LeadAle
     return lead
 
 
-def _build_digest_subject(total_items: int) -> str:
-    if total_items == 1:
-        return "[NC Fly Alertas] 1 atualização para conferir hoje"
-    return f"[NC Fly Alertas] {total_items} atualizações para conferir hoje"
+def _build_digest_subject(items: list[AlertEmailDigestItem]) -> str:
+    """Gera um assunto com os destinos do batch.
+
+    Cada envio tem combinacao de destinos diferente, evitando que o Gmail
+    agrupe todos os emails do dia no mesmo thread (usuario confundia qual
+    informacao era a mais recente).
+    """
+    destinos: list[str] = []
+    for item in items:
+        metadata = item.metadata_json or {}
+        label = (metadata.get("destination_label") or metadata.get("route_label") or "").strip()
+        if not label:
+            continue
+        # Pega so o nome do destino (antes de virgula ou traco, se houver).
+        short = label.split(",")[0].split(" - ")[0].strip()
+        if short and short not in destinos:
+            destinos.append(short)
+
+    total = len(items)
+    if not destinos:
+        if total == 1:
+            return "NC Fly Alertas: 1 atualização para conferir"
+        return f"NC Fly Alertas: {total} atualizações para conferir"
+
+    if len(destinos) == 1:
+        return f"NC Fly Alertas: {destinos[0]}"
+    if len(destinos) == 2:
+        return f"NC Fly Alertas: {destinos[0]} e {destinos[1]}"
+
+    primeiros = ", ".join(destinos[:2])
+    restantes = len(destinos) - 2
+    sufixo = "alerta" if restantes == 1 else "alertas"
+    return f"NC Fly Alertas: {primeiros} e +{restantes} {sufixo}"
 
 
 def _build_digest_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem], unsubscribe_url: str) -> str:
@@ -437,14 +466,18 @@ def _send_digest_to_lead(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem
     unsubscribe_url = _absolute_unsubscribe_url(unsubscribe_token)
     mailto_unsubscribe = reply_to or from_email
 
+    # X-Entity-Ref-ID unico por envio impede o Gmail de agrupar emails
+    # consecutivos do dia na mesma thread.
+    thread_ref = f"ncfly-alerts-{lead.id}-{int(timezone.now().timestamp() * 1000)}"
     headers = {
         "List-Unsubscribe": f"<mailto:{mailto_unsubscribe}?subject=Cancelar%20alertas>, <{unsubscribe_url}>",
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
         "Precedence": "bulk",
+        "X-Entity-Ref-ID": thread_ref,
     }
 
     message = EmailMultiAlternatives(
-        subject=_build_digest_subject(len(items)),
+        subject=_build_digest_subject(items),
         body=_build_digest_body(lead, items, unsubscribe_url),
         from_email=from_email,
         to=[lead.email],
