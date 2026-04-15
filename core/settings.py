@@ -366,7 +366,17 @@ DEFAULT_FROM_EMAIL = (
     or EMAIL_HOST_USER.strip()
     or _default_outbound_email()
 )
-PASSWORD_RESET_FROM_EMAIL = os.environ.get("PASSWORD_RESET_FROM_EMAIL", "").strip() or DEFAULT_FROM_EMAIL
+# Email de suporte usado para mensagens transacionais sensíveis (password reset e MFA).
+# IMPORTANTE: o MX/DKIM/SPF de suporte@ncfly.com.br precisa estar configurado no
+# provedor SMTP (Resend, SES, etc.) para evitar bloqueios por SPAM.
+SUPPORT_FROM_EMAIL = (
+    os.environ.get("SUPPORT_FROM_EMAIL", "").strip()
+    or "suporte@ncfly.com.br"
+)
+PASSWORD_RESET_FROM_EMAIL = (
+    os.environ.get("PASSWORD_RESET_FROM_EMAIL", "").strip()
+    or SUPPORT_FROM_EMAIL
+)
 PORTAL_ALERTS_FROM_EMAIL = (
     os.environ.get("PORTAL_ALERTS_FROM_EMAIL", "alertas@ncfly.com.br").strip()
     or DEFAULT_FROM_EMAIL

@@ -465,6 +465,7 @@ def _upsert_news_from_article(
     manual_submission: bool,
     draft_override: NewsDraft | None = None,
     allow_ai_cover: bool = True,
+    on_published=None,
 ):
     if not article.text or len(article.text) < 180:
         raise ValueError("Texto insuficiente para gerar noticia.")
@@ -645,12 +646,18 @@ def _upsert_news_from_article(
 
     if status == "published":
         outcome = "updated" if existing_news or not created else "published"
-        # Publicar no Instagram apenas para notícias novas (outcome == "published"),
-        # evitando re-publicar atualizações editoriais.
-        if outcome == "published":
+        # Publicar no Instagram para qualquer caminho de entrada do Telegram
+        # (texto, link ou "atualizar"). A idempotência é garantida por
+        # InstagramNoticiaEvento no próprio publisher — ele ignora noticias já
+        # publicadas com sucesso.
+        try:
+            from gestao.services.instagram_publisher import publish_noticia_to_instagram
+            publish_noticia_to_instagram(noticia)
+        except Exception:
+            pass
+        if on_published:
             try:
-                from gestao.services.instagram_publisher import publish_noticia_to_instagram
-                publish_noticia_to_instagram(noticia)
+                on_published(noticia)
             except Exception:
                 pass
     else:
@@ -665,7 +672,7 @@ def _upsert_news_from_article(
     }
 
 
-def sync_news_from_url(article_url: str, *, publish_drafts: bool = True, refresh_published: bool = True):
+def sync_news_from_url(article_url: str, *, publish_drafts: bool = True, refresh_published: bool = True, on_published=None):
     job = JobExecucao.objects.create(
         job_name="sync_home_news_single_url",
         status="running",
@@ -681,6 +688,7 @@ def sync_news_from_url(article_url: str, *, publish_drafts: bool = True, refresh
             publish_drafts=publish_drafts,
             refresh_published=refresh_published,
             manual_submission=True,
+            on_published=on_published,
         )
         job.status = "success"
         job.quantidade_processada = result["processed"]
@@ -698,7 +706,7 @@ def sync_news_from_url(article_url: str, *, publish_drafts: bool = True, refresh
         raise
 
 
-def sync_news_from_text(raw_text: str, *, source_name: str = "Telegram Manual", publish_drafts: bool = True):
+def sync_news_from_text(raw_text: str, *, source_name: str = "Telegram Manual", publish_drafts: bool = True, on_published=None):
     clean_text = (raw_text or "").strip()
     if len(clean_text) < 180:
         raise ValueError("Texto insuficiente para gerar noticia.")
@@ -746,6 +754,7 @@ def sync_news_from_text(raw_text: str, *, source_name: str = "Telegram Manual", 
                 manual_submission=True,
                 draft_override=fallback_draft,
                 allow_ai_cover=True,
+                on_published=on_published,
             )
         else:
             result = _upsert_news_from_article(
@@ -754,6 +763,7 @@ def sync_news_from_text(raw_text: str, *, source_name: str = "Telegram Manual", 
                 publish_drafts=publish_drafts,
                 refresh_published=True,
                 manual_submission=True,
+                on_published=on_published,
             )
         job.status = "success"
         job.quantidade_processada = result["processed"]
@@ -772,6 +782,7 @@ def sync_news_from_text(raw_text: str, *, source_name: str = "Telegram Manual", 
                 manual_submission=True,
                 draft_override=fallback_draft,
                 allow_ai_cover=True,
+                on_published=on_published,
             )
             noticia = result.get("noticia")
             if noticia:

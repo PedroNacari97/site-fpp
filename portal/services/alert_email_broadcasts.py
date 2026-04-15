@@ -533,7 +533,16 @@ def send_pending_alert_digest(*, max_items: int | None = None, remaining_slots: 
         if _send_digest_to_lead(lead, eligible_items):
             emails_sent += 1
 
-    if eligible_recipients == 0 or emails_sent == eligible_recipients:
+    # Marcamos os itens como enviados sempre que a janela foi processada.
+    # O comportamento antigo exigia sucesso em 100% dos destinatarios — em caso
+    # de falha em qualquer lead, os mesmos itens voltavam na proxima janela
+    # (ex.: 15h e 20h repetindo o conteudo das 12h), enquanto alertas novos
+    # criados depois ficavam presos atras deles pela ordem por created_at.
+    # A nova regra: se houve pelo menos um envio com sucesso, OU se nao havia
+    # destinatarios elegiveis, marcamos o batch como consumido. Isso garante
+    # avanco sequencial da fila e impede repeticao nas janelas seguintes.
+    should_mark_sent = eligible_recipients == 0 or emails_sent > 0
+    if should_mark_sent:
         AlertEmailDigestItem.objects.filter(id__in=[item.id for item in items]).update(sent_at=now)
 
     return {

@@ -676,13 +676,10 @@ def _run_telegram_news_update_background(payload, chat_id):
         nonlocal published_count
         published_count += 1
 
-        # Publicar no Instagram automaticamente
-        try:
-            from gestao.services.instagram_publisher import is_instagram_configured, publish_noticia_to_instagram
-            if is_instagram_configured():
-                publish_noticia_to_instagram(noticia)
-        except Exception:
-            pass
+        # A publicacao no Instagram ja e disparada dentro do pipeline
+        # (sync_news_progressive e _upsert_news_from_article) com idempotencia
+        # garantida por InstagramNoticiaEvento. Nao publicamos novamente aqui
+        # para evitar dois disparos no mesmo noticia pk.
 
         if not chat_id:
             return

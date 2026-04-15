@@ -296,7 +296,7 @@ def start_superadmin_mfa_challenge(request, user, identifier):
                 f"{verification_code}\n\n"
                 f"Valido ate {timezone.localtime(expires_at):%d/%m/%Y %H:%M}."
             ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
+            from_email=getattr(settings, "SUPPORT_FROM_EMAIL", settings.DEFAULT_FROM_EMAIL),
             recipient_list=[email],
             fail_silently=False,
         )

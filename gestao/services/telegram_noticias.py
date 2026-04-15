@@ -248,7 +248,12 @@ def process_telegram_news_update(update, on_published=None):
 
         news_url = parse_single_news_url_command(raw_text)
         if news_url:
-            result = sync_news_from_url(news_url, publish_drafts=True, refresh_published=True)
+            result = sync_news_from_url(
+                news_url,
+                publish_drafts=True,
+                refresh_published=True,
+                on_published=on_published,
+            )
             invalidate_news_cache()
             event.status = TelegramNoticiaEvento.STATUS_PROCESSADO
             event.noticia = result.get("noticia")
@@ -257,7 +262,12 @@ def process_telegram_news_update(update, on_published=None):
             return event, f"url_{result['outcome']}", {"message": _build_result_message(result), "result": result}
 
         if looks_like_manual_news_text(raw_text):
-            result = sync_news_from_text(raw_text, source_name="Telegram Noticias", publish_drafts=True)
+            result = sync_news_from_text(
+                raw_text,
+                source_name="Telegram Noticias",
+                publish_drafts=True,
+                on_published=on_published,
+            )
             invalidate_news_cache()
             event.status = TelegramNoticiaEvento.STATUS_PROCESSADO
             event.noticia = result.get("noticia")
