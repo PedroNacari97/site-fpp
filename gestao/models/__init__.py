@@ -25,6 +25,7 @@ from .acompanhamento_passagem import AcompanhamentoPassagem
 from .interesse_viagem_cliente import InteresseViagemCliente, InteresseViagemMatch
 from .documento_plataforma import DocumentoPlataforma, AceiteDocumentoPlataforma
 from .instagram_noticia_evento import InstagramNoticiaEvento
+from .marca_catalogo import MarcaCatalogo
 
 __all__ = [
     'Cliente',
@@ -56,4 +57,5 @@ __all__ = [
     'DocumentoPlataforma',
     'AceiteDocumentoPlataforma',
     'InstagramNoticiaEvento',
+    'MarcaCatalogo',
 ]

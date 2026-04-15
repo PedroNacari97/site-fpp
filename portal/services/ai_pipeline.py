@@ -22,6 +22,8 @@ from django.core.files.storage import default_storage
 from django.template.defaultfilters import slugify
 from django.utils import timezone
 
+from portal.services.brand_catalog import load_brand_catalog
+
 
 _SYSTEM_PROMPT_REWRITE = (
     "Você é editor-chefe de um portal premium de milhas, cartões e viagens. "
@@ -67,8 +69,10 @@ _SYSTEM_PROMPT_REWRITE = (
     "PASSO 1 — Identifique marcas/programas/destinos no título. "
     "PASSO 2 — Use a cor HEX da marca como paleta dominante (referência: <<BRAND_COLORS_TABLE>>). "
     "PASSO 3 — Se houver destino geográfico no título (cidade, país, praia), priorize uma cena desse local. "
-    "PASSO 4 — Mencione explicitamente o nome da marca/companhia na cena quando relevante "
-    "(ex: 'LATAM aircraft livery', 'Livelo loyalty app screen', 'Nubank card on marble'). "
+    "PASSO 4 — Se a pauta for sobre uma marca específica (Livelo, Esfera, Smiles, LATAM Pass, Nubank, etc.), "
+    "a composição DEVE destacar o LOGO oficial da marca em posição de hero (centralizado, flutuante sobre fundo limpo "
+    "ou aplicado em um único objeto principal como cartão, app ou aeronave). A identidade da marca é mais importante "
+    "que a cena — quando houver dúvida, prefira 'logo em destaque sobre ambiente limpo com cores da marca'. "
     "ANTI-FESTA OBRIGATÓRIO: a palavra 'promoção' NÃO significa festa. "
     "ABSOLUTAMENTE PROIBIDO em qualquer imagem: balões, chapéus de festa, confetes, presentes, bolos, "
     "fogos de artifício, multidão celebrando, sacolas de compras, ambiente de varejo ou supermercado. "
@@ -80,7 +84,16 @@ _SYSTEM_PROMPT_REWRITE = (
     "'Hotéis e Resorts' → luxury hotel or infinity pool with brand color tones; "
     "'Viagens' → specific geographic landmark or destination from the article title. "
     "Estilo: professional editorial photography, natural light, clean composition. "
-    "Permitido: brand names on objects (aircraft, cards, signage). Proibido: rostos identificáveis, watermark\n"
+    "REGRA DE TEXTO NA IMAGEM (CRÍTICA): a descrição visual NÃO deve pedir textos, títulos, manchetes, headlines, "
+    "slogans, taglines, percentuais escritos, preços escritos, selos com palavras, nem qualquer palavra legível na cena. "
+    "NUNCA peça texto em inglês (ex: 'SALE', '35% OFF', 'DEAL', 'FLY NOW') — isso é proibido. "
+    "Se a pauta mencionar desconto/bônus, represente visualmente (composição, luz, cor), nunca com número ou palavra renderizada. "
+    "Sempre termine o imagem_prompt com a frase exata: "
+    "'No rendered text anywhere in the image; no English words; no numbers written as text; "
+    "only the official brand logo may appear, and any caption, headline or price tag is strictly forbidden.' "
+    "Permitido: o LOGO oficial da marca em destaque, e nome da marca discretamente gravado em objeto físico realista "
+    "(livery de aeronave, face de cartão, placa de hotel). "
+    "Proibido: rostos identificáveis, watermark, qualquer texto legível além do logo da marca.\n"
     "- categoria: uma das 5 categorias acima\n\n"
 
     "## CHECKLIST ANTES DE RESPONDER\n"
@@ -474,7 +487,11 @@ BRAND_COVER_THEMES = (
 # cor_hex: usada no prompt de imagem para dar identidade visual à cena gerada.
 # logo_url: PNG/JPEG/WebP válido para uso como referência visual no GPT-image edits.
 #           SVGs e URLs vazias são omitidos — a API só aceita formatos raster.
-BRAND_CATALOG: list[dict] = [
+#
+# ⚠️ Esta lista é mantida como FALLBACK embutido. Em runtime o pipeline usa
+# ``load_brand_catalog()`` (portal/services/brand_catalog.py), que mescla
+# estas entradas com o CSV ``marcas_api_brandfetch_v2.csv``.
+_LEGACY_BRAND_CATALOG: list[dict] = [
     # Programas de Pontos/Milhas
     {"keywords": ["latam pass", "latampass"],         "name": "LATAM Pass",          "cor_hex": "#7000ac", "logo_url": ""},
     {"keywords": ["azul fidelidade", "tudo azul"],    "name": "Azul Fidelidade",      "cor_hex": "#5061aa", "logo_url": ""},
@@ -530,6 +547,33 @@ BRAND_CATALOG: list[dict] = [
     {"keywords": ["decolar"],                         "name": "Decolar",              "cor_hex": "#550fed", "logo_url": "https://cdn.brandfetch.io/ids1XUQPdz/w/820/h/177/theme/dark/logo.png"},
     {"keywords": ["maxmilhas"],                       "name": "Maxmilhas",            "cor_hex": "#050c16", "logo_url": "https://cdn.brandfetch.io/idVpvUW8tj/w/400/h/400/theme/dark/icon.jpeg"},
 ]
+
+
+class _BrandCatalogProxy:
+    """Proxy que expõe o catálogo carregado dinamicamente via CSV como lista.
+
+    Mantém a API antiga (``for brand in BRAND_CATALOG``) funcionando e
+    garante que qualquer alteração no CSV seja pegada após
+    ``load_brand_catalog.cache_clear()``.
+    """
+
+    def _data(self) -> list[dict]:
+        try:
+            return load_brand_catalog()
+        except Exception:
+            return _LEGACY_BRAND_CATALOG
+
+    def __iter__(self):
+        return iter(self._data())
+
+    def __len__(self):
+        return len(self._data())
+
+    def __getitem__(self, item):
+        return self._data()[item]
+
+
+BRAND_CATALOG = _BrandCatalogProxy()
 
 
 GENERIC_COVER_PALETTES = (
@@ -1037,10 +1081,33 @@ def _build_cover_focus_prompt(title: str, summary: str, category: str) -> str:
 
 def _build_cover_prompt(title: str, summary: str, category: str) -> str:
     """Constrói prompt de imagem contextualizado por título, categoria e marcas detectadas."""
+    # NOTE: dados de marca (nome, cor_hex, logo_url) vêm do model gestao.MarcaCatalogo
+    # via portal.services.brand_catalog.BRAND_CATALOG — é um catálogo curado, não inferência.
     title_lower = (title + " " + summary).lower()
 
     detected_brands = _detect_brands(title + " " + summary)
     color_instruction = _brand_color_context(detected_brands)
+    brand_focus = ""
+    primary_for_fallback = None
+    if detected_brands:
+        primary = detected_brands[0]
+        primary_for_fallback = primary
+        brand_focus = (
+            f"BRAND KIT (CURATED): The brand for this article is {primary['name']}. "
+            f"Its official primary color is {primary.get('cor_hex', '')} — treat this hex as a "
+            f"SUGGESTED reference, not a strict rule. You may use the exact hex when it fits the "
+            f"scene, OR tones strongly associated with the brand identity (e.g., Livelo → vibrant "
+            f"pink/magenta family; LATAM → purple family; GOL → orange/yellow family; Nubank → deep "
+            f"violet family), OR a complementary palette that still reads as this brand. Goal: "
+            f"perceived visual coherence with the brand, not pharmaceutical reproduction of the hex. "
+            f"When an official logo is provided as a reference image, that logo IS INTOUCHABLE: "
+            f"DO NOT reinterpret, redraw, recolor, translate, italicize, stylize, stretch, skew, "
+            f"rotate beyond ±5°, crop, emboss or filter it. Reposition and compose around it, but the "
+            f"logo pixels stay pixel-accurate with 8–12% breathing room on every side. Place the logo "
+            f"as the visual protagonist (centered hero or strong focal position) OR applied cleanly "
+            f"onto a single realistic object (credit card face, loyalty app screen, boarding pass, "
+            f"aircraft tail, hotel sign). "
+        )
 
     # Cena base por categoria/contexto
     if category == "Promoções" or "promoç" in title_lower or "oferta" in title_lower or "desconto" in title_lower:
@@ -1078,19 +1145,99 @@ def _build_cover_prompt(title: str, summary: str, category: str) -> str:
             "sense of discovery and travel, photorealistic high quality."
         )
 
+    # Fallback de marca SEM logo (temos nome + cor, mas logo_url não está disponível):
+    # se a IA reconhecer a marca pelo conhecimento geral (Nubank, GOL, LATAM etc.), pode
+    # renderizar o logo oficial — desde que fiel à identidade real, NUNCA inventar marca fictícia
+    # nem criar variações criativas de logos conhecidos.
+    no_logo_instruction = ""
+    if primary_for_fallback and not primary_for_fallback.get("logo_url"):
+        no_logo_instruction = (
+            f"NO LOGO IMAGE PROVIDED: We do not have a logo file for {primary_for_fallback['name']} "
+            f"in the catalog right now. If you genuinely know this brand's official visual identity "
+            f"from general knowledge, you MAY render its real logo (correct symbol, typography and "
+            f"colors) faithfully — no creative reinterpretation, no stylized variants, no \"inspired "
+            f"by\" versions. If you are not confident the rendered logo will be faithful to the real "
+            f"brand, fall back to typography only: write \"{primary_for_fallback['name']}\" ONCE in "
+            f"clean modern sans-serif (Inter, Helvetica, Geist), spelled exactly as given, no "
+            f"taglines. STRICTLY FORBIDDEN under any condition: invent fictitious brands, fabricate "
+            f"a fake logo/monogram/emblem, or produce creative variations of well-known logos. "
+        )
+
+    background_instruction = ""
+    if primary_for_fallback and primary_for_fallback.get("cor_hex"):
+        background_instruction = (
+            f"BACKGROUND (SUGGESTION): The catalog color for this brand is "
+            f"{primary_for_fallback['cor_hex']}. Use it as a starting reference for the dominant "
+            f"background, gradient or atmospheric lighting — but you are free to use tones associated "
+            f"with the brand family (slightly darker/lighter/desaturated variants, or a complementary "
+            f"palette that still reads as this brand) when it produces a more coherent scene. The "
+            f"goal is perceived brand identity, not exact hex reproduction. "
+        )
+
     return (
         f"Create a photorealistic editorial image for the article: '{title}'. "
+        f"{brand_focus}"
+        f"{background_instruction}"
+        f"{no_logo_instruction}"
         f"{scene} "
         f"{color_instruction} "
         f"Additional context: {summary[:180]}. "
-        "Absolute rules: no visible text, no real brand logos, no identifiable faces, "
-        "no watermark, professional clean composition like a premium travel magazine cover."
+        "Absolute text rules (STRICT): NO rendered text anywhere in the image — no headlines, no "
+        "captions, no slogans, no price tags, no percentages written out (no '50% OFF', no '70%'), "
+        "no promotional words. NEVER render English words: no 'SALE', 'OFF', 'DEAL', 'NEW', 'FLY', "
+        "'FLY NOW', 'PROMO', 'HURRY', 'LIMITED', 'BUY', 'NOW'. Any discount or urgency must be "
+        "expressed through composition, lighting and color, never through written words. The ONLY "
+        "text allowed is (a) the official brand name in Brazilian Portuguese as provided in the "
+        "brand kit, or (b) a short news headline in Brazilian Portuguese with at most 4 words — and "
+        "even those are optional. The ONLY graphic mark allowed is the official brand logo from the "
+        "curated brand kit (kept pixel-accurate, never reinvented), and its natural appearance on "
+        "real objects (credit card face, aircraft livery, hotel signage). No identifiable faces, no "
+        "watermark, no fake invented logos, no gibberish letterforms, no decorative random letters. "
+        "Professional clean composition like a premium Brazilian travel magazine cover."
     )
 
 def _build_cover_reference_prompt(title: str, summary: str, category: str) -> str:
+    # NOTE: quando uma marca for detectada e tiver logo no MarcaCatalogo (BRAND_CATALOG),
+    # o logo entra como imagem de referência via /images/edits — este prompt deve tratá-lo
+    # como identidade oficial intocável e usar a cor_hex como background dominante.
+    detected = _detect_brands(title + " " + summary)
+    brand_block = ""
+    if detected:
+        primary = detected[0]
+        brand_name = primary.get("name", "")
+        brand_color = primary.get("cor_hex", "")
+        has_logo = bool(primary.get("logo_url"))
+        if has_logo:
+            brand_block = (
+                f"BRAND KIT OFICIAL (CURADO): a imagem de referência anexada é o logo oficial de "
+                f"{brand_name}. NÃO redesenhe, NÃO recolora, NÃO traduza, NÃO estilize, NÃO incline, "
+                f"NÃO recorte e NÃO aplique filtros sobre o logo — trate-o como elemento INTOCÁVEL, "
+                f"pixel-accurate. Permitido apenas reposicionar e dar respiro de 8–12% em todos os "
+                f"lados. Cor da marca {brand_color} é uma SUGESTÃO — use o hex exato quando combinar "
+                f"bem com a cena, ou tons associados à identidade da marca (variantes mais escuras, "
+                f"claras, dessaturadas ou paleta complementar que ainda leia como {brand_name}). O "
+                f"objetivo é coerência visual com a marca, não reprodução exata do hex. Componha "
+                f"elementos abstratos (formas, gradientes, luz) ao redor do logo, mas o logo "
+                f"permanece como ele é. "
+            )
+        else:
+            brand_block = (
+                f"BRAND KIT OFICIAL (CURADO, SEM IMAGEM DE LOGO): a marca é {brand_name}, cor de "
+                f"referência {brand_color} (sugestão, não regra estrita — tons associados à marca "
+                f"também valem). Não temos arquivo de logo no catálogo agora. Se você conhece a "
+                f"identidade visual real de {brand_name} pelo conhecimento geral, PODE renderizar o "
+                f"logo oficial (símbolo, tipografia e cores fiéis ao real) — sem variações criativas, "
+                f"sem versões \"inspired by\". Se não tiver certeza de fidelidade, use apenas "
+                f"tipografia: escreva \"{brand_name}\" UMA vez em sans-serif moderno e limpo (Inter, "
+                f"Helvetica, Geist), grafia exata, sem tagline. PROIBIDO em qualquer caso: inventar "
+                f"marcas fictícias, fabricar logo/símbolo/monograma falso, ou criar variações "
+                f"criativas de logos conhecidos. "
+            )
+
     return (
         f"Edite a imagem de referência para criar um post de Instagram original da marca NCfly. "
         f"Tema: {title}. Contexto: {summary[:220]}. "
+        f"{brand_block}"
 
         "Regras obrigatórias: "
         "- NÃO manter o mesmo enquadramento da imagem original "
@@ -1098,16 +1245,31 @@ def _build_cover_reference_prompt(title: str, summary: str, category: str) -> st
         "- Alterar iluminação e contraste para criar nova identidade visual "
         "- Aplicar overlay escuro ou gradiente para dar destaque "
         "- Reorganizar completamente a composição visual "
+        "- Quando houver logo de marca anexado, ele é INTOCÁVEL: reposicionar, sim; redesenhar, NUNCA "
 
         "Objetivo: "
         "A imagem final deve parecer um post de marca próprio, e NÃO uma variação da imagem original. "
 
-        "Proibido: "
-        "- manter mesma composição "
+        "Proibido (texto): "
+        "- qualquer texto legível na imagem (headlines, legendas, preços, porcentagens, slogans) "
+        "- QUALQUER palavra em inglês renderizada na imagem: SALE, OFF, DEAL, NEW, FLY, FLY NOW, "
+        "  PROMO, HURRY, LIMITED, BUY, NOW, BIG, BEST "
+        "- números grandes promocionais tipo '50% OFF', '70%', 'R$ 99' "
+        "- letras fake/gibberish que pareçam texto "
+        "- qualquer frase legível em qualquer idioma "
+
+        "Texto permitido (opcional, no máximo um): o nome oficial da marca em português grafado em "
+        "sans-serif limpa, OU o título curto da notícia em português com até 4 palavras. "
+
+        "Proibido (composição): "
+        "- manter mesma composição da imagem original "
         "- manter mesmo ângulo "
         "- parecer cópia da imagem original "
+        "- inventar marca fictícia ou criar variações criativas de logos conhecidos "
 
-        "Sem texto, sem watermark."
+        "Sem watermark. Pode aparecer: o logo oficial fornecido no brand kit (intocável), OU o logo "
+        "real de uma marca conhecida renderizado fielmente a partir do conhecimento geral quando "
+        "não houver arquivo no catálogo."
     )
 
 
@@ -1897,10 +2059,80 @@ def _png_bytes_to_webp(png_bytes: bytes, quality: int = 85) -> bytes:
         return png_bytes
 
 
+def _hex_to_rgb(hex_color: str) -> tuple[int, int, int]:
+    """Converte '#RRGGBB' (ou 'RRGGBB') para tupla RGB. Fallback preto."""
+    value = (hex_color or "").strip().lstrip("#")
+    if len(value) == 3:
+        value = "".join(ch * 2 for ch in value)
+    if len(value) != 6:
+        return (15, 23, 42)
+    try:
+        return (int(value[0:2], 16), int(value[2:4], 16), int(value[4:6], 16))
+    except ValueError:
+        return (15, 23, 42)
+
+
+def _render_logo_only_cover(
+    brand_logo_url: str,
+    brand_color_hex: str,
+    size: tuple[int, int] = (1600, 900),
+) -> bytes | None:
+    """Gera uma capa minimalista: LOGO centralizado sobre fundo com a cor da marca.
+
+    Retorna bytes WebP (ou None se Pillow/logo indisponíveis).
+
+    É o fallback preferido quando o /images/edits falha OU quando a saída
+    viria com texto em inglês/ruim — melhor logo sozinho do que cena ruim.
+    """
+    if not brand_logo_url:
+        return None
+    try:
+        from PIL import Image, ImageOps
+    except Exception:
+        return None
+
+    try:
+        logo_bytes, mime_type = _download_reference_image(brand_logo_url)
+    except Exception:
+        return None
+
+    if mime_type not in {"image/png", "image/jpeg", "image/webp"}:
+        return None
+
+    try:
+        with Image.open(io.BytesIO(logo_bytes)) as logo_raw:
+            logo = logo_raw.convert("RGBA")
+    except Exception:
+        return None
+
+    canvas_w, canvas_h = size
+    bg_rgb = _hex_to_rgb(brand_color_hex)
+    canvas = Image.new("RGB", (canvas_w, canvas_h), bg_rgb)
+
+    # Área segura: ~55% da largura / 55% da altura — logo dominante, respiração confortável
+    max_w = int(canvas_w * 0.55)
+    max_h = int(canvas_h * 0.55)
+    logo_fitted = ImageOps.contain(logo, (max_w, max_h))
+
+    # Centraliza
+    offset_x = (canvas_w - logo_fitted.width) // 2
+    offset_y = (canvas_h - logo_fitted.height) // 2
+    # Paste preservando alpha do logo
+    canvas.paste(logo_fitted, (offset_x, offset_y), logo_fitted)
+
+    buf = io.BytesIO()
+    try:
+        canvas.save(buf, format="WEBP", quality=90, method=6)
+    except Exception:
+        canvas.save(buf, format="PNG", optimize=True)
+    return buf.getvalue()
+
+
 def _generate_ai_cover(
     prompt: str,
     reference_image_url: str = "",
     brand_logo_url: str = "",
+    brand_color_hex: str = "",
 ) -> tuple[str | None, bool]:
     """Gera imagem de capa via GPT-image.
 
@@ -1908,13 +2140,30 @@ def _generate_ai_cover(
     1. brand_logo_url  → usa /images/edits com logo da marca (melhor identidade)
     2. reference_image_url → usa /images/edits com imagem da fonte
     3. nenhum          → usa /images/generations puro
+    4. fallback logo-only → só o logo centralizado sobre fundo da cor da marca
+       (preferido a qualquer geração ruim/com texto em inglês)
     """
-    def _save(image_bytes: bytes) -> str:
+    def _save(image_bytes: bytes, suffix: str = "") -> str:
         webp_bytes = _png_bytes_to_webp(image_bytes)
         ext = "webp" if len(webp_bytes) < len(image_bytes) else "png"
         data = webp_bytes if ext == "webp" else image_bytes
-        name = f"portal/noticias/generated/{timezone.now():%Y%m%d%H%M%S}_{hashlib.sha1(prompt.encode('utf-8')).hexdigest()[:10]}.{ext}"
+        slug_tag = hashlib.sha1(prompt.encode("utf-8")).hexdigest()[:10]
+        tail = f"_{suffix}" if suffix else ""
+        name = f"portal/noticias/generated/{timezone.now():%Y%m%d%H%M%S}_{slug_tag}{tail}.{ext}"
         return _save_generated_file(name, data)
+
+    def _save_logo_only() -> str | None:
+        """Fallback determinístico: logo da marca centralizado sobre cor oficial.
+        Sempre preferido a nenhuma capa / a capa genérica sem contexto de marca."""
+        if not brand_logo_url:
+            return None
+        logo_bytes = _render_logo_only_cover(brand_logo_url, brand_color_hex)
+        if not logo_bytes:
+            return None
+        ext = "webp"
+        slug_tag = hashlib.sha1((brand_logo_url + brand_color_hex).encode("utf-8")).hexdigest()[:10]
+        name = f"portal/noticias/generated/{timezone.now():%Y%m%d%H%M%S}_{slug_tag}_logoonly.{ext}"
+        return _save_generated_file(name, logo_bytes)
 
     # Tentativa 1: logo da marca como referência visual
     if brand_logo_url:
@@ -1943,7 +2192,13 @@ def _generate_ai_cover(
         if image_bytes:
             return _save(image_bytes), True
     except Exception:
-        return None, False
+        pass  # cai no fallback logo-only
+
+    # Tentativa 4: fallback logo-only (melhor logo sozinho que cena ruim)
+    fallback_path = _save_logo_only()
+    if fallback_path:
+        return fallback_path, True
+
     return None, False
 
 
@@ -1970,7 +2225,26 @@ def ensure_cover_for_news(draft: NewsDraft) -> tuple[str | None, bool]:
             "aircraft, airport, destination, loyalty card, smartphone with travel app, or hotel."
         )
 
-        # 🧠 Contexto de marca — lookup automático no BRAND_CATALOG
+        # 🚫 Guardrail de texto — português only e de preferência SEM texto renderizado
+        text_guardrail = (
+            "TEXT RULES (STRICT, NON-NEGOTIABLE): Do NOT render any readable text inside the image. "
+            "No headlines, no captions, no price tags, no written percentages, no slogans, "
+            "no invented brand names, no fake letterforms, no decorative random letters. "
+            "NEVER render English words anywhere in the image — explicitly forbidden: "
+            "'SALE', 'OFF', 'DEAL', 'NEW', 'FLY', 'FLY NOW', 'PROMO', 'HURRY', 'LIMITED', 'BUY', 'NOW', "
+            "'BIG', 'BEST', 'TRAVEL', 'GO'. "
+            "Forbidden also: large promotional numbers like '50% OFF', '70%', 'R$ 99'. "
+            "Forbidden any readable phrase in any language. "
+            "Allowed text (OPTIONAL, at most ONE): the official brand name (exactly as in the brand "
+            "kit, in Brazilian Portuguese, clean modern sans-serif) OR a short news title in "
+            "Brazilian Portuguese with at most 4 words. "
+            "If text accidentally appears beyond that, it must be part of a real object (boarding pass "
+            "destination code, airport signage) — never a marketing message. "
+            "The only graphic mark allowed is the official brand logo provided in the curated brand kit."
+        )
+
+        # 🧠 Contexto de marca — lookup automático no MarcaCatalogo via BRAND_CATALOG
+        # (catálogo curado: nome oficial + cor_hex + logo PNG/JPEG — tratar como verdade absoluta)
         tags_text = " ".join(draft.tags or [])
         lookup_text = f"{draft.titulo or ''} {draft.resumo or ''} {tags_text}"
         detected_brands = _detect_brands(lookup_text)
@@ -1982,24 +2256,67 @@ def ensure_cover_for_news(draft: NewsDraft) -> tuple[str | None, bool]:
         if primary_brand:
             brand_logo_url = primary_brand["logo_url"]
 
-        # 🎨 Estilo editorial — marca pode aparecer de forma natural
+        # 🎨 Estilo editorial — marca aparece com base no brand kit curado
         base_style = (
             "Editorial travel photography style, high quality, professional lighting, "
-            "clean composition. Brand logos and names MAY appear naturally in the scene "
-            "(e.g., on aircraft livery, loyalty card, app screen, or hotel signage) — "
-            "this is encouraged to reinforce brand recognition."
+            "clean composition. The ONLY brand identity that may appear is the one provided in the "
+            "curated brand kit (official logo + official color from MarcaCatalogo). "
+            "Do NOT introduce any other brand, fake logo or invented mark."
         )
+
+        # 🏷️ Instrução específica quando usaremos /images/edits com o logo da marca como input.
+        # O logo vem do MarcaCatalogo — é identidade oficial, NÃO é sugestão estética.
+        brand_logo_instruction = ""
+        if primary_brand and brand_logo_url:
+            brand_name = primary_brand.get("name", "")
+            brand_color = primary_brand.get("cor_hex", "")
+            brand_logo_instruction = (
+                f"BRAND KIT (CURATED — LOGO IS INTOUCHABLE): The attached reference image is the "
+                f"official logo of {brand_name}, sourced from our curated catalog (MarcaCatalogo). "
+                f"Treat it as INTOUCHABLE visual identity: preserve original colors, proportions, "
+                f"letterforms and spacing pixel-accurate. Do NOT redraw, restyle, translate, italicize, "
+                f"recolor, emboss, filter, skew, rotate beyond ±5°, crop or trace it by hand. "
+                f"Allowed: reposition the logo and compose abstract elements around it. Required: "
+                f"keep at least 8–12% padding around the logo on every side (clear breathing room). "
+                f"Place the logo as the hero element (large, centered or in a strong focal position) "
+                f"OR apply it cleanly onto ONE realistic object (credit card face, loyalty app screen, "
+                f"boarding pass, aircraft tail, hotel sign). "
+                f"BRAND COLOR (SUGGESTION): the catalog hex is {brand_color} — use it when it fits "
+                f"the scene, or use tones associated with {brand_name}'s identity (variants of the "
+                f"same hue, or a complementary palette that still reads as the brand). The goal is "
+                f"perceived brand coherence, not exact hex reproduction. The final image must be "
+                f"instantly recognizable as {brand_name}. Do NOT add any other text, slogan, tagline "
+                f"or caption — only the logo itself."
+            )
+        elif primary_brand:
+            # Detectamos a marca no catálogo, mas sem logo_url disponível.
+            # Se a IA conhece a marca pelo conhecimento geral, pode renderizar o logo real fielmente.
+            # Proibido: marcas fictícias e variações criativas de logos conhecidos.
+            brand_name = primary_brand.get("name", "")
+            brand_color = primary_brand.get("cor_hex", "")
+            brand_logo_instruction = (
+                f"BRAND KIT (CURATED, NO LOGO IMAGE): brand is {brand_name}, reference color "
+                f"{brand_color} (suggestion — associated tones are also valid). We do NOT have a "
+                f"logo file in the catalog right now. If you genuinely know {brand_name}'s real "
+                f"visual identity from general knowledge, you MAY render its official logo (correct "
+                f"symbol, typography and colors) faithfully — no creative variants, no \"inspired "
+                f"by\" versions. If you are not confident in faithfulness, fall back to typography "
+                f"only: write \"{brand_name}\" ONCE in clean modern sans-serif (Inter, Helvetica, "
+                f"Geist), exactly as spelled, with generous spacing. STRICTLY FORBIDDEN: invent "
+                f"fictitious brands, fabricate fake logos/monograms/emblems, or produce creative "
+                f"variations of well-known logos."
+            )
 
         # 🚀 Monta prompt final
         if llm_prompt:
-            prompt = f"{llm_prompt}. {context_guardrail} {brand_context} {base_style}"
+            prompt = f"{llm_prompt}. {context_guardrail} {text_guardrail} {brand_context} {brand_logo_instruction} {base_style}"
         else:
             fallback = _build_cover_prompt(
                 draft.titulo,
                 draft.resumo,
                 draft.categoria
             )
-            prompt = f"{fallback}. {context_guardrail} {brand_context} {base_style}"
+            prompt = f"{fallback}. {context_guardrail} {text_guardrail} {brand_context} {brand_logo_instruction} {base_style}"
 
         # 📌 Referência de imagem da fonte (quando aplicável)
         reference_image_url = (
@@ -2011,14 +2328,21 @@ def ensure_cover_for_news(draft: NewsDraft) -> tuple[str | None, bool]:
         if reference_image_url:
             prompt = f"{prompt}. Use a imagem de referência apenas como base visual, sem copiar."
 
+        brand_color_hex = primary_brand.get("cor_hex", "") if primary_brand else ""
+
         storage_path, generated = _generate_ai_cover(
             prompt,
             reference_image_url=reference_image_url,
             brand_logo_url=brand_logo_url,
+            brand_color_hex=brand_color_hex,
         )
 
         if not storage_path and reference_image_url:
-            storage_path, generated = _generate_ai_cover(prompt)
+            storage_path, generated = _generate_ai_cover(
+                prompt,
+                brand_logo_url=brand_logo_url,
+                brand_color_hex=brand_color_hex,
+            )
 
         if storage_path:
             return storage_path, generated
