@@ -8,4 +8,6 @@ whitenoise==6.9.0
 reportlab
 PyMySQL
 requests
-django-allauth[google]
+django-allauth
+PyJWT
+cryptography
