@@ -50,7 +50,13 @@
                     <h2>O que voc&ecirc; encontra aqui</h2>
                 </div>
             </header>
-            <div class="scroll-hint-wrap">
+            <div class="scroll-hint-wrap portal-home-pillars__scroll-container">
+            <button type="button" class="portal-home-pillars__arrow portal-home-pillars__arrow--left" aria-label="Rolar para a esquerda" data-scroll-arrow="left" hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            </button>
+            <button type="button" class="portal-home-pillars__arrow portal-home-pillars__arrow--right" aria-label="Rolar para a direita" data-scroll-arrow="right">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18l6-6-6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+            </button>
             <div class="portal-home-pillars__track">
                 <a href="{% url 'portal_alertas' %}" class="news-category-card portal-home-pillar-card"
                     data-analytics-event="click_pillar" data-analytics-category="navigation"
@@ -502,4 +508,27 @@
 
 {% block footer %}
 {% include "portal/partials/home_footer.html" %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function(){
+  var container = document.querySelector('.portal-home-pillars__scroll-container');
+  if (!container) return;
+  var track = container.querySelector('.portal-home-pillars__track');
+  var left = container.querySelector('[data-scroll-arrow="left"]');
+  var right = container.querySelector('[data-scroll-arrow="right"]');
+  if (!track || !left || !right) return;
+  var step = 220;
+  function update(){
+    left.hidden = track.scrollLeft < 10;
+    right.hidden = track.scrollLeft + track.offsetWidth >= track.scrollWidth - 10;
+  }
+  left.addEventListener('click', function(){ track.scrollBy({left: -step, behavior: 'smooth'}); });
+  right.addEventListener('click', function(){ track.scrollBy({left: step, behavior: 'smooth'}); });
+  track.addEventListener('scroll', update, {passive: true});
+  window.addEventListener('resize', update);
+  update();
+})();
+</script>
 {% endblock %}
