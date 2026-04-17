@@ -1,0 +1,219 @@
+{% extends "superadmin/base.html" %}
+{% block title %}{% if editando %}Editar{% else %}Novo{% endif %} Artigo — Painel NCfly{% endblock %}
+{% block page_title %}{% if editando %}Editar Artigo: {{ artigo.titulo|truncatechars:50 }}{% else %}Novo Artigo{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto card p-6">
+    <form method="post" enctype="multipart/form-data" class="space-y-5">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-3 gap-4">
+            <div class="col-span-2">
+                <label for="titulo">Titulo *</label>
+                <input type="text" id="titulo" name="titulo" required
+                    value="{% if editando %}{{ artigo.titulo }}{% elif form_data %}{{ form_data.titulo }}{% endif %}"
+                    placeholder="Titulo do artigo">
+            </div>
+            <div>
+                <label for="modulo">Modulo *</label>
+                <select id="modulo" name="modulo" required>
+                    <option value="">Selecione...</option>
+                    {% for m in modulos %}
+                    <option value="{{ m.pk }}"
+                        {% if editando and artigo.modulo_id == m.pk %}selected
+                        {% elif form_data and form_data.modulo == m.pk|stringformat:"d" %}selected{% endif %}>
+                        {{ m.titulo }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <label for="resumo">Resumo</label>
+            <textarea id="resumo" name="resumo" rows="2" placeholder="Resumo curto para cards e listagens">{% if editando %}{{ artigo.resumo }}{% elif form_data %}{{ form_data.resumo }}{% endif %}</textarea>
+        </div>
+
+        <div>
+            <label for="conteudo">Conteudo HTML *</label>
+            <textarea id="conteudo" name="conteudo" rows="14" required placeholder="Cole aqui o conteudo HTML do artigo">{% if editando %}{{ artigo.conteudo }}{% elif form_data %}{{ form_data.conteudo }}{% endif %}</textarea>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+            <div>
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="draft" {% if editando and artigo.status == "draft" %}selected{% endif %}>Rascunho</option>
+                    <option value="published" {% if editando and artigo.status == "published" %}selected{% endif %}>Publicado</option>
+                    <option value="archived" {% if editando and artigo.status == "archived" %}selected{% endif %}>Arquivado</option>
+                </select>
+            </div>
+            <div>
+                <label for="autor">Autor</label>
+                <input type="text" id="autor" name="autor"
+                    value="{% if editando %}{{ artigo.autor }}{% elif form_data %}{{ form_data.autor }}{% endif %}"
+                    placeholder="Redacao NC Fly">
+            </div>
+            <div>
+                <label for="tempo_leitura">Tempo de leitura (min)</label>
+                <input type="number" id="tempo_leitura" name="tempo_leitura" min="1"
+                    value="{% if editando %}{{ artigo.tempo_leitura }}{% else %}5{% endif %}">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="imagem">Imagem (upload)</label>
+                <input type="file" id="imagem" name="imagem" accept="image/*" style="padding: .4rem;">
+                {% if editando and artigo.imagem %}
+                <p class="text-xs text-slate-400 mt-1">Atual: {{ artigo.imagem.name }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="imagem_url">Imagem (URL externa)</label>
+                <input type="url" id="imagem_url" name="imagem_url"
+                    value="{% if editando %}{{ artigo.imagem_url }}{% elif form_data %}{{ form_data.imagem_url }}{% endif %}"
+                    placeholder="https://...">
+            </div>
+        </div>
+
+        <div>
+            <label for="ordem">Ordem no modulo</label>
+            <input type="number" id="ordem" name="ordem" min="0"
+                value="{% if editando %}{{ artigo.ordem }}{% else %}0{% endif %}">
+        </div>
+
+        <details class="border rounded-lg p-4" style="border-color: #e2e8f0;">
+            <summary class="font-medium text-sm cursor-pointer text-slate-600">SEO (opcional)</summary>
+            <div class="mt-3 space-y-3">
+                <div>
+                    <label for="seo_title">SEO Title (max 70 chars)</label>
+                    <input type="text" id="seo_title" name="seo_title" maxlength="70"
+                        value="{% if editando %}{{ artigo.seo_title }}{% elif form_data %}{{ form_data.seo_title }}{% endif %}">
+                </div>
+                <div>
+                    <label for="meta_description">Meta description (max 160 chars)</label>
+                    <textarea id="meta_description" name="meta_description" rows="2" maxlength="160">{% if editando %}{{ artigo.meta_description }}{% elif form_data %}{{ form_data.meta_description }}{% endif %}</textarea>
+                </div>
+            </div>
+        </details>
+
+        <div class="flex gap-3 justify-end pt-2">
+            <a href="{% url 'superadmin_artigos_list' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">{% if editando %}Salvar alteracoes{% else %}Criar artigo{% endif %}</button>
+        </div>
+    </form>
+</div>
+
+{% if editando %}
+<!-- Acoes extras para artigo existente -->
+<div class="max-w-3xl mx-auto mt-8 grid grid-cols-2 gap-6">
+    <!-- Revisao IA -->
+    <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-2">Revisao com IA (OpenAI)</h3>
+        <p class="text-xs text-slate-500 mb-3">Envia o artigo para a IA revisar conteudo, ajustar SEO (titulo, meta description, keywords), melhorar estrutura e gerar termos de busca YouTube. O artigo e atualizado automaticamente.</p>
+        <button type="button" id="btn-review-ia" class="btn btn-primary text-xs">Revisar e otimizar com IA</button>
+        <div id="review-ia-result" class="mt-3 text-xs text-slate-600 hidden"></div>
+    </div>
+
+    {% if artigo.ia_revisao_json %}
+    <!-- Ultima revisao IA -->
+    <div class="max-w-3xl mx-auto mt-4 card p-5" style="border-left: 3px solid #2563eb;">
+        <h3 class="font-semibold text-sm mb-2">Ultima revisao IA</h3>
+        <div class="text-xs text-slate-600 space-y-1">
+            {% if artigo.ia_revisao_json.confianca %}
+            <p>Confianca: <strong>{{ artigo.ia_revisao_json.confianca|floatformat:0 }}%</strong>
+            {% if artigo.ia_revisao_json.aprovado_para_publicacao %}<span class="badge badge-green ml-1">Aprovado</span>{% else %}<span class="badge badge-yellow ml-1">Precisa ajustes</span>{% endif %}</p>
+            {% endif %}
+            {% if artigo.ia_revisao_json.resumo_revisao %}
+            <p>{{ artigo.ia_revisao_json.resumo_revisao }}</p>
+            {% endif %}
+            {% if artigo.ia_revisao_json.keywords %}
+            <p><strong>Keywords:</strong> {{ artigo.ia_revisao_json.keywords|join:", " }}</p>
+            {% endif %}
+            {% if artigo.ia_revisao_json.youtube_search_terms %}
+            <p><strong>Termos YouTube:</strong> {{ artigo.ia_revisao_json.youtube_search_terms|join:", " }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Buscar videos -->
+    <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-2">Videos do YouTube</h3>
+        <p class="text-xs text-slate-500 mb-3">Busca videos relacionados automaticamente com base no titulo.</p>
+        <button type="button" id="btn-buscar-videos" class="btn btn-primary text-xs">Buscar videos</button>
+        <div id="videos-result" class="mt-3 text-xs text-slate-600 hidden"></div>
+    </div>
+</div>
+
+{% if videos %}
+<div class="max-w-3xl mx-auto mt-6 card p-5">
+    <h3 class="font-semibold text-sm mb-3">Videos vinculados ({{ videos|length }})</h3>
+    <div class="space-y-2">
+        {% for v in videos %}
+        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 text-sm">
+            <img src="{{ v.thumbnail_url }}" alt="" width="80" height="45" class="rounded" style="object-fit:cover;">
+            <div class="flex-1 min-w-0">
+                <p class="font-medium truncate">{{ v.titulo }}</p>
+                <p class="text-xs text-slate-400">{{ v.canal }} &middot; {{ v.duracao }}</p>
+            </div>
+            <span class="badge {% if v.ativo %}badge-green{% else %}badge-gray{% endif %}">{% if v.ativo %}Ativo{% else %}Oculto{% endif %}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<script>
+(function() {
+    var btnIA = document.getElementById('btn-review-ia');
+    var divIA = document.getElementById('review-ia-result');
+    if (btnIA) {
+        btnIA.addEventListener('click', function() {
+            btnIA.disabled = true; btnIA.textContent = 'Processando...';
+            divIA.classList.remove('hidden'); divIA.textContent = 'Enviando para revisao...';
+            fetch("{% url 'superadmin_artigo_review_ia' pk=artigo.pk %}", {method:'POST', headers:{'X-CSRFToken':'{{ csrf_token }}'}})
+                .then(function(r){return r.json()})
+                .then(function(d){
+                    if (d.ok) {
+                        var r = d.result;
+                        var html = '<strong style="color:#166534;">Revisao concluida!</strong><br>';
+                        html += 'Confianca: ' + (r.confianca * 100).toFixed(0) + '% | ';
+                        html += r.aprovado_para_publicacao ? '<span style="color:#166534;">Aprovado</span>' : '<span style="color:#991b1b;">Precisa ajustes</span>';
+                        html += '<br>' + (r.resumo_revisao || '');
+                        if (r.notas_revisao && r.notas_revisao.length) {
+                            html += '<br><br><strong>Notas (' + r.notas_revisao.length + '):</strong><ul style="margin:4px 0 0 16px;">';
+                            r.notas_revisao.forEach(function(n){ html += '<li>[' + n.severidade + '] ' + n.descricao + '</li>'; });
+                            html += '</ul>';
+                        }
+                        html += '<br><em>Recarregando pagina em 3s...</em>';
+                        divIA.innerHTML = html;
+                        setTimeout(function(){ location.reload(); }, 3000);
+                    } else {
+                        divIA.textContent = 'Erro: ' + d.error;
+                        btnIA.disabled = false; btnIA.textContent = 'Revisar e otimizar com IA';
+                    }
+                })
+                .catch(function(e){ divIA.textContent = 'Erro: ' + e; btnIA.disabled = false; btnIA.textContent = 'Revisar e otimizar com IA'; });
+        });
+    }
+    var btnVid = document.getElementById('btn-buscar-videos');
+    var divVid = document.getElementById('videos-result');
+    if (btnVid) {
+        btnVid.addEventListener('click', function() {
+            btnVid.disabled = true; btnVid.textContent = 'Buscando...';
+            divVid.classList.remove('hidden'); divVid.textContent = 'Buscando no YouTube...';
+            fetch("{% url 'superadmin_artigo_buscar_videos' pk=artigo.pk %}", {method:'POST', headers:{'X-CSRFToken':'{{ csrf_token }}'}})
+                .then(function(r){return r.json()})
+                .then(function(d){
+                    divVid.textContent = d.ok ? d.saved + ' novos videos adicionados (' + d.total + ' total). Recarregue para ver.' : 'Erro: ' + d.error;
+                    btnVid.disabled = false; btnVid.textContent = 'Buscar videos';
+                })
+                .catch(function(e){ divVid.textContent = 'Erro: ' + e; btnVid.disabled = false; btnVid.textContent = 'Buscar videos'; });
+        });
+    }
+})();
+</script>
+{% endif %}
+{% endblock %}

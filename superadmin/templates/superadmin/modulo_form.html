@@ -1,0 +1,56 @@
+{% extends "superadmin/base.html" %}
+{% block title %}{% if editando %}Editar{% else %}Novo{% endif %} Modulo — Painel NCfly{% endblock %}
+{% block page_title %}{% if editando %}Editar Modulo: {{ modulo.titulo }}{% else %}Novo Modulo{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto card p-6">
+    <form method="post" class="space-y-5">
+        {% csrf_token %}
+
+        <div>
+            <label for="titulo">Titulo *</label>
+            <input type="text" id="titulo" name="titulo" required
+                value="{% if editando %}{{ modulo.titulo }}{% elif form_data %}{{ form_data.titulo }}{% endif %}"
+                placeholder="Ex: Fundamentos de Milhas">
+        </div>
+
+        <div>
+            <label for="descricao">Descricao *</label>
+            <textarea id="descricao" name="descricao" rows="3" required placeholder="Descreva o conteudo deste modulo">{% if editando %}{{ modulo.descricao }}{% elif form_data %}{{ form_data.descricao }}{% endif %}</textarea>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+            <div>
+                <label for="icone">Icone (emoji)</label>
+                <input type="text" id="icone" name="icone"
+                    value="{% if editando %}{{ modulo.icone }}{% elif form_data %}{{ form_data.icone }}{% endif %}"
+                    placeholder="&#128218;">
+            </div>
+            <div>
+                <label for="cor">Cor</label>
+                <input type="color" id="cor" name="cor" style="height:38px; padding:2px;"
+                    value="{% if editando %}{{ modulo.cor }}{% else %}#2563eb{% endif %}">
+            </div>
+            <div>
+                <label for="ordem">Ordem</label>
+                <input type="number" id="ordem" name="ordem" min="0"
+                    value="{% if editando %}{{ modulo.ordem }}{% else %}0{% endif %}">
+            </div>
+        </div>
+
+        <div>
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="ativo"
+                    {% if editando and modulo.ativo %}checked{% elif not editando %}checked{% endif %}
+                    style="width:auto; padding:0;">
+                <span>Modulo ativo</span>
+            </label>
+        </div>
+
+        <div class="flex gap-3 justify-end pt-2">
+            <a href="{% url 'superadmin_modulos_list' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">{% if editando %}Salvar alteracoes{% else %}Criar modulo{% endif %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

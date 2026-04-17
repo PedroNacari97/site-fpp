@@ -23,8 +23,12 @@ from django.views.static import serve as serve_static
 from core.views import healthcheck
 from accounts.views import custom_login, superadmin_login
 from gestao.views.alertas import telegram_alertas_webhook, telegram_artigos_webhook, telegram_noticias_webhook
+from onboarding.views_assinatura import assinatura_bloqueada
 from portal import views as portal_views
-from portal.sitemaps import AlertSitemap, CategorySitemap, HomeSitemap, NewsSitemap, StaticPageSitemap
+from portal.sitemaps import (
+    AlertSitemap, ArtigoEstudoSitemap, CategorySitemap, HomeSitemap,
+    ModuloEstudoSitemap, NewsSitemap, StaticPageSitemap,
+)
 
 
 portal_sitemaps = {
@@ -33,6 +37,8 @@ portal_sitemaps = {
     "categories": CategorySitemap,
     "news": NewsSitemap,
     "alerts": AlertSitemap,
+    "artigos": ArtigoEstudoSitemap,
+    "modulos": ModuloEstudoSitemap,
 }
 
 urlpatterns = [
@@ -53,6 +59,9 @@ urlpatterns = [
     path("integracoes/telegram/artigos/webhook/", telegram_artigos_webhook, name="telegram_artigos_webhook"),
     path("painel/", include("painel_cliente.urls")),
     path("django/admin/", admin.site.urls),
+    path("contratar/", include("onboarding.urls")),
+    path("assinatura/bloqueada/", assinatura_bloqueada, name="assinatura_bloqueada"),
+    path("webhooks/", include("onboarding.urls_webhooks")),
     path("adm/", include("gestao.urls_admin")),
     path("accounts/", include("accounts.urls")),
     path("home/", include("portal.urls")),

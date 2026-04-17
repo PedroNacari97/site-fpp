@@ -1,0 +1,234 @@
+{% extends "portal/base_public.html" %}
+{% load static %}
+{% load portal_extras %}
+{% block title %}{{ artigo.seo_title|default:artigo.titulo }} | NC Fly{% endblock %}
+
+{% block extra_head %}
+<style>
+    .artigo-detalhe-toc { display: none; }
+    @media (min-width: 1081px) {
+        .artigo-detalhe-toc { display: block; }
+        .artigo-detalhe-toc-mobile { display: none !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="portal-category-page">
+
+    <!-- Breadcrumb -->
+    <nav class="artigo-detalhe-breadcrumb" aria-label="Breadcrumb">
+        <ol>
+            <li><a href="{% url 'portal_home' %}">Home</a></li>
+            <li><a href="{% url 'portal_artigos' %}">Artigos</a></li>
+            {% if artigo.modulo %}
+            <li><a href="{{ artigo.modulo.get_absolute_url }}">{{ artigo.modulo.titulo }}</a></li>
+            {% endif %}
+            <li aria-current="page">{{ artigo.titulo|truncatechars:50 }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <header class="artigo-detalhe-header">
+        <div class="artigo-detalhe-header__pills">
+            {% if artigo.modulo %}
+            <a href="{{ artigo.modulo.get_absolute_url }}" class="news-pill artigos-hub-pill-modulo" style="--modulo-cor: {{ artigo.modulo.cor|default:'#2563eb' }};">
+                {{ artigo.modulo.titulo }}
+            </a>
+            {% endif %}
+            <span class="news-pill news-pill--artigo">Artigo</span>
+        </div>
+        <h1>{{ artigo.titulo }}</h1>
+        <div class="artigo-detalhe-header__meta news-meta">
+            <span>{{ artigo.autor|default:"Reda&ccedil;&atilde;o NC Fly" }}</span>
+            {% if artigo.publicado_em %}<span>{{ artigo.publicado_em|date:"d/m/Y" }}</span>{% endif %}
+            <span class="artigo-reading-time">
+                <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5l2 1.5" stroke-linecap="round"/></svg>
+                {{ artigo.tempo_leitura|default:"5" }} min de leitura
+            </span>
+        </div>
+        {% if artigo.imagem_exibicao %}
+        <div class="artigo-detalhe-header__cover">
+            <img src="{{ artigo.imagem_exibicao }}" alt="{{ artigo.titulo }}" width="1120" height="630" fetchpriority="high" decoding="async">
+        </div>
+        {% endif %}
+    </header>
+
+    <!-- Layout corpo + TOC -->
+    <div class="artigo-detalhe-layout">
+
+        <!-- TOC mobile -->
+        <details class="artigo-detalhe-toc-mobile">
+            <summary>Sum&aacute;rio do artigo</summary>
+            <nav class="artigo-detalhe-toc-mobile__nav" id="toc-mobile" aria-label="Sumario do artigo"></nav>
+        </details>
+
+        <!-- Corpo do artigo -->
+        <article class="artigo-detalhe-corpo" id="artigo-corpo">
+            {{ artigo.conteudo|safe }}
+        </article>
+
+        <!-- TOC sidebar desktop -->
+        <aside class="artigo-detalhe-toc">
+            <div class="artigo-detalhe-toc__sticky">
+                <h4>Sum&aacute;rio</h4>
+                <nav id="toc-desktop" aria-label="Sumario do artigo"></nav>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Videos Relacionados -->
+    {% if videos %}
+    <section class="artigo-detalhe-videos">
+        <h2 class="artigos-hub-section-title">V&iacute;deos Relacionados</h2>
+        <div class="artigo-detalhe-videos__grid">
+            {% for video in videos %}
+            <button type="button" class="artigo-detalhe-video-card" data-video-id="{{ video.video_id }}" aria-label="Reproduzir video: {{ video.titulo }}">
+                <div class="artigo-detalhe-video-card__thumb">
+                    <img src="{{ video.thumbnail_url }}" alt="{{ video.titulo }}" width="320" height="180" loading="lazy" decoding="async">
+                    <span class="artigo-detalhe-video-card__play" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="32" height="32" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+                    </span>
+                    {% if video.duracao %}
+                    <span class="artigo-detalhe-video-card__duration">{{ video.duracao }}</span>
+                    {% endif %}
+                </div>
+                <div class="artigo-detalhe-video-card__info">
+                    <h3>{{ video.titulo }}</h3>
+                    <span class="news-meta">
+                        {% if video.canal %}<span>{{ video.canal }}</span>{% endif %}
+                        {% if video.visualizacoes %}<span>{{ video.visualizacoes }} views</span>{% endif %}
+                    </span>
+                </div>
+            </button>
+            {% endfor %}
+        </div>
+
+        <!-- Modal embed YouTube -->
+        <div class="artigo-detalhe-video-modal is-hidden" id="video-modal" aria-hidden="true">
+            <div class="artigo-detalhe-video-modal__backdrop" data-video-close></div>
+            <div class="artigo-detalhe-video-modal__dialog" role="dialog" aria-modal="true" aria-label="Player de video">
+                <button type="button" class="artigo-detalhe-video-modal__close" data-video-close aria-label="Fechar video">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+                </button>
+                <div class="artigo-detalhe-video-modal__embed" id="video-embed"></div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Lead capture -->
+    <section class="artigo-detalhe-lead">
+        <div class="artigo-detalhe-lead__card">
+            <div class="artigo-detalhe-lead__copy">
+                <h2>Receba alertas de milhas baratas</h2>
+                <p>Cadastre seu e-mail e receba conte&uacute;dos exclusivos sobre milhas, viagens e estrat&eacute;gias para voar mais.</p>
+            </div>
+            <form class="artigo-detalhe-lead__form" method="post" action="{% url 'portal_artigos' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="lead_capture">
+                <label for="lead-email" class="sr-only">Seu melhor e-mail</label>
+                <input type="email" id="lead-email" name="email" placeholder="Seu melhor e-mail" required>
+                <button type="submit" class="portal-button portal-button--primary">Quero receber</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Nav prev/next -->
+    {% if artigo_anterior or artigo_proximo %}
+    <nav class="artigo-detalhe-nav" aria-label="Navegacao entre artigos">
+        {% if artigo_anterior %}
+        <a href="{{ artigo_anterior.get_absolute_url }}" class="artigo-detalhe-nav__link artigo-detalhe-nav__link--prev">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            <span><small>Anterior</small><strong>{{ artigo_anterior.titulo|truncatechars:60 }}</strong></span>
+        </a>
+        {% else %}<span></span>{% endif %}
+
+        {% if artigo_proximo %}
+        <a href="{{ artigo_proximo.get_absolute_url }}" class="artigo-detalhe-nav__link artigo-detalhe-nav__link--next">
+            <span><small>Pr&oacute;ximo</small><strong>{{ artigo_proximo.titulo|truncatechars:60 }}</strong></span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    <!-- Artigos Relacionados -->
+    {% if artigos_relacionados %}
+    <section class="artigo-detalhe-relacionados">
+        <h2 class="artigos-hub-section-title">Artigos Relacionados</h2>
+        <div class="portal-category-grid">
+            {% for rel in artigos_relacionados %}
+            <article class="news-card">
+                {% if rel.imagem_exibicao %}
+                <a href="{{ rel.get_absolute_url }}" class="news-card__image">
+                    <img src="{{ rel.imagem_exibicao }}" alt="{{ rel.titulo }}" width="800" height="500" loading="lazy" decoding="async">
+                </a>
+                {% endif %}
+                <div class="news-card__body">
+                    {% if rel.modulo %}
+                    <span class="news-pill artigos-hub-pill-modulo" style="--modulo-cor: {{ rel.modulo.cor|default:'#2563eb' }};">{{ rel.modulo.titulo }}</span>
+                    {% endif %}
+                    <h3><a href="{{ rel.get_absolute_url }}">{{ rel.titulo }}</a></h3>
+                    <p>{{ rel.resumo|truncatechars:100 }}</p>
+                    <div class="news-meta">
+                        <span>{{ rel.autor|default:"Reda&ccedil;&atilde;o NC Fly" }}</span>
+                        <span class="artigo-reading-time">
+                            <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5l2 1.5" stroke-linecap="round"/></svg>
+                            {{ rel.tempo_leitura|default:"5" }} min
+                        </span>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+    var corpo = document.getElementById('artigo-corpo');
+    var tocD = document.getElementById('toc-desktop');
+    var tocM = document.getElementById('toc-mobile');
+    if (!corpo) return;
+    var hh = corpo.querySelectorAll('h2, h3');
+    if (hh.length === 0) return;
+    var ol = document.createElement('ol');
+    ol.className = 'artigo-detalhe-toc__list';
+    hh.forEach(function(h, i) {
+        var id = 'sec-' + i; h.id = id;
+        var li = document.createElement('li');
+        li.className = h.tagName === 'H3' ? 'artigo-detalhe-toc__item artigo-detalhe-toc__item--sub' : 'artigo-detalhe-toc__item';
+        var a = document.createElement('a'); a.href = '#' + id; a.textContent = h.textContent;
+        li.appendChild(a); ol.appendChild(li);
+    });
+    if (tocD) tocD.appendChild(ol.cloneNode(true));
+    if (tocM) tocM.appendChild(ol.cloneNode(true));
+
+    var modal = document.getElementById('video-modal');
+    var embed = document.getElementById('video-embed');
+    if (!modal || !embed) return;
+    document.querySelectorAll('[data-video-id]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var vid = this.getAttribute('data-video-id');
+            embed.innerHTML = '<iframe width="100%" height="100%" src="https://www.youtube.com/embed/' + vid + '?autoplay=1&rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+            modal.classList.remove('is-hidden'); modal.setAttribute('aria-hidden', 'false');
+        });
+    });
+    modal.querySelectorAll('[data-video-close]').forEach(function(el) {
+        el.addEventListener('click', function() {
+            embed.innerHTML = ''; modal.classList.add('is-hidden'); modal.setAttribute('aria-hidden', 'true');
+        });
+    });
+})();
+</script>
+{% endblock %}
+
+{% block footer %}
+{% include "portal/partials/home_footer.html" %}
+{% endblock %}

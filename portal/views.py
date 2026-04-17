@@ -1649,20 +1649,80 @@ def noticias_todas(request):
 
 
 def artigos_lista(request):
-    artigos = (
-        NoticiaPublicada.objects.filter(status="published", categoria="Artigos")
-        .order_by("-publicada_em")
-    )
-    featured = artigos[0] if artigos else None
-    sidebar = list(artigos[1:3])
-    grid = list(artigos[3:])
-    track_page_view(request.path, request=request, section="artigos_lista")
-    return render(request, "portal/artigos.html", {
-        "seo_title": "Artigos & Guias sobre Milhas e Viagens | NC Fly",
-        "artigos_featured": featured,
-        "artigos_sidebar": sidebar,
-        "artigos_grid": grid,
-    })
+    """Hub principal de artigos educativos."""
+    from .models import ModuloEstudo, ArtigoEstudo
+
+    modulos = ModuloEstudo.objects.filter(ativo=True).prefetch_related("artigos").order_by("ordem", "titulo")
+    artigos_pub = ArtigoEstudo.objects.filter(status="published").select_related("modulo").order_by("-publicado_em")
+    featured = artigos_pub[0] if artigos_pub else None
+    sidebar = list(artigos_pub[1:3])
+    grid = list(artigos_pub[3:15])
+    for m in modulos:
+        m.total_artigos = m.artigos.filter(status="published").count()
+    track_page_view(request.path, request=request, section="artigos_hub")
+    ctx = {"modulos": modulos, "artigos_featured": featured, "artigos_sidebar": sidebar, "artigos_grid": grid}
+    ctx.update(_build_artigos_hub_seo(request))
+    return render(request, "portal/artigos_hub.html", ctx)
+
+
+def modulo_detalhe(request, slug):
+    """Página de um módulo com lista de artigos."""
+    from .models import ModuloEstudo
+
+    modulo = get_object_or_404(ModuloEstudo, slug=slug, ativo=True)
+    artigos = modulo.artigos.filter(status="published").order_by("ordem", "titulo")
+    outros = ModuloEstudo.objects.filter(ativo=True).exclude(pk=modulo.pk).order_by("ordem", "titulo")
+    for o in outros:
+        o.total_artigos = o.artigos.filter(status="published").count()
+    track_page_view(request.path, request=request, section="modulo_detalhe")
+    ctx = {"modulo": modulo, "artigos": artigos, "outros_modulos": outros}
+    ctx.update(_build_modulo_seo(request, modulo))
+    return render(request, "portal/modulo_detalhe.html", ctx)
+
+
+def artigo_detalhe(request, modulo_slug, slug):
+    """Página completa de um artigo educativo."""
+    from .models import ArtigoEstudo
+
+    artigo = get_object_or_404(ArtigoEstudo.objects.select_related("modulo"), slug=slug, status="published")
+    if artigo.modulo.slug != modulo_slug:
+        return redirect(artigo.get_absolute_url(), permanent=True)
+    videos = artigo.videos.filter(ativo=True).order_by("ordem")
+    irmaos = list(artigo.modulo.artigos.filter(status="published").order_by("ordem", "titulo").values_list("pk", flat=True))
+    anterior = proximo = None
+    if artigo.pk in irmaos:
+        idx = irmaos.index(artigo.pk)
+        if idx > 0:
+            anterior = ArtigoEstudo.objects.select_related("modulo").get(pk=irmaos[idx - 1])
+        if idx < len(irmaos) - 1:
+            proximo = ArtigoEstudo.objects.select_related("modulo").get(pk=irmaos[idx + 1])
+    relacionados = artigo.modulo.artigos.filter(status="published").exclude(pk=artigo.pk).select_related("modulo").order_by("ordem")[:4]
+    track_page_view(request.path, request=request, section="artigo_detalhe")
+    ctx = {"artigo": artigo, "videos": videos, "artigo_anterior": anterior, "artigo_proximo": proximo, "artigos_relacionados": relacionados}
+    ctx.update(_build_artigo_seo(request, artigo))
+    return render(request, "portal/artigo_detalhe.html", ctx)
+
+
+# -- SEO helpers artigos --
+def _build_artigos_hub_seo(request):
+    t = "Aprenda sobre Milhas e Viagens | NC Fly"
+    d = "Guias completos e artigos educativos para dominar o universo das milhas aéreas."
+    return {"seo_title": t, "meta_description": d, "og_title": t, "og_description": d, "canonical_url": request.build_absolute_uri(reverse("portal_artigos"))}
+
+
+def _build_modulo_seo(request, modulo):
+    t = f"{modulo.titulo} — Artigos | NC Fly"
+    d = Truncator(modulo.descricao).chars(155)
+    return {"seo_title": t, "meta_description": d, "og_title": t, "og_description": d, "canonical_url": request.build_absolute_uri(modulo.get_absolute_url())}
+
+
+def _build_artigo_seo(request, artigo):
+    t = artigo.seo_title or artigo.titulo
+    d = artigo.meta_description or Truncator(artigo.resumo).chars(155)
+    img = artigo.imagem_exibicao or ""
+    canon = request.build_absolute_uri(artigo.get_absolute_url())
+    ld = json.dumps({"@context": "https://schema.org", "@type": "Article", "headline": artigo.titulo, "description": d, "author": {"@type": "Organization", "name": artigo.autor or "NC Fly"}, "publisher": {"@type": "Organization", "name": "NC Fly"}, "mainEntityOfPage": {"@type": "WebPage", "@id": canon}, **({"datePublished": artigo.publicado_em.isoformat()} if artigo.publicado_em else {}), **({"image": img} if img else {})}, ensure_ascii=False)
+    return {"seo_title": f"{t} | NC Fly", "meta_description": d, "og_title": t, "og_description": d, "og_image": img, "canonical_url": canon, "json_ld": ld}
 
 
 def categoria_lista(request, categoria_slug):

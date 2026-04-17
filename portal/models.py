@@ -366,3 +366,124 @@ class AlertEmailDigestItem(models.Model):
     def __str__(self):
         route_label = (self.metadata_json or {}).get("route_label") or f"Alerta #{self.alerta_id}"
         return f"{self.get_kind_display()} - {route_label}"
+
+
+class ModuloEstudo(models.Model):
+    titulo = models.CharField(max_length=200)
+    descricao = models.TextField()
+    slug = models.SlugField(max_length=220, unique=True)
+    icone = models.CharField(max_length=50, blank=True, help_text="Nome do ícone (ex: book, star, plane)")
+    cor = models.CharField(max_length=7, default="#2563eb", help_text="Cor hex do módulo")
+    ordem = models.PositiveIntegerField(default=0, db_index=True)
+    ativo = models.BooleanField(default=True, db_index=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Módulo de estudo"
+        verbose_name_plural = "Módulos de estudo"
+        ordering = ["ordem", "titulo"]
+
+    def __str__(self):
+        return self.titulo
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse("portal_modulo_detalhe", kwargs={"slug": self.slug})
+
+
+class ArtigoEstudo(models.Model):
+    STATUS_CHOICES = [
+        ("draft", "Rascunho"),
+        ("published", "Publicado"),
+        ("archived", "Arquivado"),
+    ]
+
+    modulo = models.ForeignKey(ModuloEstudo, on_delete=models.CASCADE, related_name="artigos")
+    titulo = models.CharField(max_length=220)
+    resumo = models.TextField(help_text="Resumo curto para exibição em cards")
+    conteudo = models.TextField(help_text="Conteúdo HTML completo do artigo")
+    slug = models.SlugField(max_length=240, unique=True)
+    imagem = models.FileField(upload_to="portal/artigos/", blank=True, null=True)
+    imagem_url = models.URLField(blank=True)
+    autor = models.CharField(max_length=120, default="Redação NC Fly")
+    tempo_leitura = models.PositiveIntegerField(default=5, help_text="Tempo de leitura em minutos")
+    ordem = models.PositiveIntegerField(default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft", db_index=True)
+    seo_title = models.CharField(max_length=70, blank=True)
+    meta_description = models.CharField(max_length=160, blank=True)
+    keywords_json = models.JSONField(default=list, blank=True)
+    youtube_search_terms_json = models.JSONField(default=list, blank=True)
+    metadata_json = models.JSONField(default=dict, blank=True)
+    ia_revisao_json = models.JSONField(default=dict, blank=True)
+    publicado_em = models.DateTimeField(null=True, blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Artigo de estudo"
+        verbose_name_plural = "Artigos de estudo"
+        ordering = ["modulo__ordem", "ordem", "titulo"]
+        indexes = [
+            models.Index(fields=["status", "-publicado_em"]),
+            models.Index(fields=["slug"]),
+            models.Index(fields=["modulo", "ordem"]),
+        ]
+
+    def __str__(self):
+        return self.titulo
+
+    @property
+    def imagem_exibicao(self):
+        if self.imagem:
+            return self.imagem.url
+        return self.imagem_url or ""
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse("portal_artigo_detalhe", kwargs={"modulo_slug": self.modulo.slug, "slug": self.slug})
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.template.defaultfilters import slugify
+            base = slugify(self.titulo)
+            slug = base
+            n = 1
+            while ArtigoEstudo.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base}-{n}"
+                n += 1
+            self.slug = slug
+        if self.conteudo:
+            from portal.services.html_sanitizer import sanitize_article_html
+            self.conteudo = sanitize_article_html(self.conteudo)
+        super().save(*args, **kwargs)
+
+
+class ArtigoVideoYoutube(models.Model):
+    artigo = models.ForeignKey(ArtigoEstudo, on_delete=models.CASCADE, related_name="videos")
+    video_id = models.CharField(max_length=20)
+    titulo = models.CharField(max_length=300)
+    descricao = models.TextField(blank=True)
+    thumbnail_url = models.URLField(blank=True)
+    canal = models.CharField(max_length=200, blank=True)
+    duracao = models.CharField(max_length=20, blank=True, help_text="Ex: 12:34")
+    visualizacoes = models.PositiveIntegerField(default=0)
+    termo_busca = models.CharField(max_length=200, blank=True)
+    ordem = models.PositiveIntegerField(default=0)
+    ativo = models.BooleanField(default=True, db_index=True)
+    buscado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Vídeo do YouTube (artigo)"
+        verbose_name_plural = "Vídeos do YouTube (artigos)"
+        ordering = ["ordem", "-visualizacoes"]
+        constraints = [
+            models.UniqueConstraint(fields=["artigo", "video_id"], name="unique_artigo_video"),
+        ]
+
+    def __str__(self):
+        return f"{self.titulo} ({self.video_id})"
+
+    @property
+    def youtube_url(self):
+        return f"https://www.youtube.com/watch?v={self.video_id}"

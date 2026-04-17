@@ -231,7 +231,7 @@ def superadmin_login(request):
         )
         if user:
             login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-            return redirect("admin_dashboard")
+            return redirect("superadmin_dashboard")
         messages.error(request, error_message)
         return render(request, "accounts/login.html", _build_pending_superadmin_context(request))
 
@@ -266,7 +266,7 @@ def superadmin_login(request):
                     details={"scope": "superadmin"},
                 )
                 login(request, user)
-                return redirect("admin_dashboard")
+                return redirect("superadmin_dashboard")
             challenge_started, error_message = start_superadmin_mfa_challenge(
                 request, user, identifier
             )
@@ -739,12 +739,5 @@ def user_delete(request, user_id):
 
 
 def cliente_create(request):
-    if request.method == "POST":
-        form = ClientePublicoForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Cadastro realizado com sucesso.")
-            return redirect("cliente_create")
-    else:
-        form = ClientePublicoForm()
-    return render(request, "accounts/cliente_form.html", {"form": form})
+    """Redireciona para o fluxo completo de onboarding."""
+    return redirect("onboarding_landing")

@@ -1,0 +1,83 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Artigos Educativos — Painel NCfly{% endblock %}
+{% block page_title %}Artigos Educativos{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <div class="flex gap-3 items-center">
+        <form method="get" class="flex gap-2 items-center">
+            <select name="status" onchange="this.form.submit()" style="width:auto;">
+                <option value="">Todos os status</option>
+                <option value="draft" {% if status_filter == "draft" %}selected{% endif %}>Rascunho</option>
+                <option value="published" {% if status_filter == "published" %}selected{% endif %}>Publicado</option>
+                <option value="archived" {% if status_filter == "archived" %}selected{% endif %}>Arquivado</option>
+            </select>
+            <select name="modulo" onchange="this.form.submit()" style="width:auto;">
+                <option value="">Todos os modulos</option>
+                {% for m in modulos %}
+                <option value="{{ m.pk }}" {% if modulo_filter == m.pk|stringformat:"d" %}selected{% endif %}>{{ m.titulo }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <a href="{% url 'superadmin_artigo_create' %}" class="btn btn-primary">+ Novo artigo</a>
+</div>
+
+<div class="card overflow-hidden">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="table-header text-left text-xs text-slate-500 uppercase tracking-wider">
+                <th class="px-4 py-3">Titulo</th>
+                <th class="px-4 py-3">Modulo</th>
+                <th class="px-4 py-3">Status</th>
+                <th class="px-4 py-3">Autor</th>
+                <th class="px-4 py-3">Publicado em</th>
+                <th class="px-4 py-3 text-right">Acoes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for artigo in artigos %}
+            <tr class="border-t border-slate-100 hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">
+                    <a href="{% url 'superadmin_artigo_edit' pk=artigo.pk %}" class="text-brand-600 hover:underline">{{ artigo.titulo|truncatechars:60 }}</a>
+                </td>
+                <td class="px-4 py-3">
+                    {% if artigo.modulo %}
+                    <span class="badge" style="background: {{ artigo.modulo.cor }}20; color: {{ artigo.modulo.cor }};">{{ artigo.modulo.titulo }}</span>
+                    {% else %}—{% endif %}
+                </td>
+                <td class="px-4 py-3">
+                    {% if artigo.status == "published" %}<span class="badge badge-green">Publicado</span>
+                    {% elif artigo.status == "draft" %}<span class="badge badge-yellow">Rascunho</span>
+                    {% else %}<span class="badge badge-gray">Arquivado</span>{% endif %}
+                </td>
+                <td class="px-4 py-3 text-slate-500">{{ artigo.autor }}</td>
+                <td class="px-4 py-3 text-slate-500">
+                    {% if artigo.publicado_em %}{{ artigo.publicado_em|date:"d/m/Y H:i" }}{% else %}—{% endif %}
+                </td>
+                <td class="px-4 py-3 text-right">
+                    <a href="{% url 'superadmin_artigo_edit' pk=artigo.pk %}" class="btn btn-secondary text-xs">Editar</a>
+                    <a href="{% url 'superadmin_artigo_delete' pk=artigo.pk %}" class="btn btn-danger text-xs ml-1">Excluir</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="px-4 py-8 text-center text-slate-400">Nenhum artigo encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center gap-2 mt-6">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}&modulo={{ modulo_filter }}" class="btn btn-secondary text-xs">&laquo; Anterior</a>
+    {% endif %}
+    <span class="btn btn-secondary text-xs" style="cursor:default;">Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}&modulo={{ modulo_filter }}" class="btn btn-secondary text-xs">Proxima &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

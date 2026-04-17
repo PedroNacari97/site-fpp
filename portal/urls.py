@@ -20,6 +20,8 @@ urlpatterns = [
     path("categorias/<slug:categoria_slug>/", views.categoria_lista, name="portal_categoria"),
     path("categorias/<slug:categoria_slug>/<slug:slug>/", views.noticia_detalhe, name="portal_noticia_detalhe"),
     path("artigos/", views.artigos_lista, name="portal_artigos"),
+    path("artigos/<slug:slug>/", views.modulo_detalhe, name="portal_modulo_detalhe"),
+    path("artigos/<slug:modulo_slug>/<slug:slug>/", views.artigo_detalhe, name="portal_artigo_detalhe"),
     path("noticias/", views.noticias_todas, name="portal_noticias_todas"),
     path("noticias/<slug:slug>/", views.noticia_redirect, name="portal_noticia_redirect"),
 ]

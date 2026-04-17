@@ -1,0 +1,20 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Excluir Artigo — Painel NCfly{% endblock %}
+{% block page_title %}Excluir Artigo{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto card p-6 text-center">
+    <div class="text-4xl mb-4">&#9888;&#65039;</div>
+    <h2 class="text-lg font-semibold mb-2">Tem certeza que deseja excluir?</h2>
+    <p class="text-slate-500 text-sm mb-1"><strong>{{ artigo.titulo }}</strong></p>
+    {% if artigo.modulo %}
+    <p class="text-slate-400 text-xs mb-6">Modulo: {{ artigo.modulo.titulo }}</p>
+    {% endif %}
+
+    <form method="post" class="flex gap-3 justify-center">
+        {% csrf_token %}
+        <a href="{% url 'superadmin_artigos_list' %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-danger">Sim, excluir artigo</button>
+    </form>
+</div>
+{% endblock %}

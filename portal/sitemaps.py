@@ -97,3 +97,27 @@ class AlertSitemap(Sitemap):
 
     def lastmod(self, item):
         return item.criado_em
+
+
+class ArtigoEstudoSitemap(Sitemap):
+    changefreq = "monthly"
+    priority = 0.7
+
+    def items(self):
+        from .models import ArtigoEstudo
+        return ArtigoEstudo.objects.filter(status="published").order_by("-publicado_em")
+
+    def lastmod(self, item):
+        return item.atualizado_em
+
+
+class ModuloEstudoSitemap(Sitemap):
+    changefreq = "monthly"
+    priority = 0.6
+
+    def items(self):
+        from .models import ModuloEstudo
+        return ModuloEstudo.objects.filter(ativo=True).order_by("ordem")
+
+    def lastmod(self, item):
+        return item.atualizado_em
