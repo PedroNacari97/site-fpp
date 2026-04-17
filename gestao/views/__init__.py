@@ -14,3 +14,4 @@ from .alertas import *
 from .governanca import *
 from .site_monitoramento import *
 from .pipeline import pipeline_view, pipeline_mover
+from .emissoes import api_voos_cliente

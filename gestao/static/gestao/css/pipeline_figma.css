@@ -120,6 +120,15 @@
   flex-shrink: 0;
 }
 
+.pipeline-card__hotel-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .pipeline-card__route {
   font-size: 12px;
   color: var(--color-muted);

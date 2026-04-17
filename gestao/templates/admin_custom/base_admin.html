@@ -171,10 +171,16 @@
                     <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4M12 16h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
                     <span class="admin-sidebar__label">Alertas de Passagens</span>
                 </a>
-                <a href="{% url 'admin_hoteis' %}" class="admin-sidebar__link {% if menu_ativo == 'hoteis' %}is-active{% endif %}" data-sidebar-link title="Hotéis">
-                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                    <span class="admin-sidebar__label">Hotéis</span>
-                </a>
+                <details class="admin-sidebar__details" {% if menu_ativo == 'hoteis' or menu_ativo == 'kanban_hotel' %}open{% endif %}>
+                    <summary class="admin-sidebar__link" data-sidebar-link title="Hotéis">
+                        <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                        <span class="admin-sidebar__label">Hotéis</span>
+                    </summary>
+                    <div class="admin-sidebar__sublinks">
+                        <a href="{% url 'admin_hoteis' %}" class="admin-sidebar__sublink {% if menu_ativo == 'hoteis' %}is-active{% endif %}">Lista</a>
+                        <a href="{% url 'admin_pipeline_hotel' %}" class="admin-sidebar__sublink {% if menu_ativo == 'kanban_hotel' %}is-active{% endif %}">Kanban</a>
+                    </div>
+                </details>
                 <a href="{% url 'admin_calculadora_cotacao' %}" class="admin-sidebar__link {% if menu_ativo == 'calculadora' %}is-active{% endif %}" data-sidebar-link title="Calculadora">
                     <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM8 8h8M8 12h3M13 12h3M8 16h3M13 16h3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
                     <span class="admin-sidebar__label">Calculadora</span>

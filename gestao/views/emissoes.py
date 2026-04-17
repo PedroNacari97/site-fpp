@@ -1207,6 +1207,30 @@ def deletar_emissao(request, emissao_id):
 
 
 @login_required
+def api_voos_cliente(request, cliente_id):
+    """Retorna voos (CotacaoVoo) de um cliente como JSON para popular <select> dinamico."""
+    if bloqueio := require_admin_or_operator(request):
+        return JsonResponse([], safe=False)
+    cotacoes = scope_queryset_to_company(
+        CotacaoVoo.objects.filter(cliente_id=cliente_id).select_related("origem", "destino", "programa"),
+        request,
+    ).order_by("-data_ida")[:50]
+    resultado = []
+    for c in cotacoes:
+        origem = getattr(c.origem, "iata", "") if c.origem else ""
+        destino = getattr(c.destino, "iata", "") if c.destino else ""
+        programa = str(c.programa) if c.programa_id else ""
+        data = c.data_ida.strftime("%d/%m/%Y") if c.data_ida else ""
+        label = f"{origem} → {destino}"
+        if data:
+            label += f" ({data})"
+        if programa:
+            label += f" — {programa}"
+        resultado.append({"id": c.id, "label": label})
+    return JsonResponse(resultado, safe=False)
+
+
+@login_required
 def admin_hoteis(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
@@ -1262,6 +1286,7 @@ def nova_emissao_hotel(request):
                 return HttpResponse("Cliente inativo", status=403)
             if emissao.valor_referencia and emissao.valor_pago:
                 emissao.economia_obtida = emissao.valor_referencia - emissao.valor_pago
+            emissao.criado_por = request.user
             emissao.save()
             return redirect("admin_hoteis")
     else:

@@ -68,6 +68,15 @@
             {% endfor %}
           </div>
         </div>
+
+        <div class="hotel-form__field">
+          <label for="{{ form.voo_vinculado.id_for_label }}">Voo vinculado</label>
+          {{ form.voo_vinculado }}
+          <p class="hotel-form__hint">Selecione um cliente para ver os voos disponíveis</p>
+          {% for error in form.voo_vinculado.errors %}
+          <div class="hotel-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
       </div>
     </section>
 

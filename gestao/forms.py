@@ -946,6 +946,7 @@ class EmissaoHotelForm(forms.ModelForm):
             'nome_hotel',
             'check_in',
             'check_out',
+            'voo_vinculado',
             'valor_referencia',
             'valor_pago',
             'economia_obtida',
@@ -972,6 +973,15 @@ class EmissaoHotelForm(forms.ModelForm):
         self.fields["check_out"].widget.attrs.update({
             "placeholder": "dd/mm/aaaa",
         })
+        # Voo vinculado — começa vazio, preenchido via JS ao selecionar cliente
+        self.fields["voo_vinculado"].required = False
+        self.fields["voo_vinculado"].empty_label = "Selecione o cliente primeiro"
+        if self.instance and self.instance.pk and self.instance.cliente_id:
+            self.fields["voo_vinculado"].queryset = CotacaoVoo.objects.filter(
+                cliente_id=self.instance.cliente_id
+            ).select_related("origem", "destino", "programa")
+        else:
+            self.fields["voo_vinculado"].queryset = CotacaoVoo.objects.none()
         self.fields["valor_referencia"].widget.attrs.update({
             "placeholder": "0.00",
             "step": "0.01",

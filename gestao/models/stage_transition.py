@@ -22,6 +22,25 @@ TRANSICOES = {
     "cancelada": {"novo_pedido"},
 }
 
+# ── Hotel pipeline ──
+HOTEL_STAGES = (
+    ("solicitado", "Solicitado"),
+    ("cotado", "Cotado"),
+    ("confirmado", "Confirmado"),
+    ("checkin", "Check-in"),
+    ("finalizado", "Finalizado"),
+    ("cancelado", "Cancelado"),
+)
+
+HOTEL_TRANSICOES = {
+    "solicitado": {"cotado", "cancelado"},
+    "cotado": {"confirmado", "cancelado", "solicitado"},
+    "confirmado": {"checkin", "cancelado", "cotado"},
+    "checkin": {"finalizado", "cancelado"},
+    "finalizado": set(),
+    "cancelado": {"solicitado"},
+}
+
 
 class StageTransition(models.Model):
     """Auditoria de transicoes do Pipeline (Cotacao+Emissao).
@@ -32,6 +51,8 @@ class StageTransition(models.Model):
 
     STAGE_CHOICES = tuple(
         (slug, label) for slug, label, _ in STAGES
+    ) + tuple(
+        HOTEL_STAGES
     ) + (
         ("lead", "Lead (legacy)"),
         ("aceita", "Aceita (legacy)"),
@@ -49,6 +70,9 @@ class StageTransition(models.Model):
     )
     emissao = models.ForeignKey(
         "gestao.EmissaoPassagem", on_delete=models.CASCADE, null=True, blank=True, related_name="transicoes_stage"
+    )
+    hotel = models.ForeignKey(
+        "gestao.EmissaoHotel", on_delete=models.CASCADE, null=True, blank=True, related_name="transicoes_stage"
     )
     stage_origem = models.CharField(max_length=20, choices=STAGE_CHOICES)
     stage_destino = models.CharField(max_length=20, choices=STAGE_CHOICES)

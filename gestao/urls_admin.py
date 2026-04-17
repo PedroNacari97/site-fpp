@@ -77,7 +77,9 @@ from gestao.views import (
     alerta_passagem_detalhe,
     pipeline_view,
     pipeline_mover,
+    api_voos_cliente,
 )
+from gestao.views.pipeline_hotel import pipeline_hotel_view, pipeline_hotel_mover
 
 urlpatterns = [
     path('painel/', admin_home, name='admin_dashboard'),
@@ -157,4 +159,7 @@ urlpatterns = [
     path('auditoria/', admin_auditoria, name='admin_auditoria'),
     path('pipeline/', pipeline_view, name='admin_pipeline'),
     path('pipeline/mover/', pipeline_mover, name='admin_pipeline_mover'),
+    path('pipeline-hotel/', pipeline_hotel_view, name='admin_pipeline_hotel'),
+    path('pipeline-hotel/mover/', pipeline_hotel_mover, name='admin_pipeline_hotel_mover'),
+    path('api/voos-cliente/<int:cliente_id>/', api_voos_cliente, name='api_voos_cliente'),
 ]
