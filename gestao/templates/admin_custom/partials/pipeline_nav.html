@@ -1,15 +1,21 @@
 {% load static %}
-<nav class="pipeline-nav" aria-label="Navegação de atendimentos">
-    <a href="{% url 'admin_cotacoes_voo' %}" class="pipeline-nav__tab {% if menu_ativo == 'cotacoes' %}is-active{% endif %}">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10l3 5-8 11L4 9l3-5Z"/></svg>
-        Cotações
-    </a>
-    <a href="{% url 'admin_emissoes' %}" class="pipeline-nav__tab {% if menu_ativo == 'emissoes' %}is-active{% endif %}">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-        Emissões
-    </a>
-    <a href="{% url 'admin_pipeline' %}" class="pipeline-nav__tab {% if menu_ativo == 'kanban' %}is-active{% endif %}">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-        Kanban
-    </a>
-</nav>
+<div class="pipeline-nav-bar">
+    <nav class="pipeline-nav" aria-label="Navegação de atendimentos">
+        <a href="{% url 'admin_cotacoes_voo' %}" class="pipeline-nav__tab {% if menu_ativo == 'cotacoes' %}is-active{% endif %}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10l3 5-8 11L4 9l3-5Z"/></svg>
+            Cotações
+        </a>
+        <a href="{% url 'admin_emissoes' %}" class="pipeline-nav__tab {% if menu_ativo == 'emissoes' %}is-active{% endif %}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            Emissões
+        </a>
+        <a href="{% url 'admin_pipeline' %}" class="pipeline-nav__tab {% if menu_ativo == 'kanban' %}is-active{% endif %}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+            Kanban
+        </a>
+    </nav>
+    <div class="pipeline-nav__actions">
+        <a href="{% url 'admin_nova_cotacao_voo' %}" class="btn btn-secondary btn-sm">Nova Cotação</a>
+        <a href="{% url 'admin_nova_emissao' %}" class="btn btn-primary btn-sm">Nova Emissão</a>
+    </div>
+</div>

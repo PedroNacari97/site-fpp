@@ -302,6 +302,12 @@ a:hover {
   box-shadow: 0 0 0 1px rgba(255, 107, 107, 0.5), 0 6px 20px rgba(255, 107, 107, 0.45);
 }
 
+.btn-sm {
+  min-height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
 .btn-secondary {
   background: var(--surface);
   color: var(--heading);
@@ -996,14 +1002,22 @@ input[type="submit"]:disabled {
   }
 }
 
-/* ── Pipeline navigation tabs ── */
+/* ── Pipeline navigation bar (tabs + CTAs) ── */
+.pipeline-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
 .pipeline-nav {
   display: flex;
   gap: 4px;
   padding: 4px;
   background: var(--color-surface-muted);
   border-radius: 10px;
-  margin-bottom: 12px;
   width: fit-content;
 }
 
@@ -1011,9 +1025,9 @@ input[type="submit"]:disabled {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 8px 16px;
   border-radius: 7px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-muted);
   text-decoration: none;
@@ -1033,4 +1047,10 @@ input[type="submit"]:disabled {
 
 .pipeline-nav__tab svg {
   flex-shrink: 0;
+}
+
+.pipeline-nav__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
