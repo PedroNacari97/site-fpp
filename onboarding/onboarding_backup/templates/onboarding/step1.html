@@ -1,0 +1,79 @@
+{% extends "onboarding/base_onboarding.html" %}
+
+{% block title %}Criar Conta - NCFly{% endblock %}
+
+{% block card_header %}
+  <div class="onboarding-card__header">
+    <h2 class="onboarding-card__title">Crie sua conta</h2>
+    <p class="onboarding-card__subtitle">Dados do responsavel pela agencia</p>
+  </div>
+{% endblock %}
+
+{% block card_body %}
+  <form method="post" class="onboarding-form" novalidate>
+    {% csrf_token %}
+
+    <div class="onboarding-form__row">
+      <div class="onboarding-field">
+        <label class="onboarding-field__label" for="id_first_name">Nome</label>
+        {{ form.first_name }}
+        {% if form.first_name.errors %}
+          <span class="onboarding-field__error">{{ form.first_name.errors.0 }}</span>
+        {% endif %}
+      </div>
+      <div class="onboarding-field">
+        <label class="onboarding-field__label" for="id_last_name">Sobrenome</label>
+        {{ form.last_name }}
+        {% if form.last_name.errors %}
+          <span class="onboarding-field__error">{{ form.last_name.errors.0 }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="onboarding-field">
+      <label class="onboarding-field__label" for="id_cpf">CPF</label>
+      {{ form.cpf }}
+      {% if form.cpf.errors %}
+        <span class="onboarding-field__error">{{ form.cpf.errors.0 }}</span>
+      {% endif %}
+    </div>
+
+    <div class="onboarding-field">
+      <label class="onboarding-field__label" for="id_email">Email</label>
+      {{ form.email }}
+      {% if form.email.errors %}
+        <span class="onboarding-field__error">{{ form.email.errors.0 }}</span>
+      {% endif %}
+    </div>
+
+    <div class="onboarding-field">
+      <label class="onboarding-field__label" for="id_telefone">Telefone</label>
+      {{ form.telefone }}
+      {% if form.telefone.errors %}
+        <span class="onboarding-field__error">{{ form.telefone.errors.0 }}</span>
+      {% endif %}
+    </div>
+
+    <div class="onboarding-form__row">
+      <div class="onboarding-field">
+        <label class="onboarding-field__label" for="id_password">Senha</label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <span class="onboarding-field__error">{{ form.password.errors.0 }}</span>
+        {% endif %}
+      </div>
+      <div class="onboarding-field">
+        <label class="onboarding-field__label" for="id_confirm_password">Confirmar senha</label>
+        {{ form.confirm_password }}
+        {% if form.confirm_password.errors %}
+          <span class="onboarding-field__error">{{ form.confirm_password.errors.0 }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="onboarding-form__actions">
+      <a href="{% url 'onboarding_landing' %}" class="onboarding-btn onboarding-btn--ghost">Voltar</a>
+      <button type="submit" class="onboarding-btn onboarding-btn--primary">Continuar</button>
+    </div>
+  </form>
+{% endblock %}

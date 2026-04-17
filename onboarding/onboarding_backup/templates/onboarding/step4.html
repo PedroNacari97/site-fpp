@@ -1,0 +1,84 @@
+{% extends "onboarding/base_onboarding.html" %}
+{% load onboarding_tags %}
+
+{% block title %}Escolha seu Plano - NCFly{% endblock %}
+
+{% block card_header %}
+  <div class="onboarding-card__header">
+    <h2 class="onboarding-card__title">Escolha seu plano</h2>
+    <p class="onboarding-card__subtitle">Todos os planos incluem trial gratuito. Sem cartao de credito.</p>
+  </div>
+{% endblock %}
+
+{% block card_body %}
+  <form method="post" class="onboarding-form" id="step4-form" novalidate>
+    {% csrf_token %}
+    {{ form.plano_slug }}
+
+    <div class="onboarding-plans onboarding-plans--step">
+      {% for plano in planos %}
+      <div class="onboarding-plan {% if plano.destaque %}onboarding-plan--featured{% endif %}"
+           data-slug="{{ plano.slug }}"
+           role="button"
+           tabindex="0">
+        {% if plano.destaque %}
+        <span class="onboarding-plan__badge">Recomendado</span>
+        {% endif %}
+        <h3 class="onboarding-plan__name">{{ plano.nome }}</h3>
+        <div class="onboarding-plan__price">
+          <span class="onboarding-plan__amount">R$ {{ plano.preco_mensal|floatformat:0 }}</span>
+          <span class="onboarding-plan__period">/mes</span>
+        </div>
+        <p class="onboarding-plan__trial">{{ plano.trial_dias }} dias gratis</p>
+        <ul class="onboarding-plan__features">
+          <li>Ate {{ plano.limite_operadores }} operadores</li>
+          <li>{% if plano.limite_clientes == 0 %}Clientes ilimitados{% else %}Ate {{ plano.limite_clientes }} clientes{% endif %}</li>
+          {% for feat in plano.features|feature_list %}
+            <li>{{ feat }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="onboarding-field" style="margin-top:1.5rem">
+      <label class="onboarding-field__label" for="id_ref_vendedor">Codigo do vendedor (opcional)</label>
+      {{ form.ref_vendedor }}
+    </div>
+
+    <div class="onboarding-form__actions">
+      <a href="{% url 'onboarding_step3' %}" class="onboarding-btn onboarding-btn--ghost">Voltar</a>
+      <button type="submit" class="onboarding-btn onboarding-btn--primary" id="btn-finalizar" disabled>Finalizar cadastro</button>
+    </div>
+  </form>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+(function(){
+  var cards = document.querySelectorAll('.onboarding-plan[data-slug]');
+  var hiddenInput = document.getElementById('id_plano_slug');
+  var btn = document.getElementById('btn-finalizar');
+
+  function selectPlan(slug){
+    hiddenInput.value = slug;
+    btn.disabled = false;
+    cards.forEach(function(c){
+      c.classList.toggle('is-selected', c.dataset.slug === slug);
+    });
+  }
+
+  cards.forEach(function(card){
+    card.addEventListener('click', function(){ selectPlan(card.dataset.slug); });
+    card.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); selectPlan(card.dataset.slug); }
+    });
+  });
+
+  // Pre-select if value already set (featured plan)
+  if(hiddenInput.value){
+    selectPlan(hiddenInput.value);
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "onboarding/base_onboarding.html" %}
+{% load static %}
+
+{% block title %}Bem-vindo ao NCFly{% endblock %}
+
+{% block card_header %}
+<div class="onboarding-card__header">
+  <div class="onboarding-welcome-icon" aria-hidden="true">
+    <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="var(--login-accent, #6366f1)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="24" cy="24" r="20"/>
+      <polyline points="16 24 22 30 34 18"/>
+    </svg>
+  </div>
+  <h2 class="onboarding-card__title">Tudo pronto, {{ user.first_name }}!</h2>
+  <p class="onboarding-card__subtitle">Sua conta foi criada e seu trial de {{ trial_dias }} dias ja esta ativo.</p>
+</div>
+{% endblock %}
+
+{% block card_body %}
+<div class="onboarding-welcome">
+  <div class="onboarding-welcome__summary">
+    <div class="onboarding-welcome__item">
+      <span class="onboarding-welcome__label">Empresa</span>
+      <span class="onboarding-welcome__value">{{ empresa_nome }}</span>
+    </div>
+    <div class="onboarding-welcome__item">
+      <span class="onboarding-welcome__label">Plano</span>
+      <span class="onboarding-welcome__value">{{ plano_nome }}</span>
+    </div>
+    <div class="onboarding-welcome__item">
+      <span class="onboarding-welcome__label">Trial ate</span>
+      <span class="onboarding-welcome__value">{{ trial_fim|date:"d/m/Y" }}</span>
+    </div>
+    <div class="onboarding-welcome__item">
+      <span class="onboarding-welcome__label">Email</span>
+      <span class="onboarding-welcome__value">{{ user.email }}</span>
+    </div>
+  </div>
+
+  <div class="onboarding-welcome__next-steps">
+    <h3>Proximos passos</h3>
+    <ul>
+      <li>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Cadastre seus <strong>clientes</strong> e passageiros</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <span>Configure seus <strong>programas de fidelidade</strong></span>
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>Faca sua primeira <strong>emissao de passagem</strong></span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="onboarding-form__actions">
+    <a href="{% url 'admin_dashboard' %}" class="onboarding-btn onboarding-btn--primary onboarding-btn--large">
+      Acessar meu painel
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% load static onboarding_tags %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Plataforma de gestao de milhas e emissoes para agencias de viagem. Controle programas de fidelidade, emissoes e clientes em um unico lugar.">
+  <title>Contratar NCFly - Plataforma para Agencias de Viagem</title>
+  <link rel="stylesheet" href="{% static 'portal/css/portal.css' %}">
+  <link rel="stylesheet" href="{% static 'gestao/css/login.css' %}">
+  <link rel="stylesheet" href="{% static 'onboarding/css/onboarding.css' %}">
+</head>
+<body class="login-page" data-default-theme="light">
+  {% include "portal/partials/public_topbar.html" %}
+  <div class="login-background" aria-hidden="true">
+    <span class="login-background__glow login-background__glow--blue"></span>
+    <span class="login-background__glow login-background__glow--pink"></span>
+    <span class="login-background__glow login-background__glow--gold"></span>
+  </div>
+
+  <main class="landing">
+    <section class="landing__hero">
+      <p class="landing__eyebrow">Plataforma para agencias</p>
+      <h1 class="landing__title">Gerencie milhas, emissoes e clientes em um unico lugar</h1>
+      <p class="landing__subtitle">Controle total sobre programas de fidelidade, cotacoes, emissoes de passagens e hoteis. Para agencias de viagem e profissionais autonomos.</p>
+      <a href="{% url 'onboarding_step1' %}{% if ref %}?ref={{ ref }}{% endif %}" class="onboarding-btn onboarding-btn--primary onboarding-btn--large">Comecar trial gratuito</a>
+    </section>
+
+    <section class="landing__features">
+      <article class="landing__feature">
+        <span class="landing__feature-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+        </span>
+        <h3>Programas de fidelidade</h3>
+        <p>Gerencie saldos, valores medios, clubes de pontos e controle de CPFs em um painel centralizado.</p>
+      </article>
+      <article class="landing__feature">
+        <span class="landing__feature-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><polyline points="22 4 12 14.01 9 11.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+        </span>
+        <h3>Emissoes completas</h3>
+        <p>Emissoes de passagens e hoteis com voos, escalas, passageiros e PDF profissional.</p>
+      </article>
+      <article class="landing__feature">
+        <span class="landing__feature-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 0 0-3-3.87" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><path d="M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+        </span>
+        <h3>Multi-operador</h3>
+        <p>Convide sua equipe. Cada operador tem acesso controlado aos dados que precisa.</p>
+      </article>
+      <article class="landing__feature">
+        <span class="landing__feature-icon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.97-2.84 9.62-7 11-4.16-1.38-7-6.03-7-11V6l7-3Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+        </span>
+        <h3>Dados protegidos</h3>
+        <p>Criptografia em repouso, controle de acesso e conformidade LGPD desde o primeiro dia.</p>
+      </article>
+    </section>
+
+    <section class="landing__plans" id="planos">
+      <h2 class="landing__section-title">Escolha seu plano</h2>
+      <p class="landing__section-subtitle">Todos os planos incluem trial gratuito. Sem cartao de credito.</p>
+
+      <div class="onboarding-plans">
+        {% for plano in planos %}
+        <div class="onboarding-plan {% if plano.destaque %}onboarding-plan--featured{% endif %}">
+          {% if plano.destaque %}
+          <span class="onboarding-plan__badge">Recomendado</span>
+          {% endif %}
+          <h3 class="onboarding-plan__name">{{ plano.nome }}</h3>
+          <div class="onboarding-plan__price">
+            <span class="onboarding-plan__amount">R$ {{ plano.preco_mensal|floatformat:0 }}</span>
+            <span class="onboarding-plan__period">/mes</span>
+          </div>
+          <p class="onboarding-plan__trial">{{ plano.trial_dias }} dias gratis</p>
+          <ul class="onboarding-plan__features">
+            <li>Ate {{ plano.limite_operadores }} operadores</li>
+            <li>{% if plano.limite_clientes == 0 %}Clientes ilimitados{% else %}Ate {{ plano.limite_clientes }} clientes{% endif %}</li>
+            {% for feat in plano.features|feature_list %}
+              <li>{{ feat }}</li>
+            {% endfor %}
+          </ul>
+          {% if plano.descricao %}<p class="onboarding-plan__trial" style="color:var(--login-muted);font-weight:400;">{{ plano.descricao }}</p>{% endif %}
+          <a href="{% url 'onboarding_step1' %}{% if ref %}?ref={{ ref }}{% endif %}" class="onboarding-plan__select {% if plano.destaque %}onboarding-plan__select--featured{% endif %}">
+            Comecar com {{ plano.nome }}
+          </a>
+        </div>
+        {% empty %}
+        <p class="landing__empty">Em breve disponivel. Entre em contato para saber mais.</p>
+        {% endfor %}
+      </div>
+    </section>
+
+    <footer class="landing__footer">
+      <p>&copy; 2026 NCfly. Todos os direitos reservados.</p>
+      <div class="landing__footer-links">
+        <a href="{% url 'portal_termos_plataforma' %}">Termos</a>
+        <a href="{% url 'portal_privacidade_plataforma' %}">Privacidade</a>
+        <a href="{% url 'portal_dpa_plataforma' %}">DPA</a>
+      </div>
+    </footer>
+  </main>
+
+  <script src="{% static 'portal/js/portal.js' %}" defer></script>
+</body>
+</html>

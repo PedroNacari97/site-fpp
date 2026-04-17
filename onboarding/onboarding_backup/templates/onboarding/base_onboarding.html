@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>{% block title %}Contratar - NCFly{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'portal/css/portal.css' %}">
+  <link rel="stylesheet" href="{% static 'gestao/css/login.css' %}">
+  <link rel="stylesheet" href="{% static 'onboarding/css/onboarding.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="login-page" data-default-theme="light">
+  {% include "portal/partials/public_topbar.html" %}
+  <div class="login-background" aria-hidden="true">
+    <span class="login-background__glow login-background__glow--blue"></span>
+    <span class="login-background__glow login-background__glow--pink"></span>
+    <span class="login-background__glow login-background__glow--gold"></span>
+  </div>
+
+  <main class="onboarding-layout">
+    {% if current_step %}
+    <nav class="onboarding-steps" aria-label="Progresso">
+      {% for step_num, step_label in steps %}
+        <div class="onboarding-steps__item {% if step_num == current_step %}is-active{% elif step_num < current_step %}is-done{% endif %}">
+          <span class="onboarding-steps__number">
+            {% if step_num < current_step %}
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            {% else %}
+              {{ step_num }}
+            {% endif %}
+          </span>
+          <span class="onboarding-steps__label">{{ step_label }}</span>
+        </div>
+        {% if not forloop.last %}
+        <div class="onboarding-steps__connector {% if step_num < current_step %}is-done{% endif %}"></div>
+        {% endif %}
+      {% endfor %}
+    </nav>
+    {% endif %}
+
+    <section class="onboarding-card-wrap">
+      <div class="onboarding-card">
+        {% block card_header %}{% endblock %}
+
+        {% if messages %}
+        <div class="onboarding-alert" role="alert">
+          {% for message in messages %}
+            <div class="onboarding-alert__item onboarding-alert__item--{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block card_body %}{% endblock %}
+      </div>
+    </section>
+  </main>
+
+  <script src="{% static 'portal/js/portal.js' %}" defer></script>
+  <script src="{% static 'onboarding/js/masks.js' %}" defer></script>
+  {% block extra_body %}{% endblock %}
+</body>
+</html>

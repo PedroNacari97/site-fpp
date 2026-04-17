@@ -1,0 +1,141 @@
+{% extends "onboarding/base_onboarding.html" %}
+
+{% block title %}Dados da Empresa - NCFly{% endblock %}
+
+{% block card_header %}
+  <div class="onboarding-card__header">
+    <h2 class="onboarding-card__title" id="step2-title">Dados da empresa</h2>
+    <p class="onboarding-card__subtitle" id="step2-subtitle">Informacoes do seu negocio</p>
+  </div>
+{% endblock %}
+
+{% block card_body %}
+  <form method="post" class="onboarding-form" novalidate>
+    {% csrf_token %}
+
+    <div class="onboarding-field">
+      <label class="onboarding-field__label">Tipo de pessoa</label>
+      <div class="onboarding-field__radio-group">
+        {{ form.tipo_pessoa }}
+      </div>
+    </div>
+
+    <div class="onboarding-field">
+      <label class="onboarding-field__label" for="id_nome_fantasia" id="label-nome-fantasia">Nome fantasia</label>
+      {{ form.nome_fantasia }}
+      {% if form.nome_fantasia.errors %}
+        <span class="onboarding-field__error">{{ form.nome_fantasia.errors.0 }}</span>
+      {% endif %}
+    </div>
+
+    <div id="pj-fields" class="onboarding-pj-fields">
+      <div class="onboarding-field">
+        <label class="onboarding-field__label" for="id_cnpj">CNPJ</label>
+        {{ form.cnpj }}
+        {% if form.cnpj.errors %}
+          <span class="onboarding-field__error">{{ form.cnpj.errors.0 }}</span>
+        {% endif %}
+      </div>
+
+      <div class="onboarding-field">
+        <label class="onboarding-field__label" for="id_razao_social">Razao social</label>
+        {{ form.razao_social }}
+        {% if form.razao_social.errors %}
+          <span class="onboarding-field__error">{{ form.razao_social.errors.0 }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="onboarding-form__row">
+      <div class="onboarding-field" style="max-width:160px">
+        <label class="onboarding-field__label" for="id_cep">CEP</label>
+        {{ form.cep }}
+        <span class="onboarding-field__hint" id="cep-status"></span>
+        {% if form.cep.errors %}
+          <span class="onboarding-field__error">{{ form.cep.errors.0 }}</span>
+        {% endif %}
+      </div>
+      <div class="onboarding-field" style="flex:1">
+        <label class="onboarding-field__label" for="id_endereco">Endereco</label>
+        {{ form.endereco }}
+      </div>
+    </div>
+
+    <div class="onboarding-form__row onboarding-form__row--three">
+      <div class="onboarding-field">
+        <label class="onboarding-field__label" for="id_numero">Numero</label>
+        {{ form.numero }}
+      </div>
+      <div class="onboarding-field" style="flex:2">
+        <label class="onboarding-field__label" for="id_complemento">Complemento</label>
+        {{ form.complemento }}
+      </div>
+    </div>
+
+    <div class="onboarding-form__row onboarding-form__row--three">
+      <div class="onboarding-field">
+        <label class="onboarding-field__label" for="id_bairro">Bairro</label>
+        {{ form.bairro }}
+      </div>
+      <div class="onboarding-field">
+        <label class="onboarding-field__label" for="id_cidade">Cidade</label>
+        {{ form.cidade }}
+      </div>
+      <div class="onboarding-field" style="max-width:80px">
+        <label class="onboarding-field__label" for="id_estado">UF</label>
+        {{ form.estado }}
+      </div>
+    </div>
+
+    <div class="onboarding-field">
+      <label class="onboarding-field__label" for="id_website">Website</label>
+      {{ form.website }}
+    </div>
+
+    <div class="onboarding-form__actions">
+      <a href="{% url 'onboarding_step1' %}" class="onboarding-btn onboarding-btn--ghost">Voltar</a>
+      <button type="submit" class="onboarding-btn onboarding-btn--primary">Continuar</button>
+    </div>
+  </form>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+(function(){
+  /* === PJ / PF toggle === */
+  var pjFields = document.getElementById('pj-fields');
+  var title = document.getElementById('step2-title');
+  var subtitle = document.getElementById('step2-subtitle');
+  var labelNome = document.getElementById('label-nome-fantasia');
+  var inputNome = document.getElementById('id_nome_fantasia');
+
+  function togglePJ(){
+    var checked = document.querySelector('input[name="tipo_pessoa"]:checked');
+    var isPJ = checked && checked.value === 'PJ';
+    pjFields.style.display = isPJ ? '' : 'none';
+    if (isPJ) {
+      title.textContent = 'Dados da empresa';
+      subtitle.textContent = 'Informacoes do seu negocio';
+      labelNome.textContent = 'Nome fantasia';
+      inputNome.placeholder = 'Nome fantasia ou nome profissional';
+    } else {
+      title.textContent = 'Dados profissionais';
+      subtitle.textContent = 'Voce pode seguir como pessoa fisica';
+      labelNome.textContent = 'Nome profissional';
+      inputNome.placeholder = 'Seu nome ou nome do negocio';
+    }
+  }
+
+  // Listen on all radios including inside RadioSelect widget
+  document.querySelectorAll('input[name="tipo_pessoa"]').forEach(function(r){
+    r.addEventListener('change', togglePJ);
+  });
+  // Also listen on the parent for event delegation (Django wraps in divs)
+  var radioContainer = document.getElementById('id_tipo_pessoa');
+  if (radioContainer) {
+    radioContainer.addEventListener('change', togglePJ);
+  }
+  togglePJ();
+})();
+</script>
+{% endblock %}
