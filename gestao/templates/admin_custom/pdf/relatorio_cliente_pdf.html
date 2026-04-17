@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Relatório — {{ resumo.nome }}</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 210mm;
+            background: #ffffff;
+        }
+
+        html { font-size: 11px; }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: #1e293b;
+        }
+
+        {{ inline_css|safe }}
+
+        .rpt {
+            width: 210mm;
+            padding: 8mm;
+            background: #fff;
+        }
+
+        /* ── Sheet ── */
+        .rpt-sheet {
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        /* ── Hero ── */
+        .rpt-hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.2rem;
+            padding: 1.3rem 1.4rem;
+            background: linear-gradient(90deg, #0f1b2d 0%, #ff6b6b 100%);
+            color: #fff;
+        }
+
+        .rpt-hero__brand {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .rpt-hero__mark {
+            display: grid;
+            place-items: center;
+            width: 2.6rem;
+            height: 2.6rem;
+            border-radius: 0.85rem;
+            background: rgba(255,255,255,0.16);
+        }
+
+        .rpt-hero__mark svg {
+            width: 1.4rem;
+            height: 1.4rem;
+        }
+
+        .rpt-hero h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .rpt-hero p {
+            margin: 0.15rem 0 0;
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .rpt-hero__badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            padding: 0.7rem 0.9rem;
+            border-radius: 0.85rem;
+            background: rgba(255,255,255,0.16);
+            text-align: center;
+        }
+
+        .rpt-hero__badge strong {
+            font-size: 1.35rem;
+            font-weight: 800;
+        }
+
+        .rpt-hero__badge small {
+            font-size: 0.65rem;
+            opacity: 0.85;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* ── Meta (dados do cliente) ── */
+        .rpt-meta {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.7rem;
+            padding: 1rem 1.4rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .rpt-meta__item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .rpt-meta__label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #94a3b8;
+        }
+
+        .rpt-meta__value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        /* ── Section ── */
+        .rpt-section {
+            padding: 0.9rem 1.4rem;
+            break-inside: auto;
+            page-break-inside: auto;
+        }
+
+        .rpt-section + .rpt-section {
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .rpt-section__heading {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.7rem;
+        }
+
+        .rpt-section__icon {
+            display: grid;
+            place-items: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 0.55rem;
+            flex-shrink: 0;
+        }
+
+        .rpt-section__icon--blue { background: #eff6ff; color: #3b82f6; }
+        .rpt-section__icon--green { background: #f0fdf4; color: #22c55e; }
+        .rpt-section__icon--orange { background: #fff7ed; color: #f97316; }
+        .rpt-section__icon--purple { background: #faf5ff; color: #a855f7; }
+        .rpt-section__icon--red { background: #fef2f2; color: #ef4444; }
+
+        .rpt-section__icon svg {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .rpt-section h3 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        /* ── Indicadores grid ── */
+        .rpt-indicators {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.6rem;
+        }
+
+        .rpt-indicator {
+            padding: 0.75rem 0.85rem;
+            border-radius: 0.8rem;
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
+            break-inside: avoid;
+        }
+
+        .rpt-indicator__label {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin: 0 0 0.25rem;
+        }
+
+        .rpt-indicator__value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        /* ── Valores ── */
+        .rpt-values {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .rpt-value-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.85rem;
+            border-radius: 0.75rem;
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
+            break-inside: avoid;
+        }
+
+        .rpt-value-row__label {
+            font-size: 0.8rem;
+            color: #475569;
+        }
+
+        .rpt-value-row__amount {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .rpt-value-row--highlight {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border-color: #bbf7d0;
+        }
+
+        .rpt-value-row--highlight .rpt-value-row__amount {
+            color: #16a34a;
+        }
+
+        .rpt-value-row--total {
+            background: linear-gradient(135deg, #0f1b2d 0%, #1e293b 100%);
+            border-color: transparent;
+            padding: 0.8rem 0.95rem;
+        }
+
+        .rpt-value-row--total .rpt-value-row__label {
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .rpt-value-row--total .rpt-value-row__amount {
+            color: #fff;
+            font-size: 1.15rem;
+        }
+
+        /* ── Table ── */
+        .rpt-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+        }
+
+        .rpt-table th {
+            text-align: left;
+            padding: 0.45rem 0.55rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #94a3b8;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .rpt-table td {
+            padding: 0.5rem 0.55rem;
+            color: #334155;
+            border-bottom: 1px solid #f8fafc;
+        }
+
+        .rpt-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .rpt-table .rpt-badge {
+            display: inline-block;
+            padding: 0.15rem 0.45rem;
+            border-radius: 999px;
+            font-size: 0.65rem;
+            font-weight: 700;
+        }
+
+        .rpt-badge--green { background: #f0fdf4; color: #16a34a; }
+        .rpt-badge--blue { background: #eff6ff; color: #3b82f6; }
+        .rpt-badge--orange { background: #fff7ed; color: #f97316; }
+        .rpt-badge--red { background: #fef2f2; color: #ef4444; }
+        .rpt-badge--gray { background: #f1f5f9; color: #64748b; }
+
+        /* ── Status por cotação ── */
+        .rpt-status-grid {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .rpt-status-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 999px;
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .rpt-status-chip strong {
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        /* ── Footer ── */
+        .rpt-footer {
+            padding: 0.7rem 1.4rem;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rpt-footer__text {
+            font-size: 0.68rem;
+            color: #94a3b8;
+        }
+
+        .rpt-footer__brand {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="rpt">
+        <div class="rpt-sheet">
+
+            <!-- Hero -->
+            <div class="rpt-hero">
+                <div class="rpt-hero__brand">
+                    <div class="rpt-hero__mark">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div>
+                        <h2>Relatório do Cliente</h2>
+                        <p>{{ resumo.nome }}</p>
+                    </div>
+                </div>
+                <div class="rpt-hero__badge">
+                    <strong>{{ economia_total }}</strong>
+                    <small>Economia total</small>
+                </div>
+            </div>
+
+            <!-- Dados do cliente -->
+            <div class="rpt-meta">
+                <div class="rpt-meta__item">
+                    <span class="rpt-meta__label">Nome</span>
+                    <span class="rpt-meta__value">{{ resumo.nome }}</span>
+                </div>
+                <div class="rpt-meta__item">
+                    <span class="rpt-meta__label">E-mail</span>
+                    <span class="rpt-meta__value">{{ resumo.email }}</span>
+                </div>
+                <div class="rpt-meta__item">
+                    <span class="rpt-meta__label">Telefone</span>
+                    <span class="rpt-meta__value">{{ resumo.telefone }}</span>
+                </div>
+                <div class="rpt-meta__item">
+                    <span class="rpt-meta__label">CPF</span>
+                    <span class="rpt-meta__value">{{ resumo.cpf }}</span>
+                </div>
+                <div class="rpt-meta__item">
+                    <span class="rpt-meta__label">Empresa</span>
+                    <span class="rpt-meta__value">{{ resumo.empresa }}</span>
+                </div>
+                <div class="rpt-meta__item">
+                    <span class="rpt-meta__label">Data do relatório</span>
+                    <span class="rpt-meta__value">{{ resumo.data_relatorio }}</span>
+                </div>
+            </div>
+
+            <!-- Indicadores -->
+            <div class="rpt-section">
+                <div class="rpt-section__heading">
+                    <div class="rpt-section__icon rpt-section__icon--blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                    </div>
+                    <h3>Indicadores gerais</h3>
+                </div>
+                <div class="rpt-indicators">
+                    {% for ind in indicadores %}
+                    <div class="rpt-indicator">
+                        <p class="rpt-indicator__label">{{ ind.label }}</p>
+                        <p class="rpt-indicator__value">{{ ind.valor }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Valores financeiros -->
+            <div class="rpt-section">
+                <div class="rpt-section__heading">
+                    <div class="rpt-section__icon rpt-section__icon--green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </div>
+                    <h3>Resumo financeiro</h3>
+                </div>
+                <div class="rpt-values">
+                    {% for v in valores %}
+                    <div class="rpt-value-row{% if v.destaque %} rpt-value-row--highlight{% endif %}{% if forloop.last %} rpt-value-row--total{% endif %}">
+                        <span class="rpt-value-row__label">{{ v.label }}</span>
+                        <span class="rpt-value-row__amount">{{ v.valor }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Status das cotações -->
+            <div class="rpt-section">
+                <div class="rpt-section__heading">
+                    <div class="rpt-section__icon rpt-section__icon--orange">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10l3 5-8 11L4 9l3-5Z"/></svg>
+                    </div>
+                    <h3>Cotações por status</h3>
+                </div>
+                <div class="rpt-status-grid">
+                    {% for status, qtd in cotacoes_por_status.items %}
+                    <div class="rpt-status-chip">
+                        {{ status }}: <strong>{{ qtd }}</strong>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Últimas cotações -->
+            {% if cotacoes_lista %}
+            <div class="rpt-section">
+                <div class="rpt-section__heading">
+                    <div class="rpt-section__icon rpt-section__icon--orange">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10l3 5-8 11L4 9l3-5Z"/></svg>
+                    </div>
+                    <h3>Últimas cotações</h3>
+                </div>
+                <table class="rpt-table">
+                    <thead>
+                        <tr>
+                            <th>Rota</th>
+                            <th>Data</th>
+                            <th>Programa</th>
+                            <th>Valor</th>
+                            <th>Economia</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in cotacoes_lista %}
+                        <tr>
+                            <td>{{ c.origem }} → {{ c.destino }}</td>
+                            <td>{{ c.data }}</td>
+                            <td>{{ c.programa }}</td>
+                            <td>{{ c.valor }}</td>
+                            <td>{{ c.economia }}</td>
+                            <td><span class="rpt-badge rpt-badge--blue">{{ c.status }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- Últimas emissões -->
+            {% if emissoes_lista %}
+            <div class="rpt-section">
+                <div class="rpt-section__heading">
+                    <div class="rpt-section__icon rpt-section__icon--purple">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                    </div>
+                    <h3>Últimas emissões</h3>
+                </div>
+                <table class="rpt-table">
+                    <thead>
+                        <tr>
+                            <th>Rota</th>
+                            <th>Data</th>
+                            <th>Programa</th>
+                            <th>Valor cobrado</th>
+                            <th>Localizador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in emissoes_lista %}
+                        <tr>
+                            <td>{{ e.origem }} → {{ e.destino }}</td>
+                            <td>{{ e.data }}</td>
+                            <td>{{ e.programa }}</td>
+                            <td>{{ e.valor }}</td>
+                            <td><span class="rpt-badge {% if e.localizador == 'Pendente' %}rpt-badge--orange{% else %}rpt-badge--green{% endif %}">{{ e.localizador }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- Contas de fidelidade -->
+            {% if contas_lista %}
+            <div class="rpt-section">
+                <div class="rpt-section__heading">
+                    <div class="rpt-section__icon rpt-section__icon--red">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26Z"/></svg>
+                    </div>
+                    <h3>Programas de fidelidade</h3>
+                </div>
+                <table class="rpt-table">
+                    <thead>
+                        <tr>
+                            <th>Programa</th>
+                            <th>Login</th>
+                            <th>Clube</th>
+                            <th>Pontos/mês</th>
+                            <th>Validade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in contas_lista %}
+                        <tr>
+                            <td><strong>{{ c.programa }}</strong></td>
+                            <td>{{ c.login }}</td>
+                            <td>{{ c.clube }}</td>
+                            <td>{{ c.pontos_mes }}</td>
+                            <td>{{ c.validade }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- Footer -->
+            <div class="rpt-footer">
+                <span class="rpt-footer__text">Gerado em {{ resumo.data_relatorio }} — Dados sujeitos a atualização</span>
+                <span class="rpt-footer__brand">NCfly</span>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

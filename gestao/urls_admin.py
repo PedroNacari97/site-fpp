@@ -80,6 +80,7 @@ from gestao.views import (
     api_voos_cliente,
 )
 from gestao.views.pipeline_hotel import pipeline_hotel_view, pipeline_hotel_mover
+from gestao.views.relatorio_cliente import relatorio_cliente_pdf
 
 urlpatterns = [
     path('painel/', admin_home, name='admin_dashboard'),
@@ -162,4 +163,5 @@ urlpatterns = [
     path('pipeline-hotel/', pipeline_hotel_view, name='admin_pipeline_hotel'),
     path('pipeline-hotel/mover/', pipeline_hotel_mover, name='admin_pipeline_hotel_mover'),
     path('api/voos-cliente/<int:cliente_id>/', api_voos_cliente, name='api_voos_cliente'),
+    path('clientes/<int:cliente_id>/relatorio-pdf/', relatorio_cliente_pdf, name='admin_relatorio_cliente_pdf'),
 ]
