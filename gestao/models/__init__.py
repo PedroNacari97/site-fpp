@@ -26,6 +26,7 @@ from .interesse_viagem_cliente import InteresseViagemCliente, InteresseViagemMat
 from .documento_plataforma import DocumentoPlataforma, AceiteDocumentoPlataforma
 from .instagram_noticia_evento import InstagramNoticiaEvento
 from .marca_catalogo import MarcaCatalogo
+from .stage_transition import StageTransition
 
 __all__ = [
     'Cliente',
@@ -58,4 +59,5 @@ __all__ = [
     'AceiteDocumentoPlataforma',
     'InstagramNoticiaEvento',
     'MarcaCatalogo',
+    'StageTransition',
 ]

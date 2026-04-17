@@ -144,14 +144,29 @@
                     <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0M18.5 9.5h3M20 8v3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
                     <span class="admin-sidebar__label">Contas Administrativas</span>
                 </a>
-                <a href="{% url 'admin_cotacoes_voo' %}" class="admin-sidebar__link {% if menu_ativo == 'cotacoes' %}is-active{% endif %}" data-sidebar-link title="Cotações">
-                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10l3 5-8 11L4 9l3-5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                    <span class="admin-sidebar__label">Cotações</span>
-                </a>
-                <a href="{% url 'admin_emissoes' %}" class="admin-sidebar__link {% if menu_ativo == 'emissoes' %}is-active{% endif %}" data-sidebar-link title="Emissões">
-                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                    <span class="admin-sidebar__label">Emissões</span>
-                </a>
+                <details class="admin-sidebar__group" {% if menu_ativo == 'cotacoes' or menu_ativo == 'emissoes' or menu_ativo == 'kanban' %}open{% endif %}>
+                    <summary class="admin-sidebar__summary" title="Atendimentos">
+                        <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10l3 5-8 11L4 9l3-5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                        <span class="admin-sidebar__label">Atendimentos</span>
+                        <span class="admin-sidebar__summary-caret">
+                            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+                        </span>
+                    </summary>
+                    <div class="admin-sidebar__group-body">
+                        <a href="{% url 'admin_cotacoes_voo' %}" class="admin-sidebar__sublink {% if menu_ativo == 'cotacoes' %}is-active{% endif %}" data-sidebar-link title="Cotações">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Cotações</span>
+                        </a>
+                        <a href="{% url 'admin_emissoes' %}" class="admin-sidebar__sublink {% if menu_ativo == 'emissoes' %}is-active{% endif %}" data-sidebar-link title="Emissões">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Emissões</span>
+                        </a>
+                        <a href="{% url 'admin_pipeline' %}" class="admin-sidebar__sublink {% if menu_ativo == 'kanban' %}is-active{% endif %}" data-sidebar-link title="Kanban">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Kanban</span>
+                        </a>
+                    </div>
+                </details>
                 <a href="{% url 'admin_alertas_passagens' %}" class="admin-sidebar__link {% if menu_ativo == 'alertas' %}is-active{% endif %}" data-sidebar-link title="Alertas de Passagens">
                     <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4M12 16h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
                     <span class="admin-sidebar__label">Alertas de Passagens</span>

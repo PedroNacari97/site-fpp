@@ -1,0 +1,170 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+{% block title %}Pipeline{% endblock %}
+{% block header_title %}Pipeline{% endblock %}
+{% block header_subtitle %}<span>Visao Kanban dos atendimentos.</span>{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/pipeline_figma.css' %}">
+{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+    <ol>
+        <li><a href="{% url 'admin_dashboard' %}">Inicio</a></li>
+        <li aria-current="page">Pipeline</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+{% include "admin_custom/partials/pipeline_nav.html" %}
+
+<div class="pipeline-board" id="pipeline-board">
+    {% for col in colunas %}
+    <div class="pipeline-col" data-stage="{{ col.id }}" data-destinos="{{ col.destinos_json }}">
+        <div class="pipeline-col__header pipeline-col__header--{{ col.acento }}">
+            <h3 class="pipeline-col__title">{{ col.nome }}</h3>
+            <span class="pipeline-col__count" data-count>{{ col.cards|length }}</span>
+        </div>
+        <div class="pipeline-col__body" data-sortable>
+            {% for card in col.cards %}
+            <div class="pipeline-card" data-tipo="{{ card.tipo }}" data-id="{{ card.id }}">
+                <div class="pipeline-card__top">
+                    <span class="pipeline-card__cliente">{{ card.cliente_nome }}</span>
+                    <div class="pipeline-card__avatar" style="background:{{ card.avatar.cor }}">{{ card.avatar.iniciais }}</div>
+                </div>
+                <div class="pipeline-card__route">
+                    {{ card.origem }} &rarr; {{ card.destino }}
+                </div>
+                {% if card.data_ida %}
+                <div class="pipeline-card__date">{{ card.data_ida|date:"d/m/Y" }}</div>
+                {% endif %}
+                {% if card.programa %}
+                <span class="pipeline-card__programa">{{ card.programa }}</span>
+                {% endif %}
+                <div class="pipeline-card__bottom">
+                    <span class="pipeline-card__valor">R$ {{ card.valor|floatformat:2 }}</span>
+                    <a href="{{ card.url_detalhe }}" class="pipeline-card__link">Abrir</a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="pipeline-col__empty" data-empty>Nenhum registro</div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pipeline-toast" id="pipeline-toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script>
+(function(){
+    var CSRF = '{{ csrf_token }}';
+    var MOVER_URL = '{% url "admin_pipeline_mover" %}';
+    var board = document.getElementById('pipeline-board');
+    var toast = document.getElementById('pipeline-toast');
+
+    function showToast(msg, isError) {
+        toast.textContent = msg;
+        toast.className = 'pipeline-toast' + (isError ? ' pipeline-toast--error' : ' pipeline-toast--ok');
+        toast.hidden = false;
+        clearTimeout(toast._t);
+        toast._t = setTimeout(function(){ toast.hidden = true; }, 3000);
+    }
+
+    function updateCounts() {
+        board.querySelectorAll('.pipeline-col').forEach(function(col) {
+            var body = col.querySelector('[data-sortable]');
+            var count = body.querySelectorAll('.pipeline-card').length;
+            col.querySelector('[data-count]').textContent = count;
+            var empty = body.querySelector('[data-empty]');
+            if (count === 0 && !empty) {
+                var div = document.createElement('div');
+                div.className = 'pipeline-col__empty';
+                div.setAttribute('data-empty', '');
+                div.textContent = 'Nenhum registro';
+                body.appendChild(div);
+            } else if (count > 0 && empty) {
+                empty.remove();
+            }
+        });
+    }
+
+    function getAllowedDestinations(colEl) {
+        try {
+            return JSON.parse(colEl.getAttribute('data-destinos') || '[]');
+        } catch(e) { return []; }
+    }
+
+    board.querySelectorAll('[data-sortable]').forEach(function(body) {
+        new Sortable(body, {
+            group: 'pipeline',
+            animation: 180,
+            ghostClass: 'pipeline-card--ghost',
+            chosenClass: 'pipeline-card--chosen',
+            dragClass: 'pipeline-card--drag',
+            filter: '[data-empty]',
+            onAdd: function(evt) {
+                var card = evt.item;
+                var fromCol = evt.from.closest('.pipeline-col');
+                var toCol = evt.to.closest('.pipeline-col');
+                var fromStage = fromCol.getAttribute('data-stage');
+                var toStage = toCol.getAttribute('data-stage');
+                var allowed = getAllowedDestinations(fromCol);
+
+                if (allowed.indexOf(toStage) === -1) {
+                    // Transicao nao permitida — devolve o card
+                    evt.from.appendChild(card);
+                    showToast('Transicao nao permitida: ' + fromStage + ' \u2192 ' + toStage, true);
+                    updateCounts();
+                    return;
+                }
+
+                var tipo = card.getAttribute('data-tipo');
+                var id = card.getAttribute('data-id');
+
+                // Feedback visual
+                card.classList.add('pipeline-card--loading');
+
+                fetch(MOVER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': CSRF
+                    },
+                    body: JSON.stringify({
+                        tipo: tipo,
+                        id: id,
+                        stage_destino: toStage,
+                        moved_via: 'drag'
+                    })
+                })
+                .then(function(r) { return r.json().then(function(d) { return {ok: r.ok, data: d}; }); })
+                .then(function(res) {
+                    card.classList.remove('pipeline-card--loading');
+                    if (!res.ok) {
+                        // Erro do backend — devolve o card
+                        evt.from.appendChild(card);
+                        showToast(res.data.erro || 'Erro ao mover', true);
+                    } else {
+                        showToast('Movido para ' + toCol.querySelector('.pipeline-col__title').textContent, false);
+                        // Atualiza destinos permitidos no card (agora esta na coluna de destino)
+                    }
+                    updateCounts();
+                })
+                .catch(function() {
+                    card.classList.remove('pipeline-card--loading');
+                    evt.from.appendChild(card);
+                    showToast('Erro de conexao', true);
+                    updateCounts();
+                });
+
+                updateCounts();
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

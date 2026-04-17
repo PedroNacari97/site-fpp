@@ -9,6 +9,7 @@ from .programa_fidelidade import ProgramaFidelidade
 class CotacaoVoo(models.Model):
     STATUS_CHOICES = (
         ("pendente", "Pendente"),
+        ("enviada", "Enviada"),
         ("aceita", "Aceita"),
         ("rejeitada", "Rejeitada"),
         ("emissao", "Emissão"),

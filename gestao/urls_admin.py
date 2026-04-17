@@ -75,6 +75,8 @@ from gestao.views import (
     deletar_alerta_passagem,
     alertas_passagens,
     alerta_passagem_detalhe,
+    pipeline_view,
+    pipeline_mover,
 )
 
 urlpatterns = [
@@ -153,4 +155,6 @@ urlpatterns = [
     path('hoteis/<int:emissao_id>/editar/', editar_emissao_hotel, name='admin_editar_emissao_hotel'),
     path('hoteis/<int:emissao_id>/deletar/', deletar_emissao_hotel, name='admin_deletar_emissao_hotel'),
     path('auditoria/', admin_auditoria, name='admin_auditoria'),
+    path('pipeline/', pipeline_view, name='admin_pipeline'),
+    path('pipeline/mover/', pipeline_mover, name='admin_pipeline_mover'),
 ]

@@ -13,3 +13,4 @@ from .empresas import *
 from .alertas import *
 from .governanca import *
 from .site_monitoramento import *
+from .pipeline import pipeline_view, pipeline_mover
