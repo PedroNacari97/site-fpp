@@ -226,6 +226,7 @@
 .detail-client__kpi {
   min-height: 132px;
   padding: 18px 20px;
+  overflow: hidden;
 }
 
 .detail-client__kpi-label {
@@ -239,10 +240,12 @@
 
 .detail-client__kpi-value {
   margin: 22px 0 8px;
-  font-size: 34px;
-  line-height: 1;
+  font-size: clamp(18px, 2.2vw, 34px);
+  line-height: 1.1;
   font-weight: 700;
   color: var(--detail-text);
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .detail-client__kpi-note {
@@ -767,6 +770,6 @@
   }
 
   .detail-client__kpi-value {
-    font-size: 30px;
+    font-size: clamp(18px, 5vw, 28px);
   }
 }
