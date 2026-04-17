@@ -145,9 +145,9 @@
                     <span class="admin-sidebar__label">Contas Administrativas</span>
                 </a>
                 <details class="admin-sidebar__group" {% if menu_ativo == 'cotacoes' or menu_ativo == 'emissoes' or menu_ativo == 'kanban' %}open{% endif %}>
-                    <summary class="admin-sidebar__summary" title="Atendimentos">
+                    <summary class="admin-sidebar__summary" title="Cotações / Emissões">
                         <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10l3 5-8 11L4 9l3-5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                        <span class="admin-sidebar__label">Atendimentos</span>
+                        <span class="admin-sidebar__label">Cotações / Emissões</span>
                         <span class="admin-sidebar__summary-caret">
                             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
                         </span>
@@ -171,14 +171,23 @@
                     <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4M12 16h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
                     <span class="admin-sidebar__label">Alertas de Passagens</span>
                 </a>
-                <details class="admin-sidebar__details" {% if menu_ativo == 'hoteis' or menu_ativo == 'kanban_hotel' %}open{% endif %}>
-                    <summary class="admin-sidebar__link" data-sidebar-link title="Hotéis">
+                <details class="admin-sidebar__group" {% if menu_ativo == 'hoteis' or menu_ativo == 'kanban_hotel' %}open{% endif %}>
+                    <summary class="admin-sidebar__summary" title="Hotéis">
                         <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13M4 20h16M9 9h.01M15 9h.01M9 13h.01M15 13h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
                         <span class="admin-sidebar__label">Hotéis</span>
+                        <span class="admin-sidebar__summary-caret">
+                            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+                        </span>
                     </summary>
-                    <div class="admin-sidebar__sublinks">
-                        <a href="{% url 'admin_hoteis' %}" class="admin-sidebar__sublink {% if menu_ativo == 'hoteis' %}is-active{% endif %}">Lista</a>
-                        <a href="{% url 'admin_pipeline_hotel' %}" class="admin-sidebar__sublink {% if menu_ativo == 'kanban_hotel' %}is-active{% endif %}">Kanban</a>
+                    <div class="admin-sidebar__group-body">
+                        <a href="{% url 'admin_hoteis' %}" class="admin-sidebar__sublink {% if menu_ativo == 'hoteis' %}is-active{% endif %}" data-sidebar-link title="Lista">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Lista</span>
+                        </a>
+                        <a href="{% url 'admin_pipeline_hotel' %}" class="admin-sidebar__sublink {% if menu_ativo == 'kanban_hotel' %}is-active{% endif %}" data-sidebar-link title="Kanban">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Kanban</span>
+                        </a>
                     </div>
                 </details>
                 <a href="{% url 'admin_calculadora_cotacao' %}" class="admin-sidebar__link {% if menu_ativo == 'calculadora' %}is-active{% endif %}" data-sidebar-link title="Calculadora">
