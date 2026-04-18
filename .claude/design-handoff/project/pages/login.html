@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>NCfly · Entrar</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/base.css">
+<script src="../assets/icons.js"></script>
+<script src="../assets/tweaks.js"></script>
+<style>
+  html, body { height: 100%; }
+  body {
+    display: grid; grid-template-columns: 1fr 520px;
+    min-height: 100vh; background: var(--bg);
+  }
+  @media (max-width: 900px) { body { grid-template-columns: 1fr; } .aside-panel { display: none; } }
+
+  /* Left hero / marketing */
+  .aside-panel {
+    background: linear-gradient(160deg, #1a365d 0%, #2c5282 45%, #3182ce 100%);
+    color: #fff; padding: 48px 56px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .aside-panel::before {
+    content:""; position:absolute; inset:0;
+    background:
+      radial-gradient(500px 300px at 80% 10%, rgba(255,255,255,.14), transparent 60%),
+      radial-gradient(400px 300px at 20% 90%, rgba(14,165,233,.25), transparent 60%);
+    pointer-events: none;
+  }
+  .aside-panel .brand { display:flex; align-items:center; gap:10px; position:relative; z-index:1;}
+  .aside-panel .brand b { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+  .aside-panel .brand small { font-size: 10px; font-weight: 600; letter-spacing: 2px; color: rgba(255,255,255,.7); display:block; margin-top:2px;}
+  .hero-text { position: relative; z-index: 1; max-width: 440px; }
+  .hero-text .kicker { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.15em; text-transform:uppercase;
+    background: rgba(255,255,255,.12); padding: 5px 10px; border-radius: 999px; margin-bottom:20px; color:#bfdbfe;
+    border:1px solid rgba(255,255,255,.18);
+  }
+  .hero-text h1 { color:#fff; font-size: 36px; font-weight:800; line-height:1.15; margin-bottom:16px; letter-spacing:-0.02em;}
+  .hero-text p { color: rgba(255,255,255,.8); font-size: 16px; line-height:1.55; }
+  .hero-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; position:relative; z-index:1; }
+  .hero-stats .st { border-left: 2px solid rgba(255,255,255,.3); padding-left:14px; }
+  .hero-stats .st b { display:block; font-size:22px; font-weight:800; letter-spacing:-0.02em; }
+  .hero-stats .st small { color: rgba(255,255,255,.65); font-size: 12px; font-weight: 500; }
+
+  /* Plane illustration (subtle) */
+  .plane-ill {
+    position:absolute; right:-20px; top:42%; transform: translateY(-50%) rotate(-8deg);
+    width: 360px; height: 360px; opacity: .14; z-index:0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'><path d='M10.2 13.8 2 11l20-8-8 20-2.8-8.2-5.4-2.8 4.4-3.2z'/></svg>");
+    background-repeat: no-repeat; background-size: contain;
+  }
+
+  /* Right form */
+  .form-panel {
+    display:flex; flex-direction:column; justify-content:center;
+    padding: 48px; background: var(--surface);
+    position:relative;
+  }
+  .form-wrap { width: 100%; max-width: 380px; margin: 0 auto; }
+  .form-panel .tt { position: absolute; top: 20px; right: 20px; }
+  .form-header { margin-bottom: 28px; }
+  .form-header h2 { font-size: 26px; font-weight: 800; color: var(--ink-strong); margin-bottom: 6px; }
+  .form-header p { color: var(--muted); font-size: 14px; }
+  .input-group { position: relative; }
+  .input-group .icon {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--subtle); width: 16px; height: 16px;
+  }
+  .input-group .input { padding-left: 38px; }
+  .input-group .toggle {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    background:none; border:0; padding:4px; color:var(--subtle); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .input-group .toggle:hover { color: var(--ink); }
+
+  .legal { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--divider);
+    font-size: 12px; color: var(--subtle); text-align:center;
+  }
+  .legal a { color: var(--primary); }
+
+  .links-row { display:flex; justify-content: space-between; align-items:center; margin: -4px 0 6px; }
+  .links-row a { font-size:13px; color:var(--primary); font-weight:600; }
+  .links-row label { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); cursor:pointer; font-weight:500;}
+  .links-row label input { accent-color: var(--primary); }
+
+  .err-shake {
+    background: var(--danger-50); border:1px solid var(--danger-border);
+    color:#991b1b; font-size: 13px; padding: 10px 12px; border-radius: var(--r-sm);
+    margin-bottom: 14px; display:none; gap:8px; align-items:flex-start;
+  }
+  .err-shake.is-show { display: flex; animation: shake .4s; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)}
+  }
+</style>
+</head>
+<body>
+
+<!-- Left: marketing panel -->
+<aside class="aside-panel">
+  <div class="brand">
+    <img src="../assets/ncfly-mark.svg" alt="" width="36" height="36">
+    <div>
+      <b>NCfly</b>
+      <small>MILHAS &amp; PASSAGENS</small>
+    </div>
+  </div>
+
+  <div class="hero-text">
+    <span class="kicker">Sistema de gestão</span>
+    <h1 style="text-wrap:balance">Suas milhas transformadas em viagens inteligentes.</h1>
+    <p>Cotar, emitir e acompanhar todos os seus programas de fidelidade em um só lugar. Acesso seguro para clientes, operadores e administradores.</p>
+  </div>
+
+  <div class="hero-stats">
+    <div class="st"><b class="tnum">1.248</b><small>clientes ativos</small></div>
+    <div class="st"><b class="tnum">R$ 482k</b><small>economizados em 2025</small></div>
+    <div class="st"><b class="tnum">15</b><small>programas integrados</small></div>
+  </div>
+  <div class="plane-ill"></div>
+</aside>
+
+<!-- Right: form -->
+<section class="form-panel">
+  <button class="icon-btn tt" data-tt="Alternar para dark mode" id="dm-toggle" style="position:absolute;top:20px;right:20px;">
+    <svg class="icon icon--sm"><use id="dm-icon" href="#icon-moon"/></svg>
+  </button>
+
+  <div class="form-wrap">
+    <div class="form-header">
+      <span class="eyebrow">Acesso ao sistema</span>
+      <h2>Entrar na NCfly</h2>
+      <p>Use seu CPF e senha. O perfil é detectado automaticamente.</p>
+    </div>
+
+    <div class="err-shake" id="err">
+      <svg class="icon icon--sm" style="margin-top:1px;flex:none"><use href="#icon-alert"/></svg>
+      <span>CPF ou senha inválidos. Tente novamente.</span>
+    </div>
+
+    <form class="grid" style="gap:16px" onsubmit="event.preventDefault(); handleLogin(this);">
+      <div class="field">
+        <label for="cpf">CPF</label>
+        <div class="input-group">
+          <svg class="icon"><use href="#icon-user"/></svg>
+          <input id="cpf" class="input" placeholder="000.000.000-00" inputmode="numeric" autocomplete="username" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="links-row" style="margin-bottom:6px">
+          <label for="senha" style="font-size:13.5px;font-weight:600;color:var(--ink)">Senha</label>
+          <a href="#">Esqueci minha senha</a>
+        </div>
+        <div class="input-group">
+          <svg class="icon"><use href="#icon-credit-card"/></svg>
+          <input id="senha" class="input" type="password" placeholder="••••••••" autocomplete="current-password" required>
+          <button type="button" class="toggle" aria-label="Mostrar senha" onclick="togglePw(this)"><svg class="icon icon--sm"><use href="#icon-eye"/></svg></button>
+        </div>
+      </div>
+
+      <div class="links-row">
+        <label><input type="checkbox" checked>Lembrar deste dispositivo</label>
+      </div>
+
+      <button class="btn btn--lg" type="submit" style="width:100%">Entrar</button>
+    </form>
+
+    <div class="legal">
+      Ao entrar, você concorda com os <a href="#">Termos</a> e a <a href="#">Política de Privacidade</a>.
+    </div>
+  </div>
+</section>
+
+<script>
+function togglePw(btn) {
+  const inp = btn.parentElement.querySelector('input');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+function handleLogin(form) {
+  const cpf = form.querySelector('#cpf').value;
+  const senha = form.querySelector('#senha').value;
+  if (cpf.length < 4 || senha.length < 3) {
+    const err = document.getElementById('err');
+    err.classList.remove('is-show'); void err.offsetWidth; err.classList.add('is-show');
+    return;
+  }
+  // Success: go to admin dashboard mock
+  window.location.href = 'admin-dashboard.html';
+}
+// Dark mode toggle
+document.getElementById('dm-toggle').addEventListener('click', () => {
+  const root = document.documentElement;
+  const isDark = root.getAttribute('data-theme') === 'dark';
+  root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('dm-icon').setAttribute('href', isDark ? '#icon-moon' : '#icon-sun');
+  document.getElementById('dm-toggle').setAttribute('data-tt', isDark ? 'Alternar para dark mode' : 'Alternar para light mode');
+  try { const t = JSON.parse(localStorage.getItem('nc_tweaks')||'{}'); t.dark = !isDark; localStorage.setItem('nc_tweaks', JSON.stringify(t)); } catch(e){}
+});
+// CPF mask
+document.getElementById('cpf').addEventListener('input', (e) => {
+  let v = e.target.value.replace(/\D/g, '').slice(0,11);
+  v = v.replace(/(\d{3})(\d)/, '$1.$2');
+  v = v.replace(/(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+  v = v.replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4');
+  e.target.value = v;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>NCfly · Formulários admin</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css"><link rel="stylesheet" href="../assets/base.css"><link rel="stylesheet" href="../assets/shell.css">
+<script src="../assets/icons.js"></script><script src="../assets/tweaks.js"></script><script src="../assets/sidebar.js"></script>
+<style>
+  .subtabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:24px;overflow-x:auto}
+  .st{padding:12px 18px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:8px}
+  .st:hover{color:var(--ink)}
+  .st.on{color:var(--primary);border-bottom-color:var(--primary)}
+  .pn{display:none}.pn.on{display:block}
+  .form-grid{display:grid;grid-template-columns:1fr 320px;gap:20px}
+  @media(max-width:1000px){.form-grid{grid-template-columns:1fr}}
+  .form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:22px 26px;box-shadow:var(--sh-sm)}
+  .form-card h3{font-size:15px;font-weight:700;color:var(--ink-strong);margin-bottom:4px;letter-spacing:-.01em}
+  .form-card h3 + p{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .fld{margin-bottom:14px}
+  .fld label{display:block;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+  .fld label .req{color:var(--danger);margin-left:2px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .sect{padding-top:18px;margin-top:18px;border-top:1px solid var(--divider)}
+  .sect h4{font-size:13px;font-weight:700;color:var(--ink-strong);margin-bottom:10px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+  .sidebar-card{position:sticky;top:20px}
+  .resume{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:20px;box-shadow:var(--sh-sm)}
+  .resume h4{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:12px}
+  .resume dl{display:grid;grid-template-columns:1fr auto;gap:8px;font-size:13px}
+  .resume dt{color:var(--muted)}
+  .resume dd{color:var(--ink-strong);font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+  .resume .total{border-top:1px solid var(--divider);margin-top:12px;padding-top:12px}
+  .resume .total dt{font-weight:700;color:var(--ink-strong)}
+  .resume .total dd{color:var(--primary);font-size:18px;font-weight:800}
+  .footer-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:24px;padding:16px 20px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md)}
+  .footer-bar .note{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center}
+  .pax-card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;margin-bottom:10px}
+  .pax-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .pax-head b{color:var(--ink-strong);font-size:14px}
+  .leg{display:flex;gap:12px;padding:14px;background:var(--surface-2);border-radius:var(--r-sm);margin-bottom:10px;align-items:center}
+  .leg .time{font-size:20px;font-weight:800;color:var(--ink-strong);font-variant-numeric:tabular-nums}
+  .leg .code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface);padding:2px 6px;border-radius:4px;color:var(--muted);font-weight:700}
+  .leg .arrow{flex:1;text-align:center;color:var(--muted);font-size:12px;position:relative}
+  .leg .arrow::before{content:"";position:absolute;left:10%;right:10%;top:50%;border-top:1px dashed var(--border)}
+  .leg .arrow span{background:var(--surface-2);position:relative;padding:0 8px}
+</style></head><body>
+<div data-shell="admin" data-active="emissoes"></div>
+<script>NCflyShell.render()</script>
+<script>
+document.getElementById('page-root').innerHTML = `
+  <div class="page__head"><div><div class="breadcrumb"><a>Emissões</a><span>/</span><span style="color:var(--ink)">Nova emissão</span></div><h1>Nova emissão</h1><p>Registrar uma nova emissão de passagem com pontos. Valida programa, saldo e políticas da companhia.</p></div></div>
+
+  <div class="subtabs">
+    <div class="st on" data-s="emi"><svg class="icon icon--sm"><use href="#icon-ticket"/></svg>Emissão de passagem</div>
+    <div class="st" data-s="cot"><svg class="icon icon--sm"><use href="#icon-file"/></svg>Nova cotação</div>
+    <div class="st" data-s="mov"><svg class="icon icon--sm"><use href="#icon-swap"/></svg>Nova movimentação</div>
+    <div class="st" data-s="conta"><svg class="icon icon--sm"><use href="#icon-wallet"/></svg>Nova conta</div>
+  </div>
+
+  <!-- EMISSÃO -->
+  <div class="pn on" data-p="emi">
+    <div class="form-grid">
+      <div class="form-card">
+        <h3>Cliente e programa</h3>
+        <p>Selecione o cliente titular e o programa de onde sairão os pontos.</p>
+        <div class="row">
+          <div class="fld"><label>Cliente <span class="req">*</span></label><select class="select"><option>Maria Silva · #1248</option><option>Carlos Mendes · #2105</option></select></div>
+          <div class="fld"><label>Programa de fidelidade <span class="req">*</span></label><select class="select"><option>Latam Pass (248.400 pts)</option><option>Smiles (92.830 pts)</option><option>TudoAzul (54.120 pts)</option></select></div>
+        </div>
+
+        <div class="sect"><h4><svg class="icon icon--sm" style="color:var(--primary)"><use href="#icon-plane"/></svg>Trecho da viagem</h4>
+          <div class="row3"><div class="fld"><label>Origem</label><input class="input" value="GRU · São Paulo"></div><div class="fld"><label>Destino</label><input class="input" value="LIS · Lisboa"></div><div class="fld"><label>Data ida</label><input class="input" type="date" value="2025-04-18"></div></div>
+          <div class="row3"><div class="fld"><label>Tipo</label><select class="select"><option>Ida e volta</option><option>Ida</option><option>Multi-trechos</option></select></div><div class="fld"><label>Data volta</label><input class="input" type="date" value="2025-04-28"></div><div class="fld"><label>Cabine</label><select class="select"><option>Executiva</option><option>Primeira</option><option>Econômica</option></select></div></div>
+        </div>
+
+        <div class="sect"><h4><svg class="icon icon--sm" style="color:var(--primary)"><use href="#icon-clock"/></svg>Voos selecionados</h4>
+          <div class="leg"><div><div class="time">22:35</div><span class="code">GRU</span></div><div class="arrow"><span>9h 50min · direto</span></div><div><div class="time">12:25<sup style="font-size:10px;color:var(--muted)">+1</sup></div><span class="code">LIS</span></div><div style="margin-left:auto;text-align:right"><small style="color:var(--muted);display:block">LA8084 · Airbus A350</small><span class="pill pill--primary">Executiva</span></div></div>
+          <div class="leg"><div><div class="time">14:10</div><span class="code">LIS</span></div><div class="arrow"><span>11h 05min · direto</span></div><div><div class="time">19:15</div><span class="code">GRU</span></div><div style="margin-left:auto;text-align:right"><small style="color:var(--muted);display:block">LA8085 · Airbus A350</small><span class="pill pill--primary">Executiva</span></div></div>
+        </div>
+
+        <div class="sect"><h4><svg class="icon icon--sm" style="color:var(--primary)"><use href="#icon-user"/></svg>Passageiros</h4>
+          <div class="pax-card"><div class="pax-head"><b>Passageiro 1 · Adulto</b><button class="btn btn--ghost btn--sm">Usar dados do titular</button></div><div class="row"><div class="fld"><label>Nome completo</label><input class="input" value="Maria Silva"></div><div class="fld"><label>Documento</label><input class="input" value="CPF 123.456.789-00"></div></div><div class="row3"><div class="fld"><label>Nascimento</label><input class="input" type="date"></div><div class="fld"><label>Nacionalidade</label><input class="input" value="Brasileira"></div><div class="fld"><label>Nº fidelidade</label><input class="input" value="LAPA 4832917"></div></div></div>
+          <div class="pax-card"><div class="pax-head"><b>Passageiro 2 · Adulto</b><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-trash"/></svg></button></div><div class="row"><div class="fld"><label>Nome completo</label><input class="input" placeholder="Ex.: João Silva"></div><div class="fld"><label>Documento</label><input class="input" placeholder="CPF ou passaporte"></div></div></div>
+          <button class="btn btn--ghost"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Adicionar passageiro</button>
+        </div>
+
+        <div class="sect"><h4>Observações</h4><textarea class="input" rows="3" placeholder="Preferências, assentos, serviços especiais…"></textarea></div>
+      </div>
+
+      <div>
+        <div class="sidebar-card"><div class="resume"><h4>Resumo da emissão</h4>
+          <dl><dt>Programa</dt><dd>Latam Pass</dd><dt>Saldo atual</dt><dd>248.400 pts</dd><dt>Cabine</dt><dd>Executiva</dd><dt>Passageiros</dt><dd>2</dd><dt>Pontos / pax</dt><dd>120.000</dd></dl>
+          <div class="total"><dl><dt>Total em pontos</dt><dd style="color:var(--ink-strong);font-size:16px">240.000 pts</dd><dt>Taxas e impostos</dt><dd>R$ 1.240,00</dd><dt>Taxa NCfly</dt><dd>R$ 180,00</dd><dt>Total a pagar</dt><dd>R$ 1.420,00</dd></dl></div>
+          <div style="margin-top:16px;padding:12px;background:var(--success-50);color:var(--success);border-radius:var(--r-sm);font-size:12.5px;display:flex;gap:8px"><svg class="icon icon--sm" style="flex:none;margin-top:2px"><use href="#icon-check"/></svg><div><b>Saldo suficiente</b><br>Saldo após emissão: 8.400 pts</div></div>
+          <div style="margin-top:10px;padding:12px;background:var(--warning-50);color:var(--warning);border-radius:var(--r-sm);font-size:12.5px;display:flex;gap:8px"><svg class="icon icon--sm" style="flex:none;margin-top:2px"><use href="#icon-alert-triangle"/></svg><div><b>Atenção</b><br>Política Latam: cancelamento com penalidade de 25% dos pontos após emissão.</div></div>
+        </div></div>
+      </div>
+    </div>
+    <div class="footer-bar"><div class="note"><svg class="icon icon--sm"><use href="#icon-info"/></svg>Emissão será registrada no sistema e enviada para aprovação final.</div><div style="display:flex;gap:8px"><button class="btn btn--ghost">Salvar rascunho</button><button class="btn btn--primary"><svg class="icon icon--sm"><use href="#icon-check"/></svg>Confirmar emissão</button></div></div>
+  </div>
+
+  <!-- COTAÇÃO -->
+  <div class="pn" data-p="cot">
+    <div class="form-grid">
+      <div class="form-card">
+        <h3>Nova cotação</h3><p>Gera uma proposta com pontos+taxas válida por período determinado. Não debita pontos até aprovação.</p>
+        <div class="row"><div class="fld"><label>Cliente <span class="req">*</span></label><select class="select"><option>Selecionar…</option></select></div><div class="fld"><label>Validade</label><select class="select"><option>24 horas</option><option>48 horas</option><option>5 dias</option><option>Personalizado</option></select></div></div>
+        <div class="sect"><h4><svg class="icon icon--sm" style="color:var(--primary)"><use href="#icon-plane"/></svg>Trecho</h4>
+          <div class="row3"><div class="fld"><label>Origem</label><input class="input" placeholder="GRU"></div><div class="fld"><label>Destino</label><input class="input" placeholder="MAD"></div><div class="fld"><label>Tipo</label><select class="select"><option>Ida e volta</option><option>Ida</option></select></div></div>
+          <div class="row3"><div class="fld"><label>Ida</label><input class="input" type="date"></div><div class="fld"><label>Volta</label><input class="input" type="date"></div><div class="fld"><label>Passageiros</label><input class="input" type="number" value="2"></div></div>
+        </div>
+        <div class="sect"><h4><svg class="icon icon--sm" style="color:var(--primary)"><use href="#icon-calc"/></svg>Precificação sugerida</h4>
+          <div class="row"><div class="fld"><label>Programa</label><select class="select"><option>Latam Pass</option></select></div><div class="fld"><label>Cabine</label><select class="select"><option>Executiva</option></select></div></div>
+          <div class="row3"><div class="fld"><label>Pts estimados</label><input class="input" value="240.000"></div><div class="fld"><label>Taxas (R$)</label><input class="input" value="1.240,00"></div><div class="fld"><label>Margem NCfly</label><input class="input" value="12%"></div></div>
+        </div>
+        <div class="sect"><h4>Mensagem ao cliente</h4><textarea class="input" rows="3" placeholder="Detalhes da proposta, horários preferenciais, alternativas…"></textarea></div>
+      </div>
+      <div><div class="sidebar-card"><div class="resume"><h4>Prévia enviada ao cliente</h4><dl><dt>Trecho</dt><dd>GRU → MAD</dd><dt>Cabine</dt><dd>Executiva</dd><dt>Pontos</dt><dd>240.000</dd><dt>Taxas</dt><dd>R$ 1.240</dd><dt>Margem</dt><dd>R$ 340</dd></dl><div class="total"><dl><dt>Total cliente</dt><dd>R$ 3.620,00</dd><dt>Vs tarifa paga</dt><dd style="color:var(--success)">−48%</dd></dl></div></div></div></div>
+    </div>
+    <div class="footer-bar"><div class="note"><svg class="icon icon--sm"><use href="#icon-clock"/></svg>Cotação será enviada por e-mail e aparecerá no painel do cliente.</div><div style="display:flex;gap:8px"><button class="btn btn--ghost">Cancelar</button><button class="btn btn--primary">Gerar cotação</button></div></div>
+  </div>
+
+  <!-- MOVIMENTAÇÃO -->
+  <div class="pn" data-p="mov">
+    <div class="form-grid">
+      <div class="form-card">
+        <h3>Nova movimentação</h3><p>Registrar manualmente transferências, compras, bonificações ou estornos.</p>
+        <div class="fld"><label>Tipo de movimentação <span class="req">*</span></label>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <label style="border:2px solid var(--primary);background:var(--primary-bg);color:var(--primary);padding:12px;border-radius:var(--r-sm);text-align:center;font-weight:700;font-size:13px;cursor:pointer"><input type="radio" name="t" checked hidden>Transferência</label>
+            <label style="border:1px solid var(--border);padding:12px;border-radius:var(--r-sm);text-align:center;font-weight:600;font-size:13px;cursor:pointer;color:var(--ink)"><input type="radio" name="t" hidden>Compra</label>
+            <label style="border:1px solid var(--border);padding:12px;border-radius:var(--r-sm);text-align:center;font-weight:600;font-size:13px;cursor:pointer;color:var(--ink)"><input type="radio" name="t" hidden>Bonificação</label>
+            <label style="border:1px solid var(--border);padding:12px;border-radius:var(--r-sm);text-align:center;font-weight:600;font-size:13px;cursor:pointer;color:var(--ink)"><input type="radio" name="t" hidden>Estorno</label>
+          </div>
+        </div>
+        <div class="fld"><label>Cliente <span class="req">*</span></label><select class="select"><option>Maria Silva · #1248</option></select></div>
+        <div class="sect"><h4>De → Para</h4>
+          <div class="row"><div class="fld"><label>Programa origem</label><select class="select"><option>Smiles — 92.830 pts</option></select></div><div class="fld"><label>Programa destino</label><select class="select"><option>Latam Pass</option></select></div></div>
+          <div class="row3"><div class="fld"><label>Pontos origem</label><input class="input" value="100.000"></div><div class="fld"><label>Taxa conversão</label><input class="input" value="×0,8"></div><div class="fld"><label>Pontos destino</label><input class="input" value="80.000" style="background:var(--surface-2);font-weight:700"></div></div>
+        </div>
+        <div class="sect"><h4>Custo</h4><div class="row3"><div class="fld"><label>Custo (R$)</label><input class="input" value="0,00"></div><div class="fld"><label>Taxa NCfly</label><input class="input" value="R$ 50,00"></div><div class="fld"><label>Data</label><input class="input" type="date"></div></div></div>
+        <div class="sect"><h4>Observação</h4><textarea class="input" rows="2"></textarea></div>
+      </div>
+      <div><div class="sidebar-card"><div class="resume"><h4>Impacto</h4><dl><dt>Smiles antes</dt><dd>92.830</dd><dt>Smiles depois</dt><dd>−7.170</dd><dt>Latam antes</dt><dd>248.400</dd><dt>Latam depois</dt><dd>328.400</dd></dl><div class="total"><dl><dt>Custo cliente</dt><dd>R$ 50,00</dd></dl></div></div></div></div>
+    </div>
+    <div class="footer-bar"><div class="note"><svg class="icon icon--sm"><use href="#icon-shield"/></svg>Registrado na auditoria com seu usuário.</div><div style="display:flex;gap:8px"><button class="btn btn--ghost">Cancelar</button><button class="btn btn--primary">Registrar movimentação</button></div></div>
+  </div>
+
+  <!-- CONTA -->
+  <div class="pn" data-p="conta">
+    <div class="form-grid">
+      <div class="form-card">
+        <h3>Nova conta de fidelidade</h3><p>Vincular uma conta existente de programa ao cliente. As credenciais ficam criptografadas.</p>
+        <div class="row"><div class="fld"><label>Cliente <span class="req">*</span></label><select class="select"><option>Maria Silva · #1248</option></select></div><div class="fld"><label>Programa <span class="req">*</span></label><select class="select"><option>AAdvantage</option><option>Flying Blue</option><option>Miles & More</option></select></div></div>
+        <div class="sect"><h4>Credenciais do programa</h4>
+          <div class="row"><div class="fld"><label>Número de fidelidade</label><input class="input" placeholder="ex.: AA1234567"></div><div class="fld"><label>Tipo</label><select class="select"><option>Titular</option><option>Administrada</option></select></div></div>
+          <div class="row"><div class="fld"><label>Login / usuário</label><input class="input"></div><div class="fld"><label>Senha</label><input class="input" type="password" placeholder="••••••••"></div></div>
+          <div class="fld"><label>Pergunta de segurança</label><input class="input" placeholder="Ex.: nome do primeiro pet"></div>
+          <div style="padding:12px;background:var(--primary-bg);border-radius:var(--r-sm);font-size:12.5px;color:var(--primary-dark);display:flex;gap:8px"><svg class="icon icon--sm" style="flex:none"><use href="#icon-shield"/></svg><span>Credenciais são armazenadas com criptografia AES-256 e só podem ser recuperadas por administradores autenticados.</span></div>
+        </div>
+        <div class="sect"><h4>Saldo inicial</h4><div class="row"><div class="fld"><label>Pontos</label><input class="input" value="38.500"></div><div class="fld"><label>Data do sync inicial</label><input class="input" type="date"></div></div></div>
+      </div>
+      <div><div class="sidebar-card"><div class="resume"><h4>Sincronização</h4><dl><dt>Programa</dt><dd>AAdvantage</dd><dt>Modo</dt><dd>Auto · 4h</dd><dt>Validação</dt><dd>Na criação</dd></dl><div class="total"><dl><dt>Após criar</dt><dd style="color:var(--success);font-size:13px;font-weight:700">Teste de login automático</dd></dl></div></div></div></div>
+    </div>
+    <div class="footer-bar"><div class="note"></div><div style="display:flex;gap:8px"><button class="btn btn--ghost">Cancelar</button><button class="btn btn--primary">Criar conta</button></div></div>
+  </div>
+`;
+function switchTab(n){document.querySelectorAll('.st').forEach(x=>x.classList.toggle('on',x.dataset.s===n));document.querySelectorAll('.pn').forEach(x=>x.classList.toggle('on',x.dataset.p===n));}
+document.querySelectorAll('.st').forEach(s=>s.addEventListener('click',()=>switchTab(s.dataset.s)));
+const u=new URLSearchParams(location.search).get('tab');if(u)switchTab(u);
+</script>
+</body></html>

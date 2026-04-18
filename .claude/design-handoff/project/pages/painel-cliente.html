@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>NCfly · Meu painel</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css"><link rel="stylesheet" href="../assets/base.css"><link rel="stylesheet" href="../assets/shell.css">
+<script src="../assets/icons.js"></script><script src="../assets/tweaks.js"></script>
+<style>
+  .hero{background:linear-gradient(135deg,var(--primary) 0%,var(--accent) 100%);color:#fff;border-radius:var(--r-lg);padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-40px;top:-40px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.08)}
+  .hero h2{font-size:15px;font-weight:500;opacity:.9;margin-bottom:6px}
+  .hero .big{font-size:42px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px;font-variant-numeric:tabular-nums}
+  .hero small{opacity:.85;font-size:13px}
+  .hero__cta{position:absolute;right:32px;bottom:28px;display:flex;gap:8px}
+  .hero__cta .btn{background:#fff;color:var(--primary);border:0}
+  .hero__cta .btn.ghost{background:rgba(255,255,255,.15);color:#fff}
+  .twocol{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+  @media(max-width:1000px){.twocol{grid-template-columns:1fr}}
+  .progs{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+  .prog-row{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface)}
+  .prog-row .logo{width:36px;height:36px;border-radius:8px;color:#fff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex:none}
+  .prog-row b{display:block;color:var(--ink-strong);font-size:14px}
+  .prog-row small{color:var(--muted);font-size:12px}
+  .prog-row .pts{margin-left:auto;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-strong)}
+  .trip{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--divider)}
+  .trip:last-child{border-bottom:0}
+  .trip .route{font-weight:700;color:var(--ink-strong)}
+  .trip .meta{color:var(--muted);font-size:12px;margin-top:2px}
+  .trip .val{margin-left:auto;text-align:right}
+  .trip .val b{color:var(--success);font-weight:700;display:block}
+</style></head><body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__brand"><img src="../assets/ncfly-logo.svg" alt="NCfly"></div>
+    <div class="sidebar__section">Minha conta</div>
+    <a class="nav-item is-active"><svg class="icon"><use href="#icon-home"/></svg><span>Meu painel</span></a>
+    <a class="nav-item"><svg class="icon"><use href="#icon-wallet"/></svg><span>Meus programas</span></a>
+    <a class="nav-item"><svg class="icon"><use href="#icon-ticket"/></svg><span>Minhas emissões</span></a>
+    <a class="nav-item"><svg class="icon"><use href="#icon-swap"/></svg><span>Transferir pontos</span></a>
+    <div class="sidebar__section">Ajuda</div>
+    <a class="nav-item"><svg class="icon"><use href="#icon-book"/></svg><span>Como funciona</span></a>
+    <a class="nav-item"><svg class="icon"><use href="#icon-chat"/></svg><span>Falar com gestor</span></a>
+    <div class="sidebar__foot"><div class="sidebar__user" style="background:linear-gradient(135deg,#f59e0b,#dc2626)">MS</div><div class="meta"><b>Maria Silva</b><small>Cliente</small></div></div>
+  </aside>
+  <main>
+    <header class="topbar">
+      <div class="topbar__search"><svg class="icon"><use href="#icon-search"/></svg><input class="input" placeholder="Buscar voos…"></div>
+      <div class="spacer"></div>
+      <button class="btn btn--icon btn--ghost"><svg class="icon"><use href="#icon-bell"/></svg></button>
+    </header>
+    <div class="page" style="max-width:1200px">
+      <div class="hero">
+        <h2>Seu saldo total convertido</h2>
+        <div class="big">R$ 44.892</div>
+        <small>2.156.800 pontos em 4 programas · rendimento de +18% vs. compra em dinheiro</small>
+        <div class="hero__cta">
+          <button class="btn ghost"><svg class="icon icon--sm" style="color:#fff"><use href="#icon-swap"/></svg>Transferir</button>
+          <button class="btn">Cotar viagem <svg class="icon icon--sm"><use href="#icon-arrow-right"/></svg></button>
+        </div>
+      </div>
+
+      <div class="twocol">
+        <section class="card">
+          <div class="row row--between" style="margin-bottom:6px"><div><span class="eyebrow">Performance</span><h3>Economia gerada em 2025</h3></div><a class="link-subtle">Ver detalhes →</a></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:16px 0;border-bottom:1px solid var(--divider);margin-bottom:16px">
+            <div><small style="color:var(--muted);font-size:12px">Emissões</small><div style="font-size:24px;font-weight:800;color:var(--ink-strong);margin-top:2px">12</div></div>
+            <div><small style="color:var(--muted);font-size:12px">Economia total</small><div style="font-size:24px;font-weight:800;color:var(--success);margin-top:2px">R$ 14.320</div></div>
+            <div><small style="color:var(--muted);font-size:12px">Próxima viagem</small><div style="font-size:15px;font-weight:700;color:var(--ink-strong);margin-top:6px">GRU → MAD<br><small style="font-weight:500;color:var(--muted);font-size:12px">14 Mar 2026</small></div></div>
+          </div>
+
+          <span class="eyebrow">Últimas emissões</span>
+          <div class="trip">
+            <div><div class="route">GRU → LIS</div><div class="meta">LATAM · 15 Nov 2025 · Executiva · Maria Silva</div></div>
+            <div class="val"><b>R$ 1.840 econ.</b><small style="color:var(--muted);font-size:12px">120k Latam Pass</small></div>
+          </div>
+          <div class="trip">
+            <div><div class="route">GIG → MIA</div><div class="meta">American · 08 Out 2025 · Econômica · Maria Silva +1</div></div>
+            <div class="val"><b>R$ 2.210 econ.</b><small style="color:var(--muted);font-size:12px">85k AAdvantage</small></div>
+          </div>
+          <div class="trip">
+            <div><div class="route">BSB → GRU</div><div class="meta">GOL · 22 Set 2025 · Econômica · Maria Silva</div></div>
+            <div class="val"><b>R$ 340 econ.</b><small style="color:var(--muted);font-size:12px">18k Smiles</small></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="row row--between"><div><span class="eyebrow">Meus programas</span><h3>4 contas</h3></div><a class="link-subtle">Gerenciar →</a></div>
+          <div class="progs" style="grid-template-columns:1fr">
+            <div class="prog-row"><div class="logo" style="background:#ff6b35">S</div><div><b>Smiles</b><small>Expira Dez/2026</small></div><div class="pts">845.200<br><small style="font-weight:500;color:var(--muted)">pts</small></div></div>
+            <div class="prog-row"><div class="logo" style="background:#e30613">LP</div><div><b>Latam Pass</b><small style="color:var(--warning)">⚠ Expira Jan/2026</small></div><div class="pts">312.000<br><small style="font-weight:500;color:var(--muted)">pts</small></div></div>
+            <div class="prog-row"><div class="logo" style="background:#0097d6">TA</div><div><b>TudoAzul</b><small>Expira Mar/2027</small></div><div class="pts">198.400<br><small style="font-weight:500;color:var(--muted)">pts</small></div></div>
+            <div class="prog-row"><div class="logo" style="background:#111">LM</div><div><b>LifeMiles</b><small>Sem expiração</small></div><div class="pts">156.800<br><small style="font-weight:500;color:var(--muted)">pts</small></div></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</body></html>

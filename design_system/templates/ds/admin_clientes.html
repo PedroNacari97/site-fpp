@@ -1,0 +1,125 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>NCfly · Clientes</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'ds/tokens.css' %}"><link rel="stylesheet" href="{% static 'ds/base.css' %}"><link rel="stylesheet" href="{% static 'ds/shell.css' %}">
+<script src="{% static 'ds/icons.js' %}"></script><script src="{% static 'ds/tweaks.js' %}"></script>
+<style>
+  .fltr{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:end}
+  @media(max-width:900px){.fltr{grid-template-columns:1fr 1fr}}
+  .wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--sh-sm)}
+  .wrap h-row{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border)}
+  table{width:100%;border-collapse:separate;border-spacing:0}
+  thead th{background:var(--surface-2);font-size:12px;color:var(--muted);text-align:left;padding:11px 14px;border-bottom:1px solid var(--border);font-weight:600}
+  thead th.num{text-align:right}
+  tbody td{padding:14px;border-bottom:1px solid var(--divider);font-size:13.5px;vertical-align:middle}
+  tbody tr:hover td{background:var(--surface-hover)}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .cli{display:flex;align-items:center;gap:10px}
+  .ava{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex:none}
+  .cli b{display:block;color:var(--ink);font-size:13.5px}
+  .cli small{color:var(--subtle);font-size:12px}
+  .progs{display:flex;gap:4px;flex-wrap:wrap}
+  .prog-chip{background:var(--surface-2);border:1px solid var(--border);padding:2px 8px;border-radius:999px;font-size:11px;color:var(--muted);font-weight:600}
+  .actions{display:flex;gap:4px;justify-content:flex-end}
+  .pag{padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);font-size:13px;color:var(--muted)}
+</style></head><body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__brand"><a href="{% url 'design_system:index' %}"><img src="{% static 'ds/ncfly-logo.svg' %}" alt="NCfly"></a></div>
+    <div class="sidebar__section">Principal</div>
+    <a class="nav-item" href="{% url 'design_system:admin_dashboard' %}"><svg class="icon"><use href="#icon-home"/></svg><span>Dashboard</span></a>
+    <a class="nav-item is-active"><svg class="icon"><use href="#icon-users"/></svg><span>Clientes</span><span class="badge">12</span></a>
+    <a class="nav-item" href="{% url 'design_system:admin_emissoes' %}"><svg class="icon"><use href="#icon-ticket"/></svg><span>Emissões</span></a>
+    <a class="nav-item" href="{% url 'design_system:admin_contas' %}"><svg class="icon"><use href="#icon-wallet"/></svg><span>Contas de fidelidade</span></a>
+    <div class="sidebar__section">Operações</div>
+    <a class="nav-item" href="{% url 'design_system:cotar_emitir' %}"><svg class="icon"><use href="#icon-plane"/></svg><span>Cotar &amp; emitir</span></a>
+    <a class="nav-item" href="{% url 'design_system:transferencia' %}"><svg class="icon"><use href="#icon-swap"/></svg><span>Transferências</span></a>
+    <div class="sidebar__foot"><div class="sidebar__user">PN</div><div class="meta"><b>Pedro Nacari</b><small>Administrador</small></div></div>
+  </aside>
+  <main>
+    <header class="topbar">
+      <div class="topbar__search"><svg class="icon"><use href="#icon-search"/></svg><input class="input" placeholder="Buscar…"></div>
+      <div class="spacer"></div>
+      <button class="icon-btn tt" data-tt="Alternar tema" id="dm-toggle" aria-label="Dark mode"><svg class="icon icon--sm"><use id="dm-icon" href="#icon-moon"/></svg></button>
+      <a class="btn" href="{% url 'design_system:onboarding' %}"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Novo cliente</a>
+    </header>
+    <div class="page">
+      <div class="page__head"><div><h1>Clientes</h1><p>1.248 clientes cadastrados · 89% ativos nos últimos 90 dias.</p></div></div>
+
+      <section class="card filter-panel" style="margin-bottom:20px">
+        <div class="row row--between" style="margin-bottom:14px"><div><span class="eyebrow">Filtros</span><h3 style="font-size:15px;color:var(--ink)">Buscar clientes</h3></div></div>
+        <div class="fltr">
+          <div class="field"><label>Nome, e-mail ou CPF</label><input class="input" placeholder="Maria Silva, 123.456.789-00…"></div>
+          <div class="field"><label>Empresa</label><select class="select"><option>Todas</option><option>Empresa X</option><option>Empresa Y</option></select></div>
+          <div class="field"><label>Status</label><select class="select"><option>Ativos</option><option>Inativos</option><option>Todos</option></select></div>
+          <div style="display:flex;gap:6px"><button class="btn">Filtrar</button><button class="btn btn--ghost">Limpar</button></div>
+        </div>
+      </section>
+
+      <div class="wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border)">
+          <div><span class="eyebrow">Resultados</span><div style="font-weight:700;color:var(--ink-strong)">1.248 clientes</div></div>
+          <div style="color:var(--muted);font-size:13px">Ordenado por último acesso</div>
+        </div>
+        <table>
+          <thead><tr><th>Cliente</th><th>Programas</th><th class="num">Pontos totais</th><th class="num">Economia gerada</th><th>Status</th><th class="num" style="width:120px">Ações</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="cli"><div class="ava">MS</div><div><b>Maria Silva</b><small>maria.silva@exemplo.com · CPF 123.***.***-00</small></div></div></td>
+              <td><div class="progs"><span class="prog-chip">Smiles</span><span class="prog-chip">Latam Pass</span><span class="prog-chip">+2</span></div></td>
+              <td class="num"><b>845.200</b><br><small style="color:var(--subtle)">pts</small></td>
+              <td class="num" style="color:var(--success);font-weight:700">R$ 14.320</td>
+              <td><span class="pill pill--success"><span class="dot"></span>Ativa</span></td>
+              <td><div class="actions"><button class="btn btn--ghost btn--sm">Editar</button><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-more"/></svg></button></div></td>
+            </tr>
+            <tr>
+              <td><div class="cli"><div class="ava" style="background:linear-gradient(135deg,#f59e0b,#dc2626)">JS</div><div><b>João Santos</b><small>joao.santos@exemplo.com · CPF 987.***.***-11</small></div></div></td>
+              <td><div class="progs"><span class="prog-chip">Latam Pass</span><span class="prog-chip">TudoAzul</span></div></td>
+              <td class="num"><b>320.000</b><br><small style="color:var(--subtle)">pts</small></td>
+              <td class="num" style="color:var(--success);font-weight:700">R$ 5.480</td>
+              <td><span class="pill pill--success"><span class="dot"></span>Ativo</span></td>
+              <td><div class="actions"><button class="btn btn--ghost btn--sm">Editar</button><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-more"/></svg></button></div></td>
+            </tr>
+            <tr>
+              <td><div class="cli"><div class="ava" style="background:linear-gradient(135deg,#10b981,#0ea5e9)">AC</div><div><b>Ana Costa</b><small>ana.costa@exemplo.com · CPF 456.***.***-22</small></div></div></td>
+              <td><div class="progs"><span class="prog-chip">TudoAzul</span><span class="prog-chip">LifeMiles</span></div></td>
+              <td class="num"><b>512.300</b><br><small style="color:var(--subtle)">pts</small></td>
+              <td class="num" style="color:var(--success);font-weight:700">R$ 9.110</td>
+              <td><span class="pill pill--warning"><span class="dot"></span>Sem acesso há 45d</span></td>
+              <td><div class="actions"><button class="btn btn--ghost btn--sm">Editar</button><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-more"/></svg></button></div></td>
+            </tr>
+            <tr>
+              <td><div class="cli"><div class="ava" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">RL</div><div><b>Ricardo Lima</b><small>ricardo.lima@exemplo.com · CPF 789.***.***-33</small></div></div></td>
+              <td><div class="progs"><span class="prog-chip">Smiles</span></div></td>
+              <td class="num"><b>95.000</b><br><small style="color:var(--subtle)">pts</small></td>
+              <td class="num" style="color:var(--success);font-weight:700">R$ 3.250</td>
+              <td><span class="pill pill--danger"><span class="dot"></span>Inativo</span></td>
+              <td><div class="actions"><button class="btn btn--ghost btn--sm">Reativar</button><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-more"/></svg></button></div></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pag"><span>Mostrando 1–4 de 1.248</span><div style="display:flex;gap:6px"><button class="btn btn--ghost btn--sm" disabled>Anterior</button><button class="btn btn--ghost btn--sm">Próxima</button></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+// Dark mode toggle — sincroniza com tweaks.js via localStorage.nc_tweaks
+(function(){
+  const root = document.documentElement;
+  const btn = document.getElementById('dm-toggle');
+  const ic = document.getElementById('dm-icon');
+  function syncIcon(){
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    ic.setAttribute('href', isDark ? '#icon-sun' : '#icon-moon');
+  }
+  syncIcon();
+  btn.addEventListener('click', () => {
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    try { const t = JSON.parse(localStorage.getItem('nc_tweaks')||'{}'); t.dark = !isDark; localStorage.setItem('nc_tweaks', JSON.stringify(t)); } catch(e){}
+    syncIcon();
+  });
+})();
+</script>
+</body></html>

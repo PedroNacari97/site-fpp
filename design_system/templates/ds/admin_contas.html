@@ -1,0 +1,107 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>NCfly · Contas de fidelidade</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'ds/tokens.css' %}"><link rel="stylesheet" href="{% static 'ds/base.css' %}"><link rel="stylesheet" href="{% static 'ds/shell.css' %}">
+<script src="{% static 'ds/icons.js' %}"></script><script src="{% static 'ds/tweaks.js' %}"></script>
+<style>
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+  @media(max-width:1100px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+  .pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:18px;box-shadow:var(--sh-sm);transition:all .15s}
+  .pcard:hover{box-shadow:var(--sh-md);border-color:var(--primary)}
+  .pcard__head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .pcard__logo{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:13px;flex:none}
+  .pcard__head b{display:block;color:var(--ink-strong);font-size:15px}
+  .pcard__head small{color:var(--subtle);font-size:12px}
+  .pcard__pts{font-size:26px;font-weight:800;color:var(--ink-strong);font-variant-numeric:tabular-nums;margin-bottom:2px}
+  .pcard__sub{color:var(--muted);font-size:12px;margin-bottom:12px}
+  .pcard__meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:12px;border-top:1px solid var(--divider);font-size:12px}
+  .pcard__meta div small{color:var(--subtle);display:block}
+  .pcard__meta div b{color:var(--ink);font-weight:600}
+  .exp-soon{color:var(--warning)!important}
+</style></head><body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__brand"><a href="{% url 'design_system:index' %}"><img src="{% static 'ds/ncfly-logo.svg' %}" alt="NCfly"></a></div>
+    <div class="sidebar__section">Principal</div>
+    <a class="nav-item" href="{% url 'design_system:admin_dashboard' %}"><svg class="icon"><use href="#icon-home"/></svg><span>Dashboard</span></a>
+    <a class="nav-item" href="{% url 'design_system:admin_clientes' %}"><svg class="icon"><use href="#icon-users"/></svg><span>Clientes</span></a>
+    <a class="nav-item" href="{% url 'design_system:admin_emissoes' %}"><svg class="icon"><use href="#icon-ticket"/></svg><span>Emissões</span></a>
+    <a class="nav-item is-active"><svg class="icon"><use href="#icon-wallet"/></svg><span>Contas de fidelidade</span></a>
+    <div class="sidebar__section">Operações</div>
+    <a class="nav-item" href="{% url 'design_system:cotar_emitir' %}"><svg class="icon"><use href="#icon-plane"/></svg><span>Cotar &amp; emitir</span></a>
+    <a class="nav-item" href="{% url 'design_system:transferencia' %}"><svg class="icon"><use href="#icon-swap"/></svg><span>Transferências</span></a>
+    <div class="sidebar__foot"><div class="sidebar__user">PN</div><div class="meta"><b>Pedro Nacari</b><small>Administrador</small></div></div>
+  </aside>
+  <main>
+    <header class="topbar">
+      <div class="topbar__search"><svg class="icon"><use href="#icon-search"/></svg><input class="input" placeholder="Buscar…"></div>
+      <div class="spacer"></div>
+      <button class="icon-btn tt" data-tt="Alternar tema" id="dm-toggle" aria-label="Dark mode"><svg class="icon icon--sm"><use id="dm-icon" href="#icon-moon"/></svg></button>
+      <button class="btn btn--ghost"><svg class="icon icon--sm"><use href="#icon-refresh"/></svg>Sincronizar tudo</button>
+      <button class="btn"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Nova conta</button>
+    </header>
+    <div class="page">
+      <div class="page__head"><div><h1>Contas de fidelidade</h1><p>28 contas vinculadas em 8 programas · 2 com saldo expirando em 60 dias.</p></div></div>
+
+      <section class="stats">
+        <div class="kpi"><span class="kpi__label">Saldo total</span><b class="kpi__value">3.245.890 <small>pts</small></b><span class="kpi__delta kpi__delta--up">+12% no mês</span></div>
+        <div class="kpi"><span class="kpi__label">Valor estimado</span><b class="kpi__value">R$ 97.376</b><span class="kpi__sub">a R$ 0,030/pt</span></div>
+        <div class="kpi"><span class="kpi__label">Expirando em 60d</span><b class="kpi__value" style="color:var(--warning)">142.500 <small>pts</small></b><span class="kpi__sub">2 contas afetadas</span></div>
+        <div class="kpi"><span class="kpi__label">Última sincronização</span><b class="kpi__value" style="font-size:18px">há 12 min</b><span class="kpi__sub">via scraping</span></div>
+      </section>
+
+      <div class="pgrid">
+        <div class="pcard">
+          <div class="pcard__head"><div class="pcard__logo" style="background:#ff6b35">S</div><div><b>Smiles</b><small>GOL · CPF 123.***.***-00</small></div><span class="pill pill--success" style="margin-left:auto"><span class="dot"></span>OK</span></div>
+          <div class="pcard__pts">845.200</div><div class="pcard__sub">pontos disponíveis · R$ 25.356</div>
+          <div class="pcard__meta"><div><small>Login</small><b>maria.silva</b></div><div><small>Expira</small><b>Dez/2026</b></div></div>
+        </div>
+        <div class="pcard">
+          <div class="pcard__head"><div class="pcard__logo" style="background:#e30613">LP</div><div><b>Latam Pass</b><small>LATAM · CPF 123.***.***-00</small></div><span class="pill pill--warning" style="margin-left:auto"><span class="dot"></span>Expira</span></div>
+          <div class="pcard__pts">312.000</div><div class="pcard__sub">pontos · R$ 9.360</div>
+          <div class="pcard__meta"><div><small>Login</small><b>msilva23</b></div><div><small>Expira</small><b class="exp-soon">Jan/2026</b></div></div>
+        </div>
+        <div class="pcard">
+          <div class="pcard__head"><div class="pcard__logo" style="background:#0097d6">TA</div><div><b>TudoAzul</b><small>Azul · CPF 987.***.***-11</small></div><span class="pill pill--success" style="margin-left:auto"><span class="dot"></span>OK</span></div>
+          <div class="pcard__pts">198.400</div><div class="pcard__sub">pontos · R$ 5.952</div>
+          <div class="pcard__meta"><div><small>Login</small><b>joao.santos</b></div><div><small>Expira</small><b>Mar/2027</b></div></div>
+        </div>
+        <div class="pcard">
+          <div class="pcard__head"><div class="pcard__logo" style="background:#111">LM</div><div><b>LifeMiles</b><small>Avianca · CPF 456.***.***-22</small></div><span class="pill pill--success" style="margin-left:auto"><span class="dot"></span>OK</span></div>
+          <div class="pcard__pts">156.800</div><div class="pcard__sub">pontos · R$ 4.704</div>
+          <div class="pcard__meta"><div><small>Login</small><b>anacosta</b></div><div><small>Expira</small><b>—</b></div></div>
+        </div>
+        <div class="pcard">
+          <div class="pcard__head"><div class="pcard__logo" style="background:#0033a0">AA</div><div><b>AAdvantage</b><small>American · CPF 789.***.***-33</small></div><span class="pill pill--danger" style="margin-left:auto"><span class="dot"></span>Falhou</span></div>
+          <div class="pcard__pts" style="color:var(--subtle)">—</div><div class="pcard__sub" style="color:var(--danger)">Login inválido · reconecte</div>
+          <div class="pcard__meta"><div><small>Login</small><b>ricardo.l</b></div><div><small>Expira</small><b>—</b></div></div>
+        </div>
+        <div class="pcard" style="border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);cursor:pointer;background:transparent;box-shadow:none">
+          <div style="width:44px;height:44px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;margin-bottom:10px"><svg class="icon"><use href="#icon-plus"/></svg></div>
+          <b style="color:var(--ink)">Adicionar conta</b><small style="margin-top:4px">Vincule um novo programa de fidelidade</small>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+// Dark mode toggle — sincroniza com tweaks.js via localStorage.nc_tweaks
+(function(){
+  const root = document.documentElement;
+  const btn = document.getElementById('dm-toggle');
+  const ic = document.getElementById('dm-icon');
+  function syncIcon(){
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    ic.setAttribute('href', isDark ? '#icon-sun' : '#icon-moon');
+  }
+  syncIcon();
+  btn.addEventListener('click', () => {
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    try { const t = JSON.parse(localStorage.getItem('nc_tweaks')||'{}'); t.dark = !isDark; localStorage.setItem('nc_tweaks', JSON.stringify(t)); } catch(e){}
+    syncIcon();
+  });
+})();
+</script>
+</body></html>

@@ -1,0 +1,316 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>NCfly · Cadastro de cliente</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'ds/tokens.css' %}"><link rel="stylesheet" href="{% static 'ds/base.css' %}"><link rel="stylesheet" href="{% static 'ds/shell.css' %}">
+<script src="{% static 'ds/icons.js' %}"></script><script src="{% static 'ds/tweaks.js' %}"></script>
+<script>
+  window.NC_DS_LOGO_URL = "{% static 'ds/ncfly-logo.svg' %}";
+  window.NC_DS_INDEX_URL = "{% url 'design_system:index' %}";
+  window.NC_DS_URLS = {
+    'admin-dashboard.html': "{% url 'design_system:admin_dashboard' %}",
+    'admin-clientes.html': "{% url 'design_system:admin_clientes' %}",
+    'admin-emissoes.html': "{% url 'design_system:admin_emissoes' %}",
+    'admin-contas.html': "{% url 'design_system:admin_contas' %}",
+    'admin-movimentacoes.html': "{% url 'design_system:admin_movimentacoes' %}",
+    'cotar-emitir.html': "{% url 'design_system:cotar_emitir' %}",
+    'transferencia-adm.html': "{% url 'design_system:transferencia' %}",
+    'painel-cliente.html': "{% url 'design_system:painel_cliente' %}",
+    'cliente-consolidado.html': "{% url 'design_system:cliente_consolidado' %}",
+  };
+</script>
+<script src="{% static 'ds/sidebar.js' %}"></script>
+<style>
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:24px;overflow-x:auto}
+  .tab{padding:12px 20px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:8px}
+  .tab:hover{color:var(--ink)}
+  .tab.on{color:var(--primary);border-bottom-color:var(--primary)}
+  .tab .ct{background:var(--surface-2);color:var(--muted);font-size:11px;padding:1px 7px;border-radius:999px;font-weight:700}
+  .tab.on .ct{background:var(--primary-50);color:var(--primary)}
+  .panel{display:none}.panel.on{display:block;animation:fi .2s}
+  @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .two{display:grid;grid-template-columns:2fr 1fr;gap:24px}
+  @media(max-width:1000px){.two{grid-template-columns:1fr}}
+  .section-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:24px;margin-bottom:20px;box-shadow:var(--sh-sm)}
+  .section-card h3{font-size:15px;color:var(--ink-strong);margin-bottom:4px}
+  .section-card .hint{color:var(--muted);font-size:13px;margin-bottom:18px}
+  .f2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .f3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:700px){.f2,.f3{grid-template-columns:1fr}}
+  .side{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:20px;position:sticky;top:80px;height:fit-content}
+  .side h4{font-size:12px;color:var(--subtle);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:12px}
+  .side .pic{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#dc2626);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:32px;margin:0 auto 14px}
+  .side .row{display:flex;justify-content:space-between;padding:7px 0;font-size:13px;color:var(--ink);border-bottom:1px dashed var(--divider)}
+  .side .row:last-child{border:0}
+  .side .row b{color:var(--ink-strong);font-weight:700}
+
+  /* Cards table */
+  .card-list{display:flex;flex-direction:column;gap:12px}
+  .ccard{position:relative;background:linear-gradient(135deg,#1a365d,#3182ce);color:#fff;border-radius:var(--r-md);padding:18px 20px;overflow:hidden}
+  .ccard::after{content:"";position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.1)}
+  .ccard--gold{background:linear-gradient(135deg,#92400e,#d97706)}
+  .ccard--black{background:linear-gradient(135deg,#0f172a,#334155)}
+  .ccard__head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;position:relative}
+  .ccard__brand{font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+  .ccard__chip{width:36px;height:26px;background:linear-gradient(135deg,#fde68a,#f59e0b);border-radius:4px}
+  .ccard__num{font-family:'JetBrains Mono',monospace;font-size:17px;letter-spacing:.12em;font-weight:600;margin-bottom:14px;position:relative}
+  .ccard__foot{display:flex;justify-content:space-between;align-items:flex-end;font-size:11px;position:relative}
+  .ccard__foot small{opacity:.7;display:block;margin-bottom:2px;letter-spacing:.04em}
+  .ccard__foot b{font-weight:700;letter-spacing:.04em}
+  .ccard__net{font-size:18px;font-weight:800;font-style:italic;letter-spacing:-.02em}
+  .ccard-actions{display:flex;gap:6px;margin-top:8px}
+
+  .prog-list{display:flex;flex-direction:column;gap:10px}
+  .prow{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--border);border-radius:var(--r-sm)}
+  .prow .logo{width:40px;height:40px;border-radius:8px;color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none}
+  .prow .info b{display:block;color:var(--ink-strong);font-size:14px}
+  .prow .info small{color:var(--muted);font-size:12px}
+  .prow .pts{margin-left:auto;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink-strong)}
+</style></head><body>
+
+<div data-shell="admin" data-active="clientes" data-breadcrumb="Clientes › Maria Silva"></div>
+<script>NCflyShell.render()</script>
+
+<script>
+const ADMIN_EMISSOES_URL = "{% url 'design_system:admin_emissoes' %}";
+document.getElementById('page-body').innerHTML = `
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:20px;flex-wrap:wrap">
+  <div>
+    <h1 style="font-size:26px;font-weight:800;color:var(--ink-strong);letter-spacing:-.01em">Maria Silva</h1>
+    <p style="color:var(--muted);font-size:14px;margin-top:4px">Cliente desde Mar/2024 · 12 emissões · R$ 14.320 em economia</p>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn--ghost"><svg class="icon icon--sm"><use href="#icon-trash"/></svg>Inativar</button>
+    <button class="btn btn--primary"><svg class="icon icon--sm"><use href="#icon-check"/></svg>Salvar alterações</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab on" data-t="dados"><svg class="icon icon--sm"><use href="#icon-user"/></svg>Dados pessoais</div>
+  <div class="tab" data-t="enderecos"><svg class="icon icon--sm"><use href="#icon-pin"/></svg>Endereços</div>
+  <div class="tab" data-t="cartoes"><svg class="icon icon--sm"><use href="#icon-credit-card"/></svg>Cartões <span class="ct">3</span></div>
+  <div class="tab" data-t="programas"><svg class="icon icon--sm"><use href="#icon-badge"/></svg>Programas <span class="ct">4</span></div>
+  <div class="tab" data-t="emissoes"><svg class="icon icon--sm"><use href="#icon-ticket"/></svg>Emissões <span class="ct">12</span></div>
+  <div class="tab" data-t="hist"><svg class="icon icon--sm"><use href="#icon-file"/></svg>Histórico</div>
+</div>
+
+<div class="two">
+  <div>
+
+    <!-- Dados pessoais -->
+    <div class="panel on" data-p="dados">
+      <div class="section-card">
+        <h3>Identificação</h3>
+        <p class="hint">Dados cadastrais e documentos do cliente.</p>
+        <div class="f2">
+          <div class="field"><label>Nome completo</label><input class="input" value="Maria Aparecida Silva"></div>
+          <div class="field"><label>Nome social</label><input class="input" value="Maria Silva"></div>
+          <div class="field"><label>CPF</label><input class="input" value="123.456.789-00"></div>
+          <div class="field"><label>RG</label><input class="input" value="12.345.678-9 SSP/SP"></div>
+          <div class="field"><label>Data de nascimento</label><input class="input" value="15/08/1988"></div>
+          <div class="field"><label>Gênero</label><select class="select"><option>Feminino</option><option>Masculino</option><option>Não-binário</option><option>Prefere não informar</option></select></div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h3>Contato</h3>
+        <p class="hint">Canais preferidos para comunicação.</p>
+        <div class="f2">
+          <div class="field"><label>E-mail principal</label><input class="input" value="maria.silva@exemplo.com"></div>
+          <div class="field"><label>E-mail alternativo</label><input class="input" value=""></div>
+          <div class="field"><label>Celular (WhatsApp)</label><input class="input" value="+55 11 99876-5432"></div>
+          <div class="field"><label>Telefone fixo</label><input class="input" value=""></div>
+          <div class="field" style="grid-column:1/-1"><label>Canal preferido</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <label class="pill pill--ghost" style="cursor:pointer;padding:8px 14px"><input type="radio" name="canal" checked style="margin-right:6px">WhatsApp</label>
+              <label class="pill pill--ghost" style="cursor:pointer;padding:8px 14px"><input type="radio" name="canal" style="margin-right:6px">E-mail</label>
+              <label class="pill pill--ghost" style="cursor:pointer;padding:8px 14px"><input type="radio" name="canal" style="margin-right:6px">Ligação</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h3>Passaporte</h3>
+        <p class="hint">Para emissões internacionais.</p>
+        <div class="f3">
+          <div class="field"><label>Número</label><input class="input" value="FB123456"></div>
+          <div class="field"><label>Validade</label><input class="input" value="22/11/2029"></div>
+          <div class="field"><label>País emissor</label><input class="input" value="Brasil"></div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h3>Empresa vinculada</h3>
+        <div class="f2">
+          <div class="field"><label>Empresa</label><select class="select"><option>Sem vínculo</option><option>Empresa X</option><option>Empresa Y</option></select></div>
+          <div class="field"><label>Cargo</label><input class="input" value=""></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Endereços -->
+    <div class="panel" data-p="enderecos">
+      <div class="section-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div><h3>Endereços</h3><p class="hint" style="margin:0">1 endereço principal · 0 alternativos</p></div>
+          <button class="btn btn--ghost btn--sm"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Adicionar</button>
+        </div>
+        <div style="padding:16px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px"><b style="color:var(--ink-strong)">Principal</b><span class="pill pill--success"><span class="dot"></span>Ativo</span></div>
+          <div class="f2">
+            <div class="field"><label>CEP</label><input class="input" value="01310-200"></div>
+            <div class="field"><label>Tipo</label><select class="select"><option>Residencial</option><option>Comercial</option></select></div>
+            <div class="field" style="grid-column:1/-1"><label>Logradouro</label><input class="input" value="Avenida Paulista, 1578"></div>
+            <div class="field"><label>Complemento</label><input class="input" value="Apto 82"></div>
+            <div class="field"><label>Bairro</label><input class="input" value="Bela Vista"></div>
+            <div class="field"><label>Cidade</label><input class="input" value="São Paulo"></div>
+            <div class="field"><label>Estado</label><input class="input" value="SP"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARTÕES -->
+    <div class="panel" data-p="cartoes">
+      <div class="section-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <div><h3>Cartões de pagamento</h3><p class="hint" style="margin:0">Usados para cobrança de taxas de emissão e produtos NCfly.</p></div>
+          <button class="btn btn--primary btn--sm"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Novo cartão</button>
+        </div>
+
+        <div class="card-list">
+          <div style="display:grid;grid-template-columns:280px 1fr;gap:20px;align-items:center;padding:16px;border:1px solid var(--border);border-radius:var(--r-md)">
+            <div class="ccard">
+              <div class="ccard__head"><span class="ccard__brand">Crédito · Principal</span><div class="ccard__chip"></div></div>
+              <div class="ccard__num">•••• •••• •••• 4532</div>
+              <div class="ccard__foot"><div><small>Titular</small><b>MARIA A SILVA</b></div><div><small>Validade</small><b>12/28</b></div><span class="ccard__net">VISA</span></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:10px"><b style="color:var(--ink-strong)">Visa final 4532</b><span class="pill pill--success"><span class="dot"></span>Principal</span></div>
+              <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Banco: Itaú · Limite disponível: R$ 18.200 · Última cobrança há 6 dias</div>
+              <div style="display:flex;gap:6px"><button class="btn btn--ghost btn--sm">Editar</button><button class="btn btn--ghost btn--sm">Remover</button></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:280px 1fr;gap:20px;align-items:center;padding:16px;border:1px solid var(--border);border-radius:var(--r-md)">
+            <div class="ccard ccard--gold">
+              <div class="ccard__head"><span class="ccard__brand">Crédito</span><div class="ccard__chip"></div></div>
+              <div class="ccard__num">•••• •••• •••• 7821</div>
+              <div class="ccard__foot"><div><small>Titular</small><b>MARIA A SILVA</b></div><div><small>Validade</small><b>05/27</b></div><span class="ccard__net">MASTER</span></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:10px"><b style="color:var(--ink-strong)">Mastercard final 7821</b><span class="pill pill--ghost">Alternativo</span></div>
+              <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Banco: Nubank · Última cobrança há 42 dias</div>
+              <div style="display:flex;gap:6px"><button class="btn btn--ghost btn--sm">Tornar principal</button><button class="btn btn--ghost btn--sm">Remover</button></div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:280px 1fr;gap:20px;align-items:center;padding:16px;border:1px solid var(--border);border-radius:var(--r-md)">
+            <div class="ccard ccard--black">
+              <div class="ccard__head"><span class="ccard__brand">Débito</span><div class="ccard__chip"></div></div>
+              <div class="ccard__num">•••• •••• •••• 0194</div>
+              <div class="ccard__foot"><div><small>Titular</small><b>MARIA A SILVA</b></div><div><small>Validade</small><b>09/26</b></div><span class="ccard__net">ELO</span></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:10px"><b style="color:var(--ink-strong)">Elo Débito final 0194</b><span class="pill pill--warning"><span class="dot"></span>Expira em 6 meses</span></div>
+              <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Banco: Caixa · Conta débito · Não utilizado há 90 dias</div>
+              <div style="display:flex;gap:6px"><button class="btn btn--ghost btn--sm">Editar</button><button class="btn btn--ghost btn--sm">Remover</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;padding:14px;background:var(--primary-50);border-radius:var(--r-sm);color:var(--primary-dark);font-size:13px;display:flex;gap:10px;align-items:flex-start">
+          <svg class="icon" style="flex:none;margin-top:2px"><use href="#icon-shield"/></svg>
+          <div><b>Dados protegidos.</b> Os cartões ficam armazenados de forma tokenizada no gateway de pagamento. A NCfly não vê o número completo.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Programas -->
+    <div class="panel" data-p="programas">
+      <div class="section-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div><h3>Programas de fidelidade vinculados</h3><p class="hint" style="margin:0">Contas importadas automaticamente via integração.</p></div>
+          <button class="btn btn--primary btn--sm"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Vincular programa</button>
+        </div>
+        <div class="prog-list">
+          <div class="prow"><div class="logo" style="background:#ff6b35">S</div><div class="info"><b>Smiles</b><small>GOL · Conta 9876 5432</small></div><div class="pts">845.200<br><small style="font-weight:500;color:var(--muted)">pts · expira Dez/2026</small></div></div>
+          <div class="prow"><div class="logo" style="background:#e30613">LP</div><div class="info"><b>Latam Pass</b><small>LATAM · Conta msilva23</small></div><div class="pts">312.000<br><small style="font-weight:500;color:var(--warning)">⚠ Expira Jan/2026</small></div></div>
+          <div class="prow"><div class="logo" style="background:#0097d6">TA</div><div class="info"><b>TudoAzul</b><small>Azul · Conta joao.santos</small></div><div class="pts">198.400<br><small style="font-weight:500;color:var(--muted)">pts · expira Mar/2027</small></div></div>
+          <div class="prow"><div class="logo" style="background:#111">LM</div><div class="info"><b>LifeMiles</b><small>Avianca · Conta anacosta</small></div><div class="pts">156.800<br><small style="font-weight:500;color:var(--muted)">pts · sem expiração</small></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emissões -->
+    <div class="panel" data-p="emissoes">
+      <div class="section-card"><h3>12 emissões · R$ 14.320 em economia</h3><p class="hint">Histórico de passagens emitidas para esta cliente.</p>
+        <p style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px">→ Ver histórico completo em <a href="${ADMIN_EMISSOES_URL}?cliente=maria" style="color:var(--primary);font-weight:700">Emissões</a></p>
+      </div>
+    </div>
+
+    <!-- Histórico -->
+    <div class="panel" data-p="hist">
+      <div class="section-card"><h3>Histórico de atividades</h3>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:18px">
+          <div style="display:flex;gap:12px;padding-bottom:14px;border-bottom:1px dashed var(--divider)"><div style="width:32px;height:32px;border-radius:50%;background:var(--primary-50);color:var(--primary);display:flex;align-items:center;justify-content:center;flex:none"><svg class="icon icon--sm"><use href="#icon-ticket"/></svg></div><div><b style="color:var(--ink-strong);font-size:13.5px">Emissão GRU → LIS confirmada</b><div style="color:var(--muted);font-size:12px;margin-top:2px">LA8084 · 120k Latam Pass · Pedro Nacari · há 2h</div></div></div>
+          <div style="display:flex;gap:12px;padding-bottom:14px;border-bottom:1px dashed var(--divider)"><div style="width:32px;height:32px;border-radius:50%;background:var(--success-50);color:var(--success);display:flex;align-items:center;justify-content:center;flex:none"><svg class="icon icon--sm"><use href="#icon-swap"/></svg></div><div><b style="color:var(--ink-strong);font-size:13.5px">Transferência Smiles → Latam Pass</b><div style="color:var(--muted);font-size:12px;margin-top:2px">100k → 80k · Pedro Nacari · há 5d</div></div></div>
+          <div style="display:flex;gap:12px"><div style="width:32px;height:32px;border-radius:50%;background:var(--surface-2);color:var(--muted);display:flex;align-items:center;justify-content:center;flex:none"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></div><div><b style="color:var(--ink-strong);font-size:13.5px">Cartão Itaú 4532 atualizado</b><div style="color:var(--muted);font-size:12px;margin-top:2px">Pedro Nacari · há 12d</div></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <aside class="side">
+    <div class="pic">MS</div>
+    <div style="text-align:center;margin-bottom:16px"><b style="color:var(--ink-strong);font-size:15px">Maria Silva</b><div style="color:var(--muted);font-size:12px;margin-top:2px">ID #1248 · <span style="color:var(--success);font-weight:700">Ativa</span></div></div>
+    <h4>Resumo</h4>
+    <div class="row"><span>Saldo total</span><b>2.156.800 pts</b></div>
+    <div class="row"><span>Valor estimado</span><b>R$ 44.892</b></div>
+    <div class="row"><span>Programas ativos</span><b>4</b></div>
+    <div class="row"><span>Cartões</span><b>3</b></div>
+    <div class="row"><span>Emissões 2025</span><b>12</b></div>
+    <div class="row"><span>Economia gerada</span><b style="color:var(--success)">R$ 14.320</b></div>
+    <div class="row"><span>Último acesso</span><b>há 2d</b></div>
+    <button class="btn btn--primary" style="width:100%;margin-top:16px"><svg class="icon icon--sm"><use href="#icon-plane"/></svg>Nova cotação</button>
+  </aside>
+</div>
+`;
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  document.querySelector('.panel[data-p="'+t.dataset.t+'"]').classList.add('on');
+}));
+</script>
+<script>
+// Dark mode toggle no topbar do shell
+(function(){
+  const root = document.documentElement;
+  const topbar = document.querySelector('.topbar');
+  if(!topbar) return;
+  const btn = document.createElement('button');
+  btn.className = 'btn btn--icon btn--ghost tt';
+  btn.setAttribute('data-tt','Alternar tema');
+  btn.setAttribute('aria-label','Alternar tema');
+  btn.innerHTML = '<svg class="icon"><use id="dm-icon" href="#icon-moon"/></svg>';
+  const spacer = topbar.querySelector('.spacer');
+  if(spacer && spacer.nextSibling) topbar.insertBefore(btn, spacer.nextSibling); else topbar.appendChild(btn);
+  const ic = btn.querySelector('#dm-icon');
+  try { const t = JSON.parse(localStorage.getItem('nc_tweaks')||'{}'); if(t.dark) root.setAttribute('data-theme','dark'); } catch(e){}
+  function sync(){
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    ic.setAttribute('href', isDark ? '#icon-sun' : '#icon-moon');
+  }
+  sync();
+  btn.addEventListener('click', () => {
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    try { const t = JSON.parse(localStorage.getItem('nc_tweaks')||'{}'); t.dark = !isDark; localStorage.setItem('nc_tweaks', JSON.stringify(t)); } catch(e){}
+    sync();
+  });
+})();
+</script>
+</body></html>

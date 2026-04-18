@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>NCfly · Dashboard Admin</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/base.css">
+<link rel="stylesheet" href="../assets/shell.css">
+<script src="../assets/icons.js"></script>
+<script src="../assets/tweaks.js"></script>
+<style>
+  .kpi-row { display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  @media (max-width: 1080px) { .kpi-row { grid-template-columns: 1fr 1fr; } }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md);
+    padding: 18px 20px; box-shadow: var(--sh-sm);
+  }
+  .kpi .kpi-head { display:flex; justify-content: space-between; align-items:center; margin-bottom: 14px;}
+  .kpi .kpi-head b { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .kpi .kpi-ic { width: 34px; height:34px; border-radius: 8px; display:flex; align-items:center; justify-content:center; }
+  .kpi .kpi-val { font-size: 28px; font-weight: 800; color: var(--ink-strong); line-height: 1; margin-bottom: 10px; letter-spacing:-0.02em;}
+  .kpi .kpi-foot { display:flex; align-items:center; gap: 6px; font-size: 12px; }
+  .kpi .delta-up { color: var(--success); font-weight: 700; display:inline-flex; align-items:center; gap:2px; }
+  .kpi .delta-dn { color: var(--danger); font-weight: 700; display:inline-flex; align-items:center; gap:2px; }
+  .kpi .spark { margin-top: 10px; height: 30px; width: 100%; }
+
+  .period-tabs {
+    display:inline-flex; background: var(--surface-2); padding: 3px; border-radius: var(--r-sm);
+    border:1px solid var(--border);
+  }
+  .period-tabs button {
+    border:0; background:transparent; padding: 6px 12px; border-radius: 6px;
+    font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer;
+  }
+  .period-tabs button.is-on { background: var(--surface); color: var(--ink); box-shadow: var(--sh-sm); }
+
+  .dual { display:grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+  @media (max-width: 1080px) { .dual { grid-template-columns: 1fr; } }
+
+  .chart-card { padding: 20px 22px; }
+  .chart-area { height: 280px; position: relative; }
+
+  .prog-item { display: flex; align-items:center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--divider);}
+  .prog-item:last-child { border: 0; }
+  .prog-item .logo-chip { width: 32px; height:32px; border-radius:8px; background: var(--primary-50); color: var(--primary-dark);
+    display:flex; align-items:center; justify-content:center; font-size: 11px; font-weight: 800; letter-spacing:-0.5px;}
+  .prog-item .bar-wrap { flex:1; }
+  .prog-item .bar { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+  .prog-item .bar > i { display:block; height:100%; background: linear-gradient(90deg, var(--primary), var(--accent));}
+  .prog-item .val { font-weight: 700; font-size: 13px; color: var(--ink); min-width: 72px; text-align: right; }
+
+  .recent-card { padding: 20px 22px; }
+  .recent-item { display:grid; grid-template-columns: 28px 1fr auto; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--divider); align-items: center;}
+  .recent-item:last-child { border:0; }
+  .recent-item .dotavatar { width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); display:flex; align-items:center; justify-content: center; color: var(--muted); flex:none;}
+  .recent-item .title { font-size: 13.5px; color: var(--ink); font-weight: 600; }
+  .recent-item .sub { font-size: 12px; color: var(--subtle); }
+  .recent-item time { font-size: 12px; color: var(--subtle); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar__brand">
+      <img src="../assets/ncfly-logo.svg" alt="NCfly">
+    </div>
+    <div class="sidebar__section">Principal</div>
+    <a class="nav-item is-active"><svg class="icon"><use href="#icon-home"/></svg><span>Dashboard</span></a>
+    <a class="nav-item" href="admin-clientes.html"><svg class="icon"><use href="#icon-users"/></svg><span>Clientes</span><span class="badge">12</span></a>
+    <a class="nav-item" href="admin-emissoes.html"><svg class="icon"><use href="#icon-ticket"/></svg><span>Emissões</span></a>
+    <a class="nav-item" href="admin-contas.html"><svg class="icon"><use href="#icon-wallet"/></svg><span>Contas de fidelidade</span></a>
+
+    <div class="sidebar__section">Operações</div>
+    <a class="nav-item" href="cotar-emitir.html"><svg class="icon"><use href="#icon-plane"/></svg><span>Cotar &amp; emitir</span></a>
+    <a class="nav-item" href="transferencia.html"><svg class="icon"><use href="#icon-swap"/></svg><span>Transferências</span></a>
+    <a class="nav-item"><svg class="icon"><use href="#icon-hotel"/></svg><span>Hotéis</span></a>
+    <a class="nav-item"><svg class="icon"><use href="#icon-building"/></svg><span>Empresas</span></a>
+
+    <div class="sidebar__section">Configurações</div>
+    <a class="nav-item"><svg class="icon"><use href="#icon-chart"/></svg><span>Programas</span></a>
+    <a class="nav-item"><svg class="icon"><use href="#icon-settings"/></svg><span>Ajustes</span></a>
+
+    <div class="sidebar__foot">
+      <div class="sidebar__user">PN</div>
+      <div class="meta">
+        <b>Pedro Nacari</b>
+        <small>Administrador</small>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+    <header class="topbar">
+      <div class="topbar__search">
+        <svg class="icon"><use href="#icon-search"/></svg>
+        <input class="input" placeholder="Buscar cliente, programa, emissão…">
+        <span class="topbar__kbd">⌘K</span>
+      </div>
+      <div class="spacer"></div>
+
+      <button class="icon-btn tt" data-tt="Novidades" aria-label="Novidades"><svg class="icon icon--sm"><use href="#icon-bell"/></svg><span class="dot-ind"></span></button>
+      <button class="icon-btn tt" data-tt="Alternar entre claro e escuro" id="dm-toggle" aria-label="Dark mode">
+        <svg class="icon icon--sm"><use id="dm-icon" href="#icon-moon"/></svg>
+      </button>
+      <button class="icon-btn tt" data-tt="Ajuda" aria-label="Ajuda"><svg class="icon icon--sm"><use href="#icon-help"/></svg></button>
+      <button class="btn"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Nova emissão</button>
+    </header>
+
+    <div class="page">
+      <div class="page__head">
+        <div>
+          <div class="breadcrumbs"><a href="#">Gestão</a> <svg class="icon" style="width:12px;height:12px"><use href="#icon-chevron-right"/></svg> <span>Dashboard</span></div>
+          <h1>Bem-vindo, Pedro!</h1>
+          <p>Visão consolidada dos clientes, emissões e reservas de 2025.</p>
+        </div>
+        <div class="page__actions">
+          <div class="period-tabs" id="period">
+            <button data-p="7d">7d</button>
+            <button data-p="30d" class="is-on">30d</button>
+            <button data-p="90d">90d</button>
+            <button data-p="ytd">YTD</button>
+          </div>
+          <button class="btn btn--outline"><svg class="icon icon--sm"><use href="#icon-download"/></svg>Exportar</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="kpi-head"><b>Total de clientes</b>
+            <div class="kpi-ic" style="background:var(--primary-50);color:var(--primary)"><svg class="icon icon--sm"><use href="#icon-users"/></svg></div>
+          </div>
+          <div class="kpi-val tnum">1.248</div>
+          <div class="kpi-foot"><span class="delta-up"><svg class="icon" style="width:12px;height:12px"><use href="#icon-trend-up"/></svg>+12%</span><span class="subtle">vs. mês passado</span></div>
+          <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" points="0,22 10,20 20,18 30,19 40,14 50,16 60,10 70,11 80,6 90,7 100,4"/><polyline fill="var(--primary-50)" stroke="none" points="0,22 10,20 20,18 30,19 40,14 50,16 60,10 70,11 80,6 90,7 100,4 100,30 0,30"/></svg>
+        </div>
+
+        <div class="kpi">
+          <div class="kpi-head"><b>Emissões no período</b>
+            <div class="kpi-ic" style="background:var(--success-50);color:var(--success)"><svg class="icon icon--sm"><use href="#icon-ticket"/></svg></div>
+          </div>
+          <div class="kpi-val tnum">347</div>
+          <div class="kpi-foot"><span class="delta-up"><svg class="icon" style="width:12px;height:12px"><use href="#icon-trend-up"/></svg>+8%</span><span class="subtle">vs. mês passado</span></div>
+          <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" points="0,18 10,15 20,20 30,12 40,14 50,10 60,13 70,8 80,9 90,5 100,7"/></svg>
+        </div>
+
+        <div class="kpi">
+          <div class="kpi-head"><b>Total economizado</b>
+            <div class="kpi-ic" style="background:#fef3c7;color:var(--warning)"><svg class="icon icon--sm"><use href="#icon-piggy"/></svg></div>
+          </div>
+          <div class="kpi-val tnum">R$ 482k</div>
+          <div class="kpi-foot"><span class="delta-dn"><svg class="icon" style="width:12px;height:12px"><use href="#icon-trend-down"/></svg>-3%</span><span class="subtle">vs. mês passado</span></div>
+          <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" points="0,6 10,8 20,7 30,12 40,9 50,14 60,11 70,15 80,18 90,16 100,20"/></svg>
+        </div>
+
+        <div class="kpi">
+          <div class="kpi-head"><b>Pontos em carteira</b>
+            <div class="kpi-ic" style="background:var(--info-50);color:var(--info)"><svg class="icon icon--sm"><use href="#icon-wallet"/></svg></div>
+          </div>
+          <div class="kpi-val tnum">24.8M</div>
+          <div class="kpi-foot"><span class="delta-up"><svg class="icon" style="width:12px;height:12px"><use href="#icon-trend-up"/></svg>+4%</span><span class="subtle">vs. mês passado</span></div>
+          <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline fill="none" stroke="var(--info)" stroke-width="2" stroke-linecap="round" points="0,20 10,18 20,16 30,14 40,13 50,12 60,10 70,10 80,9 90,7 100,6"/></svg>
+        </div>
+      </div>
+
+      <!-- Chart + Programs -->
+      <div class="dual">
+        <section class="card chart-card">
+          <div class="row row--between" style="margin-bottom:4px">
+            <div>
+              <span class="eyebrow">Volume</span>
+              <h3>Emissões por dia</h3>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;font-size:12px">
+              <span class="row" style="gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:var(--primary)"></span>Domésticas</span>
+              <span class="row" style="gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:var(--accent)"></span>Internacionais</span>
+            </div>
+          </div>
+          <div class="chart-area">
+            <svg viewBox="0 0 700 260" width="100%" height="100%" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="fadeP" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="var(--primary)" stop-opacity=".25"/>
+                  <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- grid -->
+              <g stroke="var(--divider)" stroke-width="1">
+                <line x1="0" y1="60"  x2="700" y2="60"/>
+                <line x1="0" y1="120" x2="700" y2="120"/>
+                <line x1="0" y1="180" x2="700" y2="180"/>
+                <line x1="0" y1="240" x2="700" y2="240"/>
+              </g>
+              <g font-family="var(--ff)" font-size="10" fill="var(--subtle)">
+                <text x="2" y="58">40</text><text x="2" y="118">30</text>
+                <text x="2" y="178">20</text><text x="2" y="238">10</text>
+              </g>
+              <!-- bars domestic -->
+              <g fill="var(--primary)">
+                <rect x="30"  y="150" width="16" height="90" rx="3"/>
+                <rect x="80"  y="130" width="16" height="110" rx="3"/>
+                <rect x="130" y="100" width="16" height="140" rx="3"/>
+                <rect x="180" y="140" width="16" height="100" rx="3"/>
+                <rect x="230" y="80"  width="16" height="160" rx="3"/>
+                <rect x="280" y="110" width="16" height="130" rx="3"/>
+                <rect x="330" y="60"  width="16" height="180" rx="3"/>
+                <rect x="380" y="90"  width="16" height="150" rx="3"/>
+                <rect x="430" y="120" width="16" height="120" rx="3"/>
+                <rect x="480" y="70"  width="16" height="170" rx="3"/>
+                <rect x="530" y="100" width="16" height="140" rx="3"/>
+                <rect x="580" y="50"  width="16" height="190" rx="3"/>
+                <rect x="630" y="80"  width="16" height="160" rx="3"/>
+              </g>
+              <!-- bars international -->
+              <g fill="var(--accent)">
+                <rect x="48"  y="180" width="14" height="60" rx="3"/>
+                <rect x="98"  y="170" width="14" height="70" rx="3"/>
+                <rect x="148" y="160" width="14" height="80" rx="3"/>
+                <rect x="198" y="175" width="14" height="65" rx="3"/>
+                <rect x="248" y="140" width="14" height="100" rx="3"/>
+                <rect x="298" y="155" width="14" height="85" rx="3"/>
+                <rect x="348" y="125" width="14" height="115" rx="3"/>
+                <rect x="398" y="150" width="14" height="90" rx="3"/>
+                <rect x="448" y="165" width="14" height="75" rx="3"/>
+                <rect x="498" y="130" width="14" height="110" rx="3"/>
+                <rect x="548" y="155" width="14" height="85" rx="3"/>
+                <rect x="598" y="110" width="14" height="130" rx="3"/>
+                <rect x="648" y="145" width="14" height="95" rx="3"/>
+              </g>
+              <!-- x-labels -->
+              <g font-family="var(--ff)" font-size="10" fill="var(--subtle)" text-anchor="middle">
+                <text x="38"  y="256">S1</text><text x="88"  y="256">S2</text>
+                <text x="138" y="256">S3</text><text x="188" y="256">S4</text>
+                <text x="238" y="256">S5</text><text x="288" y="256">S6</text>
+                <text x="338" y="256">S7</text><text x="388" y="256">S8</text>
+                <text x="438" y="256">S9</text><text x="488" y="256">S10</text>
+                <text x="538" y="256">S11</text><text x="588" y="256">S12</text>
+                <text x="638" y="256">S13</text>
+              </g>
+            </svg>
+          </div>
+        </section>
+
+        <section class="card">
+          <span class="eyebrow">Distribuição</span>
+          <h3 style="margin-bottom:14px">Programas mais usados</h3>
+          <div class="prog-item">
+            <div class="logo-chip">SM</div>
+            <div class="bar-wrap"><b style="font-size:13.5px">Smiles</b><div class="bar" style="margin-top:4px"><i style="width:78%"></i></div></div>
+            <span class="val tnum">5.2M</span>
+          </div>
+          <div class="prog-item">
+            <div class="logo-chip" style="background:#fef3c7;color:var(--warning)">LP</div>
+            <div class="bar-wrap"><b style="font-size:13.5px">Latam Pass</b><div class="bar" style="margin-top:4px"><i style="width:62%"></i></div></div>
+            <span class="val tnum">4.1M</span>
+          </div>
+          <div class="prog-item">
+            <div class="logo-chip" style="background:var(--info-50);color:var(--info)">TA</div>
+            <div class="bar-wrap"><b style="font-size:13.5px">TudoAzul</b><div class="bar" style="margin-top:4px"><i style="width:48%"></i></div></div>
+            <span class="val tnum">3.2M</span>
+          </div>
+          <div class="prog-item">
+            <div class="logo-chip" style="background:var(--success-50);color:var(--success)">LL</div>
+            <div class="bar-wrap"><b style="font-size:13.5px">LifeMiles</b><div class="bar" style="margin-top:4px"><i style="width:30%"></i></div></div>
+            <span class="val tnum">2.0M</span>
+          </div>
+          <div class="prog-item">
+            <div class="logo-chip" style="background:var(--danger-50);color:var(--danger)">AA</div>
+            <div class="bar-wrap"><b style="font-size:13.5px">AAdvantage</b><div class="bar" style="margin-top:4px"><i style="width:22%"></i></div></div>
+            <span class="val tnum">1.4M</span>
+          </div>
+        </section>
+      </div>
+
+      <!-- Recent activity + upcoming -->
+      <div class="dual">
+        <section class="card recent-card">
+          <div class="row row--between" style="margin-bottom:8px">
+            <div><span class="eyebrow">Atividade</span><h3>Últimas emissões</h3></div>
+            <a href="admin-emissoes.html" class="btn btn--ghost btn--sm">Ver tudo <svg class="icon icon--sm"><use href="#icon-arrow-right"/></svg></a>
+          </div>
+          <div class="recent-item">
+            <div class="dotavatar" style="background:var(--success-50);color:var(--success)"><svg class="icon icon--sm"><use href="#icon-check"/></svg></div>
+            <div><div class="title">Maria Silva · GRU → JFK</div><div class="sub">Smiles · 120.000 pts · economia R$ 4.320</div></div>
+            <time>há 12 min</time>
+          </div>
+          <div class="recent-item">
+            <div class="dotavatar" style="background:var(--success-50);color:var(--success)"><svg class="icon icon--sm"><use href="#icon-check"/></svg></div>
+            <div><div class="title">João Santos · GIG → LIS</div><div class="sub">Latam Pass · 85.000 pts · economia R$ 2.100</div></div>
+            <time>há 1h</time>
+          </div>
+          <div class="recent-item">
+            <div class="dotavatar" style="background:var(--warning-50);color:var(--warning)"><svg class="icon icon--sm"><use href="#icon-alert"/></svg></div>
+            <div><div class="title">Ana Costa · cotação pendente</div><div class="sub">TudoAzul · aguardando aprovação do cliente</div></div>
+            <time>há 3h</time>
+          </div>
+          <div class="recent-item">
+            <div class="dotavatar" style="background:var(--info-50);color:var(--info)"><svg class="icon icon--sm"><use href="#icon-swap"/></svg></div>
+            <div><div class="title">Transferência — 50.000 pts</div><div class="sub">Conta administrada → Maria Silva (Smiles)</div></div>
+            <time>há 5h</time>
+          </div>
+        </section>
+
+        <section class="card">
+          <span class="eyebrow">Agenda</span>
+          <h3 style="margin-bottom:14px">Próximos embarques</h3>
+          <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed var(--divider)">
+            <div style="width:56px;text-align:center;background:var(--primary-50);border-radius:8px;padding:6px;color:var(--primary-dark)">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Mai</div>
+              <div style="font-size:20px;font-weight:800" class="tnum">12</div>
+            </div>
+            <div><b style="font-size:13.5px">Maria Silva</b><br><small class="subtle">GRU 22:40 → JFK · Smiles</small></div>
+          </div>
+          <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed var(--divider)">
+            <div style="width:56px;text-align:center;background:var(--primary-50);border-radius:8px;padding:6px;color:var(--primary-dark)">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Mai</div>
+              <div style="font-size:20px;font-weight:800" class="tnum">18</div>
+            </div>
+            <div><b style="font-size:13.5px">Família Oliveira (4)</b><br><small class="subtle">GIG 14:10 → CDG · TudoAzul</small></div>
+          </div>
+          <div style="display:flex;gap:12px;padding:10px 0">
+            <div style="width:56px;text-align:center;background:var(--primary-50);border-radius:8px;padding:6px;color:var(--primary-dark)">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Jun</div>
+              <div style="font-size:20px;font-weight:800" class="tnum">02</div>
+            </div>
+            <div><b style="font-size:13.5px">João Santos</b><br><small class="subtle">GIG 08:55 → LIS · Latam Pass</small></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+document.querySelectorAll('#period button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#period button').forEach(x => x.classList.remove('is-on'));
+    b.classList.add('is-on');
+  });
+});
+// Dark mode toggle
+document.getElementById('dm-toggle').addEventListener('click', () => {
+  const root = document.documentElement;
+  const isDark = root.getAttribute('data-theme') === 'dark';
+  root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('dm-icon').setAttribute('href', isDark ? '#icon-moon' : '#icon-sun');
+});
+</script>
+</body>
+</html>

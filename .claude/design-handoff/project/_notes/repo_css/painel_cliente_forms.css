@@ -1,0 +1,35 @@
+label {
+  display: block;
+  margin: 12px 0 6px;
+  color: #2d3748;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+input[type="text"],
+input[type="password"],
+select {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background: var(--color-input-bg);
+  color: var(--color-text);
+  font-size: 0.875rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]:focus-visible,
+input[type="password"]:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.25);
+}
+
+.erro {
+  color: var(--color-danger);
+  margin-top: 12px;
+}

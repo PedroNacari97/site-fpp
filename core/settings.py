@@ -109,6 +109,7 @@ INSTALLED_APPS = [
     "storages",
     "superadmin",
     "onboarding",
+    "design_system",
     # django-allauth (Google OAuth para superadmin)
     "allauth",
     "allauth.account",

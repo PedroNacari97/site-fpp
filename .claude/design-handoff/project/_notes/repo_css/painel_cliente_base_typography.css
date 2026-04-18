@@ -1,0 +1,43 @@
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Open Sans', sans-serif;
+}
+
+h1,
+h2,
+.section-title,
+.valor {
+  color: var(--color-heading);
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.section-title {
+  margin-top: var(--space-xl);
+  margin-bottom: var(--space-sm);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.label {
+  font-size: 0.875rem;
+  color: #4a5568;
+}
+
+.valor {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.muted-text {
+  color: var(--color-muted);
+}

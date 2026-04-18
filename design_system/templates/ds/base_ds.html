@@ -1,0 +1,28 @@
+{% load static %}<!DOCTYPE html>
+{# ------------------------------------------------------------------
+   Template base de REFERENCIA do design system NCfly.
+
+   Importante: os 10 mockups do preview NAO herdam deste template.
+   Cada tela eh auto-contida para preservar fidelidade visual 1:1
+   com os HTMLs entregues em .claude/design-handoff/. Este arquivo
+   existe apenas como amostra rapida da estrutura comum (tokens +
+   base + shell + icons.js + tweaks.js + toggle de dark mode).
+   ------------------------------------------------------------------ #}
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>{% block title %}NCfly · Design System{% endblock %}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'ds/tokens.css' %}">
+<link rel="stylesheet" href="{% static 'ds/base.css' %}">
+<link rel="stylesheet" href="{% static 'ds/shell.css' %}">
+<script src="{% static 'ds/icons.js' %}"></script>
+<script src="{% static 'ds/tweaks.js' %}"></script>
+{% block head_extra %}{% endblock %}
+</head>
+<body>
+{% block body %}{% endblock %}
+{% block body_scripts %}{% endblock %}
+</body>
+</html>

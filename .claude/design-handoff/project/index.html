@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>NCfly · Redesign — Índice</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/tokens.css"><link rel="stylesheet" href="assets/base.css">
+<style>
+  body{background:var(--surface-2);min-height:100vh;padding:40px 24px}
+  .wrap{max-width:1200px;margin:0 auto}
+  .hero{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;border-radius:var(--r-lg);padding:40px 44px;margin-bottom:36px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-80px;top:-80px;width:360px;height:360px;border-radius:50%;background:rgba(255,255,255,.08)}
+  .hero img{height:36px;margin-bottom:18px;filter:brightness(0) invert(1)}
+  .hero h1{font-size:34px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+  .hero p{font-size:15px;opacity:.92;max-width:680px;line-height:1.55}
+  .section-title{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin:32px 0 14px;display:flex;align-items:center;gap:10px}
+  .section-title::after{content:"";flex:1;height:1px;background:var(--border)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:20px;box-shadow:var(--sh-sm);transition:all .15s;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:6px}
+  .card:hover{border-color:var(--primary);box-shadow:var(--sh-md);transform:translateY(-2px)}
+  .card .tag{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;padding:3px 7px;border-radius:4px;align-self:flex-start;margin-bottom:4px}
+  .tag.foundation{background:#f1f5f9;color:#475569}
+  .tag.public{background:rgba(124,58,237,.1);color:#6d28d9}
+  .tag.admin{background:var(--primary-bg);color:var(--primary)}
+  .tag.client{background:rgba(5,150,105,.1);color:var(--success)}
+  .tag.proto{background:rgba(217,119,6,.1);color:#b45309}
+  .tag.form{background:rgba(14,165,233,.1);color:#0369a1}
+  .card h3{font-size:16px;font-weight:700;color:var(--ink-strong);letter-spacing:-.01em}
+  .card p{color:var(--muted);font-size:13px;line-height:1.5}
+  .card .sub{color:var(--subtle);font-size:11.5px;margin-top:2px}
+  .card .meta{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:12px;border-top:1px solid var(--divider);font-size:12px;color:var(--subtle)}
+  .card .meta .go{color:var(--primary);font-weight:700}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:24px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;color:var(--muted)}
+  .legend b{color:var(--ink-strong)}
+  .count{font-size:12px;color:var(--muted);font-weight:600;background:var(--surface);border:1px solid var(--border);padding:3px 9px;border-radius:99px}
+</style></head><body>
+<div class="wrap">
+  <div class="hero">
+    <img src="assets/ncfly-logo.svg">
+    <h1>Redesign NCfly — biblioteca completa</h1>
+    <p>Sistema visual unificado + ~30 telas cobrindo portal público, fluxos de onboarding, painel administrativo (Pedro), área do cliente (Maria), formulários operacionais e protótipos clicáveis. Todas compartilham tokens, componentes e shells. Use <b>Tweaks</b> na barra do Claude para customizar.</p>
+  </div>
+
+  <div class="legend">
+    <div><b>Fundação</b> — tokens, componentes e entrada</div>
+    <div><b>Admin</b> — visão de Pedro Nacari</div>
+    <div><b>Cliente</b> — visão de Maria Silva</div>
+    <div><b>Formulários</b> — CRUD e operações</div>
+    <div><b>Protótipo</b> — fluxo clicável com estado</div>
+  </div>
+
+  <div class="section-title">Fundação <span class="count">3</span></div>
+  <div class="grid">
+    <a class="card" href="pages/components.html">
+      <span class="tag foundation">Design system</span>
+      <h3>Biblioteca de componentes</h3>
+      <p>Botões, inputs, tabelas, pills, cards, KPIs, modais — todos os primitivos.</p>
+      <div class="meta"><span>components.html</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="pages/portal.html">
+      <span class="tag public">Público</span>
+      <h3>Portal / Landing</h3>
+      <p>Página institucional pública — como novos clientes conhecem a NCfly.</p>
+      <div class="meta"><span>portal.html</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="pages/login.html">
+      <span class="tag foundation">Entrada</span>
+      <h3>Login</h3>
+      <p>Tela de autenticação com split hero de proposta de valor.</p>
+      <div class="meta"><span>login.html</span><span class="go">Abrir →</span></div>
+    </a>
+  </div>
+
+  <div class="section-title">Painel do administrador · Pedro <span class="count">7</span></div>
+  <div class="grid">
+    <a class="card" href="pages/admin-dashboard.html">
+      <span class="tag admin">Dashboard</span>
+      <h3>Visão geral</h3>
+      <p>KPIs consolidados, alertas de sync, atividade recente e próximas emissões.</p>
+      <div class="meta"><span>admin-dashboard.html</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="pages/admin-clientes.html">
+      <span class="tag admin">CRUD</span>
+      <h3>Clientes</h3>
+      <p>Listagem com busca, filtros, programas vinculados e economia gerada.</p>
+      <div class="meta"><span>admin-clientes.html</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="pages/admin-emissoes.html">
+      <span class="tag admin">Operação</span>
+      <h3>Emissões</h3>
+      <p>Tabela expansível — detalhe de passageiros, pontos por trecho e status.</p>
+      <div class="meta"><span>admin-emissoes.html</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="pages/admin-contas.html">
+      <span class="tag admin">Fidelidade</span>
+      <h3>Contas de fidelidade</h3>
+      <p>Cards por programa — saldo, valor estimado, expiração e sync.</p>
+      <div class="meta"><span>admin-contas.html</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="pages/admin-movimentacoes.html">
+      <span class="tag admin">Operação</span>
+      <h3>Movimentações, cotações & calculadora</h3>
+      <p>Transferências, compras e expirações · cotações ativas · calculadora de milheiro.</p>
+      <div class="sub">3 abas · 7 movimentações · 5 cotações · calc com gráfico</div>
+      <div class="meta"><span>admin-movimentacoes.html</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="pages/admin-cadastros.html">
+      <span class="tag admin">Dados mestres</span>
+      <h3>Cadastros (6 abas)</h3>
+      <p>Programas · aeroportos · companhias · hotéis · empresas · auditoria.</p>
+      <div class="sub">Dados compartilhados · log de auditoria com severidades</div>
+      <div class="meta"><span>admin-cadastros.html</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="pages/onboarding.html">
+      <span class="tag admin">Wizard</span>
+      <h3>Novo cliente (onboarding)</h3>
+      <p>Wizard de 4 passos — seleção de programas pré-marcados.</p>
+      <div class="meta"><span>onboarding.html</span><span class="go">Abrir →</span></div>
+    </a>
+  </div>
+
+  <div class="section-title">Formulários operacionais <span class="count">2</span></div>
+  <div class="grid">
+    <a class="card" href="pages/admin-formularios.html">
+      <span class="tag form">4 formulários</span>
+      <h3>Emissão · Cotação · Movimentação · Conta</h3>
+      <p>Formulários longos com sidebar de resumo dinâmico, validações e avisos de política.</p>
+      <div class="sub">Inclui seleção de voos, passageiros múltiplos, credenciais criptografadas</div>
+      <div class="meta"><span>admin-formularios.html</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="pages/admin-form-cliente.html">
+      <span class="tag form">CRUD detalhado</span>
+      <h3>Form cliente (com cartões)</h3>
+      <p>Cadastro completo de cliente com abas dados pessoais, cartões e programas.</p>
+      <div class="meta"><span>admin-form-cliente.html</span><span class="go">Abrir →</span></div>
+    </a>
+  </div>
+
+  <div class="section-title">Painel do cliente · Maria <span class="count">2</span></div>
+  <div class="grid">
+    <a class="card" href="pages/painel-cliente.html">
+      <span class="tag client">Auto-serviço</span>
+      <h3>Meu painel</h3>
+      <p>Hero com saldo consolidado, programas vinculados, últimas viagens e economia gerada.</p>
+      <div class="meta"><span>painel-cliente.html</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="pages/cliente-consolidado.html">
+      <span class="tag client">5 abas</span>
+      <h3>Programas · Emissões · Hotéis · Movimentações · Inativo</h3>
+      <p>Visão consolidada do cliente — cards dos programas, histórico de voos, busca de hotéis, extrato e estado pausado.</p>
+      <div class="sub">Cards com cores por programa · gallery de hotéis · estado vazio</div>
+      <div class="meta"><span>cliente-consolidado.html</span><span class="go">Abrir →</span></div>
+    </a>
+  </div>
+
+  <div class="section-title">Fluxos transacionais <span class="count">2</span></div>
+  <div class="grid">
+    <a class="card" href="pages/cotar-emitir.html">
+      <span class="tag proto">Protótipo clicável</span>
+      <h3>Cotar &amp; emitir (4 passos)</h3>
+      <p>Wizard interativo — busca, listagem, dados dos passageiros e confirmação com PNR. Estado em <code>localStorage</code>.</p>
+      <div class="meta"><span>cotar-emitir.html</span><span class="go">Iniciar fluxo →</span></div>
+    </a>
+    <a class="card" href="pages/transferencia.html">
+      <span class="tag admin">Operação</span>
+      <h3>Transferência de pontos</h3>
+      <p>Swap FROM→TO entre programas com taxa de conversão e saldos projetados.</p>
+      <div class="meta"><span>transferencia.html</span><span class="go">Abrir →</span></div>
+    </a>
+  </div>
+
+  <div style="margin-top:40px;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;color:var(--muted)">
+    <b style="color:var(--ink-strong)">Como navegar</b> — todas as telas usam o mesmo shell (sidebar + topbar) e tokens CSS. A sidebar muda entre <i>admin</i> e <i>cliente</i> automaticamente. Páginas consolidadas (<code>admin-cadastros</code>, <code>admin-movimentacoes</code>, <code>admin-formularios</code>, <code>cliente-consolidado</code>) usam sub-abas — aceite <code>?tab=nome</code> na URL para abrir direto.
+  </div>
+</div>
+</body></html>

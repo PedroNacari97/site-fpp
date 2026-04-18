@@ -66,6 +66,8 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("home/", include("portal.urls")),
     path("ncadm/", include("superadmin.urls")),
+    # Design system — rotas de PREVIEW isoladas. Sem autenticacao (staging/dev).
+    path("design/", include("design_system.urls")),
     # django-allauth — Google OAuth callback (path separado para nao conflitar com accounts/)
     path("auth/", include("allauth.urls")),
     path("", RedirectView.as_view(pattern_name="portal_home", permanent=False)),

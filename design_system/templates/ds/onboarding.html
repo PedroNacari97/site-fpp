@@ -1,0 +1,90 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>NCfly · Novo cliente</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'ds/tokens.css' %}"><link rel="stylesheet" href="{% static 'ds/base.css' %}">
+<script src="{% static 'ds/icons.js' %}"></script><script src="{% static 'ds/tweaks.js' %}"></script>
+<style>
+  body{background:var(--surface-2);min-height:100vh}
+  .wiz{max-width:840px;margin:0 auto;padding:40px 24px}
+  .wiz__head{display:flex;align-items:center;gap:14px;margin-bottom:28px}
+  .wiz__head img{height:28px}
+  .wiz__head a{margin-left:auto;color:var(--muted);font-size:13px}
+  .steps{display:flex;align-items:center;gap:0;margin-bottom:28px;background:var(--surface);padding:16px 20px;border-radius:var(--r-md);border:1px solid var(--border)}
+  .step{display:flex;align-items:center;gap:10px;flex:1}
+  .step .n{width:28px;height:28px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);flex:none}
+  .step.done .n{background:var(--success);border-color:var(--success);color:#fff}
+  .step.active .n{background:var(--primary);border-color:var(--primary);color:#fff}
+  .step .lbl{font-size:13px;color:var(--muted);font-weight:600}
+  .step.active .lbl,.step.done .lbl{color:var(--ink-strong)}
+  .step__line{flex:1;height:2px;background:var(--border);margin:0 10px}
+  .step.done + .step__line{background:var(--success)}
+  .card-wiz{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:32px;box-shadow:var(--sh-sm)}
+  .card-wiz h2{font-size:22px;font-weight:700;color:var(--ink-strong);letter-spacing:-.01em;margin-bottom:6px}
+  .card-wiz .lede{color:var(--muted);font-size:14px;margin-bottom:28px;max-width:560px}
+  .fgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+  @media(max-width:700px){.fgrid{grid-template-columns:1fr}}
+  .fgrid .field.full{grid-column:1/-1}
+  .pbox{border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;display:flex;gap:12px;align-items:center;cursor:pointer;margin-bottom:10px;background:var(--surface)}
+  .pbox:hover{border-color:var(--primary)}
+  .pbox .ck{width:20px;height:20px;border:2px solid var(--border);border-radius:4px;flex:none}
+  .pbox.on{border-color:var(--primary);background:var(--primary-bg)}
+  .pbox.on .ck{background:var(--primary);border-color:var(--primary);position:relative}
+  .pbox.on .ck::after{content:"✓";color:#fff;font-size:12px;font-weight:800;position:absolute;left:3px;top:-2px}
+  .pbox .logo{width:36px;height:36px;border-radius:8px;color:#fff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center;flex:none}
+  .foot{display:flex;justify-content:space-between;gap:10px;margin-top:28px}
+  /* Dark mode toggle absoluto — onboarding não tem topbar */
+  .onb-dm{position:fixed;top:20px;right:20px;z-index:5}
+</style></head><body>
+<button class="icon-btn tt onb-dm" data-tt="Alternar tema" id="dm-toggle" aria-label="Dark mode"><svg class="icon icon--sm"><use id="dm-icon" href="#icon-moon"/></svg></button>
+<div class="wiz">
+  <div class="wiz__head"><a href="{% url 'design_system:index' %}"><img src="{% static 'ds/ncfly-logo.svg' %}"></a><span style="color:var(--muted);font-size:14px;border-left:1px solid var(--border);padding-left:14px">Cadastrar novo cliente</span><a href="{% url 'design_system:admin_clientes' %}">Sair</a></div>
+
+  <div class="steps">
+    <div class="step done"><div class="n">✓</div><div class="lbl">Dados pessoais</div></div>
+    <div class="step__line"></div>
+    <div class="step active"><div class="n">2</div><div class="lbl">Programas</div></div>
+    <div class="step__line"></div>
+    <div class="step"><div class="n">3</div><div class="lbl">Credenciais</div></div>
+    <div class="step__line"></div>
+    <div class="step"><div class="n">4</div><div class="lbl">Revisão</div></div>
+  </div>
+
+  <div class="card-wiz">
+    <h2>Quais programas o cliente já possui?</h2>
+    <p class="lede">Selecione os programas de fidelidade em que <b>Maria Silva</b> já tem conta ativa. Em seguida, você poderá vincular as credenciais para importação automática de saldo.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+      <div class="pbox on"><div class="ck"></div><div class="logo" style="background:#ff6b35">S</div><div><b style="display:block;color:var(--ink-strong)">Smiles</b><small style="color:var(--muted);font-size:12px">GOL Linhas Aéreas</small></div></div>
+      <div class="pbox on"><div class="ck"></div><div class="logo" style="background:#e30613">LP</div><div><b style="display:block;color:var(--ink-strong)">Latam Pass</b><small style="color:var(--muted);font-size:12px">LATAM Airlines</small></div></div>
+      <div class="pbox"><div class="ck"></div><div class="logo" style="background:#0097d6">TA</div><div><b style="display:block;color:var(--ink-strong)">TudoAzul</b><small style="color:var(--muted);font-size:12px">Azul Linhas Aéreas</small></div></div>
+      <div class="pbox"><div class="ck"></div><div class="logo" style="background:#111">LM</div><div><b style="display:block;color:var(--ink-strong)">LifeMiles</b><small style="color:var(--muted);font-size:12px">Avianca</small></div></div>
+      <div class="pbox"><div class="ck"></div><div class="logo" style="background:#0033a0">AA</div><div><b style="display:block;color:var(--ink-strong)">AAdvantage</b><small style="color:var(--muted);font-size:12px">American Airlines</small></div></div>
+      <div class="pbox"><div class="ck"></div><div class="logo" style="background:#6f2c91">FB</div><div><b style="display:block;color:var(--ink-strong)">Flying Blue</b><small style="color:var(--muted);font-size:12px">Air France · KLM</small></div></div>
+    </div>
+
+    <div class="foot">
+      <button class="btn btn--ghost"><svg class="icon icon--sm"><use href="#icon-arrow-left"/></svg>Voltar</button>
+      <div style="display:flex;gap:10px"><button class="btn btn--ghost">Pular por agora</button><button class="btn btn--primary">Continuar<svg class="icon icon--sm"><use href="#icon-arrow-right"/></svg></button></div>
+    </div>
+  </div>
+</div>
+<script>
+// Dark mode toggle — sincroniza com tweaks.js via localStorage.nc_tweaks
+(function(){
+  const root = document.documentElement;
+  const btn = document.getElementById('dm-toggle');
+  const ic = document.getElementById('dm-icon');
+  function syncIcon(){
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    ic.setAttribute('href', isDark ? '#icon-sun' : '#icon-moon');
+  }
+  syncIcon();
+  btn.addEventListener('click', () => {
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    try { const t = JSON.parse(localStorage.getItem('nc_tweaks')||'{}'); t.dark = !isDark; localStorage.setItem('nc_tweaks', JSON.stringify(t)); } catch(e){}
+    syncIcon();
+  });
+})();
+</script>
+</body></html>

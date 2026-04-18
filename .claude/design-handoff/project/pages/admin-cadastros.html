@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>NCfly · Cadastros</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css"><link rel="stylesheet" href="../assets/base.css"><link rel="stylesheet" href="../assets/shell.css">
+<script src="../assets/icons.js"></script><script src="../assets/tweaks.js"></script><script src="../assets/sidebar.js"></script>
+<style>
+  .subtabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:24px;overflow-x:auto}
+  .st{padding:12px 18px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:8px}
+  .st:hover{color:var(--ink)}
+  .st.on{color:var(--primary);border-bottom-color:var(--primary)}
+  .pn{display:none}.pn.on{display:block}
+
+  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+  .toolbar .left{display:flex;gap:10px;align-items:center;flex:1}
+  .toolbar .search{flex:1;max-width:360px}
+
+  .dt{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--sh-sm)}
+  .dt table{width:100%;border-collapse:separate;border-spacing:0}
+  .dt thead th{background:var(--surface-2);font-size:12px;color:var(--muted);text-align:left;padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .dt thead th.num{text-align:right}
+  .dt tbody td{padding:13px 16px;border-bottom:1px solid var(--divider);font-size:13.5px;color:var(--ink)}
+  .dt tbody tr:hover td{background:var(--surface-hover)}
+  .dt tbody td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .dt .actions{display:flex;gap:4px;justify-content:flex-end}
+  .code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--surface-2);padding:2px 7px;border-radius:4px;color:var(--ink-strong);font-weight:700}
+  .logo-mini{width:30px;height:30px;border-radius:6px;color:#fff;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center}
+  .pag{padding:12px 18px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted)}
+</style></head><body>
+<div data-shell="admin" data-active="aeroportos"></div>
+<script>NCflyShell.render()</script>
+<script>
+document.getElementById('page-root').innerHTML = `
+  <div class="page__head"><div><h1>Cadastros</h1><p>Dados mestres compartilhados por toda a plataforma — edição restrita a administradores.</p></div></div>
+
+  <div class="subtabs">
+    <div class="st on" data-s="programas"><svg class="icon icon--sm"><use href="#icon-badge"/></svg>Programas de fidelidade</div>
+    <div class="st" data-s="aeroportos"><svg class="icon icon--sm"><use href="#icon-pin"/></svg>Aeroportos</div>
+    <div class="st" data-s="companhias"><svg class="icon icon--sm"><use href="#icon-plane-tail"/></svg>Companhias aéreas</div>
+    <div class="st" data-s="hoteis"><svg class="icon icon--sm"><use href="#icon-bed"/></svg>Redes hoteleiras</div>
+    <div class="st" data-s="empresas"><svg class="icon icon--sm"><use href="#icon-building"/></svg>Empresas</div>
+    <div class="st" data-s="auditoria"><svg class="icon icon--sm"><use href="#icon-shield"/></svg>Auditoria</div>
+  </div>
+
+  <!-- PROGRAMAS -->
+  <div class="pn on" data-p="programas">
+    <div class="toolbar">
+      <div class="left">
+        <div class="topbar__search search"><svg class="icon"><use href="#icon-search"/></svg><input class="input" placeholder="Buscar programa…"></div>
+        <select class="select" style="max-width:180px"><option>Todos os status</option><option>Ativos</option><option>Pausados</option></select>
+      </div>
+      <button class="btn btn--primary"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Novo programa</button>
+    </div>
+    <div class="dt">
+      <table>
+        <thead><tr><th style="width:46px"></th><th>Nome</th><th>Companhia</th><th>Código</th><th>Aliança</th><th class="num">Contas ativas</th><th class="num">Milheiro médio</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><div class="logo-mini" style="background:#ff6b35">S</div></td><td><b style="color:var(--ink-strong)">Smiles</b></td><td>GOL Linhas Aéreas</td><td><span class="code">SMIL</span></td><td>—</td><td class="num">8</td><td class="num">R$ 28,50</td><td><span class="pill pill--success"><span class="dot"></span>Ativo</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><div class="logo-mini" style="background:#e30613">LP</div></td><td><b style="color:var(--ink-strong)">Latam Pass</b></td><td>LATAM Airlines</td><td><span class="code">LAPA</span></td><td>Oneworld</td><td class="num">7</td><td class="num">R$ 32,10</td><td><span class="pill pill--success"><span class="dot"></span>Ativo</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><div class="logo-mini" style="background:#0097d6">TA</div></td><td><b style="color:var(--ink-strong)">TudoAzul</b></td><td>Azul Linhas Aéreas</td><td><span class="code">TAZU</span></td><td>—</td><td class="num">3</td><td class="num">R$ 24,80</td><td><span class="pill pill--success"><span class="dot"></span>Ativo</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><div class="logo-mini" style="background:#111">LM</div></td><td><b style="color:var(--ink-strong)">LifeMiles</b></td><td>Avianca</td><td><span class="code">LIFE</span></td><td>Star Alliance</td><td class="num">4</td><td class="num">R$ 36,20</td><td><span class="pill pill--success"><span class="dot"></span>Ativo</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><div class="logo-mini" style="background:#0033a0">AA</div></td><td><b style="color:var(--ink-strong)">AAdvantage</b></td><td>American Airlines</td><td><span class="code">AADV</span></td><td>Oneworld</td><td class="num">2</td><td class="num">R$ 42,00</td><td><span class="pill pill--success"><span class="dot"></span>Ativo</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><div class="logo-mini" style="background:#6f2c91">FB</div></td><td><b style="color:var(--ink-strong)">Flying Blue</b></td><td>Air France · KLM</td><td><span class="code">FLYB</span></td><td>SkyTeam</td><td class="num">1</td><td class="num">R$ 38,50</td><td><span class="pill pill--warning"><span class="dot"></span>Pausado</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+        </tbody>
+      </table>
+      <div class="pag"><span>6 programas</span><div style="display:flex;gap:6px"><button class="btn btn--ghost btn--sm" disabled>Anterior</button><button class="btn btn--ghost btn--sm">Próxima</button></div></div>
+    </div>
+  </div>
+
+  <!-- AEROPORTOS -->
+  <div class="pn" data-p="aeroportos">
+    <div class="toolbar">
+      <div class="left">
+        <div class="topbar__search search"><svg class="icon"><use href="#icon-search"/></svg><input class="input" placeholder="Buscar por código IATA ou cidade…"></div>
+        <select class="select" style="max-width:180px"><option>Todos os países</option><option>Brasil</option><option>Europa</option><option>EUA</option></select>
+      </div>
+      <div style="display:flex;gap:8px"><button class="btn btn--ghost"><svg class="icon icon--sm"><use href="#icon-download"/></svg>Exportar</button><button class="btn btn--primary"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Novo aeroporto</button></div>
+    </div>
+    <div class="dt">
+      <table>
+        <thead><tr><th>IATA</th><th>ICAO</th><th>Nome</th><th>Cidade</th><th>Estado/UF</th><th>País</th><th>Timezone</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><span class="code">GRU</span></td><td><span class="code">SBGR</span></td><td><b style="color:var(--ink-strong)">Guarulhos — Gov. André Franco Montoro</b></td><td>São Paulo</td><td>SP</td><td>🇧🇷 Brasil</td><td>GMT-3</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><span class="code">CGH</span></td><td><span class="code">SBSP</span></td><td><b style="color:var(--ink-strong)">Congonhas</b></td><td>São Paulo</td><td>SP</td><td>🇧🇷 Brasil</td><td>GMT-3</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><span class="code">GIG</span></td><td><span class="code">SBGL</span></td><td><b style="color:var(--ink-strong)">Galeão — Antônio Carlos Jobim</b></td><td>Rio de Janeiro</td><td>RJ</td><td>🇧🇷 Brasil</td><td>GMT-3</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><span class="code">BSB</span></td><td><span class="code">SBBR</span></td><td><b style="color:var(--ink-strong)">Brasília — Juscelino Kubitschek</b></td><td>Brasília</td><td>DF</td><td>🇧🇷 Brasil</td><td>GMT-3</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><span class="code">VCP</span></td><td><span class="code">SBKP</span></td><td><b style="color:var(--ink-strong)">Viracopos</b></td><td>Campinas</td><td>SP</td><td>🇧🇷 Brasil</td><td>GMT-3</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><span class="code">LIS</span></td><td><span class="code">LPPT</span></td><td><b style="color:var(--ink-strong)">Lisboa — Portela</b></td><td>Lisboa</td><td>—</td><td>🇵🇹 Portugal</td><td>GMT+0</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><span class="code">MAD</span></td><td><span class="code">LEMD</span></td><td><b style="color:var(--ink-strong)">Madrid — Barajas</b></td><td>Madrid</td><td>—</td><td>🇪🇸 Espanha</td><td>GMT+1</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><span class="code">MIA</span></td><td><span class="code">KMIA</span></td><td><b style="color:var(--ink-strong)">Miami International</b></td><td>Miami</td><td>FL</td><td>🇺🇸 EUA</td><td>GMT-5</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><span class="code">JFK</span></td><td><span class="code">KJFK</span></td><td><b style="color:var(--ink-strong)">New York — John F. Kennedy</b></td><td>New York</td><td>NY</td><td>🇺🇸 EUA</td><td>GMT-5</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+        </tbody>
+      </table>
+      <div class="pag"><span>Mostrando 9 de 412 aeroportos</span><div style="display:flex;gap:6px"><button class="btn btn--ghost btn--sm" disabled>Anterior</button><button class="btn btn--ghost btn--sm">Próxima</button></div></div>
+    </div>
+  </div>
+
+  <!-- COMPANHIAS -->
+  <div class="pn" data-p="companhias">
+    <div class="toolbar">
+      <div class="left"><div class="topbar__search search"><svg class="icon"><use href="#icon-search"/></svg><input class="input" placeholder="Buscar companhia…"></div></div>
+      <button class="btn btn--primary"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Nova companhia</button>
+    </div>
+    <div class="dt">
+      <table>
+        <thead><tr><th style="width:46px"></th><th>Nome</th><th>IATA</th><th>ICAO</th><th>País</th><th>Aliança</th><th class="num">Rotas ativas</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><div class="logo-mini" style="background:#ff6b35">G3</div></td><td><b style="color:var(--ink-strong)">GOL Linhas Aéreas</b></td><td><span class="code">G3</span></td><td><span class="code">GLO</span></td><td>🇧🇷 Brasil</td><td>—</td><td class="num">86</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><div class="logo-mini" style="background:#e30613">LA</div></td><td><b style="color:var(--ink-strong)">LATAM Airlines</b></td><td><span class="code">LA</span></td><td><span class="code">LAN</span></td><td>🇧🇷 Brasil</td><td>Oneworld</td><td class="num">134</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><div class="logo-mini" style="background:#0097d6">AD</div></td><td><b style="color:var(--ink-strong)">Azul Linhas Aéreas</b></td><td><span class="code">AD</span></td><td><span class="code">AZU</span></td><td>🇧🇷 Brasil</td><td>—</td><td class="num">108</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><div class="logo-mini" style="background:#0033a0">AA</div></td><td><b style="color:var(--ink-strong)">American Airlines</b></td><td><span class="code">AA</span></td><td><span class="code">AAL</span></td><td>🇺🇸 EUA</td><td>Oneworld</td><td class="num">52</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><div class="logo-mini" style="background:#6f2c91">AF</div></td><td><b style="color:var(--ink-strong)">Air France</b></td><td><span class="code">AF</span></td><td><span class="code">AFR</span></td><td>🇫🇷 França</td><td>SkyTeam</td><td class="num">24</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><div class="logo-mini" style="background:#111">AV</div></td><td><b style="color:var(--ink-strong)">Avianca</b></td><td><span class="code">AV</span></td><td><span class="code">AVA</span></td><td>🇨🇴 Colômbia</td><td>Star Alliance</td><td class="num">38</td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+        </tbody>
+      </table>
+      <div class="pag"><span>6 companhias ativas</span></div>
+    </div>
+  </div>
+
+  <!-- HOTEIS -->
+  <div class="pn" data-p="hoteis">
+    <div class="toolbar">
+      <div class="left"><div class="topbar__search search"><svg class="icon"><use href="#icon-search"/></svg><input class="input" placeholder="Buscar rede ou hotel…"></div></div>
+      <button class="btn btn--primary"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Novo hotel</button>
+    </div>
+    <div class="dt">
+      <table>
+        <thead><tr><th>Nome</th><th>Rede</th><th>Cidade</th><th>País</th><th class="num">Diária média</th><th class="num">Pts/noite</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:var(--ink-strong)">Four Seasons São Paulo</b><br><small style="color:var(--muted);font-size:12px">★★★★★ · 5 estrelas</small></td><td>Four Seasons</td><td>São Paulo</td><td>🇧🇷 Brasil</td><td class="num">R$ 2.840</td><td class="num">95.000</td><td><span class="pill pill--success"><span class="dot"></span>Ativo</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><b style="color:var(--ink-strong)">Fasano Ipanema</b><br><small style="color:var(--muted);font-size:12px">★★★★★ · boutique</small></td><td>Fasano</td><td>Rio de Janeiro</td><td>🇧🇷 Brasil</td><td class="num">R$ 3.200</td><td class="num">110.000</td><td><span class="pill pill--success"><span class="dot"></span>Ativo</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><b style="color:var(--ink-strong)">Ritz-Carlton Lisboa</b><br><small style="color:var(--muted);font-size:12px">★★★★★ · Marriott Bonvoy</small></td><td>Ritz-Carlton</td><td>Lisboa</td><td>🇵🇹 Portugal</td><td class="num">€ 780</td><td class="num">85.000</td><td><span class="pill pill--success"><span class="dot"></span>Ativo</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><b style="color:var(--ink-strong)">W South Beach</b><br><small style="color:var(--muted);font-size:12px">★★★★★ · Marriott Bonvoy</small></td><td>W Hotels</td><td>Miami</td><td>🇺🇸 EUA</td><td class="num">US$ 620</td><td class="num">78.000</td><td><span class="pill pill--success"><span class="dot"></span>Ativo</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><b style="color:var(--ink-strong)">Hotel Emiliano</b><br><small style="color:var(--muted);font-size:12px">★★★★★ · independente</small></td><td>Emiliano</td><td>São Paulo</td><td>🇧🇷 Brasil</td><td class="num">R$ 2.100</td><td class="num">—</td><td><span class="pill pill--warning"><span class="dot"></span>Em negociação</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+        </tbody>
+      </table>
+      <div class="pag"><span>5 hotéis</span></div>
+    </div>
+  </div>
+
+  <!-- EMPRESAS -->
+  <div class="pn" data-p="empresas">
+    <div class="toolbar">
+      <div class="left"><div class="topbar__search search"><svg class="icon"><use href="#icon-search"/></svg><input class="input" placeholder="Buscar empresa ou CNPJ…"></div></div>
+      <button class="btn btn--primary"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Nova empresa</button>
+    </div>
+    <div class="dt">
+      <table>
+        <thead><tr><th>Razão social</th><th>CNPJ</th><th>Setor</th><th class="num">Clientes vinculados</th><th class="num">Emissões 2025</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:var(--ink-strong)">Empresa X Ltda</b><br><small style="color:var(--muted);font-size:12px">Nome fantasia: EmpX</small></td><td>12.345.678/0001-00</td><td>Tecnologia</td><td class="num">18</td><td class="num">42</td><td><span class="pill pill--success"><span class="dot"></span>Ativa</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><b style="color:var(--ink-strong)">Consultoria Y S/A</b><br><small style="color:var(--muted);font-size:12px">Nome fantasia: Y Partners</small></td><td>98.765.432/0001-11</td><td>Serviços</td><td class="num">12</td><td class="num">28</td><td><span class="pill pill--success"><span class="dot"></span>Ativa</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+          <tr><td><b style="color:var(--ink-strong)">Farma Z Indústria</b><br><small style="color:var(--muted);font-size:12px">Farmacêutica</small></td><td>45.678.901/0001-22</td><td>Saúde</td><td class="num">6</td><td class="num">11</td><td><span class="pill pill--warning"><span class="dot"></span>Sem atividade 30d</span></td><td class="actions"><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg></button></td></tr>
+        </tbody>
+      </table>
+      <div class="pag"><span>3 empresas</span></div>
+    </div>
+  </div>
+
+  <!-- AUDITORIA -->
+  <div class="pn" data-p="auditoria">
+    <div class="toolbar">
+      <div class="left">
+        <div class="topbar__search search"><svg class="icon"><use href="#icon-search"/></svg><input class="input" placeholder="Filtrar por usuário, ação ou entidade…"></div>
+        <select class="select" style="max-width:180px"><option>Últimos 7 dias</option><option>Hoje</option><option>Últimos 30 dias</option><option>Personalizado</option></select>
+        <select class="select" style="max-width:180px"><option>Todas as severidades</option><option>Info</option><option>Warning</option><option>Crítico</option></select>
+      </div>
+      <button class="btn btn--ghost"><svg class="icon icon--sm"><use href="#icon-download"/></svg>Exportar log (.csv)</button>
+    </div>
+    <div class="dt">
+      <table>
+        <thead><tr><th>Data/hora</th><th>Usuário</th><th>Ação</th><th>Entidade</th><th>Detalhes</th><th>IP</th><th>Severidade</th></tr></thead>
+        <tbody>
+          <tr><td><span style="font-family:'JetBrains Mono',monospace;font-size:12px">14/03 · 10:42:15</span></td><td><b style="color:var(--ink-strong)">Pedro Nacari</b><br><small style="color:var(--muted)">Admin</small></td><td><span class="code" style="background:var(--primary-50);color:var(--primary-dark)">EMIT</span> Confirmar emissão</td><td>EmissaoPassagem #2847</td><td>GRU→LIS · 120k Latam Pass · cliente #1248</td><td style="font-family:monospace;font-size:12px;color:var(--muted)">189.12.45.20</td><td><span class="pill pill--success">Info</span></td></tr>
+          <tr><td><span style="font-family:'JetBrains Mono',monospace;font-size:12px">14/03 · 09:18:02</span></td><td><b style="color:var(--ink-strong)">Pedro Nacari</b><br><small style="color:var(--muted)">Admin</small></td><td><span class="code" style="background:var(--success-50);color:var(--success)">TRANSF</span> Transferência pts</td><td>Movimentacao #5102</td><td>100k Smiles → 80k Latam Pass · cliente #1248</td><td style="font-family:monospace;font-size:12px;color:var(--muted)">189.12.45.20</td><td><span class="pill pill--success">Info</span></td></tr>
+          <tr><td><span style="font-family:'JetBrains Mono',monospace;font-size:12px">14/03 · 08:55:41</span></td><td><b style="color:var(--ink-strong)">Sistema</b><br><small style="color:var(--muted)">Cron</small></td><td><span class="code" style="background:var(--warning-50);color:var(--warning)">SYNC</span> Falha sincronização</td><td>ContaFidelidade #321</td><td>AAdvantage · cliente #4789 · HTTP 401</td><td style="font-family:monospace;font-size:12px;color:var(--muted)">—</td><td><span class="pill pill--warning">Warning</span></td></tr>
+          <tr><td><span style="font-family:'JetBrains Mono',monospace;font-size:12px">13/03 · 22:03:11</span></td><td><b style="color:var(--ink-strong)">Juliana Alves</b><br><small style="color:var(--muted)">Operadora</small></td><td><span class="code" style="background:var(--primary-50);color:var(--primary-dark)">EDIT</span> Editar cartão</td><td>Cliente #1248</td><td>Cartão 4532 · bandeira atualizada</td><td style="font-family:monospace;font-size:12px;color:var(--muted)">200.34.112.8</td><td><span class="pill pill--success">Info</span></td></tr>
+          <tr><td><span style="font-family:'JetBrains Mono',monospace;font-size:12px">13/03 · 19:47:00</span></td><td><b style="color:var(--ink-strong)">Sistema</b><br><small style="color:var(--muted)">Auth</small></td><td><span class="code" style="background:var(--danger-50);color:var(--danger)">LOGIN</span> Login falhou (3×)</td><td>Cliente #4789</td><td>Bloqueio temporário aplicado</td><td style="font-family:monospace;font-size:12px;color:var(--muted)">45.33.21.9</td><td><span class="pill pill--danger">Crítico</span></td></tr>
+          <tr><td><span style="font-family:'JetBrains Mono',monospace;font-size:12px">13/03 · 14:21:30</span></td><td><b style="color:var(--ink-strong)">Pedro Nacari</b><br><small style="color:var(--muted)">Admin</small></td><td><span class="code" style="background:var(--primary-50);color:var(--primary-dark)">NEW</span> Novo cliente</td><td>Cliente #1249</td><td>João Pereira · CPF 555.***.***-44</td><td style="font-family:monospace;font-size:12px;color:var(--muted)">189.12.45.20</td><td><span class="pill pill--success">Info</span></td></tr>
+        </tbody>
+      </table>
+      <div class="pag"><span>Mostrando 6 de 4.812 eventos (últimos 7 dias)</span><div style="display:flex;gap:6px"><button class="btn btn--ghost btn--sm" disabled>Anterior</button><button class="btn btn--ghost btn--sm">Próxima</button></div></div>
+    </div>
+  </div>
+`;
+// restore tab from query string
+const urlTab = new URLSearchParams(location.search).get('tab');
+if(urlTab) switchTab(urlTab);
+function switchTab(name){
+  document.querySelectorAll('.st').forEach(x=>x.classList.toggle('on',x.dataset.s===name));
+  document.querySelectorAll('.pn').forEach(x=>x.classList.toggle('on',x.dataset.p===name));
+}
+document.querySelectorAll('.st').forEach(s=>s.addEventListener('click',()=>switchTab(s.dataset.s)));
+</script>
+</body></html>

@@ -1,0 +1,246 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>NCfly · Meus programas</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'ds/tokens.css' %}"><link rel="stylesheet" href="{% static 'ds/base.css' %}"><link rel="stylesheet" href="{% static 'ds/shell.css' %}">
+<script src="{% static 'ds/icons.js' %}"></script><script src="{% static 'ds/tweaks.js' %}"></script><script src="{% static 'ds/sidebar.js' %}"></script>
+<script>
+  window.NC_DS_LOGO_URL = "{% static 'ds/ncfly-logo.svg' %}";
+  window.NC_DS_INDEX_URL = "{% url 'design_system:index' %}";
+  window.NC_DS_URLS = {
+    'admin-dashboard.html': "{% url 'design_system:admin_dashboard' %}",
+    'admin-clientes.html': "{% url 'design_system:admin_clientes' %}",
+    'admin-emissoes.html': "{% url 'design_system:admin_emissoes' %}",
+    'admin-contas.html': "{% url 'design_system:admin_contas' %}",
+    'admin-movimentacoes.html': "{% url 'design_system:admin_movimentacoes' %}",
+    'cotar-emitir.html': "{% url 'design_system:cotar_emitir' %}",
+    'transferencia-adm.html': "{% url 'design_system:transferencia' %}",
+    'painel-cliente.html': "{% url 'design_system:painel_cliente' %}",
+    'cliente-consolidado.html': "{% url 'design_system:cliente_consolidado' %}"
+  };
+</script>
+<style>
+  .subtabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:24px;overflow-x:auto}
+  .st{padding:12px 18px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:8px}
+  .st:hover{color:var(--ink)}
+  .st.on{color:var(--primary);border-bottom-color:var(--primary)}
+  .pn{display:none}.pn.on{display:block}
+
+  /* Programas cards */
+  .p-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+  .p-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--sh-sm);position:relative}
+  .p-card__top{padding:20px 22px;color:#fff;display:flex;justify-content:space-between;align-items:flex-start}
+  .p-card__top h4{font-size:16px;font-weight:800;letter-spacing:-.01em;margin-bottom:2px}
+  .p-card__top small{opacity:.85;font-size:12px}
+  .p-card__body{padding:18px 22px}
+  .p-card__big{font-size:32px;font-weight:800;color:var(--ink-strong);font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1}
+  .p-card__big small{font-size:13px;color:var(--muted);font-weight:600;margin-left:4px}
+  .p-card__sub{color:var(--muted);font-size:13px;margin-top:4px;margin-bottom:12px}
+  .p-card__row{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;color:var(--muted)}
+  .p-card__row b{color:var(--ink-strong);font-variant-numeric:tabular-nums}
+  .p-card__foot{padding:12px 22px 16px;border-top:1px solid var(--divider);display:flex;gap:8px}
+
+  /* Tables */
+  .dt{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--sh-sm)}
+  .dt table{width:100%;border-collapse:separate;border-spacing:0}
+  .dt thead th{background:var(--surface-2);font-size:12px;color:var(--muted);text-align:left;padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  .dt thead th.num{text-align:right}
+  .dt tbody td{padding:14px 16px;border-bottom:1px solid var(--divider);font-size:13.5px;color:var(--ink)}
+  .dt tbody tr:hover td{background:var(--surface-hover)}
+  .dt tbody td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink-strong)}
+  .code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--surface-2);padding:2px 7px;border-radius:4px;color:var(--ink-strong);font-weight:700}
+  .pag{padding:12px 18px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted)}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+  .toolbar .left{display:flex;gap:10px;align-items:center;flex:1;flex-wrap:wrap}
+  .toolbar .search{min-width:260px;flex:1;max-width:360px}
+
+  /* Hotels gallery */
+  .h-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+  .h-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--sh-sm);transition:all .15s}
+  .h-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+  .h-card__img{height:160px;background:linear-gradient(135deg,#fed8b1,#f9a26c);position:relative;display:flex;align-items:flex-end;padding:14px}
+  .h-card__img.alt1{background:linear-gradient(135deg,#c3cfe2,#8392b0)}
+  .h-card__img.alt2{background:linear-gradient(135deg,#ffecd2,#fcb69f)}
+  .h-card__img.alt3{background:linear-gradient(135deg,#a1c4fd,#c2e9fb)}
+  .h-card__img.alt4{background:linear-gradient(135deg,#fbc2eb,#a6c1ee)}
+  .h-card__img .stars{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.5);color:#fff;font-size:12px;padding:4px 9px;border-radius:99px;font-weight:700}
+  .h-card__img .name{color:#fff;font-weight:800;font-size:16px;letter-spacing:-.01em;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .h-card__body{padding:16px}
+  .h-card__body .city{color:var(--muted);font-size:12.5px;display:flex;align-items:center;gap:4px;margin-bottom:10px}
+  .h-card__prices{display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--divider)}
+  .h-card__prices div{flex:1}
+  .h-card__prices .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+  .h-card__prices .v{font-size:15px;font-weight:700;color:var(--ink-strong);font-variant-numeric:tabular-nums}
+
+  /* Inativo state */
+  .inativo{text-align:center;padding:80px 24px;background:var(--surface);border:2px dashed var(--border);border-radius:var(--r-lg)}
+  .inativo .ic{width:72px;height:72px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--muted)}
+  .inativo h3{font-size:22px;font-weight:800;color:var(--ink-strong);letter-spacing:-.01em;margin-bottom:8px}
+  .inativo p{color:var(--muted);max-width:420px;margin:0 auto 20px;line-height:1.55;font-size:14px}
+</style></head><body>
+<div data-shell="client" data-active="programas"></div>
+<script>NCflyShell.render()</script>
+<script>
+document.getElementById('page-root').innerHTML = `
+  <div class="page__head"><div><h1>Minha conta</h1><p>Programas, emissões, hotéis e movimentações em um só lugar. Tudo sincronizado em tempo real.</p></div></div>
+  <div class="subtabs">
+    <div class="st on" data-s="progs"><svg class="icon icon--sm"><use href="#icon-wallet"/></svg>Meus programas</div>
+    <div class="st" data-s="emiss"><svg class="icon icon--sm"><use href="#icon-ticket"/></svg>Minhas emissões</div>
+    <div class="st" data-s="hot"><svg class="icon icon--sm"><use href="#icon-bed"/></svg>Hotéis</div>
+    <div class="st" data-s="movs"><svg class="icon icon--sm"><use href="#icon-swap"/></svg>Movimentações</div>
+    <div class="st" data-s="inat"><svg class="icon icon--sm"><use href="#icon-pause"/></svg>Inativo</div>
+  </div>
+
+  <!-- PROGRAMAS -->
+  <div class="pn on" data-p="progs">
+    <div class="p-grid">
+      <div class="p-card"><div class="p-card__top" style="background:linear-gradient(135deg,#e30613,#8b0510)"><div><h4>Latam Pass</h4><small>Titular · LATAM Airlines</small></div><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/><circle cx="5" cy="19" r="1"/></svg></div>
+        <div class="p-card__body"><div class="p-card__big">248.400<small>pts</small></div><div class="p-card__sub">≈ R$ 7.972 · milheiro R$ 32,10</div>
+          <div class="p-card__row"><span>Expiração mais próxima</span><b>Jun/26 · 18k pts</b></div>
+          <div class="p-card__row"><span>Elite status</span><b>GOLD</b></div>
+          <div class="p-card__row"><span>Último sync</span><b>há 4 min</b></div>
+        </div>
+        <div class="p-card__foot"><button class="btn btn--ghost btn--sm" style="flex:1">Ver extrato</button><button class="btn btn--primary btn--sm" style="flex:1"><svg class="icon icon--xs"><use href="#icon-swap"/></svg>Transferir</button></div>
+      </div>
+      <div class="p-card"><div class="p-card__top" style="background:linear-gradient(135deg,#ff6b35,#b84100)"><div><h4>Smiles</h4><small>Titular · GOL Linhas Aéreas</small></div><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/><circle cx="5" cy="19" r="1"/></svg></div>
+        <div class="p-card__body"><div class="p-card__big">92.830<small>pts</small></div><div class="p-card__sub">≈ R$ 2.646 · milheiro R$ 28,50</div>
+          <div class="p-card__row"><span style="color:var(--danger);font-weight:700">Expira em 60 dias</span><b style="color:var(--danger)">8.500 pts</b></div>
+          <div class="p-card__row"><span>Elite status</span><b>PRATA</b></div>
+          <div class="p-card__row"><span>Último sync</span><b>há 12 min</b></div>
+        </div>
+        <div class="p-card__foot"><button class="btn btn--ghost btn--sm" style="flex:1">Ver extrato</button><button class="btn btn--primary btn--sm" style="flex:1"><svg class="icon icon--xs"><use href="#icon-swap"/></svg>Transferir</button></div>
+      </div>
+      <div class="p-card"><div class="p-card__top" style="background:linear-gradient(135deg,#0097d6,#004c7a)"><div><h4>TudoAzul</h4><small>Titular · Azul Linhas Aéreas</small></div><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/><circle cx="5" cy="19" r="1"/></svg></div>
+        <div class="p-card__body"><div class="p-card__big">54.120<small>pts</small></div><div class="p-card__sub">≈ R$ 1.342 · milheiro R$ 24,80</div>
+          <div class="p-card__row"><span>Expiração mais próxima</span><b>Nov/26 · 12k pts</b></div>
+          <div class="p-card__row"><span>Elite status</span><b>DIAMANTE</b></div>
+          <div class="p-card__row"><span>Último sync</span><b>há 2 min</b></div>
+        </div>
+        <div class="p-card__foot"><button class="btn btn--ghost btn--sm" style="flex:1">Ver extrato</button><button class="btn btn--primary btn--sm" style="flex:1"><svg class="icon icon--xs"><use href="#icon-swap"/></svg>Transferir</button></div>
+      </div>
+      <div class="p-card"><div class="p-card__top" style="background:linear-gradient(135deg,#6f2c91,#35134a)"><div><h4>LifeMiles</h4><small>Titular · Avianca</small></div><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/><circle cx="5" cy="19" r="1"/></svg></div>
+        <div class="p-card__body"><div class="p-card__big">38.500<small>pts</small></div><div class="p-card__sub">≈ R$ 1.394 · milheiro R$ 36,20</div>
+          <div class="p-card__row"><span>Expiração mais próxima</span><b>Ago/27</b></div>
+          <div class="p-card__row"><span>Aliança</span><b>Star Alliance</b></div>
+          <div class="p-card__row"><span style="color:var(--warning);font-weight:700">Último sync</span><b style="color:var(--warning)">há 3 dias</b></div>
+        </div>
+        <div class="p-card__foot"><button class="btn btn--ghost btn--sm" style="flex:1">Resincronizar</button><button class="btn btn--primary btn--sm" style="flex:1"><svg class="icon icon--xs"><use href="#icon-swap"/></svg>Transferir</button></div>
+      </div>
+      <div class="p-card" style="border-style:dashed;background:var(--surface-2);display:flex;align-items:center;justify-content:center;min-height:280px">
+        <div style="text-align:center"><div style="width:56px;height:56px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:var(--muted);border:1px solid var(--border)"><svg class="icon" style="width:22px;height:22px"><use href="#icon-plus"/></svg></div><h4 style="font-size:15px;color:var(--ink-strong);font-weight:700;margin-bottom:4px">Adicionar programa</h4><p style="font-size:12.5px;color:var(--muted);max-width:200px;margin-bottom:12px">Vincule AAdvantage, Flying Blue, Miles&More…</p><button class="btn btn--ghost btn--sm">Novo programa</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EMISSÕES -->
+  <div class="pn" data-p="emiss">
+    <div class="toolbar">
+      <div class="left">
+        <div class="topbar__search search"><svg class="icon"><use href="#icon-search"/></svg><input class="input" placeholder="Buscar por PNR ou destino…"></div>
+        <select class="select" style="max-width:170px"><option>Todos os status</option><option>Confirmada</option><option>Voada</option><option>Cancelada</option></select>
+      </div>
+      <button class="btn btn--primary"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Nova cotação</button>
+    </div>
+    <div class="dt">
+      <table>
+        <thead><tr><th>PNR</th><th>Trecho</th><th>Data</th><th>Companhia</th><th>Cabine</th><th class="num">Pts usados</th><th class="num">Taxas</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><span class="code">XYZB42</span></td><td><b style="color:var(--ink-strong)">GRU → LIS</b><br><small style="color:var(--muted);font-size:12px">LIS → GRU (volta)</small></td><td>18 Abr 25</td><td><span class="code" style="background:#ffe8ea;color:#b30410">LA</span></td><td>Executiva</td><td class="num">240.000</td><td class="num">R$ 1.240</td><td><span class="pill pill--success"><span class="dot"></span>Confirmada</span></td><td><button class="btn btn--ghost btn--sm">Detalhes</button></td></tr>
+          <tr><td><span class="code">KLM891</span></td><td><b style="color:var(--ink-strong)">GRU → MIA</b></td><td>12 Jan 25</td><td><span class="code" style="background:#e8f0ff;color:#0033a0">AA</span></td><td>Econômica</td><td class="num">75.000</td><td class="num">R$ 520</td><td><span class="pill" style="background:#ede9fe;color:#6d28d9"><span class="dot" style="background:#6d28d9"></span>Voada</span></td><td><button class="btn btn--ghost btn--sm">Detalhes</button></td></tr>
+          <tr><td><span class="code">AZU3XQ</span></td><td><b style="color:var(--ink-strong)">VCP → REC</b><br><small style="color:var(--muted);font-size:12px">REC → VCP (volta)</small></td><td>05 Dez 24</td><td><span class="code" style="background:#e3f4fc;color:#025d85">AD</span></td><td>Econômica</td><td class="num">32.000</td><td class="num">R$ 180</td><td><span class="pill" style="background:#ede9fe;color:#6d28d9"><span class="dot" style="background:#6d28d9"></span>Voada</span></td><td><button class="btn btn--ghost btn--sm">Detalhes</button></td></tr>
+          <tr><td><span class="code">SML7K2</span></td><td><b style="color:var(--ink-strong)">CGH → SDU</b></td><td>20 Out 24</td><td><span class="code" style="background:#fff3eb;color:#c24b0a">G3</span></td><td>Econômica</td><td class="num">14.000</td><td class="num">R$ 95</td><td><span class="pill pill--danger"><span class="dot"></span>Cancelada</span></td><td><button class="btn btn--ghost btn--sm">Estorno</button></td></tr>
+        </tbody>
+      </table>
+      <div class="pag"><span>4 emissões · histórico completo</span></div>
+    </div>
+  </div>
+
+  <!-- HOTÉIS -->
+  <div class="pn" data-p="hot">
+    <div class="toolbar">
+      <div class="left">
+        <div class="topbar__search search"><svg class="icon"><use href="#icon-search"/></svg><input class="input" placeholder="Destino, rede ou nome…"></div>
+        <select class="select" style="max-width:160px"><option>18 Abr — 23 Abr</option></select>
+        <select class="select" style="max-width:140px"><option>2 hóspedes</option><option>1 hóspede</option><option>3 hóspedes</option></select>
+      </div>
+      <button class="btn btn--primary"><svg class="icon icon--sm"><use href="#icon-search"/></svg>Buscar</button>
+    </div>
+    <div class="h-grid">
+      <div class="h-card"><div class="h-card__img"><span class="stars">★★★★★</span><span class="name">Four Seasons São Paulo</span></div><div class="h-card__body"><div class="city"><svg class="icon icon--xs"><use href="#icon-pin"/></svg>Itaim Bibi · São Paulo, BR</div><div class="h-card__prices"><div><div class="l">Diária</div><div class="v">R$ 2.840</div></div><div><div class="l">Pts / noite</div><div class="v">95.000</div></div></div></div></div>
+      <div class="h-card"><div class="h-card__img alt1"><span class="stars">★★★★★</span><span class="name">Fasano Ipanema</span></div><div class="h-card__body"><div class="city"><svg class="icon icon--xs"><use href="#icon-pin"/></svg>Ipanema · Rio de Janeiro, BR</div><div class="h-card__prices"><div><div class="l">Diária</div><div class="v">R$ 3.200</div></div><div><div class="l">Pts / noite</div><div class="v">110.000</div></div></div></div></div>
+      <div class="h-card"><div class="h-card__img alt2"><span class="stars">★★★★★</span><span class="name">Ritz-Carlton Lisboa</span></div><div class="h-card__body"><div class="city"><svg class="icon icon--xs"><use href="#icon-pin"/></svg>Lisboa, PT</div><div class="h-card__prices"><div><div class="l">Diária</div><div class="v">€ 780</div></div><div><div class="l">Pts / noite</div><div class="v">85.000</div></div></div></div></div>
+      <div class="h-card"><div class="h-card__img alt3"><span class="stars">★★★★★</span><span class="name">W South Beach</span></div><div class="h-card__body"><div class="city"><svg class="icon icon--xs"><use href="#icon-pin"/></svg>Miami Beach, FL</div><div class="h-card__prices"><div><div class="l">Diária</div><div class="v">US$ 620</div></div><div><div class="l">Pts / noite</div><div class="v">78.000</div></div></div></div></div>
+      <div class="h-card"><div class="h-card__img alt4"><span class="stars">★★★★★</span><span class="name">Hotel Emiliano</span></div><div class="h-card__body"><div class="city"><svg class="icon icon--xs"><use href="#icon-pin"/></svg>Jardins · São Paulo, BR</div><div class="h-card__prices"><div><div class="l">Diária</div><div class="v">R$ 2.100</div></div><div><div class="l">Pts / noite</div><div class="v">—</div></div></div></div></div>
+    </div>
+  </div>
+
+  <!-- MOVIMENTAÇÕES -->
+  <div class="pn" data-p="movs">
+    <div class="toolbar">
+      <div class="left">
+        <div class="topbar__search search"><svg class="icon"><use href="#icon-search"/></svg><input class="input" placeholder="Buscar movimentação…"></div>
+        <select class="select" style="max-width:160px"><option>Todos os tipos</option><option>Transferência</option><option>Compra</option><option>Expiração</option></select>
+      </div>
+    </div>
+    <div class="dt">
+      <table>
+        <thead><tr><th>Data</th><th>Tipo</th><th>Programa</th><th>Descrição</th><th class="num">Pontos</th></tr></thead>
+        <tbody>
+          <tr><td><b style="color:var(--ink-strong)">14/03</b><br><small style="color:var(--muted);font-size:12px">10:42</small></td><td><span class="pill pill--primary"><svg class="icon icon--xs"><use href="#icon-swap"/></svg>Transferência</span></td><td><span class="code" style="background:#fff3eb;color:#c24b0a">Smiles</span> → <span class="code" style="background:#ffe8ea;color:#b30410">Latam Pass</span></td><td>Transferência ×0,8 — via NCfly</td><td class="num">100.000 → 80.000</td></tr>
+          <tr><td><b style="color:var(--ink-strong)">10/03</b><br><small style="color:var(--muted);font-size:12px">15:20</small></td><td><span class="pill pill--success"><svg class="icon icon--xs"><use href="#icon-plus"/></svg>Crédito</span></td><td><span class="code" style="background:#ffe8ea;color:#b30410">Latam Pass</span></td><td>Voo LA8084 GRU-MIA · milhas creditadas</td><td class="num" style="color:var(--success)">+ 4.820</td></tr>
+          <tr><td><b style="color:var(--ink-strong)">05/03</b><br><small style="color:var(--muted);font-size:12px">09:10</small></td><td><span class="pill pill--success"><svg class="icon icon--xs"><use href="#icon-plus"/></svg>Compra</span></td><td><span class="code" style="background:#e3f4fc;color:#025d85">TudoAzul</span></td><td>Compra de 40k pts · R$ 990</td><td class="num" style="color:var(--success)">+ 40.000</td></tr>
+          <tr><td><b style="color:var(--ink-strong)">18/02</b><br><small style="color:var(--muted);font-size:12px">12:33</small></td><td><span class="pill" style="background:#fef3c7;color:#92400e"><svg class="icon icon--xs"><use href="#icon-gift"/></svg>Bônus</span></td><td><span class="code" style="background:#fff3eb;color:#c24b0a">Smiles</span></td><td>Campanha Clube Smiles · bônus 80%</td><td class="num" style="color:var(--success)">+ 24.000</td></tr>
+          <tr><td><b style="color:var(--ink-strong)">02/02</b><br><small style="color:var(--muted);font-size:12px">00:00</small></td><td><span class="pill pill--danger"><svg class="icon icon--xs"><use href="#icon-alert-triangle"/></svg>Expiração</span></td><td><span class="code" style="background:#fff3eb;color:#c24b0a">Smiles</span></td><td>Pontos com validade vencida (3 anos)</td><td class="num" style="color:var(--danger)">− 3.200</td></tr>
+          <tr><td><b style="color:var(--ink-strong)">15/01</b><br><small style="color:var(--muted);font-size:12px">18:45</small></td><td><span class="pill pill--danger"><svg class="icon icon--xs"><use href="#icon-minus"/></svg>Débito</span></td><td><span class="code" style="background:#e8f0ff;color:#0033a0">AAdvantage</span></td><td>Emissão GRU→MIA (KLM891)</td><td class="num" style="color:var(--danger)">− 75.000</td></tr>
+        </tbody>
+      </table>
+      <div class="pag"><span>6 de 42 movimentações</span></div>
+    </div>
+  </div>
+
+  <!-- INATIVO -->
+  <div class="pn" data-p="inat">
+    <div class="inativo">
+      <div class="ic"><svg class="icon" style="width:36px;height:36px"><use href="#icon-pause"/></svg></div>
+      <h3>Esta conta está pausada</h3>
+      <p>O acesso ao painel foi temporariamente suspenso pelo gestor. Todos os seus dados, pontos e histórico seguem preservados. Entre em contato com seu gestor NCfly para reativar.</p>
+      <div style="display:flex;gap:10px;justify-content:center"><button class="btn btn--primary"><svg class="icon icon--sm"><use href="#icon-chat"/></svg>Falar com gestor</button><button class="btn btn--ghost">Baixar meus dados</button></div>
+      <div style="margin-top:28px;padding:14px 18px;background:var(--surface-2);border-radius:var(--r-sm);display:inline-flex;gap:10px;align-items:center;font-size:12.5px;color:var(--muted);text-align:left"><svg class="icon icon--sm" style="color:var(--muted);flex:none"><use href="#icon-info"/></svg><span>Motivo informado: <b style="color:var(--ink-strong)">documentação pendente</b> · Desde 02/03/2025</span></div>
+    </div>
+  </div>
+`;
+function switchTab(name){
+  document.querySelectorAll('.st').forEach(x=>x.classList.toggle('on',x.dataset.s===name));
+  document.querySelectorAll('.pn').forEach(x=>x.classList.toggle('on',x.dataset.p===name));
+}
+document.querySelectorAll('.st').forEach(s=>s.addEventListener('click',()=>switchTab(s.dataset.s)));
+const urlTab=new URLSearchParams(location.search).get('tab');if(urlTab)switchTab(urlTab);
+</script>
+<script>
+(function(){
+  const root = document.documentElement;
+  const topbar = document.querySelector('.topbar');
+  if(!topbar) return;
+  const btn = document.createElement('button');
+  btn.className = 'btn btn--icon btn--ghost tt';
+  btn.setAttribute('data-tt','Alternar tema');
+  btn.setAttribute('aria-label','Alternar tema');
+  btn.innerHTML = '<svg class="icon"><use id="dm-icon" href="#icon-moon"/></svg>';
+  const spacer = topbar.querySelector('.spacer');
+  if(spacer && spacer.nextSibling) topbar.insertBefore(btn, spacer.nextSibling); else topbar.appendChild(btn);
+  const ic = btn.querySelector('#dm-icon');
+  try { const t = JSON.parse(localStorage.getItem('nc_tweaks')||'{}'); if(t.dark) root.setAttribute('data-theme','dark'); } catch(e){}
+  function sync(){
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    ic.setAttribute('href', isDark ? '#icon-sun' : '#icon-moon');
+  }
+  sync();
+  btn.addEventListener('click', () => {
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    try { const t = JSON.parse(localStorage.getItem('nc_tweaks')||'{}'); t.dark = !isDark; localStorage.setItem('nc_tweaks', JSON.stringify(t)); } catch(e){}
+    sync();
+  });
+})();
+</script>
+</body></html>

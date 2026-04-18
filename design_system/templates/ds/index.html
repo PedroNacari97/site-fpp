@@ -1,0 +1,197 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>NCfly · Redesign — Índice</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'ds/tokens.css' %}"><link rel="stylesheet" href="{% static 'ds/base.css' %}">
+<script src="{% static 'ds/icons.js' %}"></script>
+<script src="{% static 'ds/tweaks.js' %}"></script>
+<style>
+  body{background:var(--surface-2);min-height:100vh;padding:40px 24px}
+  .wrap{max-width:1200px;margin:0 auto}
+  .hero{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;border-radius:var(--r-lg);padding:40px 44px;margin-bottom:36px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-80px;top:-80px;width:360px;height:360px;border-radius:50%;background:rgba(255,255,255,.08)}
+  .hero img{height:36px;margin-bottom:18px;filter:brightness(0) invert(1)}
+  .hero h1{font-size:34px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+  .hero p{font-size:15px;opacity:.92;max-width:620px;line-height:1.5}
+  .hero__dm{position:absolute;top:20px;right:20px;z-index:2;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;width:40px;height:40px;border-radius:999px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s}
+  .hero__dm:hover{background:rgba(255,255,255,.28)}
+  .section-title{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin:32px 0 14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:20px;box-shadow:var(--sh-sm);transition:all .15s;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px}
+  .card:hover{border-color:var(--primary);box-shadow:var(--sh-md);transform:translateY(-2px)}
+  .card .tag{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;padding:3px 7px;border-radius:4px;align-self:flex-start;margin-bottom:4px}
+  .tag.foundation{background:#f1f5f9;color:#475569}
+  .tag.admin{background:var(--primary-50);color:var(--primary)}
+  .tag.client{background:rgba(5,150,105,.1);color:var(--success)}
+  .tag.proto{background:rgba(217,119,6,.1);color:#b45309}
+  .card h3{font-size:16px;font-weight:700;color:var(--ink-strong);letter-spacing:-.01em}
+  .card p{color:var(--muted);font-size:13px;line-height:1.5}
+  .card .meta{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:12px;border-top:1px solid var(--divider);font-size:12px;color:var(--subtle)}
+  .card .meta .go{color:var(--primary);font-weight:700}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:24px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;color:var(--muted)}
+  .legend b{color:var(--ink-strong)}
+</style></head><body>
+<div class="wrap">
+  <div class="hero">
+    <button class="hero__dm tt" data-tt="Alternar tema" id="dm-toggle" aria-label="Alternar tema">
+      <svg class="icon icon--sm" style="stroke:#fff"><use id="dm-icon" href="#icon-moon"/></svg>
+    </button>
+    <img src="{% static 'ds/ncfly-logo.svg' %}">
+    <h1>Redesign NCfly — biblioteca de mockups</h1>
+    <p>Sistema visual unificado e 16 telas cobrindo os fluxos principais do portal público, do painel administrativo, do painel do cliente e do processo de cotação/emissão. Todas as telas compartilham os mesmos tokens de design, componentes e shell.</p>
+  </div>
+
+  <div class="legend">
+    <div><b>Público</b> — portal B2C e landing</div>
+    <div><b>Tokens &amp; base</b> — variáveis CSS e reset</div>
+    <div><b>Admin</b> — visão interna de Pedro</div>
+    <div><b>Cliente</b> — visão de Maria Silva</div>
+    <div><b>Protótipo</b> — fluxo clicável com estado</div>
+  </div>
+
+  <div class="section-title">Público</div>
+  <div class="grid">
+    <a class="card" href="{% url 'design_system:portal' %}">
+      <span class="tag foundation">Portal B2C</span>
+      <h3>Portal público</h3>
+      <p>Landing pública NCfly — notícias, alertas de passagens e apresentação da plataforma para agências.</p>
+      <div class="meta"><span>portal/</span><span class="go">Abrir →</span></div>
+    </a>
+  </div>
+
+  <div class="section-title">Fundação</div>
+  <div class="grid">
+    <a class="card" href="{% url 'design_system:components' %}">
+      <span class="tag foundation">Design system</span>
+      <h3>Biblioteca de componentes</h3>
+      <p>Botões, inputs, tabelas, pills, cards, KPIs, modais e eyebrow — todos os primitivos usados nas telas.</p>
+      <div class="meta"><span>components/</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="{% url 'design_system:login' %}">
+      <span class="tag foundation">Entrada</span>
+      <h3>Login</h3>
+      <p>Tela de autenticação com split hero mostrando a proposta de valor + formulário limpo.</p>
+      <div class="meta"><span>login/</span><span class="go">Abrir →</span></div>
+    </a>
+  </div>
+
+  <div class="section-title">Painel do administrador (Pedro)</div>
+  <div class="grid">
+    <a class="card" href="{% url 'design_system:admin_dashboard' %}">
+      <span class="tag admin">Dashboard</span>
+      <h3>Visão geral</h3>
+      <p>KPIs consolidados, alertas de sincronização, atividade recente e próximas emissões.</p>
+      <div class="meta"><span>admin-dashboard/</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="{% url 'design_system:admin_clientes' %}">
+      <span class="tag admin">CRUD</span>
+      <h3>Clientes</h3>
+      <p>Listagem com busca, filtros, avatar, programas vinculados, pontos totais e economia gerada.</p>
+      <div class="meta"><span>admin-clientes/</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="{% url 'design_system:admin_emissoes' %}">
+      <span class="tag admin">Operação</span>
+      <h3>Emissões</h3>
+      <p>Tabela de 2 camadas com expansão inline — detalhe de passageiros, pontos por trecho e status.</p>
+      <div class="meta"><span>admin-emissoes/</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="{% url 'design_system:admin_contas' %}">
+      <span class="tag admin">Fidelidade</span>
+      <h3>Contas de fidelidade</h3>
+      <p>Cards por programa com saldo em pontos, valor estimado em reais, expiração e status de sync.</p>
+      <div class="meta"><span>admin-contas/</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="{% url 'design_system:onboarding' %}">
+      <span class="tag admin">Wizard</span>
+      <h3>Novo cliente (onboarding)</h3>
+      <p>Wizard de 4 passos — passo 2 de seleção de programas de fidelidade já pré-marcados.</p>
+      <div class="meta"><span>onboarding/</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="{% url 'design_system:admin_cadastros' %}">
+      <span class="tag admin">Cadastros</span>
+      <h3>Cadastros base</h3>
+      <p>Programas, aeroportos, companhias, hotéis, empresas e auditoria — tabelas de apoio do sistema.</p>
+      <div class="meta"><span>admin-cadastros/</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="{% url 'design_system:admin_form_cliente' %}">
+      <span class="tag admin">Formulário</span>
+      <h3>Ficha do cliente</h3>
+      <p>Edição completa de cliente — dados, endereços, cartões, programas, emissões e histórico em abas.</p>
+      <div class="meta"><span>admin-form-cliente/</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="{% url 'design_system:admin_formularios' %}">
+      <span class="tag admin">Formulário</span>
+      <h3>Formulários operacionais</h3>
+      <p>Formulários de emissão, cotação, movimentação e contas — estruturas compartilhadas de captura.</p>
+      <div class="meta"><span>admin-formularios/</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="{% url 'design_system:admin_movimentacoes' %}">
+      <span class="tag admin">Operação</span>
+      <h3>Movimentações</h3>
+      <p>Movimentações, cotações e calculadora de milheiro — painel operacional de pontos e preços.</p>
+      <div class="meta"><span>admin-movimentacoes/</span><span class="go">Abrir →</span></div>
+    </a>
+  </div>
+
+  <div class="section-title">Painel do cliente (Maria)</div>
+  <div class="grid">
+    <a class="card" href="{% url 'design_system:painel_cliente' %}">
+      <span class="tag client">Auto-serviço</span>
+      <h3>Meu painel</h3>
+      <p>Hero com saldo consolidado, programas vinculados, últimas viagens e economia gerada no ano.</p>
+      <div class="meta"><span>painel-cliente/</span><span class="go">Abrir →</span></div>
+    </a>
+    <a class="card" href="{% url 'design_system:cliente_consolidado' %}">
+      <span class="tag client">Consolidado</span>
+      <h3>Minha conta (consolidado)</h3>
+      <p>Programas, emissões, hotéis, movimentações e estado inativo em abas — visão completa do cliente.</p>
+      <div class="meta"><span>cliente-consolidado/</span><span class="go">Abrir →</span></div>
+    </a>
+  </div>
+
+  <div class="section-title">Fluxos transacionais</div>
+  <div class="grid">
+    <a class="card" href="{% url 'design_system:cotar_emitir' %}">
+      <span class="tag proto">Protótipo clicável</span>
+      <h3>Cotar &amp; emitir (4 passos)</h3>
+      <p>Wizard interativo — busca de voos, listagem comparativa, dados dos passageiros e confirmação com PNR. Estado persistido em <code>localStorage</code>.</p>
+      <div class="meta"><span>cotar-emitir/</span><span class="go">Iniciar fluxo →</span></div>
+    </a>
+    <a class="card" href="{% url 'design_system:transferencia' %}">
+      <span class="tag admin">Operação</span>
+      <h3>Transferência de pontos</h3>
+      <p>Swap FROM→TO entre programas com taxa de conversão, cálculo e saldos finais projetados.</p>
+      <div class="meta"><span>transferencia/</span><span class="go">Abrir →</span></div>
+    </a>
+  </div>
+
+  <div style="margin-top:40px;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);font-size:13px;color:var(--muted)">
+    <b style="color:var(--ink-strong)">Ativar Tweaks</b> — use o botão flutuante "⚙ Tweaks" no canto inferior direito para abrir o painel de customização global (cor primária, raio de borda, densidade e modo escuro). O sol/lua no canto superior direito alterna rapidamente entre claro e escuro; ambos persistem em <code>localStorage</code> entre as telas.
+  </div>
+</div>
+
+<script>
+  // Dark mode toggle — compativel com tweaks.js (usa a mesma chave nc_tweaks)
+  (function () {
+    const root = document.documentElement;
+    const btn = document.getElementById('dm-toggle');
+    const ic = document.getElementById('dm-icon');
+    function sync() {
+      const isDark = root.getAttribute('data-theme') === 'dark';
+      ic.setAttribute('href', isDark ? '#icon-sun' : '#icon-moon');
+      btn.setAttribute('data-tt', isDark ? 'Voltar ao claro' : 'Alternar tema');
+    }
+    sync();
+    btn.addEventListener('click', () => {
+      const isDark = root.getAttribute('data-theme') === 'dark';
+      root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      try {
+        const t = JSON.parse(localStorage.getItem('nc_tweaks') || '{}');
+        t.dark = !isDark;
+        localStorage.setItem('nc_tweaks', JSON.stringify(t));
+      } catch (e) {}
+      sync();
+    });
+  })();
+</script>
+</body>
+</html>

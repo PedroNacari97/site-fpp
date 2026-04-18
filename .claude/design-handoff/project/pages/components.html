@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>NCfly · Biblioteca de Componentes</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/base.css">
+<link rel="stylesheet" href="../assets/shell.css">
+<script src="../assets/icons.js"></script>
+<script src="../assets/tweaks.js"></script>
+<style>
+  body { padding: 40px 32px 120px; max-width: 1180px; margin: 0 auto; }
+  .doc-h { margin-bottom: 28px; }
+  .doc-h h1 { font-size: 36px; font-weight:800; color:var(--ink-strong); margin-bottom:6px;}
+  .doc-h p { color: var(--muted); }
+  section.sec { margin-top: 48px; }
+  section.sec > h2 {
+    font-size: 20px; font-weight: 800; color: var(--ink-strong);
+    margin-bottom: 4px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+  section.sec > .sub { margin-bottom: 20px; color: var(--muted); font-size: var(--fs-sm); }
+  .demo {
+    padding: 22px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r-md); margin-bottom: 16px;
+  }
+  .demo.tight { padding: 16px; }
+  .demo-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .demo-grid { display: grid; gap: 14px; grid-template-columns: repeat(3, 1fr); }
+  @media (max-width:900px) { .demo-grid { grid-template-columns: 1fr; } }
+  .swatch { display:flex; align-items:center; gap:10px; padding:10px; border-radius:8px; border:1px solid var(--border); }
+  .swatch .sw { width:38px; height:38px; border-radius:8px; border:1px solid rgba(0,0,0,.06); }
+  .swatch code { font-size:11px; display:block; color:var(--subtle); }
+  .swatch b { font-size: 13px; color:var(--ink); }
+  .type-row { display: grid; grid-template-columns: 140px 1fr auto; gap: 16px; align-items: baseline; padding: 10px 0; border-bottom: 1px dashed var(--divider); }
+  .type-row:last-child { border:0; }
+  .type-row small { font-family: var(--ff-mono); color:var(--subtle); font-size:11px; }
+  code.tok { font-family: var(--ff-mono); font-size:12px; background:var(--surface-2); padding: 2px 6px; border-radius:4px; color:#334155; }
+  .kbd-nav { display:flex; gap:8px; flex-wrap:wrap; margin: 14px 0 36px;}
+  .kbd-nav a {
+    padding: 8px 14px; border-radius: var(--r-sm); border:1px solid var(--border);
+    background: var(--surface); color: var(--muted); font-size: var(--fs-sm); font-weight:600;
+  }
+  .kbd-nav a:hover { border-color: var(--primary); color: var(--primary-dark); text-decoration:none; background: var(--primary-50);}
+</style>
+</head>
+<body>
+
+<div class="doc-h">
+  <span class="eyebrow">Design System · Versão 1.0</span>
+  <h1>Biblioteca de componentes NCfly</h1>
+  <p>Todos os componentes usam os mesmos tokens de <code class="tok">tokens.css</code>. Trocando uma variável, toda a UI acompanha. Use os <b>Tweaks</b> no canto inferior direito para experimentar mudanças ao vivo.</p>
+</div>
+
+<nav class="kbd-nav">
+  <a href="#cores">Cores</a>
+  <a href="#tipografia">Tipografia</a>
+  <a href="#botoes">Botões</a>
+  <a href="#inputs">Inputs</a>
+  <a href="#pills">Pills</a>
+  <a href="#cards">Cards</a>
+  <a href="#tabelas">Tabelas</a>
+  <a href="#icones">Ícones</a>
+  <a href="#empty">Empty states</a>
+  <a href="#nav">Sidebar</a>
+</nav>
+
+<section class="sec" id="cores">
+  <h2>Cores</h2>
+  <div class="sub">Azul #3182ce mantido como primária, agora com dark mode e escala consistente.</div>
+  <div class="demo">
+    <div class="demo-grid">
+      <div class="swatch"><div class="sw" style="background:var(--primary)"></div><div><b>Primary</b><code>#3182ce · --primary</code></div></div>
+      <div class="swatch"><div class="sw" style="background:var(--primary-dark)"></div><div><b>Primary dark</b><code>#2c5282 · --primary-dark</code></div></div>
+      <div class="swatch"><div class="sw" style="background:var(--primary-50);border-color:var(--primary-100)"></div><div><b>Primary 50</b><code>#ebf4ff · --primary-50</code></div></div>
+      <div class="swatch"><div class="sw" style="background:var(--ink-strong)"></div><div><b>Ink strong</b><code>#1a365d · headings</code></div></div>
+      <div class="swatch"><div class="sw" style="background:var(--ink)"></div><div><b>Ink</b><code>#1a202c · --ink</code></div></div>
+      <div class="swatch"><div class="sw" style="background:var(--muted)"></div><div><b>Muted</b><code>#4a5568 · --muted</code></div></div>
+      <div class="swatch"><div class="sw" style="background:var(--success)"></div><div><b>Success</b><code>#2f855a</code></div></div>
+      <div class="swatch"><div class="sw" style="background:var(--warning)"></div><div><b>Warning</b><code>#d97706</code></div></div>
+      <div class="swatch"><div class="sw" style="background:var(--danger)"></div><div><b>Danger</b><code>#e53e3e</code></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="tipografia">
+  <h2>Tipografia</h2>
+  <div class="sub">Open Sans. <b>Uppercase proibido fora da classe <code class="tok">.eyebrow</code>.</b></div>
+  <div class="demo">
+    <div class="type-row"><small>H1 · 32/800</small><h1 style="margin:0">Emissões detalhadas</h1><small>--fs-3xl</small></div>
+    <div class="type-row"><small>H2 · 26/700</small><h2 style="margin:0">Contas de fidelidade</h2><small>--fs-2xl</small></div>
+    <div class="type-row"><small>H3 · 20/600</small><h3 style="margin:0">Resumo do cliente</h3><small>--fs-xl</small></div>
+    <div class="type-row"><small>Body · 15/400</small><p style="color:var(--ink)">Visão consolidada dos clientes, emissões e reservas com hierarquia clara de informações.</p><small>--fs</small></div>
+    <div class="type-row"><small>Small · 13.5/400</small><p style="font-size:13.5px">Tabela com rolagem horizontal para comportar todos os campos relevantes.</p><small>--fs-sm</small></div>
+    <div class="type-row"><small>Eyebrow</small><span class="eyebrow">Filtros avançados</span><small>.eyebrow</small></div>
+    <div class="type-row"><small>Mono</small><code class="tok">--primary: #3182ce;</code><small>JetBrains Mono</small></div>
+  </div>
+</section>
+
+<section class="sec" id="botoes">
+  <h2>Botões</h2>
+  <div class="sub">Radius pequeno (8px), peso 600, sem uppercase, sem gradiente. Hover escurece, active tem micro-affordance.</div>
+  <div class="demo">
+    <div class="demo-row">
+      <button class="btn"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Nova Emissão</button>
+      <button class="btn btn--outline">Exportar Excel</button>
+      <button class="btn btn--ghost">Limpar</button>
+      <button class="btn btn--danger"><svg class="icon icon--sm"><use href="#icon-trash"/></svg>Deletar</button>
+      <button class="btn" disabled>Desabilitado</button>
+    </div>
+    <div class="demo-row" style="margin-top:14px">
+      <button class="btn btn--sm">Pequeno</button>
+      <button class="btn">Médio</button>
+      <button class="btn btn--lg">Grande</button>
+      <button class="btn btn--icon" aria-label="Ações"><svg class="icon icon--sm"><use href="#icon-more"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="inputs">
+  <h2>Inputs &amp; formulário</h2>
+  <div class="sub">Labels em sentence case, 13.5px, font-weight 600. Nunca UPPERCASE. Placeholder e hint diferenciados.</div>
+  <div class="demo" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+    <div class="field">
+      <label for="i1">Nome do cliente</label>
+      <input id="i1" class="input" placeholder="Pedro Nacari"/>
+      <span class="hint">Usado em notificações e relatórios</span>
+    </div>
+    <div class="field">
+      <label for="i2">Programa</label>
+      <select id="i2" class="select">
+        <option>Smiles</option><option>Latam Pass</option><option>TudoAzul</option>
+      </select>
+    </div>
+    <div class="field is-invalid">
+      <label for="i3">CPF</label>
+      <input id="i3" class="input" value="000.000.000-00"/>
+      <span class="error">CPF inválido — verifique os dígitos.</span>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="pills">
+  <h2>Pills &amp; status</h2>
+  <div class="sub">Para status de emissão, tipo de conta, etc. Dot opcional sinaliza estado em tempo real.</div>
+  <div class="demo">
+    <div class="demo-row">
+      <span class="pill pill--success"><span class="dot"></span>Emitida</span>
+      <span class="pill pill--warning"><span class="dot"></span>Pendente</span>
+      <span class="pill pill--danger"><span class="dot"></span>Cancelada</span>
+      <span class="pill pill--info">Cotação</span>
+      <span class="pill pill--primary">Administrada</span>
+      <span class="pill">Neutra</span>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="cards">
+  <h2>Cards &amp; KPIs</h2>
+  <div class="sub">Cards KPI substituem emoji por ícone SVG + delta percentual. Todos tabular-nums.</div>
+  <div class="demo">
+    <div class="grid grid-cols-3">
+      <div class="card">
+        <div class="row row--between" style="margin-bottom:10px">
+          <span class="eyebrow" style="margin:0;color:var(--subtle)">Total de Clientes</span>
+          <div class="icon-wrap" style="width:32px;height:32px;background:var(--primary-50);color:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center"><svg class="icon icon--sm"><use href="#icon-users"/></svg></div>
+        </div>
+        <h2 style="font-size:28px;margin-bottom:4px" class="tnum">1.248</h2>
+        <div style="display:flex;gap:6px;font-size:12px;align-items:center">
+          <span style="color:var(--success);font-weight:700;display:flex;align-items:center;gap:2px"><svg class="icon" style="width:12px;height:12px;stroke:currentColor"><use href="#icon-trend-up"/></svg>+12%</span>
+          <span class="subtle">vs. mês passado</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row row--between" style="margin-bottom:10px">
+          <span class="eyebrow" style="margin:0;color:var(--subtle)">Total de Emissões</span>
+          <div class="icon-wrap" style="width:32px;height:32px;background:var(--success-50);color:var(--success);border-radius:8px;display:flex;align-items:center;justify-content:center"><svg class="icon icon--sm"><use href="#icon-ticket"/></svg></div>
+        </div>
+        <h2 style="font-size:28px;margin-bottom:4px" class="tnum">3.891</h2>
+        <div style="display:flex;gap:6px;font-size:12px;align-items:center">
+          <span style="color:var(--success);font-weight:700;display:flex;align-items:center;gap:2px"><svg class="icon" style="width:12px;height:12px"><use href="#icon-trend-up"/></svg>+8%</span>
+          <span class="subtle">vs. mês passado</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row row--between" style="margin-bottom:10px">
+          <span class="eyebrow" style="margin:0;color:var(--subtle)">Total Economizado</span>
+          <div class="icon-wrap" style="width:32px;height:32px;background:#fef3c7;color:var(--warning);border-radius:8px;display:flex;align-items:center;justify-content:center"><svg class="icon icon--sm"><use href="#icon-piggy"/></svg></div>
+        </div>
+        <h2 style="font-size:28px;margin-bottom:4px" class="tnum">R$ 482.130</h2>
+        <div style="display:flex;gap:6px;font-size:12px;align-items:center">
+          <span style="color:var(--danger);font-weight:700;display:flex;align-items:center;gap:2px"><svg class="icon" style="width:12px;height:12px"><use href="#icon-trend-down"/></svg>-3%</span>
+          <span class="subtle">vs. mês passado</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="tabelas">
+  <h2>Tabelas</h2>
+  <div class="sub">Linhas com altura consistente, valores monetários alinhados à direita com <code class="tok">tabular-nums</code>. Thead sticky.</div>
+  <div class="demo tight" style="padding:0;overflow:hidden">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Programa</th>
+          <th>Rota</th>
+          <th class="num">Pontos</th>
+          <th class="num">Economia</th>
+          <th>Status</th>
+          <th class="num">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Maria Silva</b><br><small class="subtle">maria@silva.com</small></td>
+          <td><span class="pill pill--primary">Smiles</span></td>
+          <td>GRU → JFK <span class="subtle">· 12/mai</span></td>
+          <td class="num tnum">120.000</td>
+          <td class="num tnum" style="color:var(--success);font-weight:600">R$ 4.320,00</td>
+          <td><span class="pill pill--success"><span class="dot"></span>Emitida</span></td>
+          <td class="num">
+            <button class="btn btn--ghost btn--sm">Editar</button>
+            <button class="btn btn--icon btn--sm" aria-label="Mais"><svg class="icon icon--sm"><use href="#icon-more"/></svg></button>
+          </td>
+        </tr>
+        <tr>
+          <td><b>João Santos</b><br><small class="subtle">joao@exemplo.com</small></td>
+          <td><span class="pill pill--primary">Latam Pass</span></td>
+          <td>GIG → LIS <span class="subtle">· 02/jun</span></td>
+          <td class="num tnum">85.000</td>
+          <td class="num tnum" style="color:var(--success);font-weight:600">R$ 2.100,00</td>
+          <td><span class="pill pill--warning"><span class="dot"></span>Pendente</span></td>
+          <td class="num">
+            <button class="btn btn--ghost btn--sm">Editar</button>
+            <button class="btn btn--icon btn--sm" aria-label="Mais"><svg class="icon icon--sm"><use href="#icon-more"/></svg></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="sec" id="icones">
+  <h2>Ícones</h2>
+  <div class="sub">Lucide-style, 20×20, <code class="tok">stroke: currentColor</code>. Nunca emoji.</div>
+  <div class="demo">
+    <div class="demo-row" style="gap:18px">
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-home"/></svg><small class="subtle">home</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-users"/></svg><small class="subtle">users</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-plane"/></svg><small class="subtle">plane</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-ticket"/></svg><small class="subtle">ticket</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-wallet"/></svg><small class="subtle">wallet</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-piggy"/></svg><small class="subtle">piggy</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-chart"/></svg><small class="subtle">chart</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-hotel"/></svg><small class="subtle">hotel</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-swap"/></svg><small class="subtle">swap</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-edit"/></svg><small class="subtle">edit</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-trash"/></svg><small class="subtle">trash</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-eye"/></svg><small class="subtle">eye</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-settings"/></svg><small class="subtle">settings</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-bell"/></svg><small class="subtle">bell</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-search"/></svg><small class="subtle">search</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-sun"/></svg><small class="subtle">sun</small></span>
+      <span style="display:flex;flex-direction:column;align-items:center;gap:4px"><svg class="icon"><use href="#icon-moon"/></svg><small class="subtle">moon</small></span>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="empty">
+  <h2>Empty state</h2>
+  <div class="demo">
+    <div class="empty">
+      <div class="icon-wrap"><svg class="icon"><use href="#icon-plane"/></svg></div>
+      <h3>Nenhuma emissão encontrada</h3>
+      <p>Ajuste os filtros ou cadastre uma nova emissão para começar.</p>
+      <button class="btn" style="margin-top:14px"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Nova Emissão</button>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="nav">
+  <h2>Navegação — Sidebar</h2>
+  <div class="sub">Sidebar de 256px. Branca, ativo com border-left azul e tint <code class="tok">--primary-50</code>.</div>
+  <div class="demo tight" style="padding:0">
+    <div style="display:grid;grid-template-columns:256px 1fr;height:380px;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--border);background:var(--bg)">
+      <aside class="sidebar" style="position:static;height:100%;border-right:1px solid var(--border)">
+        <div class="sidebar__brand"><img src="../assets/ncfly-logo.svg" alt="NCfly"></div>
+        <div class="sidebar__section">Principal</div>
+        <a class="nav-item is-active"><svg class="icon"><use href="#icon-home"/></svg><span>Dashboard</span></a>
+        <a class="nav-item"><svg class="icon"><use href="#icon-users"/></svg><span>Clientes</span><span class="badge">12</span></a>
+        <a class="nav-item"><svg class="icon"><use href="#icon-ticket"/></svg><span>Emissões</span></a>
+        <a class="nav-item"><svg class="icon"><use href="#icon-wallet"/></svg><span>Contas</span></a>
+        <div class="sidebar__section">Operações</div>
+        <a class="nav-item"><svg class="icon"><use href="#icon-chart"/></svg><span>Cotações</span></a>
+        <a class="nav-item"><svg class="icon"><use href="#icon-swap"/></svg><span>Transferências</span></a>
+        <div class="sidebar__foot">
+          <div class="sidebar__user">PN</div>
+          <div class="meta"><b>Pedro Nacari</b><small>Administrador</small></div>
+        </div>
+      </aside>
+      <div style="padding: 24px; overflow:auto">
+        <p class="eyebrow">Preview</p>
+        <h2 style="font-size:22px">Dashboard</h2>
+        <p>A sidebar colapsa para 72px em telas estreitas ou via toggle. Active state usa <code class="tok">border-left: 3px</code> e fundo <code class="tok">--primary-50</code>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="darkmode-demo">
+  <h2>Dark mode</h2>
+  <div class="sub">Ative pelo painel de Tweaks (canto inferior direito). Todos os tokens flip automaticamente via <code class="tok">[data-theme="dark"]</code>.</div>
+</section>
+
+</body>
+</html>

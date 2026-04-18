@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>NCfly · Emissões</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<link rel="stylesheet" href="../assets/base.css">
+<link rel="stylesheet" href="../assets/shell.css">
+<script src="../assets/icons.js"></script>
+<script src="../assets/tweaks.js"></script>
+<style>
+  .fltr-grid { display:grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap:12px; align-items:end;}
+  @media(max-width:980px){.fltr-grid{grid-template-columns:1fr 1fr}}
+  .fltr-grid .actions { display:flex; gap:6px; }
+  .emt-wrap { background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); overflow:hidden; box-shadow:var(--sh-sm);}
+  .emt-head { display:flex; justify-content:space-between; align-items:center; padding: 14px 18px; border-bottom: 1px solid var(--border);}
+  .emt-head .meta { color: var(--muted); font-size: 13px; }
+  .emt { width:100%; border-collapse:separate; border-spacing:0; }
+  .emt thead th { background: var(--surface-2); font-size:12px; font-weight:600; color:var(--muted); text-align:left; padding: 11px 14px; border-bottom:1px solid var(--border);}
+  .emt thead th.num { text-align:right; }
+  .emt tbody td { padding: 14px; border-bottom: 1px solid var(--divider); vertical-align: middle; font-size:13.5px; }
+  .emt tbody tr:hover:not(.expand-row) td { background: var(--surface-hover); cursor: pointer;}
+  .emt tbody tr.is-open td { background: var(--primary-50); }
+  .emt .num { text-align:right; font-variant-numeric: tabular-nums; }
+  .em-cliente { display:flex; align-items:center; gap:10px; }
+  .em-ava { width: 32px; height:32px; border-radius:50%; background: linear-gradient(135deg,var(--primary),var(--accent)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; flex:none;}
+  .em-cliente b { font-size:13.5px; color:var(--ink); display:block;}
+  .em-cliente small { color:var(--subtle); font-size:12px; }
+  .em-route { display:flex; align-items:center; gap:8px; font-weight:600; color:var(--ink); }
+  .em-route .sep { color: var(--subtle); }
+  .em-route small { font-weight:500; color:var(--subtle); display:block; margin-top:2px;}
+  .chev-btn { background:none; border:0; padding:4px; cursor:pointer; color:var(--subtle); transition: transform var(--t-fast);}
+  .chev-btn.is-open { transform: rotate(90deg); color: var(--primary); }
+
+  .expand-row td { padding:0 !important; background: var(--surface-2) !important; border-bottom: 2px solid var(--border) !important;}
+  .expand-row .panel { padding: 20px 24px; display:grid; grid-template-columns: 2fr 1fr 1fr; gap:20px; }
+  @media(max-width:980px){.expand-row .panel{grid-template-columns:1fr}}
+  .detail { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 14px 16px;}
+  .detail .eyebrow { margin-bottom: 6px; font-size: 10px; }
+  .detail .big { font-size: 20px; font-weight: 800; color: var(--ink-strong); letter-spacing:-0.02em;}
+  .detail .rows { display:grid; grid-template-columns: auto 1fr; gap:6px 16px; font-size:13px; }
+  .detail .rows dt { color: var(--muted); }
+  .detail .rows dd { margin:0; color: var(--ink); font-weight: 600; text-align:right; }
+  .expand-actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;}
+  .pag { padding: 14px 18px; display:flex; justify-content: space-between; align-items:center; border-top:1px solid var(--border); font-size: 13px; color: var(--muted);}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__brand"><img src="../assets/ncfly-logo.svg" alt="NCfly"></div>
+    <div class="sidebar__section">Principal</div>
+    <a class="nav-item" href="admin-dashboard.html"><svg class="icon"><use href="#icon-home"/></svg><span>Dashboard</span></a>
+    <a class="nav-item" href="admin-clientes.html"><svg class="icon"><use href="#icon-users"/></svg><span>Clientes</span></a>
+    <a class="nav-item is-active"><svg class="icon"><use href="#icon-ticket"/></svg><span>Emissões</span></a>
+    <a class="nav-item" href="admin-contas.html"><svg class="icon"><use href="#icon-wallet"/></svg><span>Contas de fidelidade</span></a>
+    <div class="sidebar__section">Operações</div>
+    <a class="nav-item" href="cotar-emitir.html"><svg class="icon"><use href="#icon-plane"/></svg><span>Cotar &amp; emitir</span></a>
+    <a class="nav-item" href="transferencia.html"><svg class="icon"><use href="#icon-swap"/></svg><span>Transferências</span></a>
+    <div class="sidebar__foot">
+      <div class="sidebar__user">PN</div>
+      <div class="meta"><b>Pedro Nacari</b><small>Administrador</small></div>
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div class="topbar__search"><svg class="icon"><use href="#icon-search"/></svg><input class="input" placeholder="Buscar…"><span class="topbar__kbd">⌘K</span></div>
+      <div class="spacer"></div>
+      <button class="icon-btn tt" data-tt="Alternar tema" id="dm-toggle"><svg class="icon icon--sm"><use id="dm-icon" href="#icon-moon"/></svg></button>
+      <a class="btn" href="cotar-emitir.html"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Nova emissão</a>
+    </header>
+
+    <div class="page">
+      <div class="page__head">
+        <div>
+          <div class="breadcrumbs"><a href="admin-dashboard.html">Dashboard</a> <svg class="icon" style="width:12px;height:12px"><use href="#icon-chevron-right"/></svg> <span>Emissões</span></div>
+          <h1>Emissões</h1>
+          <p>Clique em uma linha para ver detalhes financeiros, escalas e passageiros.</p>
+        </div>
+        <div class="page__actions">
+          <button class="btn btn--outline"><svg class="icon icon--sm"><use href="#icon-download"/></svg>Exportar Excel</button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <section class="card filter-panel" style="margin-bottom: 20px">
+        <div class="row row--between" style="margin-bottom:14px">
+          <div><span class="eyebrow">Filtros</span><h3 style="font-size:15px; color:var(--ink)">Buscar emissões</h3></div>
+        </div>
+        <div class="fltr-grid">
+          <div class="field"><label>Cliente ou rota</label>
+            <input class="input" placeholder="Maria Silva, GRU, JFK…">
+          </div>
+          <div class="field"><label>Programa</label>
+            <select class="select"><option>Todos</option><option>Smiles</option><option>Latam Pass</option><option>TudoAzul</option></select>
+          </div>
+          <div class="field"><label>Data ida</label><input class="input" type="date"></div>
+          <div class="field"><label>Status</label>
+            <select class="select"><option>Todos</option><option>Emitida</option><option>Pendente</option><option>Cancelada</option></select>
+          </div>
+          <div class="actions"><button class="btn">Filtrar</button><button class="btn btn--ghost">Limpar</button></div>
+        </div>
+      </section>
+
+      <!-- Table -->
+      <div class="emt-wrap">
+        <div class="emt-head">
+          <div><span class="eyebrow">Resultados</span><div style="font-weight:700;color:var(--ink-strong)">347 emissões</div></div>
+          <div class="meta">Ordenado por data de emissão</div>
+        </div>
+        <table class="emt">
+          <thead>
+            <tr>
+              <th style="width:28px"></th>
+              <th>Cliente</th>
+              <th>Programa</th>
+              <th>Rota</th>
+              <th class="num">Pontos</th>
+              <th class="num">Economia</th>
+              <th>Status</th>
+              <th class="num" style="width:88px">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="emt-body">
+            <!-- Row 1 -->
+            <tr data-row="1">
+              <td><button class="chev-btn" aria-label="Expandir"><svg class="icon icon--sm"><use href="#icon-chevron-right"/></svg></button></td>
+              <td><div class="em-cliente"><div class="em-ava">MS</div><div><b>Maria Silva</b><small>maria.silva@exemplo.com</small></div></div></td>
+              <td><span class="pill pill--primary">Smiles</span></td>
+              <td><div class="em-route">GRU <span class="sep">→</span> JFK</div><small style="color:var(--subtle)">12/mai · ida e volta</small></td>
+              <td class="num tnum"><b>120.000</b></td>
+              <td class="num tnum" style="color:var(--success);font-weight:700">R$ 4.320,00</td>
+              <td><span class="pill pill--success"><span class="dot"></span>Emitida</span></td>
+              <td class="num"><button class="btn btn--ghost btn--sm">Editar</button><button class="btn btn--icon btn--sm" aria-label="Mais"><svg class="icon icon--sm"><use href="#icon-more"/></svg></button></td>
+            </tr>
+            <tr class="expand-row" data-expand="1" hidden><td colspan="8">
+              <div class="panel">
+                <div class="detail">
+                  <span class="eyebrow">Voo de ida</span>
+                  <div style="display:flex;gap:16px;align-items:center;margin: 6px 0 10px">
+                    <div><div class="big">22:40</div><small>GRU · São Paulo</small></div>
+                    <div style="flex:1;text-align:center;color:var(--subtle)">
+                      <svg class="icon" style="width:16px;height:16px;margin:0 auto;color:var(--primary)"><use href="#icon-plane"/></svg>
+                      <div style="height:1px;background:var(--border);margin:4px 0"></div>
+                      <small>9h 30min · 1 escala</small>
+                    </div>
+                    <div style="text-align:right"><div class="big">07:10</div><small>JFK · Nova York</small></div>
+                  </div>
+                  <dl class="rows">
+                    <dt>Companhia</dt><dd>Latam (LA 8060 / LA 8104)</dd>
+                    <dt>Localizador</dt><dd class="tnum">NC4Z9B</dd>
+                    <dt>Passageiros</dt><dd>1 adulto</dd>
+                  </dl>
+                </div>
+                <div class="detail">
+                  <span class="eyebrow">Financeiro</span>
+                  <dl class="rows" style="margin-top:6px">
+                    <dt>Valor referência</dt><dd class="tnum">R$ 8.420,00</dd>
+                    <dt>Valor pago</dt><dd class="tnum">R$ 4.100,00</dd>
+                    <dt>Pontos utilizados</dt><dd class="tnum">120.000</dd>
+                    <dt>Valor/milheiro</dt><dd class="tnum">R$ 34,17</dd>
+                    <dt style="font-weight:700;color:var(--ink)">Economia total</dt><dd class="tnum" style="color:var(--success);font-weight:800">R$ 4.320,00</dd>
+                  </dl>
+                </div>
+                <div class="detail">
+                  <span class="eyebrow">Status &amp; histórico</span>
+                  <dl class="rows" style="margin-top:6px">
+                    <dt>Emitida em</dt><dd>18/abr/2025 14:30</dd>
+                    <dt>Operador</dt><dd>Pedro Nacari</dd>
+                    <dt>Embarque em</dt><dd>12/mai/2025</dd>
+                  </dl>
+                  <div class="expand-actions">
+                    <button class="btn btn--outline btn--sm"><svg class="icon icon--sm"><use href="#icon-download"/></svg>PDF</button>
+                    <button class="btn btn--outline btn--sm"><svg class="icon icon--sm"><use href="#icon-edit"/></svg>Editar</button>
+                    <button class="btn btn--ghost btn--sm" style="color:var(--danger)"><svg class="icon icon--sm"><use href="#icon-trash"/></svg>Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            </td></tr>
+
+            <!-- Row 2 -->
+            <tr data-row="2">
+              <td><button class="chev-btn"><svg class="icon icon--sm"><use href="#icon-chevron-right"/></svg></button></td>
+              <td><div class="em-cliente"><div class="em-ava" style="background:linear-gradient(135deg,#f59e0b,#dc2626)">JS</div><div><b>João Santos</b><small>joao.santos@exemplo.com</small></div></div></td>
+              <td><span class="pill pill--primary">Latam Pass</span></td>
+              <td><div class="em-route">GIG <span class="sep">→</span> LIS</div><small style="color:var(--subtle)">02/jun · ida e volta</small></td>
+              <td class="num tnum"><b>85.000</b></td>
+              <td class="num tnum" style="color:var(--success);font-weight:700">R$ 2.100,00</td>
+              <td><span class="pill pill--warning"><span class="dot"></span>Pendente</span></td>
+              <td class="num"><button class="btn btn--ghost btn--sm">Editar</button><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-more"/></svg></button></td>
+            </tr>
+            <tr class="expand-row" data-expand="2" hidden><td colspan="8"><div class="panel">
+              <div class="detail"><span class="eyebrow">Aguardando</span><p style="margin-top:8px;color:var(--ink)">Cliente ainda não confirmou a cotação. Prazo expira em <b>2 dias</b>.</p>
+                <div class="expand-actions"><button class="btn btn--sm">Lembrar cliente</button><button class="btn btn--outline btn--sm">Editar cotação</button></div>
+              </div>
+              <div class="detail"><span class="eyebrow">Financeiro previsto</span><dl class="rows" style="margin-top:6px"><dt>Valor referência</dt><dd class="tnum">R$ 5.200,00</dd><dt>Economia prevista</dt><dd class="tnum" style="color:var(--success);font-weight:700">R$ 2.100,00</dd></dl></div>
+              <div class="detail"><span class="eyebrow">Status</span><dl class="rows" style="margin-top:6px"><dt>Cotada em</dt><dd>17/abr/2025</dd><dt>Expira em</dt><dd style="color:var(--warning);font-weight:700">20/abr/2025</dd></dl></div>
+            </div></td></tr>
+
+            <!-- Row 3 -->
+            <tr data-row="3">
+              <td><button class="chev-btn"><svg class="icon icon--sm"><use href="#icon-chevron-right"/></svg></button></td>
+              <td><div class="em-cliente"><div class="em-ava" style="background:linear-gradient(135deg,#10b981,#0ea5e9)">AC</div><div><b>Ana Costa</b><small>ana.costa@exemplo.com</small></div></div></td>
+              <td><span class="pill pill--primary">TudoAzul</span></td>
+              <td><div class="em-route">CNF <span class="sep">→</span> FCO</div><small style="color:var(--subtle)">24/jul · ida e volta · 2 pax</small></td>
+              <td class="num tnum"><b>210.000</b></td>
+              <td class="num tnum" style="color:var(--success);font-weight:700">R$ 6.800,00</td>
+              <td><span class="pill pill--success"><span class="dot"></span>Emitida</span></td>
+              <td class="num"><button class="btn btn--ghost btn--sm">Editar</button><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-more"/></svg></button></td>
+            </tr>
+
+            <!-- Row 4 -->
+            <tr data-row="4">
+              <td><button class="chev-btn"><svg class="icon icon--sm"><use href="#icon-chevron-right"/></svg></button></td>
+              <td><div class="em-cliente"><div class="em-ava" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">RL</div><div><b>Ricardo Lima</b><small>ricardo.lima@exemplo.com</small></div></div></td>
+              <td><span class="pill pill--primary">Smiles</span></td>
+              <td><div class="em-route">POA <span class="sep">→</span> MAD</div><small style="color:var(--subtle)">15/ago · só ida</small></td>
+              <td class="num tnum"><b>95.000</b></td>
+              <td class="num tnum" style="color:var(--success);font-weight:700">R$ 3.250,00</td>
+              <td><span class="pill pill--danger"><span class="dot"></span>Cancelada</span></td>
+              <td class="num"><button class="btn btn--ghost btn--sm">Ver</button><button class="btn btn--icon btn--sm"><svg class="icon icon--sm"><use href="#icon-more"/></svg></button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pag">
+          <span>Mostrando 1–4 de 347</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn--ghost btn--sm" disabled>Anterior</button>
+            <button class="btn btn--ghost btn--sm">Próxima</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+document.querySelectorAll('#emt-body tr[data-row]').forEach(row => {
+  row.addEventListener('click', (ev) => {
+    if (ev.target.closest('.btn') && !ev.target.closest('.chev-btn')) return;
+    const id = row.dataset.row;
+    const expand = document.querySelector(`[data-expand="${id}"]`);
+    if (!expand) return;
+    const open = !expand.hidden;
+    expand.hidden = open;
+    row.classList.toggle('is-open', !open);
+    row.querySelector('.chev-btn').classList.toggle('is-open', !open);
+  });
+});
+document.getElementById('dm-toggle').addEventListener('click', () => {
+  const r = document.documentElement;
+  const d = r.getAttribute('data-theme') === 'dark';
+  r.setAttribute('data-theme', d ? 'light' : 'dark');
+  document.getElementById('dm-icon').setAttribute('href', d ? '#icon-moon' : '#icon-sun');
+});
+</script>
+</body>
+</html>

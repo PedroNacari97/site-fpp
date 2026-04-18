@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>NCfly · Viagens inteligentes com seus pontos</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/tokens.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--ff);color:var(--ink);background:#fff;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1200px;margin:0 auto;padding:0 24px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:var(--r-sm);font-weight:700;font-size:14px;border:0;cursor:pointer;transition:all .15s;text-decoration:none}
+  .btn--primary{background:var(--primary);color:#fff}
+  .btn--primary:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 8px 16px rgba(49,130,206,.3)}
+  .btn--ghost{background:transparent;color:var(--ink-strong);border:1px solid var(--border)}
+  .btn--ghost:hover{background:var(--surface-2)}
+  .btn--white{background:#fff;color:var(--primary)}
+
+  /* NAV */
+  nav.site{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+  nav.site .inner{display:flex;align-items:center;gap:32px;padding:14px 0}
+  nav.site img{height:28px}
+  nav.site .links{display:flex;gap:28px;margin-left:auto;margin-right:auto}
+  nav.site .links a{font-size:14px;font-weight:600;color:var(--muted)}
+  nav.site .links a:hover{color:var(--primary)}
+  @media(max-width:800px){nav.site .links{display:none}}
+
+  /* HERO */
+  .hero{position:relative;padding:80px 0 100px;overflow:hidden;background:linear-gradient(180deg,#f7fafc 0%,#eaf3fc 100%)}
+  .hero::before{content:"";position:absolute;top:-200px;right:-100px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(49,130,206,.12),transparent 70%);pointer-events:none}
+  .hero__grid{display:grid;grid-template-columns:1.1fr 1fr;gap:60px;align-items:center;position:relative}
+  @media(max-width:900px){.hero__grid{grid-template-columns:1fr}}
+  .hero .eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--primary-50);color:var(--primary-dark);padding:6px 14px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.04em;margin-bottom:20px}
+  .hero .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 0 3px rgba(47,133,90,.2)}
+  .hero h1{font-size:56px;font-weight:800;line-height:1.05;letter-spacing:-.03em;color:var(--ink-strong);margin-bottom:20px}
+  @media(max-width:900px){.hero h1{font-size:40px}}
+  .hero h1 em{font-style:normal;color:var(--primary);position:relative;white-space:nowrap}
+  .hero h1 em::after{content:"";position:absolute;left:0;right:0;bottom:2px;height:10px;background:rgba(49,130,206,.18);z-index:-1;border-radius:4px}
+  .hero p.lede{font-size:18px;color:var(--muted);max-width:500px;margin-bottom:28px}
+  .hero__cta{display:flex;gap:12px;margin-bottom:36px;flex-wrap:wrap}
+  .hero__social{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--muted)}
+  .avatars{display:flex}
+  .avatars .av{width:32px;height:32px;border-radius:50%;border:2px solid #fff;margin-left:-8px;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:11px}
+  .avatars .av:nth-child(2){background:linear-gradient(135deg,#f59e0b,#dc2626)}
+  .avatars .av:nth-child(3){background:linear-gradient(135deg,#10b981,#059669)}
+  .avatars .av:nth-child(4){background:linear-gradient(135deg,#8b5cf6,#6366f1)}
+
+  /* Hero visual — dashboard mock */
+  .hero__mock{position:relative;filter:drop-shadow(0 30px 50px rgba(15,23,42,.15))}
+  .hero__mock .win{background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden}
+  .hero__mock .bar{display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid var(--divider);background:var(--surface-2)}
+  .hero__mock .bar span{width:10px;height:10px;border-radius:50%;background:#cbd5e0}
+  .hero__mock .bar span:first-child{background:#ef4444}.hero__mock .bar span:nth-child(2){background:#f59e0b}.hero__mock .bar span:nth-child(3){background:#10b981}
+  .hero__mock .body{padding:22px}
+  .mock-hero{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;border-radius:14px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
+  .mock-hero::after{content:"";position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.1)}
+  .mock-hero small{opacity:.85;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+  .mock-hero b{display:block;font-size:32px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+  .mock-hero span.sub{font-size:11px;opacity:.8}
+  .mock-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .mock-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px}
+  .mock-card small{color:var(--subtle);font-size:10px;text-transform:uppercase;font-weight:700;letter-spacing:.06em}
+  .mock-card b{display:block;font-size:18px;font-weight:800;color:var(--ink-strong);margin-top:4px}
+  .mock-card .up{color:var(--success);font-size:10px;font-weight:700}
+  .mock-list{background:var(--surface-2);border-radius:10px;padding:12px}
+  .mock-list .row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed var(--divider);font-size:11px}
+  .mock-list .row:last-child{border:0}
+  .mock-list .logo{width:22px;height:22px;border-radius:5px;color:#fff;font-weight:800;font-size:9px;display:flex;align-items:center;justify-content:center}
+  .mock-list .row b{color:var(--ink-strong)}
+  .mock-list .row .right{margin-left:auto;color:var(--primary);font-weight:800}
+  .badge-float{position:absolute;background:#fff;border-radius:14px;padding:10px 14px;box-shadow:0 10px 30px rgba(15,23,42,.12);display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600}
+  .badge-float .ic{width:36px;height:36px;border-radius:10px;background:var(--success-50);color:var(--success);display:flex;align-items:center;justify-content:center}
+  .badge-float--tl{top:30px;left:-30px}
+  .badge-float--br{bottom:40px;right:-30px}
+  .badge-float b{display:block;color:var(--ink-strong);font-weight:800}
+  .badge-float small{color:var(--muted);font-size:11px;font-weight:500}
+
+  /* LOGOS STRIP */
+  .logos{padding:40px 0;border-bottom:1px solid var(--border)}
+  .logos p{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--subtle);font-weight:700;text-align:center;margin-bottom:24px}
+  .logos__row{display:flex;justify-content:space-around;align-items:center;flex-wrap:wrap;gap:32px;opacity:.7}
+  .logos__row span{font-size:18px;font-weight:800;letter-spacing:-.02em;color:var(--muted)}
+
+  /* HOW IT WORKS */
+  section.how{padding:100px 0}
+  .sec-head{text-align:center;max-width:680px;margin:0 auto 56px}
+  .sec-head .eyebrow{display:inline-block;color:var(--primary);font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+  .sec-head h2{font-size:40px;font-weight:800;letter-spacing:-.02em;color:var(--ink-strong);margin-bottom:14px;line-height:1.15}
+  @media(max-width:700px){.sec-head h2{font-size:30px}}
+  .sec-head p{color:var(--muted);font-size:17px}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;position:relative}
+  @media(max-width:900px){.steps{grid-template-columns:1fr}}
+  .step{background:#fff;border:1px solid var(--border);border-radius:18px;padding:32px;transition:all .2s;position:relative}
+  .step:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(15,23,42,.08);border-color:var(--primary)}
+  .step__num{font-size:44px;font-weight:800;letter-spacing:-.03em;color:var(--primary-50);line-height:1;margin-bottom:18px}
+  .step h3{font-size:20px;font-weight:700;color:var(--ink-strong);margin-bottom:10px;letter-spacing:-.01em}
+  .step p{color:var(--muted);font-size:14.5px}
+
+  /* FEATURES */
+  section.features{padding:100px 0;background:var(--surface-2)}
+  .fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media(max-width:900px){.fgrid{grid-template-columns:1fr 1fr}}
+  @media(max-width:600px){.fgrid{grid-template-columns:1fr}}
+  .feat{background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px}
+  .feat__ic{width:48px;height:48px;border-radius:12px;background:var(--primary-50);color:var(--primary);display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+  .feat__ic svg{width:24px;height:24px}
+  .feat h4{font-size:17px;font-weight:700;color:var(--ink-strong);margin-bottom:8px}
+  .feat p{color:var(--muted);font-size:14px}
+
+  /* STATS */
+  section.stats{padding:80px 0;background:var(--ink-strong);color:#fff;position:relative;overflow:hidden}
+  section.stats::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at top left,rgba(49,130,206,.25),transparent 50%)}
+  .stats__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;position:relative;text-align:center}
+  @media(max-width:700px){.stats__grid{grid-template-columns:1fr 1fr;gap:40px}}
+  .stat b{display:block;font-size:52px;font-weight:800;letter-spacing:-.03em;line-height:1;margin-bottom:8px;background:linear-gradient(135deg,#fff,#90cdf4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .stat small{font-size:13px;opacity:.8;text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+
+  /* TESTIMONIAL */
+  section.tst{padding:100px 0}
+  .tst-card{max-width:780px;margin:0 auto;text-align:center;background:linear-gradient(135deg,#eaf3fc,#fff);border:1px solid var(--border);border-radius:24px;padding:56px 40px;position:relative}
+  .tst-card::before{content:"\201C";position:absolute;top:10px;left:30px;font-size:140px;color:var(--primary-50);font-family:Georgia,serif;line-height:1}
+  .tst-card blockquote{font-size:22px;line-height:1.5;color:var(--ink-strong);font-weight:500;margin-bottom:26px;position:relative;z-index:1}
+  .tst-card footer{display:flex;align-items:center;justify-content:center;gap:14px}
+  .tst-card .av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#dc2626);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:17px}
+  .tst-card cite{font-style:normal;text-align:left}
+  .tst-card cite b{display:block;color:var(--ink-strong);font-weight:700}
+  .tst-card cite small{color:var(--muted);font-size:13px}
+
+  /* CTA */
+  section.cta{padding:80px 0}
+  .cta-card{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border-radius:28px;padding:60px 48px;text-align:center;position:relative;overflow:hidden}
+  .cta-card::after{content:"";position:absolute;right:-100px;top:-100px;width:360px;height:360px;border-radius:50%;background:rgba(255,255,255,.08)}
+  .cta-card h2{font-size:38px;font-weight:800;letter-spacing:-.02em;margin-bottom:14px;line-height:1.15}
+  .cta-card p{font-size:17px;opacity:.92;margin-bottom:28px;max-width:540px;margin-left:auto;margin-right:auto}
+
+  /* FOOTER */
+  footer.site{padding:60px 0 28px;background:#fff;border-top:1px solid var(--border)}
+  footer .grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+  @media(max-width:800px){footer .grid{grid-template-columns:1fr 1fr}}
+  footer img{height:28px;margin-bottom:14px}
+  footer p.about{color:var(--muted);font-size:13.5px;max-width:320px}
+  footer h5{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-strong);margin-bottom:16px}
+  footer ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+  footer ul a{color:var(--muted);font-size:13.5px}
+  footer ul a:hover{color:var(--primary)}
+  footer .bar{border-top:1px solid var(--border);padding-top:20px;display:flex;justify-content:space-between;color:var(--subtle);font-size:12.5px;flex-wrap:wrap;gap:10px}
+</style></head><body>
+<nav class="site">
+  <div class="container inner">
+    <img src="../assets/ncfly-logo.svg" alt="NCfly">
+    <div class="links">
+      <a href="#how">Como funciona</a>
+      <a href="#features">Recursos</a>
+      <a href="#stats">Números</a>
+      <a href="#contato">Contato</a>
+    </div>
+    <a class="btn btn--ghost" href="login.html">Entrar</a>
+    <a class="btn btn--primary" href="login.html">Começar agora <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container hero__grid">
+    <div>
+      <div class="eyebrow"><span class="dot"></span>Agora com conversão automática entre programas</div>
+      <h1>Transforme <em>pontos parados</em> em viagens reais.</h1>
+      <p class="lede">A NCfly centraliza todos os seus programas de fidelidade, encontra as melhores rotas e emite bilhetes com o câmbio mais vantajoso — sem você precisar pensar nisso.</p>
+      <div class="hero__cta">
+        <a class="btn btn--primary" href="login.html">Acessar meu painel <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+        <a class="btn btn--ghost" href="#how">Ver como funciona</a>
+      </div>
+      <div class="hero__social">
+        <div class="avatars"><div class="av">MS</div><div class="av">JC</div><div class="av">AL</div><div class="av">+</div></div>
+        <span><b style="color:var(--ink-strong)">1.200+ viajantes</b> confiam na NCfly para administrar suas milhas</span>
+      </div>
+    </div>
+
+    <div class="hero__mock">
+      <div class="win">
+        <div class="bar"><span></span><span></span><span></span></div>
+        <div class="body">
+          <div class="mock-hero">
+            <small>Seu saldo convertido</small>
+            <b>R$ 44.892</b>
+            <span class="sub">2.156.800 pts · 4 programas ativos</span>
+          </div>
+          <div class="mock-grid">
+            <div class="mock-card"><small>Economia em 2025</small><b>R$ 14.320</b><span class="up">↑ 18%</span></div>
+            <div class="mock-card"><small>Emissões</small><b>12</b><span class="up">↑ 4 este mês</span></div>
+          </div>
+          <div class="mock-list">
+            <div class="row"><div class="logo" style="background:#ff6b35">S</div><b>Smiles</b><span class="right">845k</span></div>
+            <div class="row"><div class="logo" style="background:#e30613">LP</div><b>Latam Pass</b><span class="right">312k</span></div>
+            <div class="row"><div class="logo" style="background:#0097d6">TA</div><b>TudoAzul</b><span class="right">198k</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="badge-float badge-float--tl">
+        <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div><b>+80k pts</b><small>creditados hoje</small></div>
+      </div>
+      <div class="badge-float badge-float--br">
+        <div class="ic" style="background:rgba(217,119,6,.1);color:var(--warning)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.2.6-.6.5-1.1z"/></svg></div>
+        <div><b>GRU → LIS</b><small>14 Mar · 120k pts</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGOS -->
+<section class="logos">
+  <div class="container">
+    <p>Compatível com os principais programas de fidelidade do Brasil e do mundo</p>
+    <div class="logos__row">
+      <span>Smiles</span><span>Latam Pass</span><span>TudoAzul</span><span>LifeMiles</span><span>AAdvantage</span><span>Flying Blue</span>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section class="how" id="how">
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">Como funciona</span>
+      <h2>Três passos para voar gastando menos</h2>
+      <p>Conectamos todas as suas contas de fidelidade e cuidamos da conversão, cotação e emissão.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step__num">01</div>
+        <h3>Cadastre seus programas</h3>
+        <p>Conecte as contas de fidelidade que você já possui — Smiles, Latam Pass, TudoAzul e mais. Importamos seu saldo automaticamente.</p>
+      </div>
+      <div class="step">
+        <div class="step__num">02</div>
+        <h3>Cote sua viagem</h3>
+        <p>Nossa plataforma consulta todas as companhias e mostra o câmbio mais vantajoso entre pontos e dinheiro para cada trecho.</p>
+      </div>
+      <div class="step">
+        <div class="step__num">03</div>
+        <h3>Nós emitimos pra você</h3>
+        <p>Selecione o voo, confirme e receba os bilhetes por e-mail. Sem fila de atendimento, sem surpresa na taxa.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">Recursos</span>
+      <h2>Tudo num painel só</h2>
+      <p>Deixe de planilhar pontos. A NCfly monitora, calcula e executa por você.</p>
+    </div>
+    <div class="fgrid">
+      <div class="feat">
+        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg></div>
+        <h4>Saldo consolidado</h4>
+        <p>Veja todos os seus programas num painel único, com valor estimado em reais e alertas de expiração.</p>
+      </div>
+      <div class="feat">
+        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l3-9 6 18 3-9h3"/></svg></div>
+        <h4>Câmbio inteligente</h4>
+        <p>Identificamos o programa com o melhor rendimento para cada rota e sugerimos transferências estratégicas.</p>
+      </div>
+      <div class="feat">
+        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.2.6-.6.5-1.1z"/></svg></div>
+        <h4>Emissão em minutos</h4>
+        <p>Cotação, seleção e emissão num único fluxo. Bilhete no seu e-mail em menos de 5 minutos.</p>
+      </div>
+      <div class="feat">
+        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+        <h4>Alertas proativos</h4>
+        <p>Avisamos quando pontos estão próximos de expirar ou quando há uma promoção imperdível na sua rota favorita.</p>
+      </div>
+      <div class="feat">
+        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+        <h4>Histórico completo</h4>
+        <p>Cada movimentação registrada — acúmulo, transferência, emissão. Saiba exatamente quanto e onde gastou.</p>
+      </div>
+      <div class="feat">
+        <div class="feat__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A5.3 5.3 0 0 1 12 4a5.3 5.3 0 0 1 8 6.2c0 7.3-8 11.8-8 11.8z"/></svg></div>
+        <h4>Atendimento humano</h4>
+        <p>Um gestor dedicado para sua conta, via WhatsApp. Sem chatbot, sem espera.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats" id="stats">
+  <div class="container stats__grid">
+    <div class="stat"><b>R$ 4,2M</b><small>economizados em 2025</small></div>
+    <div class="stat"><b>1.248</b><small>viajantes ativos</small></div>
+    <div class="stat"><b>3.2k</b><small>bilhetes emitidos</small></div>
+    <div class="stat"><b>4.9/5</b><small>avaliação dos clientes</small></div>
+  </div>
+</section>
+
+<!-- TESTIMONIAL -->
+<section class="tst">
+  <div class="container">
+    <div class="tst-card">
+      <blockquote>Acumulei pontos em 4 programas por anos sem saber o que fazer. Em 3 meses na NCfly já emiti uma executiva Brasil→Europa e uma viagem inteira de férias. Economizei mais de R$ 14 mil.</blockquote>
+      <footer>
+        <div class="av">MS</div>
+        <cite><b>Maria Silva</b><small>Diretora de Marketing · Cliente desde 2024</small></cite>
+      </footer>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="contato">
+  <div class="container">
+    <div class="cta-card">
+      <h2>Pronto para voar gastando menos?</h2>
+      <p>Crie sua conta em 2 minutos e conecte seus primeiros programas. Sem compromisso, sem cartão de crédito.</p>
+      <a class="btn btn--white" href="login.html">Começar agora <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="container">
+    <div class="grid">
+      <div>
+        <img src="../assets/ncfly-logo.svg">
+        <p class="about">Gestão inteligente de milhas e pontos de fidelidade para viajantes que não querem deixar nada parado.</p>
+      </div>
+      <div><h5>Produto</h5><ul><li><a href="#how">Como funciona</a></li><li><a href="#features">Recursos</a></li><li><a href="#stats">Números</a></li><li><a href="login.html">Entrar</a></li></ul></div>
+      <div><h5>Empresa</h5><ul><li><a>Sobre</a></li><li><a>Blog</a></li><li><a>Carreiras</a></li><li><a>Imprensa</a></li></ul></div>
+      <div><h5>Suporte</h5><ul><li><a>Central de ajuda</a></li><li><a>WhatsApp</a></li><li><a>contato@ncfly.com.br</a></li><li><a>Termos & Privacidade</a></li></ul></div>
+    </div>
+    <div class="bar">
+      <span>© 2026 NCfly Milhas · CNPJ 00.000.000/0001-00</span>
+      <span>Feito em São Paulo, Brasil</span>
+    </div>
+  </div>
+</footer>
+</body></html>

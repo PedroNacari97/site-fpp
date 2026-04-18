@@ -1,0 +1,389 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="UTF-8"><title>NCfly · Cotar &amp; emitir</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'ds/tokens.css' %}"><link rel="stylesheet" href="{% static 'ds/base.css' %}"><link rel="stylesheet" href="{% static 'ds/shell.css' %}">
+<script src="{% static 'ds/icons.js' %}"></script><script src="{% static 'ds/tweaks.js' %}"></script>
+<style>
+  .wiz-steps{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px 20px;margin-bottom:24px;box-shadow:var(--sh-sm)}
+  .wiz-steps .step{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+  .wiz-steps .step .n{width:26px;height:26px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted)}
+  .wiz-steps .step.done .n{background:var(--success);border-color:var(--success);color:#fff}
+  .wiz-steps .step.active .n{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 0 0 4px var(--primary-bg)}
+  .wiz-steps .step .lbl{font-size:13px;font-weight:600;color:var(--muted)}
+  .wiz-steps .step.active .lbl,.wiz-steps .step.done .lbl{color:var(--ink-strong)}
+  .wiz-steps .line{flex:1;height:2px;background:var(--border);margin:0 16px}
+  .wiz-steps .line.done{background:var(--success)}
+
+  .view{display:none}
+  .view.active{display:block;animation:fadeUp .2s ease}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* Step 1: search */
+  .search-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:24px;box-shadow:var(--sh-sm)}
+  .trip-toggle{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:3px;margin-bottom:20px}
+  .trip-toggle button{padding:8px 16px;border:0;background:transparent;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+  .trip-toggle button.on{background:var(--surface);color:var(--ink-strong);box-shadow:var(--sh-sm)}
+  .search-grid{display:grid;grid-template-columns:1.2fr 1.2fr 1fr 1fr 1fr;gap:12px;align-items:end}
+  @media(max-width:1100px){.search-grid{grid-template-columns:1fr 1fr;}}
+  .search-grid .field{margin:0}
+  .airport-input{position:relative}
+  .airport-input .code{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-weight:800;color:var(--primary);font-size:13px;background:var(--primary-bg);padding:3px 8px;border-radius:4px}
+
+  /* Step 2: results */
+  .results-layout{display:grid;grid-template-columns:260px 1fr;gap:20px}
+  @media(max-width:1000px){.results-layout{grid-template-columns:1fr}}
+  .sidefilters{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:18px;height:fit-content;position:sticky;top:80px}
+  .sidefilters h4{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin:16px 0 10px}
+  .sidefilters h4:first-child{margin-top:0}
+  .cb-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;color:var(--ink)}
+  .cb-row input{accent-color:var(--primary)}
+  .cb-row .ct{margin-left:auto;color:var(--subtle);font-size:12px}
+  .range{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px}
+
+  .result-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md)}
+  .seg{display:inline-flex;background:var(--surface-2);border-radius:8px;padding:2px;gap:0}
+  .seg button{padding:6px 12px;border:0;background:transparent;border-radius:6px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer}
+  .seg button.on{background:var(--surface);color:var(--ink-strong);box-shadow:var(--sh-sm)}
+
+  .flight{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:18px 20px;margin-bottom:12px;transition:all .15s}
+  .flight:hover{border-color:var(--primary);box-shadow:var(--sh-md)}
+  .flight.selected{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-bg)}
+  .flight-grid{display:grid;grid-template-columns:auto 1fr auto 1fr auto 1fr auto;gap:18px;align-items:center}
+  @media(max-width:900px){.flight-grid{grid-template-columns:1fr}}
+  .airline{display:flex;align-items:center;gap:10px;min-width:120px}
+  .airline .al-logo{width:36px;height:36px;border-radius:8px;color:#fff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center}
+  .airline b{display:block;font-size:13px;color:var(--ink-strong)}
+  .airline small{color:var(--subtle);font-size:11px}
+  .leg{text-align:center}
+  .leg .t{font-size:18px;font-weight:800;color:var(--ink-strong);letter-spacing:-.01em}
+  .leg .a{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+  .conn{text-align:center;padding:0 10px;min-width:100px}
+  .conn .line{height:2px;background:var(--border);position:relative;margin:16px 0 6px}
+  .conn .line::before{content:"";position:absolute;left:0;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--success)}
+  .conn .line::after{content:"";position:absolute;right:0;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--success)}
+  .conn .dur{font-size:12px;color:var(--muted);font-weight:600}
+  .conn .stops{font-size:11px;color:var(--subtle);margin-top:2px}
+  .price-block{text-align:right;min-width:180px}
+  .price-block .pts{font-size:20px;font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums}
+  .price-block .pts small{font-weight:600;font-size:12px;color:var(--muted)}
+  .price-block .cash{font-size:12px;color:var(--muted);margin-top:2px}
+  .price-block .econ{color:var(--success);font-weight:700;font-size:12px;margin-top:4px;padding:2px 6px;background:rgba(5,150,105,.08);border-radius:4px;display:inline-block}
+  .price-block .btn{margin-top:10px}
+
+  /* Step 3: passengers */
+  .pax-grid{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+  @media(max-width:1000px){.pax-grid{grid-template-columns:1fr}}
+  .pax-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:24px}
+  .pax-row{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);padding:18px;margin-bottom:14px}
+  .pax-row h4{font-size:14px;color:var(--ink-strong);display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .pax-row h4 .tag{background:var(--primary);color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px}
+  .pax-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:700px){.pax-fields{grid-template-columns:1fr}}
+  .summary-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:20px;position:sticky;top:80px;height:fit-content}
+  .summary-card h4{font-size:13px;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+  .sm-route{font-size:16px;font-weight:700;color:var(--ink-strong);margin-bottom:4px}
+  .sm-sub{color:var(--muted);font-size:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--divider)}
+  .sm-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;color:var(--ink)}
+  .sm-row b{font-weight:700;color:var(--ink-strong);font-variant-numeric:tabular-nums}
+  .sm-total{border-top:1px solid var(--divider);padding-top:12px;margin-top:10px;font-size:15px}
+  .sm-total b{color:var(--primary);font-size:20px}
+
+  /* Step 4: confirm */
+  .success-hero{text-align:center;padding:40px 20px;background:linear-gradient(135deg,rgba(5,150,105,.08),rgba(5,150,105,.02));border:1px solid rgba(5,150,105,.2);border-radius:var(--r-lg);margin-bottom:24px}
+  .success-hero .check{width:72px;height:72px;border-radius:50%;background:var(--success);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 8px 20px rgba(5,150,105,.3)}
+  .success-hero h2{font-size:28px;font-weight:800;color:var(--ink-strong);letter-spacing:-.02em;margin-bottom:6px}
+  .success-hero p{color:var(--muted);font-size:14px}
+  .pnr{display:inline-block;font-family:'SF Mono',ui-monospace,monospace;font-size:22px;font-weight:800;letter-spacing:.12em;background:var(--surface);border:2px dashed var(--border);padding:12px 20px;border-radius:var(--r-sm);margin-top:16px;color:var(--ink-strong)}
+  .conf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  @media(max-width:800px){.conf-grid{grid-template-columns:repeat(2,1fr)}}
+  .conf-kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:16px;text-align:center}
+  .conf-kpi small{color:var(--muted);font-size:11px;text-transform:uppercase;font-weight:700;letter-spacing:.08em}
+  .conf-kpi b{display:block;font-size:18px;font-weight:800;color:var(--ink-strong);margin-top:6px}
+
+  .foot-bar{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:20px;border-top:1px solid var(--divider)}
+</style></head><body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar__brand"><a href="{% url 'design_system:index' %}"><img src="{% static 'ds/ncfly-logo.svg' %}" alt="NCfly"></a></div>
+    <div class="sidebar__section">Principal</div>
+    <a class="nav-item" href="{% url 'design_system:admin_dashboard' %}"><svg class="icon"><use href="#icon-home"/></svg><span>Dashboard</span></a>
+    <a class="nav-item" href="{% url 'design_system:admin_clientes' %}"><svg class="icon"><use href="#icon-users"/></svg><span>Clientes</span></a>
+    <a class="nav-item" href="{% url 'design_system:admin_emissoes' %}"><svg class="icon"><use href="#icon-ticket"/></svg><span>Emissões</span></a>
+    <a class="nav-item" href="{% url 'design_system:admin_contas' %}"><svg class="icon"><use href="#icon-wallet"/></svg><span>Contas</span></a>
+    <div class="sidebar__section">Operações</div>
+    <a class="nav-item is-active"><svg class="icon"><use href="#icon-plane"/></svg><span>Cotar &amp; emitir</span></a>
+    <a class="nav-item" href="{% url 'design_system:transferencia' %}"><svg class="icon"><use href="#icon-swap"/></svg><span>Transferências</span></a>
+    <div class="sidebar__foot"><div class="sidebar__user">PN</div><div class="meta"><b>Pedro Nacari</b><small>Administrador</small></div></div>
+  </aside>
+  <main>
+    <header class="topbar">
+      <a class="link-subtle" href="{% url 'design_system:admin_dashboard' %}" style="display:flex;align-items:center;gap:4px"><svg class="icon icon--sm"><use href="#icon-arrow-left"/></svg>Voltar</a>
+      <div class="spacer"></div>
+      <span style="color:var(--muted);font-size:13px">Cliente: <b style="color:var(--ink-strong)">Maria Silva</b></span>
+      <button class="icon-btn tt" data-tt="Alternar tema" id="dm-toggle" aria-label="Dark mode"><svg class="icon icon--sm"><use id="dm-icon" href="#icon-moon"/></svg></button>
+      <button class="btn btn--ghost">Trocar</button>
+    </header>
+    <div class="page">
+      <div class="page__head"><div><h1>Cotar &amp; emitir</h1><p>Busque as melhores rotas usando os pontos dos seus clientes.</p></div></div>
+
+      <!-- Stepper -->
+      <div class="wiz-steps">
+        <div class="step active" data-step="1"><div class="n">1</div><div class="lbl">Busca</div></div>
+        <div class="line"></div>
+        <div class="step" data-step="2"><div class="n">2</div><div class="lbl">Resultados</div></div>
+        <div class="line"></div>
+        <div class="step" data-step="3"><div class="n">3</div><div class="lbl">Passageiros</div></div>
+        <div class="line"></div>
+        <div class="step" data-step="4"><div class="n">4</div><div class="lbl">Confirmação</div></div>
+      </div>
+
+      <!-- STEP 1 -->
+      <div class="view active" data-view="1">
+        <div class="search-card">
+          <div class="trip-toggle"><button class="on">Só ida</button><button>Ida e volta</button><button>Múltiplos trechos</button></div>
+          <div class="search-grid">
+            <div class="field">
+              <label>Origem</label>
+              <div class="airport-input"><input class="input" value="São Paulo, Guarulhos"><span class="code">GRU</span></div>
+            </div>
+            <div class="field">
+              <label>Destino</label>
+              <div class="airport-input"><input class="input" value="Lisboa, Portela"><span class="code">LIS</span></div>
+            </div>
+            <div class="field"><label>Data</label><input class="input" value="14 Mar 2026" type="text"></div>
+            <div class="field"><label>Passageiros</label><select class="select"><option>1 adulto</option><option>2 adultos</option><option>2 adultos, 1 criança</option></select></div>
+            <div class="field"><label>Classe</label><select class="select"><option>Executiva</option><option>Econômica</option><option>Primeira</option></select></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:20px;border-top:1px solid var(--divider)">
+            <div style="display:flex;gap:18px;font-size:13px;color:var(--muted)">
+              <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" checked accent="var(--primary)">Incluir voos com escalas</label>
+              <label style="display:flex;align-items:center;gap:6px"><input type="checkbox">Apenas parceiros Star Alliance</label>
+              <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" checked>Comparar com tarifa em dinheiro</label>
+            </div>
+            <button class="btn btn--primary" style="min-width:180px" onclick="goStep(2)"><svg class="icon icon--sm"><use href="#icon-search"/></svg>Buscar voos</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="view" data-view="2">
+        <div class="results-layout">
+          <aside class="sidefilters">
+            <h4>Paradas</h4>
+            <div class="cb-row"><input type="checkbox" checked><span>Direto</span><span class="ct">3</span></div>
+            <div class="cb-row"><input type="checkbox" checked><span>1 parada</span><span class="ct">12</span></div>
+            <div class="cb-row"><input type="checkbox"><span>2+ paradas</span><span class="ct">8</span></div>
+            <h4>Programas</h4>
+            <div class="cb-row"><input type="checkbox" checked><span>Smiles</span><span class="ct">5</span></div>
+            <div class="cb-row"><input type="checkbox" checked><span>Latam Pass</span><span class="ct">7</span></div>
+            <div class="cb-row"><input type="checkbox" checked><span>TudoAzul</span><span class="ct">3</span></div>
+            <div class="cb-row"><input type="checkbox" checked><span>AAdvantage</span><span class="ct">4</span></div>
+            <h4>Pontos</h4>
+            <input type="range" min="60" max="200" value="140" style="width:100%;accent-color:var(--primary)">
+            <div class="range"><span>60k</span><span>até 140k pts</span></div>
+            <h4>Horário de partida</h4>
+            <div class="cb-row"><input type="checkbox"><span>Manhã (06–12)</span></div>
+            <div class="cb-row"><input type="checkbox" checked><span>Tarde (12–18)</span></div>
+            <div class="cb-row"><input type="checkbox" checked><span>Noite (18–00)</span></div>
+          </aside>
+
+          <div>
+            <div class="result-toolbar">
+              <div><b style="color:var(--ink-strong)">23 voos encontrados</b> <span style="color:var(--muted);font-size:13px">GRU → LIS · 14 Mar · Executiva</span></div>
+              <div class="seg"><button class="on">Melhor</button><button>Mais barato</button><button>Mais rápido</button></div>
+            </div>
+
+            <div class="flight selected">
+              <div class="flight-grid">
+                <div class="airline"><div class="al-logo" style="background:#e30613">LA</div><div><b>LATAM</b><small>LA8084</small></div></div>
+                <div class="leg"><div class="t">22:50</div><div class="a">GRU</div></div>
+                <div class="conn"><div class="line"></div><div class="dur">10h 35m</div><div class="stops">Direto</div></div>
+                <div class="leg"><div class="t">13:25<sup style="color:var(--muted);font-size:11px">+1</sup></div><div class="a">LIS</div></div>
+                <div class="conn"><span style="font-size:11px;color:var(--muted)">Duração<br><b style="color:var(--ink);font-size:13px">Noturno</b></span></div>
+                <div style="font-size:11px;color:var(--muted);text-align:center">Boeing 777<br>Executiva full-flat</div>
+                <div class="price-block">
+                  <div class="pts">120.000 <small>Latam Pass</small></div>
+                  <div class="cash">+ R$ 420 taxas</div>
+                  <div class="econ">Economia R$ 6.480</div>
+                  <button class="btn btn--primary btn--sm" onclick="goStep(3)">Selecionar</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="flight">
+              <div class="flight-grid">
+                <div class="airline"><div class="al-logo" style="background:#ff6b35">G3</div><div><b>GOL</b><small>G3 7664</small></div></div>
+                <div class="leg"><div class="t">18:10</div><div class="a">GRU</div></div>
+                <div class="conn"><div class="line"></div><div class="dur">14h 20m</div><div class="stops">1 parada · MAD</div></div>
+                <div class="leg"><div class="t">13:30<sup style="color:var(--muted);font-size:11px">+1</sup></div><div class="a">LIS</div></div>
+                <div class="conn"><span style="font-size:11px;color:var(--muted)">Duração<br><b style="color:var(--ink);font-size:13px">Longa</b></span></div>
+                <div style="font-size:11px;color:var(--muted);text-align:center">A330<br>Executiva</div>
+                <div class="price-block">
+                  <div class="pts">95.000 <small>Smiles</small></div>
+                  <div class="cash">+ R$ 680 taxas</div>
+                  <div class="econ">Economia R$ 4.120</div>
+                  <button class="btn btn--ghost btn--sm" onclick="goStep(3)">Selecionar</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="flight">
+              <div class="flight-grid">
+                <div class="airline"><div class="al-logo" style="background:#0033a0">AA</div><div><b>American</b><small>AA 904 + AA 66</small></div></div>
+                <div class="leg"><div class="t">14:25</div><div class="a">GRU</div></div>
+                <div class="conn"><div class="line"></div><div class="dur">17h 10m</div><div class="stops">1 parada · MIA</div></div>
+                <div class="leg"><div class="t">11:35<sup style="color:var(--muted);font-size:11px">+1</sup></div><div class="a">LIS</div></div>
+                <div class="conn"><span style="font-size:11px;color:var(--muted)">Oneworld<br><b style="color:var(--ink);font-size:13px">Code-share</b></span></div>
+                <div style="font-size:11px;color:var(--muted);text-align:center">777 + 787<br>Business Class</div>
+                <div class="price-block">
+                  <div class="pts">75.000 <small>AAdvantage</small></div>
+                  <div class="cash">+ R$ 1.240 taxas</div>
+                  <div class="econ">Economia R$ 7.820</div>
+                  <button class="btn btn--ghost btn--sm" onclick="goStep(3)">Selecionar</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="flight">
+              <div class="flight-grid">
+                <div class="airline"><div class="al-logo" style="background:#0097d6">AD</div><div><b>Azul</b><small>AD 8720</small></div></div>
+                <div class="leg"><div class="t">21:00</div><div class="a">VCP</div></div>
+                <div class="conn"><div class="line"></div><div class="dur">9h 45m</div><div class="stops">Direto</div></div>
+                <div class="leg"><div class="t">11:45<sup style="color:var(--muted);font-size:11px">+1</sup></div><div class="a">LIS</div></div>
+                <div class="conn"><span style="font-size:11px;color:var(--muted)">Ponta-ponta<br><b style="color:var(--ink);font-size:13px">Direto</b></span></div>
+                <div style="font-size:11px;color:var(--muted);text-align:center">A330neo<br>Business</div>
+                <div class="price-block">
+                  <div class="pts">140.000 <small>TudoAzul</small></div>
+                  <div class="cash">+ R$ 380 taxas</div>
+                  <div class="econ" style="background:rgba(217,119,6,.08);color:#92400e">Economia R$ 2.890</div>
+                  <button class="btn btn--ghost btn--sm" onclick="goStep(3)">Selecionar</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="text-align:center;margin-top:16px"><button class="btn btn--ghost">Ver mais 19 resultados ↓</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="view" data-view="3">
+        <div class="pax-grid">
+          <div class="pax-card">
+            <h3 style="font-size:18px;color:var(--ink-strong);margin-bottom:18px">Dados dos passageiros</h3>
+
+            <div class="pax-row">
+              <h4><span class="tag">1</span> Passageiro principal · Adulto <span style="margin-left:auto;font-weight:500;color:var(--muted);font-size:12px">preenchido automaticamente</span></h4>
+              <div class="pax-fields">
+                <div class="field"><label>Nome completo</label><input class="input" value="Maria Silva"></div>
+                <div class="field"><label>Data de nascimento</label><input class="input" value="15/08/1988"></div>
+                <div class="field"><label>CPF</label><input class="input" value="123.456.789-00"></div>
+                <div class="field"><label>Passaporte</label><input class="input" value="FB123456"></div>
+                <div class="field"><label>Validade</label><input class="input" value="22/11/2029"></div>
+                <div class="field"><label>Número do programa</label><input class="input" value="LP 98765432"></div>
+              </div>
+            </div>
+
+            <button class="btn btn--ghost" style="width:100%;margin-bottom:20px"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Adicionar outro passageiro</button>
+
+            <h4 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:10px">Contato</h4>
+            <div class="pax-fields" style="grid-template-columns:1fr 1fr">
+              <div class="field"><label>E-mail</label><input class="input" value="maria.silva@exemplo.com"></div>
+              <div class="field"><label>Telefone</label><input class="input" value="+55 11 99876-5432"></div>
+            </div>
+          </div>
+
+          <aside class="summary-card">
+            <h4>Resumo da reserva</h4>
+            <div class="sm-route">GRU → LIS</div>
+            <div class="sm-sub">14 Mar 2026 · 22:50 → 13:25<br>LATAM LA8084 · Executiva · Direto</div>
+            <div class="sm-row"><span>1 adulto</span><b>120.000 pts</b></div>
+            <div class="sm-row"><span>Taxas e impostos</span><b>R$ 420,00</b></div>
+            <div class="sm-row"><span>Taxa de emissão NCfly</span><b>R$ 89,90</b></div>
+            <div class="sm-row"><span>Seguro viagem</span><b style="color:var(--muted)">Não incluso</b></div>
+            <div class="sm-row sm-total"><span>Total a pagar</span><b>R$ 509,90 <br><small style="font-weight:500;font-size:11px;color:var(--muted)">+ 120k Latam Pass</small></b></div>
+            <div style="margin-top:14px;padding:12px;background:rgba(5,150,105,.08);border-radius:var(--r-sm);color:#065f46;font-size:12px"><b style="color:var(--success)">✓ Economia de R$ 6.480</b> vs. tarifa em dinheiro</div>
+          </aside>
+        </div>
+
+        <div class="foot-bar">
+          <button class="btn btn--ghost" onclick="goStep(2)"><svg class="icon icon--sm"><use href="#icon-arrow-left"/></svg>Voltar</button>
+          <button class="btn btn--primary" style="min-width:220px" onclick="goStep(4)">Confirmar e emitir <svg class="icon icon--sm"><use href="#icon-arrow-right"/></svg></button>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="view" data-view="4">
+        <div class="success-hero">
+          <div class="check"><svg class="icon" style="width:36px;height:36px"><use href="#icon-check"/></svg></div>
+          <h2>Emissão confirmada!</h2>
+          <p>Os bilhetes foram enviados para <b>maria.silva@exemplo.com</b> · Código de reserva abaixo</p>
+          <div class="pnr">LATAM · RXH92K</div>
+        </div>
+
+        <div class="conf-grid">
+          <div class="conf-kpi"><small>Rota</small><b>GRU → LIS</b></div>
+          <div class="conf-kpi"><small>Data</small><b>14 Mar 2026</b></div>
+          <div class="conf-kpi"><small>Pontos debitados</small><b>120.000</b></div>
+          <div class="conf-kpi"><small>Economia</small><b style="color:var(--success)">R$ 6.480</b></div>
+        </div>
+
+        <div class="card" style="background:var(--surface)">
+          <span class="eyebrow">Próximos passos</span>
+          <ul style="list-style:none;padding:0;margin:12px 0 0">
+            <li style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--divider)"><svg class="icon" style="color:var(--success);flex:none"><use href="#icon-check"/></svg><div><b style="color:var(--ink-strong)">E-ticket enviado</b><br><small style="color:var(--muted)">Confirmação PDF anexada ao e-mail do cliente.</small></div></li>
+            <li style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--divider)"><svg class="icon" style="color:var(--primary);flex:none"><use href="#icon-bell"/></svg><div><b style="color:var(--ink-strong)">Lembrete de check-in</b><br><small style="color:var(--muted)">Automático 24h antes do voo.</small></div></li>
+            <li style="display:flex;gap:12px;padding:10px 0"><svg class="icon" style="color:var(--muted);flex:none"><use href="#icon-ticket"/></svg><div><b style="color:var(--ink-strong)">Fatura NCfly</b><br><small style="color:var(--muted)">Taxa de R$ 89,90 cobrada no cartão final 4532.</small></div></li>
+          </ul>
+        </div>
+
+        <div class="foot-bar">
+          <a class="btn btn--ghost" href="{% url 'design_system:admin_emissoes' %}">Ver emissões</a>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn--ghost" onclick="goStep(1)"><svg class="icon icon--sm"><use href="#icon-plus"/></svg>Nova cotação</button>
+            <a class="btn btn--primary" href="{% url 'design_system:admin_dashboard' %}">Voltar ao dashboard</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+function goStep(n){
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',+v.dataset.view===n));
+  document.querySelectorAll('.wiz-steps .step').forEach(s=>{
+    const i=+s.dataset.step;
+    s.classList.toggle('active',i===n);
+    s.classList.toggle('done',i<n);
+  });
+  document.querySelectorAll('.wiz-steps .line').forEach((l,idx)=>{
+    l.classList.toggle('done',idx<n-1);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+  localStorage.setItem('ncfly-wiz-step',n);
+}
+// restore
+const saved=+localStorage.getItem('ncfly-wiz-step');
+if(saved>=1&&saved<=4) goStep(saved);
+
+// Dark mode toggle — sincroniza com tweaks.js via localStorage.nc_tweaks
+(function(){
+  const root = document.documentElement;
+  const btn = document.getElementById('dm-toggle');
+  const ic = document.getElementById('dm-icon');
+  function syncIcon(){
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    ic.setAttribute('href', isDark ? '#icon-sun' : '#icon-moon');
+  }
+  syncIcon();
+  btn.addEventListener('click', () => {
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    try { const t = JSON.parse(localStorage.getItem('nc_tweaks')||'{}'); t.dark = !isDark; localStorage.setItem('nc_tweaks', JSON.stringify(t)); } catch(e){}
+    syncIcon();
+  });
+})();
+</script>
+</body></html>

@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>NCfly — Análise de Design & Propostas de Melhoria</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7fafc;
+    --surface:#ffffff;
+    --ink:#0f172a;
+    --ink-2:#1a365d;
+    --muted:#4a5568;
+    --border:#e2e8f0;
+    --primary:#3182ce;
+    --primary-dark:#2c5282;
+    --primary-50:#ebf4ff;
+    --accent:#0ea5e9;
+    --success:#2f855a;
+    --warning:#d97706;
+    --danger:#e53e3e;
+    --danger-50:#fef2f2;
+    --amber-50:#fffbeb;
+    --amber-200:#fcd34d;
+    --green-50:#ecfdf3;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.05);
+    --shadow-md:0 2px 8px rgba(51,102,153,.08);
+    --shadow-lg:0 14px 30px rgba(15,23,42,.08);
+    --radius:12px;
+    --r-lg:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #e6f0fb 0%, transparent 60%),
+      radial-gradient(800px 500px at 110% 0%, #eef2ff 0%, transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Open Sans',system-ui,sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{max-width:1120px;margin:0 auto;padding:56px 32px 120px}
+  .kicker{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--primary-dark);
+    background:var(--primary-50);
+    padding:6px 12px;border-radius:999px;
+    border:1px solid #d6e7f7;
+  }
+  h1{
+    font-size:44px;line-height:1.1;letter-spacing:-0.02em;
+    font-weight:800;margin:16px 0 12px;color:var(--ink-2);
+    text-wrap:balance;
+  }
+  .lede{font-size:18px;color:var(--muted);max-width:720px;margin:0 0 12px;text-wrap:pretty}
+  .meta{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;color:var(--muted);font-size:13px}
+  .meta b{color:var(--ink)}
+  .meta .dot{width:4px;height:4px;border-radius:50%;background:#cbd5e0;align-self:center}
+
+  h2{
+    font-size:26px;font-weight:800;letter-spacing:-0.01em;color:var(--ink-2);
+    margin:56px 0 8px;text-wrap:balance;
+  }
+  h2 .num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:32px;height:32px;border-radius:10px;
+    background:var(--ink-2);color:#fff;font-size:14px;font-weight:800;
+    margin-right:12px;vertical-align:middle;
+  }
+  h3{font-size:17px;font-weight:700;color:var(--ink);margin:0 0 6px}
+  p{color:var(--muted);margin:0 0 12px}
+  .sec-sub{color:var(--muted);margin:0 0 24px;max-width:780px}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--r-lg);
+    padding:22px 24px;
+    box-shadow:var(--shadow-sm);
+  }
+  .grid{display:grid;gap:16px}
+  .cols-2{grid-template-columns:1fr 1fr}
+  .cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  @media (max-width:900px){.cols-2,.cols-3{grid-template-columns:1fr}}
+
+  /* Issue cards */
+  .issue{
+    display:grid;grid-template-columns:44px 1fr;gap:14px;
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+    padding:18px 20px;box-shadow:var(--shadow-sm);
+  }
+  .issue + .issue{margin-top:12px}
+  .issue .badge{
+    width:36px;height:36px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;color:#fff;font-size:14px;
+  }
+  .sev-high .badge{background:var(--danger)}
+  .sev-med .badge{background:var(--warning)}
+  .sev-low .badge{background:var(--accent)}
+  .issue h3{margin:2px 0 6px;display:flex;align-items:center;gap:10px}
+  .tag{
+    font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);
+  }
+  .tag.hi{color:#991b1b;background:var(--danger-50);border-color:#fecaca}
+  .tag.med{color:#92400e;background:var(--amber-50);border-color:var(--amber-200)}
+  .tag.lo{color:#075985;background:#e0f2fe;border-color:#bae6fd}
+  .issue .body{color:var(--muted);font-size:14.5px}
+  .issue .body .obs{display:block;margin-top:6px;color:#334155;font-size:13.5px}
+  .issue .body .fix{
+    margin-top:10px;padding:10px 12px;border-radius:10px;
+    background:#f0f9ff;border:1px solid #bae6fd;color:#0c4a6e;font-size:13.5px;
+  }
+  .issue .body .fix b{color:#0c4a6e}
+
+  /* Before/After swatch demo */
+  .ba{
+    display:grid;grid-template-columns:1fr 1fr;gap:0;
+    border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:14px;
+  }
+  .ba > div{padding:14px 16px;background:#fbfcfd}
+  .ba .before{border-right:1px dashed var(--border);background:#fafbfc}
+  .ba h5{margin:0 0 10px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .ba .after h5{color:var(--success)}
+  .ba .after{background:linear-gradient(180deg,#f0fdf4 0%,#fff 100%)}
+
+  /* Token swatches (three eras) */
+  .eras{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+  .era{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fff}
+  .era h4{margin:0 0 4px;font-size:13px;font-weight:800;color:var(--ink)}
+  .era p{font-size:12.5px;margin:0 0 10px}
+  .swatches{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+  .sw{width:28px;height:28px;border-radius:8px;border:1px solid rgba(15,23,42,.08)}
+  .era code{font-family:'JetBrains Mono',monospace;font-size:11px;color:#334155;background:#f1f5f9;padding:2px 6px;border-radius:4px;display:inline-block;margin:2px 2px 0 0}
+  @media (max-width:900px){.eras{grid-template-columns:1fr}}
+
+  /* Flow diagrams */
+  .flow{
+    margin-top:14px;
+    display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+    background:#fafbfd;border:1px dashed var(--border);border-radius:14px;
+    padding:14px;
+  }
+  .flow .step{
+    padding:8px 12px;background:#fff;border:1px solid var(--border);
+    border-radius:10px;font-size:13px;font-weight:600;color:var(--ink);box-shadow:var(--shadow-sm);
+    white-space:nowrap;
+  }
+  .flow .step.alt{background:var(--primary-50);border-color:#c9deef;color:var(--primary-dark)}
+  .flow .step.end{background:#ecfdf3;border-color:#bbf7d0;color:#166534}
+  .flow .arr{color:#94a3b8;font-weight:800}
+  .flow .lab{
+    width:100%;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:2px;
+  }
+
+  /* Quick wins list */
+  ul.qw{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+  ul.qw li{
+    display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;
+    padding:12px 14px;background:#fff;border:1px solid var(--border);border-radius:12px;
+  }
+  ul.qw li .check{
+    width:22px;height:22px;border-radius:6px;background:var(--green-50);color:#166534;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;
+    border:1px solid #bbf7d0;
+  }
+  ul.qw li .effort{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+  /* legend */
+  .legend{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 0}
+  .legend span{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:999px;border:1px solid}
+  .legend .hi{color:#991b1b;background:var(--danger-50);border-color:#fecaca}
+  .legend .med{color:#92400e;background:var(--amber-50);border-color:var(--amber-200)}
+  .legend .lo{color:#075985;background:#e0f2fe;border-color:#bae6fd}
+
+  /* Scorecard */
+  .score{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px;
+  }
+  .score .cell{
+    background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:left;
+  }
+  .score .label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .score .val{font-size:28px;font-weight:800;color:var(--ink);margin-top:2px}
+  .score .val small{font-size:14px;color:var(--muted);font-weight:600}
+  .bar{height:6px;border-radius:3px;background:#eef2f7;margin-top:8px;overflow:hidden}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--accent))}
+  @media (max-width:900px){.score{grid-template-columns:repeat(2,1fr)}}
+
+  /* Divider */
+  hr.rule{border:0;height:1px;background:linear-gradient(90deg,transparent,#cbd5e0,transparent);margin:48px 0}
+
+  /* Section intro w/ sidecar */
+  .intro{display:grid;grid-template-columns:1fr 260px;gap:24px;align-items:start}
+  .intro .aside{
+    background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px 16px;
+    font-size:13px;color:var(--muted);
+  }
+  .intro .aside b{color:var(--ink)}
+  @media (max-width:900px){.intro{grid-template-columns:1fr}}
+
+  /* Footer */
+  .foot{margin-top:48px;color:var(--muted);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <section>
+    <span class="kicker">Análise de Design · NCfly</span>
+    <h1>Análise do design atual e propostas de melhoria para o sistema NCfly</h1>
+    <p class="lede">Revisão do repositório <b>PedroNacari97/site-fpp</b> (branch <code>main</code>): dois produtos — <b>Gestão</b> (painel do operador) e <b>Painel do Cliente</b> —, compartilhando o mesmo login. Abaixo: diagnóstico dos principais problemas de consistência, hierarquia, acessibilidade e fluxo, seguido de recomendações acionáveis.</p>
+    <div class="meta">
+      <span><b>Fontes analisadas:</b> admin-theme.css, painel.css, login.css, variables.css, layout.css, templates base e 6+ telas-chave</span>
+    </div>
+    <div class="meta">
+      <span><b>Domínio:</b> SaaS B2B de gestão de milhas aéreas (PT-BR)</span>
+      <span class="dot"></span>
+      <span><b>Stack visual:</b> Open Sans · #3182ce · SVG lucide-style inline</span>
+    </div>
+  </section>
+
+  <!-- SCORECARD -->
+  <h2><span class="num">1</span>Diagnóstico em números</h2>
+  <p class="sec-sub">Pontuação qualitativa do estado atual (baseado em heurísticas de consistência, hierarquia, densidade e acessibilidade). Quanto maior, melhor.</p>
+  <div class="card">
+    <div class="score">
+      <div class="cell">
+        <div class="label">Consistência de tokens</div>
+        <div class="val">4<small>/10</small></div>
+        <div class="bar"><i style="width:40%"></i></div>
+      </div>
+      <div class="cell">
+        <div class="label">Hierarquia visual</div>
+        <div class="val">6<small>/10</small></div>
+        <div class="bar"><i style="width:60%"></i></div>
+      </div>
+      <div class="cell">
+        <div class="label">Densidade & legibilidade</div>
+        <div class="val">5<small>/10</small></div>
+        <div class="bar"><i style="width:50%"></i></div>
+      </div>
+      <div class="cell">
+        <div class="label">Acessibilidade</div>
+        <div class="val">5<small>/10</small></div>
+        <div class="bar"><i style="width:50%"></i></div>
+      </div>
+      <div class="cell">
+        <div class="label">Fluxos &amp; UX</div>
+        <div class="val">5<small>/10</small></div>
+        <div class="bar"><i style="width:50%"></i></div>
+      </div>
+    </div>
+    <p style="margin:14px 0 0;font-size:13.5px">
+      <b style="color:var(--ink)">Resumo:</b> A identidade visual existe e é coerente em intenção (azul Chakra, cards brancos, Open Sans), mas <b>três "eras" de CSS</b> coexistem no repositório, gerando divergências sutis em tokens, espaçamento e componentes. A informação crua aparece bem, mas falta <b>hierarquia tipográfica</b>, <b>densidade controlada</b> nas tabelas e <b>fluxos guiados</b> para a tarefa principal (cotar → emitir).
+    </p>
+  </div>
+
+  <!-- ERA FRAGMENTATION -->
+  <h2><span class="num">2</span>O problema raiz: três "eras" de design coabitando</h2>
+  <p class="sec-sub">O repositório contém três gerações sobrepostas de CSS. Cada tela herda uma mistura imprevisível. Essa é a causa de 70% dos problemas visuais detectados.</p>
+
+  <div class="card">
+    <div class="eras">
+      <div class="era" style="border-top:3px solid #2c5aa0">
+        <h4>Era 1 — "Legacy NCfly"</h4>
+        <p><code>login.css</code> · <code>painel.css</code></p>
+        <div class="swatches">
+          <div class="sw" style="background:#2c5aa0"></div>
+          <div class="sw" style="background:#5a8cc4"></div>
+          <div class="sw" style="background:#1e3f66"></div>
+          <div class="sw" style="background:#d4e4f0"></div>
+          <div class="sw" style="background:#c85a5a"></div>
+        </div>
+        <code>Segoe UI</code><code>sidebar gradient</code><code>UPPERCASE labels</code><code>dark mode</code><code>16px radius</code>
+      </div>
+      <div class="era" style="border-top:3px solid #2563eb">
+        <h4>Era 2 — "Admin v1"</h4>
+        <p>topo de <code>admin-theme.css</code></p>
+        <div class="swatches">
+          <div class="sw" style="background:#2563eb"></div>
+          <div class="sw" style="background:#1d4ed8"></div>
+          <div class="sw" style="background:#0ea5e9"></div>
+          <div class="sw" style="background:#0f172a"></div>
+          <div class="sw" style="background:#f4f6fb"></div>
+        </div>
+        <code>Open Sans</code><code>16px radius</code><code>sidebar dark #0f172a</code><code>shadow grande</code>
+      </div>
+      <div class="era" style="border-top:3px solid #3182ce">
+        <h4>Era 3 — "Shell v2" (atual)</h4>
+        <p>final de <code>admin-theme.css</code> + <code>painel_cliente</code></p>
+        <div class="swatches">
+          <div class="sw" style="background:#3182ce"></div>
+          <div class="sw" style="background:#2c5282"></div>
+          <div class="sw" style="background:#ebf4ff"></div>
+          <div class="sw" style="background:#1a365d"></div>
+          <div class="sw" style="background:#f7fafc"></div>
+        </div>
+        <code>Open Sans</code><code>12px radius</code><code>sidebar branca</code><code>border-right ativo</code>
+      </div>
+    </div>
+
+    <div class="ba">
+      <div class="before">
+        <h5>Hoje</h5>
+        <p style="margin:0;color:#334155;font-size:13.5px">
+          <code style="font-family:'JetBrains Mono',monospace;font-size:12px">--primary</code> aparece como <b>#2563eb</b> (era 2) e <b>#3182ce</b> (era 3) no <i>mesmo arquivo</i>. Componentes herdam aleatoriamente pela ordem de import.
+        </p>
+      </div>
+      <div class="after">
+        <h5>Proposto</h5>
+        <p style="margin:0;color:#064e3b;font-size:13.5px">
+          Eleger a <b>Era 3 ("Shell v2")</b> como única fonte da verdade, mover tokens para <code>:root</code> em um <b>único</b> arquivo <code>tokens.css</code> importado antes de tudo. Remover as outras duas eras para o histórico.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISSUES -->
+  <h2><span class="num">3</span>Os 8 problemas mais impactantes</h2>
+  <p class="sec-sub">Ordenados por severidade. Cada item traz a observação concreta no código + correção proposta.</p>
+  <div class="legend"><span class="hi">Alta</span><span class="med">Média</span><span class="lo">Baixa</span></div>
+  <div style="height:14px"></div>
+
+  <!-- ISSUE 1 -->
+  <div class="issue sev-high">
+    <div class="badge">1</div>
+    <div>
+      <h3>Tabelas densas sem hierarquia <span class="tag hi">Alta</span></h3>
+      <div class="body">
+        <b style="color:var(--ink)">Exemplo:</b> <code>admin_custom/emissoes.html</code> lista <b>15 colunas</b> (Cliente, Programa, Ida, Volta, Datas, Qtd, Cia, Localizador, 4 valores monetários, Pontos, Detalhes, Ações) na mesma grade, todas com mesmo peso.
+        <span class="obs">→ O operador precisa escanear "Economia" para avaliar performance, mas "Detalhes" (texto longo) ocupa o mesmo espaço. Ações ficam espremidas no final.</span>
+        <div class="fix">
+          <b>Correção:</b> Adotar <b>tabela de duas camadas</b>. Linha principal = identidade + KPI (Cliente · Rota · Economia · Status). Expandir com <kbd>›</kbd> para detalhes financeiros. Fixar coluna "Cliente" à esquerda e "Ações" à direita. Alinhar valores monetários à direita, <code>font-variant-numeric: tabular-nums</code>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISSUE 2 -->
+  <div class="issue sev-high">
+    <div class="badge">2</div>
+    <div>
+      <h3>Duas escalas de raio de borda conflitantes <span class="tag hi">Alta</span></h3>
+      <div class="body">
+        <code>admin-theme.css</code> declara <code>--radius: 16px</code>, mas <code>.btn</code> usa <code>8px</code>, <code>.card</code> (painel_cliente) <code>12px</code>, inputs <code>12px</code>, login <code>10px</code>→<code>20px</code> dependendo do breakpoint.
+        <span class="obs">→ Visualmente: botão em cima de card em cima de input, cada um com raio diferente, dá aparência "montada em etapas".</span>
+        <div class="fix">
+          <b>Correção:</b> Escala única: <code>--r-sm: 8px</code> (botões, inputs, pills), <code>--r-md: 12px</code> (cards, selects), <code>--r-lg: 16px</code> (modais, login card). Banir uso direto de <code>px</code> em raio fora desses tokens.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISSUE 3 -->
+  <div class="issue sev-high">
+    <div class="badge">3</div>
+    <div>
+      <h3>Login do <code>accounts/</code> usa uma linguagem visual diferente do restante <span class="tag hi">Alta</span></h3>
+      <div class="body">
+        <code>accounts/templates/accounts/login.html</code> carrega apenas <code>gestao/css/main.css</code> + classes legadas (<code>.login-page</code>, <code>.login-container</code>, <code>.dark-mode-toggle</code>), com fonte Segoe UI, azul #2c5aa0 e botão <b>uppercase com letter-spacing</b> em gradiente. O resto do app usa Open Sans, botão <code>title-case</code> sólido.
+        <span class="obs">→ Primeiro ponto de contato do usuário já entrega uma marca diferente. Select de "Tipo de Acesso" (Cliente/Operador/Admin/Super Admin) é também um anti-padrão de segurança: exige que o usuário saiba seu perfil.</span>
+        <div class="fix">
+          <b>Correção:</b> Reescrever o login em cima do "Shell v2" (Open Sans, botão sólido sem uppercase, radius 12px). Remover o seletor de perfil — o backend resolve o perfil a partir do CPF. Dark mode volta via toggle no header, não só no login.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISSUE 4 -->
+  <div class="issue sev-med">
+    <div class="badge">4</div>
+    <div>
+      <h3>Emoji misturado com ícones SVG como iconografia primária <span class="tag med">Média</span></h3>
+      <div class="body">
+        Em <code>dashboard.html</code>: <code>👥 Total de Clientes</code>, <code>✈️ Total de Emissões</code>, <code>💰 Total Economizado</code>. Nas tabelas: <code>⋮</code>, <code>👁️ Ver</code>, <code>✏️ Editar</code>, <code>🗑️ Deletar</code>. Em paralelo, a sidebar usa SVG lucide-style rigorosos.
+        <span class="obs">→ Renderização de emoji varia por SO (Apple/Segoe/Noto). No Windows, 👁️✏️🗑️ saem monocromáticos e desalinhados verticalmente. Em PDFs/impressão somem.</span>
+        <div class="fix">
+          <b>Correção:</b> Padronizar 100% em <b>lucide-react</b> (ou SVG sprite próprio), 20×20, <code>stroke: currentColor</code>. Mapear: 👥→<code>users</code>, ✈️→<code>plane</code>, 💰→<code>piggy-bank</code>, 👁️→<code>eye</code>, ✏️→<code>pencil</code>, 🗑️→<code>trash-2</code>, ⋮→<code>more-vertical</code>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISSUE 5 -->
+  <div class="issue sev-med">
+    <div class="badge">5</div>
+    <div>
+      <h3>Labels em UPPERCASE de 10–12px com letter-spacing <span class="tag med">Média</span></h3>
+      <div class="body">
+        <code>painel.css</code> aplica <code>text-transform: uppercase; letter-spacing: .2–.3px; font-size: 10–12px</code> em <b>todos</b> os labels de formulário e ações de tabela.
+        <span class="obs">→ Uppercase + tamanho pequeno prejudica leitura (especialmente em PT-BR com acentos). <code>Ações</code> em 10px uppercase é quase ilegível em telas densas. WCAG recomenda evitar uppercase como principal para texto de interface.</span>
+        <div class="fix">
+          <b>Correção:</b> Uppercase fica reservado para a classe <code>.eyebrow</code> (rótulo-seção, acima de títulos). Labels de formulário: <code>13.5px, font-weight:600, sentence case</code>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISSUE 6 -->
+  <div class="issue sev-med">
+    <div class="badge">6</div>
+    <div>
+      <h3>Ações críticas escondidas em dropdown <code>⋮</code> <span class="tag med">Média</span></h3>
+      <div class="body">
+        Em <code>clientes.html</code> e <code>contas.html</code>, "Ver", "Editar", "Deletar", "Programas" vivem em <code>&lt;details&gt;</code> com summary <code>⋮</code>. "Deletar" fica ao lado de "Editar" sem confirmação.
+        <span class="obs">→ Dois cliques para a ação mais comum (editar) e nenhuma proteção contra deletar por engano. <code>&lt;details&gt;</code> nativo não tem <code>aria-haspopup</code>, não fecha ao perder foco.</span>
+        <div class="fix">
+          <b>Correção:</b> Ação primária (<b>Editar</b>) fora do menu, como botão ghost. Secundárias no popover com Radix/Headless UI. <b>Deletar</b> em item vermelho + modal de confirmação com digitação do nome do cliente/conta.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISSUE 7 -->
+  <div class="issue sev-med">
+    <div class="badge">7</div>
+    <div>
+      <h3>Dashboard sem sinal de tendência <span class="tag med">Média</span></h3>
+      <div class="body">
+        Cards <code>Total de Clientes</code>, <code>Total de Emissões</code>, <code>Total Economizado</code> mostram valores absolutos. Não há delta (<code>+12% vs. mês passado</code>), nem ranges de tempo, nem comparativo.
+        <span class="obs">→ Para o dono/gerente, o número sozinho não responde a pergunta "como estamos performando?".</span>
+        <div class="fix">
+          <b>Correção:</b> Adicionar seletor de período (<code>7d · 30d · 90d · YTD</code>) no header do dashboard. Cards KPI com mini-sparkline + delta colorido. Chart de emissões por programa já existe — escalar para série temporal.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ISSUE 8 -->
+  <div class="issue sev-low">
+    <div class="badge">8</div>
+    <div>
+      <h3>Logo só em PNG de baixa resolução <span class="tag lo">Baixa</span></h3>
+      <div class="body">
+        Apenas <code>painel_cliente/static/painel_cliente/ncfly_logo.png</code>. Usado em 60×60 no login mobile e 160×auto em desktop. Sem versão SVG.
+        <div class="fix">
+          <b>Correção:</b> Fornecer SVG da logo + versão "mark only" para favicon / sidebar colapsada + versão monocromática. Acompanhado de um <code>manifest.json</code> para PWA.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOWS -->
+  <h2><span class="num">4</span>Propostas de fluxo</h2>
+  <p class="sec-sub">Hoje os fluxos são navegacionais (usuário escolhe em menu o que fazer). Abaixo, fluxos orientados à <b>tarefa</b>, que é o que a agência NCfly realmente executa todo dia.</p>
+
+  <div class="grid cols-2">
+    <!-- Flow A -->
+    <div class="card">
+      <span class="kicker" style="background:#fff7ed;color:#9a3412;border-color:#fed7aa">Fluxo A · Principal</span>
+      <h3 style="margin-top:10px">Cotar → Emitir passagem (operador)</h3>
+      <p>Combinar o wizard de cotação e emissão em <b>um só fluxo de 4 passos</b>, com autosalvamento e status.</p>
+      <div class="flow">
+        <span class="lab">Hoje — navegação</span>
+        <span class="step">Menu → Cotações</span>
+        <span class="arr">›</span>
+        <span class="step">Nova cotação (form 23kb)</span>
+        <span class="arr">›</span>
+        <span class="step">Salvar</span>
+        <span class="arr">›</span>
+        <span class="step">Menu → Emissões</span>
+        <span class="arr">›</span>
+        <span class="step">Nova emissão (form 28kb)</span>
+      </div>
+      <div class="flow">
+        <span class="lab">Proposto — tarefa</span>
+        <span class="step alt">1. Cliente &amp; rota</span>
+        <span class="arr">›</span>
+        <span class="step alt">2. Cotações geradas</span>
+        <span class="arr">›</span>
+        <span class="step alt">3. Escolher conta-pool</span>
+        <span class="arr">›</span>
+        <span class="step end">4. Confirmar emissão</span>
+      </div>
+      <p style="margin-top:10px;font-size:13.5px;color:#334155">O mesmo objeto transita de "Cotação" → "Emissão" mudando de estado. Evita re-digitar aeroporto/passageiros/datas.</p>
+    </div>
+
+    <!-- Flow B -->
+    <div class="card">
+      <span class="kicker" style="background:#ecfdf3;color:#166534;border-color:#bbf7d0">Fluxo B</span>
+      <h3 style="margin-top:10px">Onboarding de novo cliente (admin)</h3>
+      <p>Hoje: cadastrar cliente, depois criar contas uma a uma, depois importar pontos em outra tela.</p>
+      <div class="flow">
+        <span class="lab">Proposto — wizard</span>
+        <span class="step alt">Dados do cliente</span>
+        <span class="arr">›</span>
+        <span class="step alt">Contas de fidelidade (múltiplas)</span>
+        <span class="arr">›</span>
+        <span class="step alt">Saldo inicial &amp; valor médio</span>
+        <span class="arr">›</span>
+        <span class="step end">Enviar acesso ao cliente</span>
+      </div>
+      <p style="margin-top:10px;font-size:13.5px;color:#334155">E-mail automático com link mágico (sem senha inicial) reduz fricção no primeiro acesso.</p>
+    </div>
+
+    <!-- Flow C -->
+    <div class="card">
+      <span class="kicker" style="background:#eff6ff;color:#1e40af;border-color:#bfdbfe">Fluxo C</span>
+      <h3 style="margin-top:10px">Visão do cliente — "quanto meus pontos valem hoje?"</h3>
+      <p>Hoje: dashboard mostra saldo por programa. Falta a pergunta que o cliente realmente tem.</p>
+      <div class="flow">
+        <span class="lab">Proposto — painel orientado a valor</span>
+        <span class="step">Saldo consolidado em R$</span>
+        <span class="arr">›</span>
+        <span class="step alt">Histórico de valor (12m)</span>
+        <span class="arr">›</span>
+        <span class="step alt">Próximo vencimento de pontos</span>
+        <span class="arr">›</span>
+        <span class="step end">Solicitar cotação</span>
+      </div>
+      <p style="margin-top:10px;font-size:13.5px;color:#334155">Botão <b>"Solicitar cotação"</b> cria ticket que cai direto na fila do operador.</p>
+    </div>
+
+    <!-- Flow D -->
+    <div class="card">
+      <span class="kicker" style="background:#fef2f2;color:#991b1b;border-color:#fecaca">Fluxo D</span>
+      <h3 style="margin-top:10px">Transferência de pontos entre contas</h3>
+      <p><code>transferencia_pontos.html</code> existe mas é isolada. Não mostra taxa / bônus / limite do programa.</p>
+      <div class="flow">
+        <span class="lab">Proposto</span>
+        <span class="step alt">Origem (conta administrada)</span>
+        <span class="arr">›</span>
+        <span class="step alt">Destino (cliente/programa)</span>
+        <span class="arr">›</span>
+        <span class="step alt">Preview: bônus +80%, taxa, chegada</span>
+        <span class="arr">›</span>
+        <span class="step end">Confirmar + registrar movimentação</span>
+      </div>
+      <p style="margin-top:10px;font-size:13.5px;color:#334155">Audit log automático (o modelo <code>AuditLog</code> já existe; falta UI visível).</p>
+    </div>
+  </div>
+
+  <!-- QUICK WINS -->
+  <h2><span class="num">5</span>Quick wins — o que fazer primeiro</h2>
+  <p class="sec-sub">Itens com alto retorno e esforço baixo/médio. Ordem sugerida de execução.</p>
+  <ul class="qw">
+    <li>
+      <span class="check">✓</span>
+      <span><b>Colapsar os 3 CSS em um só</b> — <code>tokens.css</code> + <code>components.css</code> + <code>utilities.css</code>. Apagar <code>painel.css</code> legacy e o bloco v1 de <code>admin-theme.css</code>.</span>
+      <span class="effort">1 dia</span>
+    </li>
+    <li>
+      <span class="check">✓</span>
+      <span><b>Remover seletor de perfil no login</b>. Backend resolve via CPF. Fonte Open Sans, botão em title case, radius 12px.</span>
+      <span class="effort">½ dia</span>
+    </li>
+    <li>
+      <span class="check">✓</span>
+      <span><b>Substituir emoji por ícones lucide</b> em todos os stats, dropdowns, table actions, dark mode toggle.</span>
+      <span class="effort">1 dia</span>
+    </li>
+    <li>
+      <span class="check">✓</span>
+      <span><b>Padronizar labels</b>: sentence case, 13.5px/600, não-uppercase. Uppercase só na classe <code>.eyebrow</code>.</span>
+      <span class="effort">½ dia</span>
+    </li>
+    <li>
+      <span class="check">✓</span>
+      <span><b>Tabela de emissões em 2 camadas</b>: row resumida + expand para detalhes. Tabular-nums em valores.</span>
+      <span class="effort">2 dias</span>
+    </li>
+    <li>
+      <span class="check">✓</span>
+      <span><b>Modal de confirmação</b> para qualquer "Deletar" com digitação do nome do recurso.</span>
+      <span class="effort">½ dia</span>
+    </li>
+    <li>
+      <span class="check">✓</span>
+      <span><b>Empty states</b>: hoje "Nenhum cliente encontrado" é só texto. Adicionar ilustração leve + CTA "+ Novo Cliente".</span>
+      <span class="effort">1 dia</span>
+    </li>
+    <li>
+      <span class="check">✓</span>
+      <span><b>Dashboard com período</b> (7d/30d/90d) + deltas nos KPIs + sparkline.</span>
+      <span class="effort">2 dias</span>
+    </li>
+    <li>
+      <span class="check">✓</span>
+      <span><b>Logo em SVG</b> + favicon + versão mark para sidebar.</span>
+      <span class="effort">½ dia</span>
+    </li>
+    <li>
+      <span class="check">✓</span>
+      <span><b>Fluxo Cotar→Emitir</b> unificado em wizard (A). Primeiro candidato a produto.</span>
+      <span class="effort">1 semana</span>
+    </li>
+  </ul>
+
+  <!-- RECOMMENDED TOKENS -->
+  <h2><span class="num">6</span>Tokens recomendados (Shell v2, limpo)</h2>
+  <p class="sec-sub">Versão final — copiar para <code>tokens.css</code> e importar antes de qualquer outro estilo.</p>
+  <div class="card" style="padding:20px 24px">
+    <pre style="margin:0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#334155;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px;overflow:auto"><span style="color:#6b7280">/* tokens.css — única fonte da verdade */</span>
+:root {
+  <span style="color:#6b7280">/* Surface */</span>
+  --bg: #f7fafc;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --border: #e2e8f0;
+  --divider: #edf2f7;
+
+  <span style="color:#6b7280">/* Ink */</span>
+  --ink: #1a202c;
+  --ink-strong: #1a365d;   <span style="color:#6b7280">/* headings */</span>
+  --muted: #4a5568;
+  --subtle: #718096;
+
+  <span style="color:#6b7280">/* Brand — azul NCfly */</span>
+  --primary: #3182ce;
+  --primary-dark: #2c5282;
+  --primary-50: #ebf4ff;
+  --accent: #0ea5e9;
+
+  <span style="color:#6b7280">/* Status */</span>
+  --success: #2f855a; --success-50: #ecfdf3;
+  --warning: #d97706; --warning-50: #fffbeb;
+  --danger:  #e53e3e; --danger-50:  #fef2f2;
+
+  <span style="color:#6b7280">/* Radius */</span>
+  --r-sm: 8px;   <span style="color:#6b7280">/* inputs, botões, pills */</span>
+  --r-md: 12px;  <span style="color:#6b7280">/* cards, selects */</span>
+  --r-lg: 16px;  <span style="color:#6b7280">/* modais, login */</span>
+
+  <span style="color:#6b7280">/* Shadows */</span>
+  --sh-sm: 0 1px 2px rgba(15,23,42,.05);
+  --sh-md: 0 2px 8px rgba(51,102,153,.08);
+  --sh-lg: 0 14px 30px rgba(15,23,42,.08);
+
+  <span style="color:#6b7280">/* Spacing (4pt grid) */</span>
+  --s-1: 4px; --s-2: 8px; --s-3: 12px;
+  --s-4: 16px; --s-5: 20px; --s-6: 24px;
+  --s-8: 32px; --s-10: 40px; --s-12: 48px;
+
+  <span style="color:#6b7280">/* Type */</span>
+  --ff: 'Open Sans', system-ui, sans-serif;
+  --ff-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --fs-xs: 12px; --fs-sm: 13.5px; --fs: 15px;
+  --fs-lg: 17px; --fs-xl: 20px; --fs-2xl: 26px; --fs-3xl: 32px;
+
+  <span style="color:#6b7280">/* Layout */</span>
+  --sidebar: 256px;
+  --page-max: 1280px;
+  --header-h: 64px;
+}
+</pre>
+  </div>
+
+  <hr class="rule">
+
+  <p class="foot">
+    Análise baseada em <b>PedroNacari97/site-fpp @ main</b> · Revisão visual e heurística, não-exaustiva · Pronta para virar um roadmap de tickets.
+  </p>
+</div>
+</body>
+</html>
