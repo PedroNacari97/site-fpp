@@ -6,6 +6,7 @@ URL base: /ncadm/
 """
 import json
 import logging
+import re
 from datetime import timedelta
 
 from django.conf import settings
@@ -283,32 +284,127 @@ class EmpresaDetailView(SuperAdminRequiredMixin):
         return render(request, "superadmin/empresa_detail.html", context)
 
 
+def _normalizar_digitos(valor: str) -> str:
+    """Remove qualquer caractere nao numerico. Util para CNPJ/CPF/CEP."""
+    return re.sub(r"\D", "", valor or "")
+
+
+def _formatar_cep(cep_digits: str) -> str:
+    """Formata 8 digitos como 00000-000. Se nao tiver 8 digitos, retorna como veio."""
+    if len(cep_digits) == 8:
+        return f"{cep_digits[:5]}-{cep_digits[5:]}"
+    return cep_digits
+
+
+def _formatar_cnpj(cnpj_digits: str) -> str:
+    """Formata 14 digitos como 00.000.000/0000-00."""
+    if len(cnpj_digits) == 14:
+        return f"{cnpj_digits[:2]}.{cnpj_digits[2:5]}.{cnpj_digits[5:8]}/{cnpj_digits[8:12]}-{cnpj_digits[12:]}"
+    return cnpj_digits
+
+
+def _extrair_dados_empresa(post):
+    """Le todos os campos do formulario de empresa e normaliza mascaras.
+
+    Retorna (dados_dict, erros_list). Usado tanto em create quanto em edit.
+    """
+    nome = post.get("nome", "").strip()
+    razao_social = post.get("razao_social", "").strip()
+    tipo_pessoa = post.get("tipo_pessoa", "PJ").strip() or "PJ"
+    cnpj_raw = post.get("cnpj", "").strip()
+    documento_titular = post.get("documento_titular", "").strip()
+    responsavel_nome = post.get("responsavel_nome", "").strip()
+    email_contato = post.get("email_contato", "").strip()
+    telefone_contato = post.get("telefone_contato", "").strip()
+    whatsapp = post.get("whatsapp", "").strip()
+    website = post.get("website", "").strip()
+    cep_raw = post.get("cep", "").strip()
+    endereco = post.get("endereco", "").strip()
+    numero = post.get("numero", "").strip()
+    complemento = post.get("complemento", "").strip()
+    bairro = post.get("bairro", "").strip()
+    cidade = post.get("cidade", "").strip()
+    estado = post.get("estado", "").strip()
+    descricao_rodape = post.get("descricao_rodape", "").strip()
+    limite_colaboradores_raw = post.get("limite_colaboradores", "0").strip()
+    ativo = post.get("ativo") == "1"
+
+    erros = []
+
+    # CNPJ — normaliza e valida tamanho (se informado)
+    cnpj = ""
+    if cnpj_raw:
+        cnpj_digits = _normalizar_digitos(cnpj_raw)
+        if len(cnpj_digits) != 14:
+            erros.append("CNPJ deve ter 14 digitos.")
+        else:
+            cnpj = _formatar_cnpj(cnpj_digits)
+
+    # CEP — normaliza e valida (se informado)
+    cep = ""
+    if cep_raw:
+        cep_digits = _normalizar_digitos(cep_raw)
+        if len(cep_digits) != 8:
+            erros.append("CEP deve ter 8 digitos.")
+        else:
+            cep = _formatar_cep(cep_digits)
+
+    # Tipo de pessoa limitado aos valores validos
+    if tipo_pessoa not in ("PJ", "PF"):
+        tipo_pessoa = "PJ"
+
+    # UF: 2 letras maiusculas (se informado)
+    if estado:
+        estado_limpo = re.sub(r"[^A-Za-z]", "", estado).upper()[:2]
+        estado = estado_limpo
+
+    # Limite colaboradores
+    try:
+        limite_colaboradores = int(limite_colaboradores_raw)
+        if limite_colaboradores < 0:
+            limite_colaboradores = 0
+    except (ValueError, TypeError):
+        limite_colaboradores = 0
+
+    dados = {
+        "nome": nome,
+        "razao_social": razao_social,
+        "tipo_pessoa": tipo_pessoa,
+        "cnpj": cnpj or None,  # null permitido no model (unique)
+        "documento_titular": documento_titular,
+        "responsavel_nome": responsavel_nome,
+        "email_contato": email_contato,
+        "telefone_contato": telefone_contato,
+        "whatsapp": whatsapp,
+        "website": website,
+        "cep": cep,
+        "endereco": endereco,
+        "numero": numero,
+        "complemento": complemento,
+        "bairro": bairro,
+        "cidade": cidade,
+        "estado": estado,
+        "descricao_rodape": descricao_rodape,
+        "limite_colaboradores": limite_colaboradores,
+        "ativo": ativo,
+    }
+    return dados, erros
+
+
 class EmpresaCreateView(SuperAdminRequiredMixin):
     def get(self, request):
         context = {"menu_ativo": "empresas"}
         return render(request, "superadmin/empresa_form.html", context)
 
     def post(self, request):
-        nome = request.POST.get("nome", "").strip()
-        responsavel_nome = request.POST.get("responsavel_nome", "").strip()
-        email_contato = request.POST.get("email_contato", "").strip()
-        telefone_contato = request.POST.get("telefone_contato", "").strip()
-        whatsapp = request.POST.get("whatsapp", "").strip()
-        website = request.POST.get("website", "").strip()
-        cidade = request.POST.get("cidade", "").strip()
-        estado = request.POST.get("estado", "").strip()
-        limite_colaboradores = request.POST.get("limite_colaboradores", "0").strip()
-        ativo = request.POST.get("ativo") == "1"
+        dados, erros = _extrair_dados_empresa(request.POST)
 
-        erros = []
-        if not nome:
+        if not dados["nome"]:
             erros.append("Nome da empresa e obrigatorio.")
-        if Empresa.objects.filter(nome=nome).exists():
-            erros.append(f'Ja existe uma empresa com o nome "{nome}".')
-        try:
-            limite_colaboradores = int(limite_colaboradores)
-        except (ValueError, TypeError):
-            limite_colaboradores = 0
+        if dados["nome"] and Empresa.objects.filter(nome=dados["nome"]).exists():
+            erros.append(f'Ja existe uma empresa com o nome "{dados["nome"]}".')
+        if dados["cnpj"] and Empresa.objects.filter(cnpj=dados["cnpj"]).exists():
+            erros.append(f'Ja existe uma empresa com o CNPJ "{dados["cnpj"]}".')
 
         if erros:
             for erro in erros:
@@ -319,26 +415,15 @@ class EmpresaCreateView(SuperAdminRequiredMixin):
             }
             return render(request, "superadmin/empresa_form.html", context)
 
-        empresa = Empresa.objects.create(
-            nome=nome,
-            responsavel_nome=responsavel_nome,
-            email_contato=email_contato,
-            telefone_contato=telefone_contato,
-            whatsapp=whatsapp,
-            website=website,
-            cidade=cidade,
-            estado=estado,
-            limite_colaboradores=limite_colaboradores,
-            ativo=ativo,
-        )
+        empresa = Empresa.objects.create(**dados)
 
         logger.info(
             "Superadmin criou empresa pk=%s nome=%r user=%s",
             empresa.pk,
-            nome,
+            dados["nome"],
             request.user.email,
         )
-        messages.success(request, f'Empresa "{nome}" criada com sucesso.')
+        messages.success(request, f'Empresa "{dados["nome"]}" criada com sucesso.')
         return redirect(reverse("superadmin_empresa_detail", kwargs={"pk": empresa.pk}))
 
 
@@ -354,27 +439,14 @@ class EmpresaEditView(SuperAdminRequiredMixin):
 
     def post(self, request, pk):
         empresa = get_object_or_404(Empresa, pk=pk)
+        dados, erros = _extrair_dados_empresa(request.POST)
 
-        nome = request.POST.get("nome", "").strip()
-        responsavel_nome = request.POST.get("responsavel_nome", "").strip()
-        email_contato = request.POST.get("email_contato", "").strip()
-        telefone_contato = request.POST.get("telefone_contato", "").strip()
-        whatsapp = request.POST.get("whatsapp", "").strip()
-        website = request.POST.get("website", "").strip()
-        cidade = request.POST.get("cidade", "").strip()
-        estado = request.POST.get("estado", "").strip()
-        limite_colaboradores = request.POST.get("limite_colaboradores", "0").strip()
-        ativo = request.POST.get("ativo") == "1"
-
-        erros = []
-        if not nome:
+        if not dados["nome"]:
             erros.append("Nome da empresa e obrigatorio.")
-        if Empresa.objects.filter(nome=nome).exclude(pk=pk).exists():
-            erros.append(f'Ja existe outra empresa com o nome "{nome}".')
-        try:
-            limite_colaboradores = int(limite_colaboradores)
-        except (ValueError, TypeError):
-            limite_colaboradores = empresa.limite_colaboradores
+        if dados["nome"] and Empresa.objects.filter(nome=dados["nome"]).exclude(pk=pk).exists():
+            erros.append(f'Ja existe outra empresa com o nome "{dados["nome"]}".')
+        if dados["cnpj"] and Empresa.objects.filter(cnpj=dados["cnpj"]).exclude(pk=pk).exists():
+            erros.append(f'Ja existe outra empresa com o CNPJ "{dados["cnpj"]}".')
 
         if erros:
             for erro in erros:
@@ -387,25 +459,17 @@ class EmpresaEditView(SuperAdminRequiredMixin):
             }
             return render(request, "superadmin/empresa_form.html", context)
 
-        empresa.nome = nome
-        empresa.responsavel_nome = responsavel_nome
-        empresa.email_contato = email_contato
-        empresa.telefone_contato = telefone_contato
-        empresa.whatsapp = whatsapp
-        empresa.website = website
-        empresa.cidade = cidade
-        empresa.estado = estado
-        empresa.limite_colaboradores = limite_colaboradores
-        empresa.ativo = ativo
+        for campo, valor in dados.items():
+            setattr(empresa, campo, valor)
         empresa.save()
 
         logger.info(
             "Superadmin editou empresa pk=%s nome=%r user=%s",
             empresa.pk,
-            nome,
+            dados["nome"],
             request.user.email,
         )
-        messages.success(request, f'Empresa "{nome}" atualizada.')
+        messages.success(request, f'Empresa "{dados["nome"]}" atualizada.')
         return redirect(reverse("superadmin_empresa_detail", kwargs={"pk": empresa.pk}))
 
 

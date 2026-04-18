@@ -53,7 +53,7 @@
     </header>
 
     <div class="airport-page__table-wrap">
-      <table class="airport-page__table">
+      <table class="airport-page__table data-table">
         <thead>
           <tr>
             <th>Sigla</th>
@@ -75,7 +75,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="3" class="airport-page__empty">
+            <td colspan="3" class="airport-page__empty empty-row">
               Nenhum aeroporto cadastrado ainda.
               <a href="{% url 'admin_novo_aeroporto' %}" class="airport-page__action">+ Novo aeroporto</a>
             </td>

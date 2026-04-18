@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="{% static 'gestao/formulario_base_gestao.css' %}">
     <link rel="stylesheet" href="{% static 'gestao/css/admin-theme.css' %}">
     <link rel="stylesheet" href="{% static 'gestao/css/theme-overrides.css' %}">
+    <link rel="stylesheet" href="{% static 'gestao/css/admin_tables.css' %}">
     <style>
         .page-shell table, .page-shell .data-table, main table { width: 100%; }
         .page-shell thead tr, main thead tr { background: var(--color-surface-muted); color: var(--color-muted); text-transform: uppercase; font-size: .75rem; }
@@ -76,22 +77,33 @@
 
         <nav class="admin-sidebar__nav">
             {% if request.user.is_superuser %}
-                <a href="{% url 'admin_empresas' %}" class="admin-sidebar__link {% if menu_ativo == 'empresas' %}is-active{% endif %}" data-sidebar-link title="Empresas">
-                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 20V8h12v12M9 4h6v4H9zM10 12h.01M14 12h.01M10 16h.01M14 16h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                    <span class="admin-sidebar__label">Empresas</span>
-                </a>
-                <a href="{% url 'user_list' %}" class="admin-sidebar__link {% if menu_ativo == 'usuarios' %}is-active{% endif %}" data-sidebar-link title="Usuarios Administrativos">
-                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM21 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                    <span class="admin-sidebar__label">Usuarios Administrativos</span>
-                </a>
-                <a href="{% url 'admin_site_monitoramento' %}" class="admin-sidebar__link {% if menu_ativo == 'site_monitoramento' %}is-active{% endif %}" data-sidebar-link title="Monitoramento do Site">
-                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10M18 18h2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><circle cx="19" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
-                    <span class="admin-sidebar__label">Site</span>
-                </a>
+                <details class="admin-sidebar__group" {% if menu_ativo == 'empresas' or menu_ativo == 'usuarios' or menu_ativo == 'site_monitoramento' %}open{% endif %}>
+                    <summary class="admin-sidebar__summary" title="Plataforma">
+                        <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 20V8h12v12M9 4h6v4H9zM10 12h.01M14 12h.01M10 16h.01M14 16h.01" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                        <span class="admin-sidebar__label">Plataforma</span>
+                        <span class="admin-sidebar__summary-caret">
+                            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+                        </span>
+                    </summary>
+                    <div class="admin-sidebar__group-body">
+                        <a href="{% url 'admin_empresas' %}" class="admin-sidebar__sublink {% if menu_ativo == 'empresas' %}is-active{% endif %}" data-sidebar-link title="Empresas">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Empresas</span>
+                        </a>
+                        <a href="{% url 'user_list' %}" class="admin-sidebar__sublink {% if menu_ativo == 'usuarios' %}is-active{% endif %}" data-sidebar-link title="Usuarios Administrativos">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Usuários Admin</span>
+                        </a>
+                        <a href="{% url 'admin_site_monitoramento' %}" class="admin-sidebar__sublink {% if menu_ativo == 'site_monitoramento' %}is-active{% endif %}" data-sidebar-link title="Monitoramento do Site">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Monitoramento do site</span>
+                        </a>
+                    </div>
+                </details>
                 <details class="admin-sidebar__group" {% if menu_ativo == 'aeroportos' or menu_ativo == 'companhias' or menu_ativo == 'programas' %}open{% endif %}>
                     <summary class="admin-sidebar__summary" title="Catalogos">
                         <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
-                        <span class="admin-sidebar__label">Catalogos</span>
+                        <span class="admin-sidebar__label">Catálogos</span>
                         <span class="admin-sidebar__summary-caret">
                             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
                         </span>
@@ -111,18 +123,29 @@
                         </a>
                     </div>
                 </details>
-                <a href="{% url 'admin_alertas_passagens' %}" class="admin-sidebar__link {% if menu_ativo == 'alertas' %}is-active{% endif %}" data-sidebar-link title="Alertas de Passagens">
-                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.29 3.86l-7.5 13A1 1 0 0 0 3.65 18h16.7a1 1 0 0 0 .86-1.5l-7.5-13a1 1 0 0 0-1.72 0Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                    <span class="admin-sidebar__label">Alertas de Passagens</span>
-                </a>
-                <a href="{% url 'admin_governanca_plataforma' %}" class="admin-sidebar__link {% if menu_ativo == 'governanca' %}is-active{% endif %}" data-sidebar-link title="Governanca da Plataforma">
-                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3 8.5-8 10-5-1.5-8-5-8-10V7l8-4ZM9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                    <span class="admin-sidebar__label">Governanca</span>
-                </a>
-                <a href="{% url 'admin_auditoria' %}" class="admin-sidebar__link {% if menu_ativo == 'auditoria' %}is-active{% endif %}" data-sidebar-link title="Auditorias">
-                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V10M12 20V4M18 20v-7M4 20h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                    <span class="admin-sidebar__label">Auditorias</span>
-                </a>
+                <details class="admin-sidebar__group" {% if menu_ativo == 'alertas' or menu_ativo == 'governanca' or menu_ativo == 'auditoria' %}open{% endif %}>
+                    <summary class="admin-sidebar__summary" title="Governança">
+                        <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4v5c0 5-3 8.5-8 10-5-1.5-8-5-8-10V7l8-4ZM9 12l2 2 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                        <span class="admin-sidebar__label">Governança</span>
+                        <span class="admin-sidebar__summary-caret">
+                            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+                        </span>
+                    </summary>
+                    <div class="admin-sidebar__group-body">
+                        <a href="{% url 'admin_alertas_passagens' %}" class="admin-sidebar__sublink {% if menu_ativo == 'alertas' %}is-active{% endif %}" data-sidebar-link title="Alertas de Passagens">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Alertas de passagens</span>
+                        </a>
+                        <a href="{% url 'admin_governanca_plataforma' %}" class="admin-sidebar__sublink {% if menu_ativo == 'governanca' %}is-active{% endif %}" data-sidebar-link title="Governanca da Plataforma">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Governança</span>
+                        </a>
+                        <a href="{% url 'admin_auditoria' %}" class="admin-sidebar__sublink {% if menu_ativo == 'auditoria' %}is-active{% endif %}" data-sidebar-link title="Auditorias">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Auditoria</span>
+                        </a>
+                    </div>
+                </details>
             {% else %}
                 <a href="{% url 'admin_dashboard' %}" class="admin-sidebar__link {% if menu_ativo == 'home' %}is-active{% endif %}" data-sidebar-link title="Home">
                     <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12 12 4l9 8M5 10.5V20h14v-9.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
@@ -136,14 +159,29 @@
                     <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6M17 11h6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
                     <span class="admin-sidebar__label">Clientes</span>
                 </a>
-                <a href="{% url 'admin_contas' %}" class="admin-sidebar__link {% if menu_ativo == 'contas' %}is-active{% endif %}" data-sidebar-link title="Contas Fidelidade">
-                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4zM4 10h16M8 14h4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                    <span class="admin-sidebar__label">Contas Fidelidade</span>
-                </a>
-                <a href="{% url 'admin_contas_administradas' %}" class="admin-sidebar__link {% if menu_ativo == 'contas_adm' %}is-active{% endif %}" data-sidebar-link title="Contas Administrativas">
-                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0M18.5 9.5h3M20 8v3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                    <span class="admin-sidebar__label">Contas Administrativas</span>
-                </a>
+                <details class="admin-sidebar__group" {% if menu_ativo == 'contas' or menu_ativo == 'contas_adm' or menu_ativo == 'emissores' %}open{% endif %}>
+                    <summary class="admin-sidebar__summary" title="Contas">
+                        <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v10H4zM4 10h16M8 14h4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                        <span class="admin-sidebar__label">Contas</span>
+                        <span class="admin-sidebar__summary-caret">
+                            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+                        </span>
+                    </summary>
+                    <div class="admin-sidebar__group-body">
+                        <a href="{% url 'admin_contas' %}" class="admin-sidebar__sublink {% if menu_ativo == 'contas' %}is-active{% endif %}" data-sidebar-link title="Contas Fidelidade">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Fidelidade</span>
+                        </a>
+                        <a href="{% url 'admin_contas_administradas' %}" class="admin-sidebar__sublink {% if menu_ativo == 'contas_adm' %}is-active{% endif %}" data-sidebar-link title="Contas Administrativas">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Administradas</span>
+                        </a>
+                        <a href="{% url 'admin_emissores_parceiros' %}" class="admin-sidebar__sublink {% if menu_ativo == 'emissores' %}is-active{% endif %}" data-sidebar-link title="Emissor parceiro">
+                            <span class="admin-sidebar__dot"></span>
+                            <span class="admin-sidebar__label">Emissor parceiro</span>
+                        </a>
+                    </div>
+                </details>
                 <details class="admin-sidebar__group" {% if menu_ativo == 'cotacoes' or menu_ativo == 'emissoes' or menu_ativo == 'kanban' %}open{% endif %}>
                     <summary class="admin-sidebar__summary" title="Cotações / Emissões">
                         <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10l3 5-8 11L4 9l3-5Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
@@ -190,13 +228,9 @@
                         </a>
                     </div>
                 </details>
-                <a href="{% url 'admin_calculadora_cotacao' %}" class="admin-sidebar__link {% if menu_ativo == 'calculadora' %}is-active{% endif %}" data-sidebar-link title="Calculadora">
-                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM8 8h8M8 12h3M13 12h3M8 16h3M13 16h3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                <a href="{% url 'admin_calculadora_cotacao' %}" class="admin-sidebar__link {% if menu_ativo == 'calculadora' %}is-active{% endif %}" data-sidebar-link title="Calculadora de cotação">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M16 15h0M8 19h2M12 19h2M16 19h0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
                     <span class="admin-sidebar__label">Calculadora</span>
-                </a>
-                <a href="{% url 'admin_emissores_parceiros' %}" class="admin-sidebar__link {% if menu_ativo == 'emissores' %}is-active{% endif %}" data-sidebar-link title="Emissor parceiro">
-                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM14 23v-6a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v6M18 23v-4a4 4 0 0 0-3-3.87" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                    <span class="admin-sidebar__label">Emissor parceiro</span>
                 </a>
                 <details class="admin-sidebar__group" {% if menu_ativo == 'aeroportos' or menu_ativo == 'companhias' or menu_ativo == 'programas' %}open{% endif %}>
                     <summary class="admin-sidebar__summary" title="Operações">
@@ -225,6 +259,10 @@
                     <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V10M12 20V4M18 20v-7M4 20h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
                     <span class="admin-sidebar__label">Auditorias</span>
                 </a>
+                <a href="{% url 'admin_financeiro' %}" class="admin-sidebar__link {% if menu_ativo == 'financeiro' %}is-active{% endif %}" data-sidebar-link title="Financeiro da minha agência">
+                    <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18M3 6h18v12H3zM7 14h4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                    <span class="admin-sidebar__label">Financeiro</span>
+                </a>
                 {% with perfil=request.user.cliente_gestao.perfil %}
                     {% if perfil == 'admin' or request.user.is_superuser %}
                         <details class="admin-sidebar__group" {% if menu_ativo == 'empresa_config' or menu_ativo == 'empresa_textos' %}open{% endif %}>
@@ -246,14 +284,25 @@
                                 </a>
                             </div>
                         </details>
-                        <a href="{% url 'user_list' %}" class="admin-sidebar__link {% if menu_ativo == 'usuarios' %}is-active{% endif %}" data-sidebar-link title="Usuarios Administrativos">
-                            <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM21 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                            <span class="admin-sidebar__label">Usuários Administrativos</span>
-                        </a>
-                        <a href="{% url 'operator_list' %}" class="admin-sidebar__link {% if menu_ativo == 'operadores' %}is-active{% endif %}" data-sidebar-link title="Operadores">
-                            <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM5 21a7 7 0 0 1 14 0M19 8h2M20 7v2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
-                            <span class="admin-sidebar__label">Operadores</span>
-                        </a>
+                        <details class="admin-sidebar__group" {% if menu_ativo == 'usuarios' or menu_ativo == 'operadores' %}open{% endif %}>
+                            <summary class="admin-sidebar__summary" title="Equipe">
+                                <svg class="admin-sidebar__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM21 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                                <span class="admin-sidebar__label">Equipe</span>
+                                <span class="admin-sidebar__summary-caret">
+                                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+                                </span>
+                            </summary>
+                            <div class="admin-sidebar__group-body">
+                                <a href="{% url 'user_list' %}" class="admin-sidebar__sublink {% if menu_ativo == 'usuarios' %}is-active{% endif %}" data-sidebar-link title="Usuarios Administrativos">
+                                    <span class="admin-sidebar__dot"></span>
+                                    <span class="admin-sidebar__label">Usuários</span>
+                                </a>
+                                <a href="{% url 'operator_list' %}" class="admin-sidebar__sublink {% if menu_ativo == 'operadores' %}is-active{% endif %}" data-sidebar-link title="Operadores">
+                                    <span class="admin-sidebar__dot"></span>
+                                    <span class="admin-sidebar__label">Operadores</span>
+                                </a>
+                            </div>
+                        </details>
                     {% endif %}
                 {% endwith %}
             {% endif %}
@@ -298,53 +347,83 @@
                 </div>
                 <div class="admin-topbar__actions">
                     <div class="hidden flex-wrap items-center gap-2 lg:flex">{% block header_actions %}{% endblock %}</div>
-                    <div class="admin-topbar__notifications" data-notification-root data-notification-mark-url="{% url 'admin_marcar_notificacao_lida' %}">
-                        <button type="button" class="admin-topbar__icon-button admin-topbar__notification-button" aria-label="Notificações" aria-expanded="false" data-notification-toggle>
+                    <div class="admin-topbar__notifications admin-notif" data-notification-root
+                         data-notification-mark-url="{% url 'admin_notificacoes_ler_chave' %}"
+                         data-notification-mark-all-url="{% url 'admin_notificacoes_ler_todas' %}"
+                         data-notification-archive-url="{% url 'admin_notificacoes_arquivar_chave' %}">
+                        <button type="button" class="admin-topbar__icon-button admin-notif__trigger" aria-label="Notificações{% if admin_notifications_unread_count %} ({{ admin_notifications_unread_count }} não lidas){% endif %}" aria-expanded="false" data-notification-toggle>
                             <svg viewBox="0 0 24 24" aria-hidden="true">
                                 <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5m6 0a3 3 0 0 1-6 0m6 0H9" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" />
                             </svg>
                             {% if admin_notifications_unread_count %}
-                                <span class="admin-topbar__notification-badge" data-notification-badge>{{ admin_notifications_unread_count }}</span>
+                                <span class="admin-notif__badge" data-notification-badge aria-hidden="true">{% if admin_notifications_unread_count > 9 %}9+{% else %}{{ admin_notifications_unread_count }}{% endif %}</span>
                             {% endif %}
                         </button>
-                        <section class="admin-notifications-panel" data-notification-panel hidden>
-                            <div class="admin-notifications-panel__header">
-                                <div>
-                                    <h2 class="admin-notifications-panel__title">Notificações</h2>
-                                    <p class="admin-notifications-panel__subtitle" data-notification-subtitle>{{ admin_notifications_unread_count }} não lida(s)</p>
-                                </div>
-                                <button type="button" class="admin-notifications-panel__close" aria-label="Fechar notificações" data-notification-close>
-                                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <section class="admin-notif__panel" data-notification-panel role="dialog" aria-label="Notificações" aria-live="polite" hidden>
+                            <header class="admin-notif__header">
+                                <h2 class="admin-notif__title">Notificações</h2>
+                                <span class="admin-notif__count" data-notification-subtitle>{{ admin_notifications_unread_count }} não lida{{ admin_notifications_unread_count|pluralize }}</span>
+                                <button type="button" class="admin-notif__close" aria-label="Fechar notificações" data-notification-close>
+                                    <svg viewBox="0 0 24 24" aria-hidden="true" width="16" height="16">
                                         <path d="M6 6l12 12M18 6l-12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
                                     </svg>
                                 </button>
-                            </div>
-                            <div class="admin-notifications-panel__list" data-notification-list>
-                                {% for item in admin_notifications %}
-                                    <article class="admin-notifications-panel__item {% if item.unread %}is-unread{% endif %}" data-notification-item data-notification-key="{{ item.key }}">
-                                        <a href="{{ item.url|default:'#' }}" class="admin-notifications-panel__item-link">
-                                            <div class="admin-notifications-panel__item-head">
-                                                <div class="admin-notifications-panel__item-title-wrap">
-                                                    <span class="admin-notifications-panel__dot"></span>
-                                                    <h3 class="admin-notifications-panel__item-title">{{ item.title }}</h3>
-                                                </div>
-                                                <span class="admin-notifications-panel__badge admin-notifications-panel__badge--{{ item.badge_tone }}">{{ item.badge_label }}</span>
-                                            </div>
-                                            <p class="admin-notifications-panel__item-text">{{ item.description }}</p>
-                                            <p class="admin-notifications-panel__item-time">{{ item.time_label }}</p>
+                            </header>
+
+                            {% if admin_notifications_groups %}
+                                <div class="admin-notif__section" aria-label="Resumo por tipo">
+                                    <p class="admin-notif__section-title">Resumo</p>
+                                    <ul class="admin-notif__groups">
+                                        {% for grupo in admin_notifications_groups %}
+                                            <li>
+                                                <button type="button" class="admin-notif__group" data-notification-group="{{ grupo.tipo }}" aria-expanded="false">
+                                                    <span class="admin-notif__group-count">{{ grupo.total }}</span>
+                                                    <span class="admin-notif__group-label">{{ grupo.label }}</span>
+                                                    <svg class="admin-notif__group-caret" viewBox="0 0 16 16" aria-hidden="true" width="14" height="14"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+                                                </button>
+                                                <ul class="admin-notif__group-itens" hidden data-notification-group-body="{{ grupo.tipo }}">
+                                                    {% for item in grupo.itens %}
+                                                        <li class="admin-notif__item is-unread" data-notification-item data-notification-key="{{ item.key }}">
+                                                            <a class="admin-notif__item-link" href="{{ item.url|default:'#' }}" data-notification-open>
+                                                                <span class="admin-notif__item-title">{{ item.title }}</span>
+                                                                <span class="admin-notif__item-desc">{{ item.description }}</span>
+                                                                <span class="admin-notif__item-time">{{ item.time_label }}</span>
+                                                            </a>
+                                                            <button type="button" class="admin-notif__item-close" aria-label="Arquivar notificação" data-notification-archive>
+                                                                <svg viewBox="0 0 16 16" aria-hidden="true" width="12" height="12"><path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                                                            </button>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+
+                            <div class="admin-notif__section" data-notification-list>
+                                <p class="admin-notif__section-title">Recentes</p>
+                                {% for item in admin_notifications_recent %}
+                                    <article class="admin-notif__item is-unread" data-notification-item data-notification-key="{{ item.key }}">
+                                        <a class="admin-notif__item-link" href="{{ item.url|default:'#' }}" data-notification-open>
+                                            <span class="admin-notif__item-type">{{ item.tipo_label }}</span>
+                                            <span class="admin-notif__item-title">{{ item.title }}</span>
+                                            <span class="admin-notif__item-desc">{{ item.description }}</span>
+                                            <span class="admin-notif__item-time">{{ item.time_label }}</span>
                                         </a>
-                                        <div class="admin-notifications-panel__item-actions">
-                                            {% if item.url %}
-                                                <a href="{{ item.url }}" class="admin-notifications-panel__item-action-link">Abrir</a>
-                                            {% endif %}
-                                            <button type="button" class="admin-notifications-panel__mark-read" data-notification-mark-read>Marcar como lida</button>
-                                        </div>
+                                        <button type="button" class="admin-notif__item-close" aria-label="Arquivar notificação" data-notification-archive>
+                                            <svg viewBox="0 0 16 16" aria-hidden="true" width="12" height="12"><path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+                                        </button>
                                     </article>
                                 {% empty %}
-                                    <div class="admin-notifications-panel__empty" data-notification-empty>Sem notificações operacionais no momento.</div>
+                                    <div class="admin-notif__empty" data-notification-empty>Tudo em dia — nenhuma notificação ativa.</div>
                                 {% endfor %}
                             </div>
-                            <a href="{% url 'admin_alertas_passagens' %}" class="admin-notifications-panel__footer">Abrir Alertas de Passagens</a>
+
+                            <footer class="admin-notif__footer">
+                                <button type="button" class="admin-notif__action-link" data-notification-mark-all{% if not admin_notifications_unread_count %} disabled{% endif %}>Marcar todas como lidas</button>
+                                <a href="{% url 'admin_notificacoes' %}" class="admin-notif__action-link admin-notif__action-link--primary">Ver todas</a>
+                            </footer>
                         </section>
                     </div>
                     <div class="h-10 w-10 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[hsl(var(--accent))]"></div>

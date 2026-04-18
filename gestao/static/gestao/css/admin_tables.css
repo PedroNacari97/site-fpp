@@ -1,0 +1,199 @@
+/* ==========================================================================
+   admin_tables.css — Padronização das tabelas do painel /adm/
+   Fonte única de verdade para cabeçalho, linhas, hover, empty-row, paginação
+   das listagens em gestao/templates/admin_custom/.
+   NÃO duplica regras já existentes em admin-theme.css; apenas reforça a
+   consistência visual entre listas com prefixos BEM diferentes
+   (emissions-page__table, airlines-page__table, partner-page__table, etc.).
+   ========================================================================== */
+
+/* --- Header padronizado de página listagem ------------------------------- */
+.admin-body .page-shell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e4e8ef);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(15, 27, 45, 0.04);
+  margin-bottom: 1rem;
+}
+
+.admin-body .page-shell__title {
+  margin: 0;
+  font-size: 1.125rem;
+  line-height: 1.3;
+  font-weight: 700;
+  color: var(--color-heading, #0f1b2d);
+}
+
+.admin-body .page-shell__header-actions {
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* --- Wrapper genérico das tabelas ----------------------------------------
+   Garante scroll horizontal quando a tabela for larga.
+   ------------------------------------------------------------------------- */
+.admin-body .airlines-page__table-wrap,
+.admin-body .airport-page__table-wrap,
+.admin-body .partner-page__table-wrap,
+.admin-body .emissions-page__table-wrap,
+.admin-body .admin-managed__table-wrap,
+.admin-body .loyalty-accounts__table-wrap,
+.admin-body .movement-page__table-wrap,
+.admin-body .fidelity-programs__table-wrap,
+.admin-body .points-program__table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+}
+
+/* --- Tabela base: força estrutura consistente ----------------------------
+   Aplica às tabelas de listagem do admin, independente do prefixo BEM.
+   ------------------------------------------------------------------------- */
+.admin-body .data-table,
+.admin-body .airlines-page__table,
+.admin-body .airport-page__table,
+.admin-body .partner-page__table,
+.admin-body .emissions-page__table,
+.admin-body .admin-managed__table,
+.admin-body .loyalty-accounts__table,
+.admin-body .movement-page__table,
+.admin-body .fidelity-programs__table,
+.admin-body .points-program__table {
+  width: 100%;
+  min-width: 0; /* neutraliza min-width herdado de admin-theme.css em telas largas */
+  border-collapse: collapse;
+  background: var(--color-surface, #fff);
+  font-size: 13px;
+  color: var(--color-heading, #0f1b2d);
+}
+
+/* Cabeçalho uniforme */
+.admin-body .data-table thead th,
+.admin-body .airlines-page__table thead th,
+.admin-body .airport-page__table thead th,
+.admin-body .partner-page__table thead th,
+.admin-body .emissions-page__table thead th,
+.admin-body .admin-managed__table thead th,
+.admin-body .loyalty-accounts__table thead th,
+.admin-body .movement-page__table thead th,
+.admin-body .fidelity-programs__table thead th,
+.admin-body .points-program__table thead th {
+  text-align: left;
+  padding: 12px 14px;
+  background: var(--color-surface-muted, #f4f7fb);
+  color: var(--color-muted, #6b7a90);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--color-border, #e4e8ef);
+  white-space: nowrap;
+}
+
+/* Células uniformes */
+.admin-body .data-table tbody td,
+.admin-body .airlines-page__table tbody td,
+.admin-body .airport-page__table tbody td,
+.admin-body .partner-page__table tbody td,
+.admin-body .emissions-page__table tbody td,
+.admin-body .admin-managed__table tbody td,
+.admin-body .loyalty-accounts__table tbody td,
+.admin-body .movement-page__table tbody td,
+.admin-body .fidelity-programs__table tbody td,
+.admin-body .points-program__table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--color-border, #edf0f5);
+  color: var(--color-heading, #0f1b2d);
+  vertical-align: middle;
+}
+
+.admin-body .data-table tbody tr:last-child td,
+.admin-body .airlines-page__table tbody tr:last-child td,
+.admin-body .airport-page__table tbody tr:last-child td,
+.admin-body .partner-page__table tbody tr:last-child td,
+.admin-body .emissions-page__table tbody tr:last-child td,
+.admin-body .admin-managed__table tbody tr:last-child td,
+.admin-body .loyalty-accounts__table tbody tr:last-child td,
+.admin-body .movement-page__table tbody tr:last-child td,
+.admin-body .fidelity-programs__table tbody tr:last-child td,
+.admin-body .points-program__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Hover uniforme */
+.admin-body .data-table tbody tr:hover,
+.admin-body .airlines-page__table tbody tr:hover,
+.admin-body .airport-page__table tbody tr:hover,
+.admin-body .partner-page__table tbody tr:hover,
+.admin-body .emissions-page__table tbody tr:hover,
+.admin-body .admin-managed__table tbody tr:hover,
+.admin-body .loyalty-accounts__table tbody tr:hover,
+.admin-body .movement-page__table tbody tr:hover,
+.admin-body .fidelity-programs__table tbody tr:hover,
+.admin-body .points-program__table tbody tr:hover {
+  background: var(--color-surface-muted, #f7f9fc);
+}
+
+/* --- Empty state padronizado -------------------------------------------- */
+.admin-body .empty-row td,
+.admin-body .data-table td.empty-row,
+.admin-body .emissions-page__empty,
+.admin-body .airlines-page__empty,
+.admin-body .airport-page__empty,
+.admin-body .partner-page__empty,
+.admin-body .admin-managed__empty,
+.admin-body .loyalty-accounts__empty,
+.admin-body .movement-page__empty,
+.admin-body .fidelity-programs__empty,
+.admin-body .points-program__empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--color-muted, #6b7a90);
+  font-size: 13px;
+  background: var(--color-surface, #fff);
+}
+
+/* --- Ações dentro da linha ---------------------------------------------- */
+.admin-body .data-table td .row-actions,
+.admin-body .emissions-page__row-actions,
+.admin-body .airlines-page__actions,
+.admin-body .airport-page__actions,
+.admin-body .partner-page__actions,
+.admin-body .admin-managed__actions,
+.admin-body .loyalty-accounts__row-actions,
+.admin-body .movement-page__actions,
+.admin-body .fidelity-programs__actions,
+.admin-body .points-program__actions {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* --- Responsivo: tabelas extrapolam com overflow horizontal ------------- */
+@media (max-width: 768px) {
+  .admin-body .data-table,
+  .admin-body .airlines-page__table,
+  .admin-body .airport-page__table,
+  .admin-body .partner-page__table,
+  .admin-body .emissions-page__table,
+  .admin-body .admin-managed__table,
+  .admin-body .loyalty-accounts__table,
+  .admin-body .movement-page__table,
+  .admin-body .fidelity-programs__table,
+  .admin-body .points-program__table {
+    min-width: 560px;
+  }
+
+  .admin-body .page-shell__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

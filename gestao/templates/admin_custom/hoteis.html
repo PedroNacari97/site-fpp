@@ -52,7 +52,7 @@
     </div>
 
     <div class="emissions-page__table-wrap">
-      <table class="emissions-page__table">
+      <table class="emissions-page__table data-table">
         <thead>
           <tr>
             <th>Cliente</th>
@@ -84,7 +84,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="8" class="emissions-page__empty">
+            <td colspan="8" class="emissions-page__empty empty-row">
               Nenhuma emissão de hotel encontrada.
               <a href="{% url 'admin_nova_emissao_hotel' %}" class="emissions-page__empty-cta">Nova emissão de hotel</a>
             </td>

@@ -360,14 +360,16 @@
 
 .miles-dashboard__donut-layout {
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr);
+  grid-template-columns: 140px minmax(0, 1fr);
   gap: 20px;
   align-items: center;
 }
 
 .miles-dashboard__donut {
-  width: 96px;
-  height: 96px;
+  width: 140px;
+  height: 140px;
+  min-width: 140px;
+  min-height: 140px;
   border-radius: 50%;
   background: conic-gradient(var(--donut));
   position: relative;
@@ -376,31 +378,46 @@
 .miles-dashboard__donut::after {
   content: "";
   position: absolute;
-  inset: 20px;
+  inset: 28px;
   border-radius: 50%;
   background: var(--dashboard-surface);
 }
 
 .miles-dashboard__donut-center {
   position: absolute;
-  inset: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  height: 60%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  padding: 4px;
   z-index: 1;
 }
 
 .miles-dashboard__donut-center strong {
-  font-size: 32px;
+  font-size: clamp(18px, 2.2vw, 26px);
   line-height: 1;
+  word-break: keep-all;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .miles-dashboard__donut-center span {
   margin-top: 4px;
-  font-size: 12px;
-  line-height: 16px;
+  font-size: clamp(10px, 1vw, 12px);
+  line-height: 1.2;
   color: var(--dashboard-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .miles-dashboard__legend-dot {

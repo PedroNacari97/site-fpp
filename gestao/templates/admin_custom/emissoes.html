@@ -53,7 +53,7 @@
       <h3>Lista de emissões</h3>
     </div>
     <div class="emissions-page__table-wrap">
-      <table class="emissions-page__table">
+      <table class="emissions-page__table data-table">
         <thead>
           <tr>
             <th scope="col">Cliente</th>
@@ -97,7 +97,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="9" class="emissions-page__empty">
+              <td colspan="9" class="emissions-page__empty empty-row">
                 Nenhuma emissão encontrada.
                 <a href="{% url 'admin_nova_emissao' %}" class="emissions-page__empty-cta">Nova emissão</a>
               </td>

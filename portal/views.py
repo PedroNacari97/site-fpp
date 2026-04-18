@@ -1121,6 +1121,32 @@ def home_publica(request):
     visible = noticias[:HOME_INITIAL]
     hidden = noticias[HOME_INITIAL:]
 
+    # --- Modulos de estudo com gating por login (Portal B2C) ---
+    from .auth import get_portal_user
+    from .models import ModuloEstudo
+    from .services.progresso import anotar_progresso_em_modulos
+
+    portal_user = get_portal_user(request)
+    all_modulos = list(
+        ModuloEstudo.objects.filter(ativo=True)
+        .order_by("-destaque_home", "ordem", "titulo")
+    )
+    # Anota `.total_artigos` e `.progresso` (dict) em cada modulo sem N+1
+    anotar_progresso_em_modulos(portal_user, all_modulos)
+
+    if portal_user is not None:
+        modulo_amostra = all_modulos[0] if all_modulos else None
+        modulos_bloqueados = []
+        modulos_liberados = all_modulos[1:] if all_modulos else []
+    else:
+        # publico — so 1 modulo de amostra aberto, demais bloqueados com CTA login
+        modulo_amostra = next(
+            (m for m in all_modulos if m.destaque_home),
+            all_modulos[0] if all_modulos else None,
+        )
+        modulos_bloqueados = [m for m in all_modulos if m is not modulo_amostra]
+        modulos_liberados = []
+
     alertas_home = [] if is_searching else build_public_alert_cards(
         list_visible_public_alerts(limit=15, max_age_days=PUBLIC_HOME_ALERT_MAX_AGE_DAYS)
     )
@@ -1139,6 +1165,10 @@ def home_publica(request):
         "alert_email_lead_submitted": alert_email_lead_submitted,
         "alert_email_lead_consent_version": ALERT_EMAIL_LEAD_CONSENT_VERSION,
         "alert_email_lead_section_id": "home-alertas-email",
+        "modulo_amostra": modulo_amostra,
+        "modulos_bloqueados": modulos_bloqueados,
+        "modulos_liberados": modulos_liberados,
+        "portal_user_is_authenticated": portal_user is not None,
     }
     if is_searching:
         context.update(_build_home_search_seo(request, search_query))
@@ -1649,44 +1679,116 @@ def noticias_todas(request):
 
 
 def artigos_lista(request):
-    """Hub principal de artigos educativos."""
+    """Hub principal de artigos educativos — exige login do portal B2C."""
+    from .auth import get_portal_user
     from .models import ModuloEstudo, ArtigoEstudo
+    from .services.progresso import (
+        anotar_lido_em_artigos,
+        anotar_progresso_em_modulos,
+    )
 
-    modulos = ModuloEstudo.objects.filter(ativo=True).prefetch_related("artigos").order_by("ordem", "titulo")
-    artigos_pub = ArtigoEstudo.objects.filter(status="published").select_related("modulo").order_by("-publicado_em")
+    portal_user = get_portal_user(request)
+    if portal_user is None:
+        login_url = reverse("portal_login")
+        return redirect(f"{login_url}?next={request.get_full_path()}")
+    modulos = list(
+        ModuloEstudo.objects.filter(ativo=True).order_by("ordem", "titulo")
+    )
+    # anota .total_artigos e .progresso (dict) sem N+1
+    anotar_progresso_em_modulos(portal_user, modulos)
+
+    artigos_pub = list(
+        ArtigoEstudo.objects.filter(status="published")
+        .select_related("modulo")
+        .order_by("-publicado_em")[:15]
+    )
+    # anota .lido_pelo_user em cada artigo exibido
+    anotar_lido_em_artigos(portal_user, artigos_pub)
+
     featured = artigos_pub[0] if artigos_pub else None
     sidebar = list(artigos_pub[1:3])
     grid = list(artigos_pub[3:15])
-    for m in modulos:
-        m.total_artigos = m.artigos.filter(status="published").count()
     track_page_view(request.path, request=request, section="artigos_hub")
-    ctx = {"modulos": modulos, "artigos_featured": featured, "artigos_sidebar": sidebar, "artigos_grid": grid}
+    ctx = {
+        "modulos": modulos,
+        "artigos_featured": featured,
+        "artigos_sidebar": sidebar,
+        "artigos_grid": grid,
+        "portal_user_is_authenticated": portal_user is not None,
+    }
     ctx.update(_build_artigos_hub_seo(request))
     return render(request, "portal/artigos_hub.html", ctx)
 
 
 def modulo_detalhe(request, slug):
-    """Página de um módulo com lista de artigos."""
+    """Página de um módulo com lista de artigos — exige login do portal B2C."""
+    from .auth import get_portal_user
     from .models import ModuloEstudo
+    from .services.progresso import (
+        anotar_lido_em_artigos,
+        anotar_progresso_em_modulos,
+        calcular_progresso_modulo,
+    )
 
+    portal_user = get_portal_user(request)
+    if portal_user is None:
+        login_url = reverse("portal_login")
+        return redirect(f"{login_url}?next={request.get_full_path()}")
     modulo = get_object_or_404(ModuloEstudo, slug=slug, ativo=True)
-    artigos = modulo.artigos.filter(status="published").order_by("ordem", "titulo")
-    outros = ModuloEstudo.objects.filter(ativo=True).exclude(pk=modulo.pk).order_by("ordem", "titulo")
-    for o in outros:
-        o.total_artigos = o.artigos.filter(status="published").count()
+    artigos = list(
+        modulo.artigos.filter(status="published").order_by("ordem", "titulo")
+    )
+    anotar_lido_em_artigos(portal_user, artigos)
+
+    progresso = calcular_progresso_modulo(portal_user, modulo)
+
+    outros = list(
+        ModuloEstudo.objects.filter(ativo=True)
+        .exclude(pk=modulo.pk)
+        .order_by("ordem", "titulo")
+    )
+    anotar_progresso_em_modulos(portal_user, outros)
+
     track_page_view(request.path, request=request, section="modulo_detalhe")
-    ctx = {"modulo": modulo, "artigos": artigos, "outros_modulos": outros}
+    ctx = {
+        "modulo": modulo,
+        "artigos": artigos,
+        "outros_modulos": outros,
+        "progresso_modulo": progresso,
+        "portal_user_is_authenticated": portal_user is not None,
+    }
     ctx.update(_build_modulo_seo(request, modulo))
     return render(request, "portal/modulo_detalhe.html", ctx)
 
 
 def artigo_detalhe(request, modulo_slug, slug):
-    """Página completa de um artigo educativo."""
-    from .models import ArtigoEstudo
+    """Página completa de um artigo educativo — exige login do portal B2C."""
+    from .auth import get_portal_user
+    from .models import ArtigoEstudo, ProgressoArtigo
+    from .services.progresso import calcular_progresso_modulo
 
+    portal_user = get_portal_user(request)
+    if portal_user is None:
+        login_url = reverse("portal_login")
+        return redirect(f"{login_url}?next={request.get_full_path()}")
     artigo = get_object_or_404(ArtigoEstudo.objects.select_related("modulo"), slug=slug, status="published")
     if artigo.modulo.slug != modulo_slug:
         return redirect(artigo.get_absolute_url(), permanent=True)
+
+    # --- Registra visita do usuario logado (nao marca como lido automaticamente) ---
+    # Decisao de produto: marcacao de "lido" e MANUAL via botao ao fim do artigo.
+    # Motivos: (a) respeitar intencao do leitor, (b) evitar marcar lido por scroll
+    # acidental, (c) leitor que da half-scroll volta depois e retoma do ponto certo.
+    # Criamos aqui apenas a linha de "visita" com progresso 0 se ainda nao existir,
+    # para permitir futuramente medir tempo/scroll sem alterar estado "lido".
+    progresso_artigo = None
+    if portal_user is not None:
+        progresso_artigo, _ = ProgressoArtigo.objects.get_or_create(
+            user=portal_user,
+            artigo=artigo,
+            defaults={"progresso_percentual": 0},
+        )
+
     videos = artigo.videos.filter(ativo=True).order_by("ordem")
     irmaos = list(artigo.modulo.artigos.filter(status="published").order_by("ordem", "titulo").values_list("pk", flat=True))
     anterior = proximo = None
@@ -1697,10 +1799,81 @@ def artigo_detalhe(request, modulo_slug, slug):
         if idx < len(irmaos) - 1:
             proximo = ArtigoEstudo.objects.select_related("modulo").get(pk=irmaos[idx + 1])
     relacionados = artigo.modulo.artigos.filter(status="published").exclude(pk=artigo.pk).select_related("modulo").order_by("ordem")[:4]
+
+    progresso_modulo = calcular_progresso_modulo(portal_user, artigo.modulo)
+    artigo_lido = bool(progresso_artigo and progresso_artigo.lido_em)
+
     track_page_view(request.path, request=request, section="artigo_detalhe")
-    ctx = {"artigo": artigo, "videos": videos, "artigo_anterior": anterior, "artigo_proximo": proximo, "artigos_relacionados": relacionados}
+    ctx = {
+        "artigo": artigo,
+        "videos": videos,
+        "artigo_anterior": anterior,
+        "artigo_proximo": proximo,
+        "artigos_relacionados": relacionados,
+        "progresso_modulo": progresso_modulo,
+        "artigo_lido": artigo_lido,
+        "portal_user_is_authenticated": portal_user is not None,
+    }
     ctx.update(_build_artigo_seo(request, artigo))
     return render(request, "portal/artigo_detalhe.html", ctx)
+
+
+@require_POST
+def artigo_marcar_lido(request, slug):
+    """Marca um artigo como lido para o PortalUser logado.
+
+    POST /home/artigo/<slug>/marcar-lido/
+    Autentica via `portal_login_required` — responde JSON para AJAX ou
+    redirect 303 para fluxo sem JS.
+
+    Retorna:
+        JSON: { "status": "ok", "percentual_modulo": N, "concluido": bool }
+    """
+    from .auth import get_portal_user
+    from .models import ArtigoEstudo, ProgressoArtigo
+    from .services.progresso import calcular_progresso_modulo
+
+    portal_user = get_portal_user(request)
+    if portal_user is None:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse({"status": "unauthenticated"}, status=401)
+        login_url = reverse("portal_login")
+        return redirect(f"{login_url}?next={request.path}")
+
+    artigo = get_object_or_404(
+        ArtigoEstudo.objects.select_related("modulo"),
+        slug=slug,
+        status="published",
+    )
+    progresso, _ = ProgressoArtigo.objects.update_or_create(
+        user=portal_user,
+        artigo=artigo,
+        defaults={
+            "lido_em": timezone.now(),
+            "progresso_percentual": 100,
+        },
+    )
+
+    payload = calcular_progresso_modulo(portal_user, artigo.modulo)
+
+    wants_json = (
+        request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        or "application/json" in (request.headers.get("Accept") or "")
+    )
+    if wants_json:
+        return JsonResponse(
+            {
+                "status": "ok",
+                "artigo_slug": artigo.slug,
+                "percentual_modulo": payload["percentual"],
+                "lidos": payload["lidos"],
+                "total_artigos": payload["total_artigos"],
+                "status_modulo": payload["status"],
+                "concluido": payload["status"] == "concluido",
+            }
+        )
+    # Fluxo sem JS — redirect 303 para a propria pagina do artigo
+    return redirect(artigo.get_absolute_url())
 
 
 # -- SEO helpers artigos --

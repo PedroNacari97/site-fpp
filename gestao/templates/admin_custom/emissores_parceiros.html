@@ -53,7 +53,7 @@
     </header>
 
     <div class="partner-page__table-wrap">
-      <table class="partner-page__table">
+      <table class="partner-page__table data-table">
         <thead>
           <tr>
             <th>Nome do Emissor</th>
@@ -85,7 +85,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="3" class="partner-page__empty">
+            <td colspan="3" class="partner-page__empty empty-row">
               Nenhum emissor parceiro cadastrado ainda.
               <a href="{% url 'admin_novo_emissor_parceiro' %}" class="partner-page__action">+ Novo emissor parceiro</a>
             </td>

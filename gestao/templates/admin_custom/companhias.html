@@ -52,7 +52,7 @@
     </header>
 
     <div class="airlines-page__table-wrap">
-      <table class="airlines-page__table">
+      <table class="airlines-page__table data-table">
         <thead>
           <tr>
             <th>Nome</th>
@@ -80,7 +80,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="3" class="airlines-page__empty">
+            <td colspan="3" class="airlines-page__empty empty-row">
               Nenhuma companhia aérea cadastrada ainda.
               <a href="{% url 'admin_nova_companhia' %}" class="airlines-page__action">+ Nova companhia</a>
             </td>
