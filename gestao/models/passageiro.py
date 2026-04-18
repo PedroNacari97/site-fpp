@@ -14,6 +14,7 @@ class Passageiro(models.Model):
     )
     nome = models.CharField(max_length=150)
     cpf = models.CharField(max_length=14)
+    cpf_hash = models.CharField(max_length=64, blank=True, db_index=True)
     rg = models.CharField(max_length=50, blank=True)
     passaporte = models.CharField(max_length=30, blank=True)
     passaporte_validade = models.DateField(null=True, blank=True)

@@ -1,0 +1,146 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Financeiro{% endblock %}
+{% block header_title %}Financeiro da minha agência{% endblock %}
+{% block header_subtitle %}<span>Acompanhe sua assinatura, pagamentos e documentos fiscais.</span>{% endblock %}
+
+{% block content %}
+<div class="page-shell space-y-6 p-6">
+
+    {% if not assinatura %}
+    <section class="surface-card p-6 text-center">
+        <h2 class="text-lg font-semibold text-slate-800 mb-1">Sua agência ainda não tem assinatura registrada</h2>
+        <p class="text-sm text-slate-600">
+            Entre em contato com o time NCfly em <a class="text-blue-600 hover:underline" href="mailto:financeiro@ncfly.com.br">financeiro@ncfly.com.br</a> para ativar seu plano.
+        </p>
+    </section>
+    {% else %}
+
+    {# Hero — plano atual #}
+    <section class="surface-card p-6" aria-label="Resumo do plano">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div>
+                <span class="text-xs uppercase tracking-wide text-slate-500">Seu plano</span>
+                <h2 class="text-2xl font-bold text-slate-900 mt-1">{{ assinatura.plano.nome }}</h2>
+                <p class="text-sm text-slate-600 mt-1">
+                    Empresa: <strong>{{ empresa.nome }}</strong>
+                </p>
+                <div class="mt-3">
+                    {% if assinatura.status == 'ativa' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">Ativa</span>
+                    {% elif assinatura.status == 'trial' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Trial — {{ dias_trial }} dia{{ dias_trial|pluralize }} restante{{ dias_trial|pluralize }}</span>
+                    {% elif assinatura.status == 'inadimplente' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">Inadimplente</span>
+                    {% elif assinatura.status == 'suspensa' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">Suspensa</span>
+                    {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">{{ assinatura.get_status_display }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href="{% url 'admin_financeiro_pagamentos' %}" class="btn btn-primary">Ver todos os pagamentos</a>
+                <a href="{% url 'admin_financeiro_contrato' %}" class="btn btn-secondary">Baixar contrato</a>
+                <a href="mailto:financeiro@ncfly.com.br?subject=Solicitação de nota fiscal - {{ empresa.nome }}" class="btn btn-secondary">Baixar nota fiscal</a>
+            </div>
+        </div>
+    </section>
+
+    {# KPI cards #}
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" aria-label="Resumo financeiro">
+        <div class="surface-card p-4">
+            <div class="text-xs uppercase text-slate-500">Valor mensal</div>
+            <div class="text-2xl font-bold text-slate-900 mt-1">R$ {{ assinatura.plano.preco_mensal|floatformat:2 }}</div>
+            <div class="text-xs text-slate-500 mt-1">Plano {{ assinatura.plano.nome }}</div>
+        </div>
+        <div class="surface-card p-4">
+            <div class="text-xs uppercase text-slate-500">Próximo vencimento</div>
+            <div class="text-2xl font-bold text-slate-900 mt-1">
+                {% if assinatura.data_vencimento %}{{ assinatura.data_vencimento|date:"d/m/Y" }}{% elif assinatura.trial_fim %}Após trial{% else %}—{% endif %}
+            </div>
+            <div class="text-xs text-slate-500 mt-1">
+                {% if assinatura.trial_fim and assinatura.status == 'trial' %}Trial termina em {{ assinatura.trial_fim|date:"d/m/Y" }}{% else %}&nbsp;{% endif %}
+            </div>
+        </div>
+        <div class="surface-card p-4">
+            <div class="text-xs uppercase text-slate-500">Dias de trial restantes</div>
+            <div class="text-2xl font-bold text-slate-900 mt-1">{{ dias_trial }}</div>
+            <div class="text-xs text-slate-500 mt-1">
+                {% if assinatura.status != 'trial' %}Fora do período de trial{% else %}&nbsp;{% endif %}
+            </div>
+        </div>
+        <div class="surface-card p-4">
+            <div class="text-xs uppercase text-slate-500">Total pago até hoje</div>
+            <div class="text-2xl font-bold text-slate-900 mt-1">R$ {{ total_pago_empresa|floatformat:2 }}</div>
+            <div class="text-xs text-slate-500 mt-1">Somente pagamentos confirmados</div>
+        </div>
+    </section>
+
+    {# Limites do plano #}
+    <section class="surface-card p-5" aria-label="Limites do seu plano">
+        <h3 class="text-sm font-semibold text-slate-700 mb-3">Limites contratados</h3>
+        <dl class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+            <div>
+                <dt class="text-xs text-slate-500">Operadores</dt>
+                <dd class="text-slate-800 font-medium">até {{ assinatura.plano.limite_operadores }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs text-slate-500">Clientes</dt>
+                <dd class="text-slate-800 font-medium">
+                    {% if assinatura.plano.limite_clientes == 0 %}ilimitado{% else %}até {{ assinatura.plano.limite_clientes }}{% endif %}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-xs text-slate-500">Trial original</dt>
+                <dd class="text-slate-800 font-medium">{{ assinatura.plano.trial_dias }} dias</dd>
+            </div>
+        </dl>
+    </section>
+
+    {# Timeline pagamentos #}
+    <section class="surface-card" aria-label="Últimos pagamentos">
+        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-slate-700">Últimos pagamentos</h3>
+            <a href="{% url 'admin_financeiro_pagamentos' %}" class="text-xs text-blue-600 hover:underline">Ver todos</a>
+        </div>
+        {% if ultimos_pagamentos %}
+        <table class="w-full text-sm">
+            <thead>
+                <tr>
+                    <th class="text-left">Data</th>
+                    <th class="text-left">Método</th>
+                    <th class="text-right">Valor</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in ultimos_pagamentos %}
+                <tr>
+                    <td class="text-xs">{{ p.criado_em|date:"d/m/Y H:i" }}</td>
+                    <td>{{ p.get_metodo_display|default:"—" }}</td>
+                    <td class="text-right font-mono">R$ {{ p.valor|floatformat:2 }}</td>
+                    <td class="text-center">
+                        {% if p.status == 'confirmado' %}
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">Confirmado</span>
+                        {% elif p.status == 'pendente' %}
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Pendente</span>
+                        {% elif p.status == 'falhou' %}
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">Falhou</span>
+                        {% else %}
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">{{ p.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="p-4 text-sm text-slate-500">Nenhum pagamento registrado ainda.</p>
+        {% endif %}
+    </section>
+
+    {% endif %}
+</div>
+{% endblock %}

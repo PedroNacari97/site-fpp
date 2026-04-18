@@ -45,7 +45,16 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="px-4 py-8 text-center text-slate-400">Nenhum modulo cadastrado.</td>
+                <td colspan="6" class="px-4 py-10 text-center">
+                    <div class="flex flex-col items-center gap-2 text-slate-500">
+                        <svg class="w-10 h-10 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                        </svg>
+                        <p class="text-sm font-medium text-slate-600">Nenhum módulo cadastrado</p>
+                        <p class="text-xs text-slate-400">Crie um módulo para organizar os artigos educativos.</p>
+                        <a href="{% url 'superadmin_modulo_create' %}" class="btn btn-primary mt-2">+ Novo módulo</a>
+                    </div>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

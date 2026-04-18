@@ -1,0 +1,147 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Notificações{% endblock %}
+{% block header_title %}Notificações{% endblock %}
+{% block header_subtitle %}<span>Central de alertas operacionais agrupados por tipo.</span>{% endblock %}
+
+{% block extra_head %}
+<style>
+  .notif-page { display: grid; gap: 20px; }
+  .notif-page .surface-card { padding: 16px 18px; }
+  .notif-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .notif-filters label { font-size: 12px; color: var(--color-muted); margin-right: 4px; }
+  .notif-filters select { min-width: 180px; padding: 8px 10px; border-radius: 8px; }
+  .notif-groups { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .notif-group { padding: 10px 14px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface); display: flex; align-items: center; gap: 12px; }
+  .notif-group__count { min-width: 32px; height: 28px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: hsl(var(--primary) / 0.12); color: hsl(var(--primary)); font-size: 13px; font-weight: 700; }
+  .notif-group__label { font-weight: 600; color: var(--color-heading); }
+  .notif-group__detail { font-size: 12px; color: var(--color-muted); margin-left: auto; }
+  .notif-list { display: grid; gap: 8px; }
+  .notif-item { padding: 12px 14px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface); display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+  .notif-item.is-unread { border-left: 3px solid hsl(var(--primary)); }
+  .notif-item__meta { display: flex; gap: 10px; align-items: center; font-size: 11px; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 4px; }
+  .notif-item__title { font-weight: 600; color: var(--color-heading); font-size: 14px; margin: 2px 0; }
+  .notif-item__desc { color: var(--color-muted); font-size: 13px; line-height: 1.4; }
+  .notif-item__time { color: var(--color-muted); font-size: 11px; margin-top: 4px; }
+  .notif-item__actions { display: flex; gap: 6px; align-items: center; }
+  .notif-item__actions form { display: inline; margin: 0; }
+  .notif-item__actions button, .notif-item__actions a { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-heading); font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; }
+  .notif-item__actions button:hover, .notif-item__actions a:hover { background: var(--color-surface-muted); }
+  .notif-item__actions .danger:hover { border-color: #ef4444; color: #ef4444; }
+  .notif-bulk { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+  .notif-bulk button { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-heading); font-size: 13px; font-weight: 600; cursor: pointer; }
+  .notif-bulk button:hover { background: var(--color-surface-muted); }
+  .notif-empty { padding: 24px; text-align: center; color: var(--color-muted); font-size: 13px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notif-page">
+  <section class="surface-card">
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <h2 style="margin:0; font-size:16px; font-weight:700;">{{ total_nao_lidas }} não lida{{ total_nao_lidas|pluralize }}</h2>
+      <div class="notif-bulk" style="margin-left:auto;">
+        <form method="post" action="{% url 'admin_notificacoes_ler_todas' %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" {% if not total_nao_lidas %}disabled style="opacity:.55;cursor:not-allowed;"{% endif %}>Marcar todas como lidas</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  {% if grupos_dinamicos %}
+    <section class="surface-card">
+      <h2 style="margin:0 0 10px; font-size:14px; font-weight:700; color:var(--color-heading);">Resumo por tipo</h2>
+      <ul class="notif-groups">
+        {% for grupo in grupos_dinamicos %}
+          <li class="notif-group">
+            <span class="notif-group__count">{{ grupo.total }}</span>
+            <span class="notif-group__label">{{ grupo.label }}</span>
+            <span class="notif-group__detail">{{ grupo.total }} pendente{{ grupo.total|pluralize }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  <section class="surface-card">
+    <h2 style="margin:0 0 10px; font-size:14px; font-weight:700;">Notificações ativas</h2>
+    <div class="notif-list">
+      {% for item in dynamic_notifications %}
+        <article class="notif-item is-unread">
+          <div>
+            <div class="notif-item__meta">
+              <span>{{ item.tipo_label }}</span>
+              <span>·</span>
+              <span>{{ item.time_label }}</span>
+            </div>
+            <div class="notif-item__title">{{ item.title }}</div>
+            <div class="notif-item__desc">{{ item.description }}</div>
+          </div>
+          <div class="notif-item__actions">
+            {% if item.url %}<a href="{{ item.url }}">Abrir</a>{% endif %}
+          </div>
+        </article>
+      {% empty %}
+        <div class="notif-empty">Nenhuma notificação ativa no momento.</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="surface-card">
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
+      <h2 style="margin:0; font-size:14px; font-weight:700;">Histórico</h2>
+      <form method="get" class="notif-filters" style="margin-left:auto;">
+        <label for="filtro-tipo">Tipo</label>
+        <select id="filtro-tipo" name="tipo" onchange="this.form.submit()">
+          <option value="">Todos</option>
+          {% for value, label in tipos_disponiveis %}
+            <option value="{{ value }}" {% if value == filtro_tipo %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <label for="filtro-estado">Estado</label>
+        <select id="filtro-estado" name="estado" onchange="this.form.submit()">
+          <option value="todas" {% if filtro_estado == 'todas' %}selected{% endif %}>Todas</option>
+          <option value="nao_lidas" {% if filtro_estado == 'nao_lidas' %}selected{% endif %}>Não lidas</option>
+          <option value="lidas" {% if filtro_estado == 'lidas' %}selected{% endif %}>Lidas</option>
+        </select>
+      </form>
+    </div>
+    <div class="notif-list">
+      {% for notif in historico %}
+        <article class="notif-item {% if not notif.lida %}is-unread{% endif %}">
+          <div>
+            <div class="notif-item__meta">
+              <span>{{ notif.get_tipo_display }}</span>
+              <span>·</span>
+              <span>{{ notif.criado_em|date:"d/m/Y H:i" }}</span>
+              {% if notif.lida %}<span>·</span><span style="color:#22c55e;">Lida</span>{% endif %}
+            </div>
+            <div class="notif-item__title">{{ notif.titulo|default:"Notificação" }}</div>
+            {% if notif.mensagem %}<div class="notif-item__desc">{{ notif.mensagem }}</div>{% endif %}
+          </div>
+          <div class="notif-item__actions">
+            {% if notif.url_destino %}<a href="{{ notif.url_destino }}">Abrir</a>{% endif %}
+            {% if not notif.lida %}
+              <form method="post" action="{% url 'admin_notificacoes_ler' notif.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit">Marcar como lida</button>
+              </form>
+            {% endif %}
+            <form method="post" action="{% url 'admin_notificacoes_arquivar' notif.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button type="submit" class="danger" aria-label="Arquivar">Arquivar</button>
+            </form>
+          </div>
+        </article>
+      {% empty %}
+        <div class="notif-empty">Sem histórico para os filtros atuais.</div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

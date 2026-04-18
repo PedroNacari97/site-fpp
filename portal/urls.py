@@ -1,10 +1,30 @@
 from django.urls import path
 
-from . import views
+from . import views, views_auth
 
 
 urlpatterns = [
     path("", views.home_publica, name="portal_home"),
+    # --- Portal B2C — autenticacao isolada (NAO usa auth.User do SaaS) ---
+    path("login/", views_auth.portal_login, name="portal_login"),
+    path("cadastro/", views_auth.portal_register, name="portal_register"),
+    path("logout/", views_auth.portal_logout, name="portal_logout"),
+    path("auth/google/", views_auth.portal_google_login, name="portal_google_login"),
+    path(
+        "auth/google/callback/",
+        views_auth.portal_google_callback,
+        name="portal_google_callback",
+    ),
+    path(
+        "optout/alerta/<str:token>/",
+        views_auth.portal_optout_alerta,
+        name="portal_optout_alerta",
+    ),
+    path(
+        "optout/artigo/<str:token>/",
+        views_auth.portal_optout_artigo,
+        name="portal_optout_artigo",
+    ),
     path("metrics/event/", views.registrar_evento_publico, name="portal_metrics_event"),
     path("alertas/", views.alertas_publicos, name="portal_alertas"),
     path("alertas/termos-de-recebimento/", views.termos_alertas_email, name="portal_termos_alertas_email"),
@@ -20,6 +40,11 @@ urlpatterns = [
     path("categorias/<slug:categoria_slug>/", views.categoria_lista, name="portal_categoria"),
     path("categorias/<slug:categoria_slug>/<slug:slug>/", views.noticia_detalhe, name="portal_noticia_detalhe"),
     path("artigos/", views.artigos_lista, name="portal_artigos"),
+    path(
+        "artigos/<slug:slug>/marcar-lido/",
+        views.artigo_marcar_lido,
+        name="portal_artigo_marcar_lido",
+    ),
     path("artigos/<slug:slug>/", views.modulo_detalhe, name="portal_modulo_detalhe"),
     path("artigos/<slug:modulo_slug>/<slug:slug>/", views.artigo_detalhe, name="portal_artigo_detalhe"),
     path("noticias/", views.noticias_todas, name="portal_noticias_todas"),

@@ -15,6 +15,7 @@ class UsoCPF(models.Model):
         related_name="usos_cpf",
     )
     cpf = models.CharField(max_length=11)
+    cpf_hash = models.CharField(max_length=64, blank=True, db_index=True)
     data_ultima_emissao = models.DateField()
 
     class Meta:

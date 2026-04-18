@@ -15,3 +15,11 @@ from .governanca import *
 from .site_monitoramento import *
 from .pipeline import pipeline_view, pipeline_mover
 from .emissoes import api_voos_cliente
+from .notificacoes import (
+    admin_notificacoes,
+    marcar_notificacao_lida_por_chave,
+    marcar_notificacao_lida_por_id,
+    marcar_todas_lidas,
+    arquivar_notificacao,
+    arquivar_por_chave,
+)

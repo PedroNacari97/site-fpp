@@ -1,6 +1,9 @@
 from django.conf import settings
 
-from gestao.services.dashboard import build_operational_notifications
+from gestao.services.dashboard import (
+    build_operational_notifications,
+    group_notifications_by_type,
+)
 
 
 def _resolve_user_empresa(user):
@@ -38,6 +41,8 @@ def admin_notifications(request):
     default_payload = {
         "admin_notifications": [],
         "admin_notifications_unread_count": 0,
+        "admin_notifications_groups": [],
+        "admin_notifications_recent": [],
     }
 
     if not getattr(request, "user", None) or not request.user.is_authenticated:
@@ -54,12 +59,17 @@ def admin_notifications(request):
             return default_payload
         empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
 
+    # Traz um volume maior para compor resumo agrupado; UI limita exibição.
     notifications = build_operational_notifications(
         user=request.user,
         empresa=empresa,
-        limit=6,
+        limit=20,
     )
+    groups = group_notifications_by_type(notifications)
+    recent = notifications[:5]
     return {
-        "admin_notifications": notifications,
+        "admin_notifications": notifications[:6],
         "admin_notifications_unread_count": len(notifications),
+        "admin_notifications_groups": groups,
+        "admin_notifications_recent": recent,
     }

@@ -1,0 +1,68 @@
+{% extends "admin_custom/base_admin.html" %}
+{% load static %}
+
+{% block title %}Pagamentos da minha agência{% endblock %}
+{% block header_title %}Histórico de pagamentos{% endblock %}
+{% block header_subtitle %}<span>Últimos 12 meses de cobranças da sua agência.</span>{% endblock %}
+
+{% block content %}
+<div class="page-shell space-y-4 p-6">
+
+    <div class="flex items-center justify-between">
+        <a href="{% url 'admin_financeiro' %}" class="text-sm text-blue-600 hover:underline">&larr; Voltar ao painel financeiro</a>
+        <span class="text-xs text-slate-500">{{ total_registros }} registro{{ total_registros|pluralize }}</span>
+    </div>
+
+    <section class="surface-card overflow-hidden" aria-label="Pagamentos">
+        <table class="w-full text-sm">
+            <thead>
+                <tr>
+                    <th class="text-left">Data</th>
+                    <th class="text-left">Método</th>
+                    <th class="text-right">Valor</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-left">Referência</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in page_obj %}
+                <tr>
+                    <td class="text-xs">{{ p.criado_em|date:"d/m/Y H:i" }}</td>
+                    <td>{{ p.get_metodo_display|default:"—" }}</td>
+                    <td class="text-right font-mono">R$ {{ p.valor|floatformat:2 }}</td>
+                    <td class="text-center">
+                        {% if p.status == 'confirmado' %}
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">Confirmado</span>
+                        {% elif p.status == 'pendente' %}
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Pendente</span>
+                        {% elif p.status == 'falhou' %}
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800">Falhou</span>
+                        {% else %}
+                            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">{{ p.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-xs font-mono break-all">{{ p.gateway_ref|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center py-8 text-slate-500">Nenhum pagamento encontrado nos últimos 12 meses.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="flex items-center justify-between text-sm" aria-label="Paginação">
+        <span class="text-slate-500">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        <div class="flex gap-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary">Anterior</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary">Próxima</a>
+            {% endif %}
+        </div>
+    </nav>
+    {% endif %}
+
+</div>
+{% endblock %}

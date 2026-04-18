@@ -125,10 +125,9 @@ def relatorio_cliente_pdf(request, cliente_id):
     for conta in contas:
         contas_lista.append({
             "programa": str(conta.programa),
-            "login": conta.login_programa or "-",
-            "clube": conta.get_clube_periodicidade_display() if conta.clube_periodicidade != "nenhum" else "-",
+            "clube": conta.get_clube_periodicidade_display() if conta.clube_periodicidade != "nenhum" else "Sem clube",
             "pontos_mes": f"{conta.pontos_clube_mes:,}".replace(",", ".") if conta.pontos_clube_mes else "-",
-            "validade": conta.validade.strftime("%d/%m/%Y") if conta.validade else "-",
+            "validade": conta.validade.strftime("%d/%m/%Y") if conta.validade else "Sem validade definida",
         })
 
     # ── Economia total ──
@@ -145,23 +144,29 @@ def relatorio_cliente_pdf(request, cliente_id):
     }
 
     indicadores = [
-        {"label": "Total de cotações", "valor": str(total_cotacoes)},
-        {"label": "Cotações aceitas", "valor": str(cotacoes_por_status.get("Aceita", 0) + cotacoes_por_status.get("Emissão", 0))},
-        {"label": "Total de emissões", "valor": str(total_emissoes)},
-        {"label": "Emissões emitidas", "valor": str(total_emitidas)},
+        {"label": "Viagens cotadas", "valor": str(total_cotacoes)},
+        {"label": "Cotações aprovadas", "valor": str(cotacoes_por_status.get("Aceita", 0) + cotacoes_por_status.get("Emissão", 0))},
+        {"label": "Passagens emitidas", "valor": str(total_emitidas)},
         {"label": "Reservas de hotel", "valor": str(total_hoteis)},
-        {"label": "Programas de fidelidade", "valor": str(len(contas_lista))},
+        {"label": "Programas ativos", "valor": str(len(contas_lista))},
     ]
 
+    # Nota: não exibimos lucro da agência nem login de programa de fidelidade
+    # neste relatório — é um documento que vai para o cliente final.
     valores = [
-        {"label": "Valor total em cotações", "valor": _fmt_brl(valor_total_cotacoes)},
-        {"label": "Receita em emissões", "valor": _fmt_brl(receita_emissoes)},
-        {"label": "Lucro em emissões", "valor": _fmt_brl(lucro_emissoes)},
-        {"label": "Valor em hotéis", "valor": _fmt_brl(valor_hoteis)},
-        {"label": "Economia em cotações", "valor": _fmt_brl(economia_cotacoes), "destaque": True},
+        {"label": "Você investiu em passagens", "valor": _fmt_brl(receita_emissoes)},
+        {"label": "Você investiu em hotéis", "valor": _fmt_brl(valor_hoteis)},
+        {"label": "Economia em passagens", "valor": _fmt_brl(economia_cotacoes), "destaque": True},
         {"label": "Economia em hotéis", "valor": _fmt_brl(economia_hoteis), "destaque": True},
-        {"label": "Economia total", "valor": _fmt_brl(economia_total), "destaque": True},
+        {"label": "Economia total no período", "valor": _fmt_brl(economia_total), "destaque": True},
     ]
+
+    # Próximos passos dependem de cotações ainda em aberto
+    cotacoes_em_aberto = (
+        cotacoes_por_status.get("Enviada", 0)
+        + cotacoes_por_status.get("Aceita", 0)
+    )
+    emissoes_pendentes = total_pendentes
 
     context = {
         "cliente": cliente,
@@ -173,6 +178,9 @@ def relatorio_cliente_pdf(request, cliente_id):
         "emissoes_lista": emissoes_lista,
         "contas_lista": contas_lista,
         "economia_total": _fmt_brl(economia_total),
+        "cotacoes_em_aberto": cotacoes_em_aberto,
+        "emissoes_pendentes": emissoes_pendentes,
+        "tem_dados": bool(total_cotacoes or total_emissoes or total_hoteis or contas_lista),
     }
 
     try:

@@ -30,6 +30,9 @@
                 <span class="artigos-hub-modulo-card__badge">
                     {{ modulo.total_artigos|default:"0" }} artigo{{ modulo.total_artigos|pluralize:"s" }}
                 </span>
+                {% if portal_user_is_authenticated %}
+                    {% include "portal/partials/progresso_bar.html" with progresso=modulo.progresso variant="card" %}
+                {% endif %}
             </a>
             {% endfor %}
         </div>

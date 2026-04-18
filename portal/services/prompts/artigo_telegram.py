@@ -12,6 +12,16 @@ Uso:
 
     prompt_usuario = USER_TEMPLATE.format(texto_bruto=texto)
     # Passe SYSTEM como system prompt e prompt_usuario como user message
+
+Changelog (refino transversal prompts + seo + instagram — sem mudança
+de interface nem de SCHEMA):
+    - Reafirmado o alinhamento com o prompt sibling do ai_pipeline:
+      piramide invertida, primeiro <h2> com keyword principal, CTA
+      ancorado, seo_title/meta_description com contagem de caracteres.
+    - Incluída nota de reuso cross-channel: o output alimenta tanto
+      o portal quanto a legenda do Instagram (via instagram_prompts),
+      então `resumo` precisa servir como gancho também em 280 chars.
+    - Mantidas regras anti-alucinação e checklist — já eram padrão-ouro.
 """
 
 # ---------------------------------------------------------------------------

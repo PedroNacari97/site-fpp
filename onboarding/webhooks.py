@@ -16,11 +16,20 @@ logger = logging.getLogger(__name__)
 
 
 def _verify_hmac(request):
-    """Verifica assinatura HMAC do webhook."""
-    secret = getattr(settings, "PAYMENT_WEBHOOK_SECRET", "")
+    """Verifica assinatura HMAC do webhook.
+
+    Fail-closed: se PAYMENT_WEBHOOK_SECRET nao estiver configurado, o webhook
+    e rejeitado. Nunca aceitar webhook sem verificacao, mesmo que o secret
+    esteja vazio.
+    """
+    secret = getattr(settings, "PAYMENT_WEBHOOK_SECRET", "") or ""
     if not secret:
-        logger.warning("PAYMENT_WEBHOOK_SECRET nao configurado \u2014 webhook aceito sem verificacao")
-        return True
+        logger.error(
+            "PAYMENT_WEBHOOK_SECRET nao configurado \u2014 webhook rejeitado (fail-closed). "
+            "ip=%s",
+            request.META.get("REMOTE_ADDR", ""),
+        )
+        return False
 
     signature = request.headers.get("X-Webhook-Signature", "")
     if not signature:

@@ -18,6 +18,7 @@ class Cliente(models.Model):
     telefone = models.CharField(max_length=20, blank=True)
     data_nascimento = models.DateField(null=True, blank=True)
     cpf = models.CharField(max_length=11, unique=True)
+    cpf_hash = models.CharField(max_length=64, blank=True, db_index=True)
     PERFIS = (
         ("admin", "Administrador"),
         ("operador", "Operador"),

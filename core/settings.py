@@ -68,7 +68,9 @@ def _env_list(name, default=None):
     return [item.strip() for item in raw_value.split(",") if item.strip()]
 
 
-DEBUG = _env_bool("DJANGO_DEBUG", True)
+# DEBUG default = False (fail-safe). Ative explicitamente com DJANGO_DEBUG=1
+# apenas em maquinas de desenvolvimento.
+DEBUG = _env_bool("DJANGO_DEBUG", False)
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY")
 if not SECRET_KEY:
@@ -106,6 +108,7 @@ INSTALLED_APPS = [
     "accounts",
     "storages",
     "superadmin",
+    "onboarding",
     # django-allauth (Google OAuth para superadmin)
     "allauth",
     "allauth.account",
@@ -135,6 +138,7 @@ MIDDLEWARE = [
     "accounts.middleware.PlatformDocumentAcceptanceMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "gestao.middleware.AuditLogMiddleware",
+    "onboarding.middleware.AssinaturaAtivaMiddleware",
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -269,10 +273,21 @@ PORTAL_COOKIE_CONSENT_MAX_AGE_DAYS = int(
 )
 
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = "Lax"
-CSRF_COOKIE_SAMESITE = "Lax"
+# SameSite=Lax e o default aceitavel para fluxos OAuth (Google). Mudar para
+# "Strict" quebraria o retorno do callback do Google no login do superadmin.
+# Defesa em profundidade vem de HttpOnly + Secure + MFA + LoginGuard.
+SESSION_COOKIE_SAMESITE = os.environ.get("DJANGO_SESSION_COOKIE_SAMESITE", "Lax")
+CSRF_COOKIE_SAMESITE = os.environ.get("DJANGO_CSRF_COOKIE_SAMESITE", "Lax")
+# CSRF token precisa ser lido por JS em alguns fluxos (fetch com header
+# X-CSRFToken). Mantemos HttpOnly=False mas permitimos override via env.
+CSRF_COOKIE_HTTPONLY = _env_bool("DJANGO_CSRF_COOKIE_HTTPONLY", False)
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_REFERRER_POLICY = "same-origin"
+SECURE_REFERRER_POLICY = os.environ.get(
+    "DJANGO_SECURE_REFERRER_POLICY", "strict-origin-when-cross-origin"
+)
+SECURE_CROSS_ORIGIN_OPENER_POLICY = os.environ.get(
+    "DJANGO_SECURE_COOP", "same-origin"
+)
 X_FRAME_OPTIONS = "DENY"
 
 if not DEBUG:
@@ -291,6 +306,21 @@ else:
     SECURE_HSTS_SECONDS = 0
     SECURE_HSTS_INCLUDE_SUBDOMAINS = False
     SECURE_HSTS_PRELOAD = False
+
+# Portal B2C — rate limit de cadastro/login (reusa LoginGuard do accounts/)
+PORTAL_B2C_REGISTER_LIMIT = int(os.environ.get("PORTAL_B2C_REGISTER_LIMIT", "10"))
+PORTAL_B2C_REGISTER_LOCKOUT_MINUTES = int(
+    os.environ.get("PORTAL_B2C_REGISTER_LOCKOUT_MINUTES", "15")
+)
+PORTAL_B2C_TERMOS_VERSAO = os.environ.get("PORTAL_B2C_TERMOS_VERSAO", "2026-04").strip() or "2026-04"
+
+# Portal B2C — Google OAuth (isolado do fluxo de superadmin via allauth)
+# Callback URL: <SITE_BASE_URL>/home/auth/google/callback/
+# Em dev, normalmente http://localhost:8000/home/auth/google/callback/
+# Em prod, precisa ser cadastrado no Google Cloud Console.
+PORTAL_GOOGLE_OAUTH_REDIRECT_URI = os.environ.get(
+    "PORTAL_GOOGLE_OAUTH_REDIRECT_URI", ""
+).strip()
 
 SECURITY_LOGIN_FAILURE_LIMIT = int(os.environ.get("SECURITY_LOGIN_FAILURE_LIMIT", "5"))
 SECURITY_LOGIN_LOCKOUT_MINUTES = int(os.environ.get("SECURITY_LOGIN_LOCKOUT_MINUTES", "15"))
@@ -321,7 +351,9 @@ TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY", "").strip()
 TURNSTILE_API_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
 TURNSTILE_FAIL_OPEN = _env_bool("TURNSTILE_FAIL_OPEN", DEBUG)
 
-PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", str(2 * 60 * 60)))
+# Token de reset de senha: expiracao curta para mitigar roubo de e-mail e
+# tokens vazados em historico de navegador. Padrao: 30 minutos (override via env).
+PASSWORD_RESET_TIMEOUT = int(os.environ.get("PASSWORD_RESET_TIMEOUT", str(30 * 60)))
 
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "").strip()
 RESEND_API_URL = os.environ.get("RESEND_API_URL", "https://api.resend.com/emails").strip()

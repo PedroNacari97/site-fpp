@@ -17,6 +17,8 @@ class DocumentoPlataforma(models.Model):
     )
 
     tipo = models.CharField(max_length=40, choices=TIPOS, unique=True)
+    titulo = models.CharField(max_length=200, blank=True)
+    conteudo = models.TextField(blank=True, help_text="Texto integral do documento em HTML")
     versao_atual = models.CharField(max_length=30, default="v1.0")
     data_vigencia = models.DateField(default=timezone.localdate)
     exige_aceite_empresa = models.BooleanField(default=True)
@@ -45,6 +47,10 @@ class AceiteDocumentoPlataforma(models.Model):
         related_name="aceites",
     )
     versao_aceita = models.CharField(max_length=30)
+    hash_documento = models.CharField(
+        max_length=64, blank=True,
+        help_text="SHA-256 do conteudo do documento no momento do aceite",
+    )
     aceito_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

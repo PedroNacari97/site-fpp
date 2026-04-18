@@ -10,6 +10,7 @@ from .cookies import (
 
 
 def portal_public_settings(request):
+    from .auth import get_portal_user
     from .views import CATEGORY_CONFIGS
 
     raw_cookie_preferences = get_cookie_preferences_from_request(request)
@@ -20,7 +21,10 @@ def portal_public_settings(request):
         "cartoes-credito": "Cartões",
         "hoteis-resorts": "Hotéis",
     }
+    portal_user = get_portal_user(request)
     return {
+        "portal_user": portal_user,
+        "portal_user_authenticated": bool(portal_user),
         "google_analytics_measurement_id": settings.GOOGLE_ANALYTICS_MEASUREMENT_ID,
         "google_search_console_verification": settings.GOOGLE_SEARCH_CONSOLE_VERIFICATION,
         "portal_legal_entity_name": settings.PORTAL_LEGAL_ENTITY_NAME,

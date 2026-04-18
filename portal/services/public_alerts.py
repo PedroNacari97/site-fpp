@@ -492,14 +492,42 @@ def _build_ai_public_copy(signature: str) -> dict[str, Any]:
                 "content": [
                     {
                         "type": "input_text",
+                        # Changelog (prompts + seo + instagram):
+                        #   - hero_title agora exige rota ou dado concreto
+                        #     (milhas ou preço) — é o H1 da página de alerta,
+                        #     keyword transacional primária.
+                        #   - hero_subtitle limitado a 1 linha, complementa
+                        #     e não repete palavras do hero_title.
+                        #   - about_offer precisa abrir com o dado, não com
+                        #     introdução ("Excelente oportunidade para..." era
+                        #     clichê de landing page).
+                        #   - benefits: itens curtos, verificáveis, no máx
+                        #     60 chars cada — habilita featured snippet.
+                        #   - steps: verbo no imperativo + dado concreto,
+                        #     não frase genérica.
+                        #   - Anti-alucinação reforçada (bagagem, cancelamento
+                        #     etc. já estava — adicionado "não invente número
+                        #     de assentos, franquia de milhas ou taxa").
                         "text": (
-                            "Você escreve a camada pública de um alerta de passagem aérea para um portal editorial brasileiro. "
+                            "Você escreve a camada pública de um alerta de passagem aérea para o NCfly, portal editorial brasileiro de milhas. "
                             "Retorne JSON com hero_title, hero_subtitle, about_offer, benefits e steps. "
-                            "Os textos precisam ser claros, comerciais e coerentes com os dados reais do alerta. "
-                            "Não invente bagagem, cancelamento, remarcação, lounge, franquia ou qualquer benefício que não esteja confirmado nos dados. "
-                            "Em benefits, entregue exatamente 4 itens curtos e seguros. "
-                            "Em steps, entregue exatamente 4 etapas com title e description objetivas, orientadas à emissão no programa. "
-                            "Escreva em português do Brasil, sem emojis e sem exagero publicitário. "
+                            "Os textos precisam ser claros, diretos, com intenção transacional — quem chega nessa página quer emitir a passagem. "
+
+                            "GANCHO E SEO:\n"
+                            "- hero_title: 1 frase curta (até 70 chars) contendo rota (origem → destino) OU valor em milhas OU programa. É o H1 da página, keyword transacional. Nunca comece com 'Oferta imperdível' ou 'Promoção'.\n"
+                            "- hero_subtitle: 1 linha complementar (até 90 chars) com a informação que NÃO está no hero_title (ex.: classe + companhia se hero tem rota + milhas).\n"
+                            "- about_offer: 2-3 frases. Primeira frase abre com o DADO (rota, valor em milhas, programa) — não com 'Excelente oportunidade'. Explique em seguida por que vale a pena emitir e o que precisa saber antes.\n\n"
+
+                            "ANTI-ALUCINAÇÃO — absoluto:\n"
+                            "- Não invente bagagem, cancelamento, remarcação, lounge, franquia, assentos, taxa, paridade nem qualquer benefício que não esteja nos dados.\n"
+                            "- Não invente prazo de validade, número de poltronas restantes ou escassez.\n"
+                            "- Use apenas: rota, classe, programa, companhia, valor em milhas, valor em reais, datas de ida e volta recebidos.\n\n"
+
+                            "BENEFITS — exatamente 4 itens curtos (máx 60 chars cada) e verificáveis a partir dos dados. Exemplos de padrão: '{valor} milhas por pessoa em {classe}', 'Trecho operado por {companhia}', 'Emissão direta no {programa}', 'Datas flexíveis disponíveis no alerta'. Sem adjetivo publicitário.\n\n"
+
+                            "STEPS — exatamente 4 etapas. Cada etapa tem title (verbo no imperativo, até 45 chars) e description (1 frase, até 130 chars) orientada à emissão. Ex.: 'Acesse sua conta {programa}' / 'Pesquise o trecho {origem}-{destino} nas datas do alerta'. Sem 'você deve', sem 'é necessário'.\n\n"
+
+                            "Escreva em português do Brasil, voz ativa, sem emojis, sem exagero publicitário ('imperdível', 'incrível' e 'exclusivo' são banidos). "
                             "Antes de responder, revise ortografia, acentuação, concordância e fluidez em PT-BR. "
                             "Corrija qualquer erro de português antes de devolver o JSON final."
                         ),

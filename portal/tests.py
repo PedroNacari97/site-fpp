@@ -2509,3 +2509,129 @@ class PortalCrossSourceDeduplicationTest(TestCase):
 
         self.assertIsNotNone(duplicate)
         self.assertEqual(duplicate.pk, self.noticia.pk)
+
+
+# =============================================================================
+# Portal B2C — Progresso de leitura por modulo (Tarefa 5)
+# =============================================================================
+class ProgressoArtigoTest(TestCase):
+    """Cobertura do model/servico/view de progresso por PortalUser."""
+
+    def setUp(self):
+        from .models import ModuloEstudo, ArtigoEstudo, PortalUser
+        self.user = PortalUser.objects.create(email="leitor@example.com", ativo=True)
+        self.user.set_password("senha-12345")
+        self.user.save()
+
+        self.modulo = ModuloEstudo.objects.create(
+            titulo="Milhas 101",
+            descricao="Basico de milhas",
+            slug="milhas-101",
+            ordem=1,
+            ativo=True,
+        )
+        self.a1 = ArtigoEstudo.objects.create(
+            modulo=self.modulo, titulo="O que sao milhas",
+            resumo="r", conteudo="c", slug="o-que-sao-milhas",
+            status="published", ordem=1, publicado_em=timezone.now(),
+        )
+        self.a2 = ArtigoEstudo.objects.create(
+            modulo=self.modulo, titulo="Como acumular",
+            resumo="r", conteudo="c", slug="como-acumular",
+            status="published", ordem=2, publicado_em=timezone.now(),
+        )
+        self.a3 = ArtigoEstudo.objects.create(
+            modulo=self.modulo, titulo="Rascunho escondido",
+            resumo="r", conteudo="c", slug="rascunho",
+            status="draft", ordem=3, publicado_em=None,
+        )
+
+    def _login(self):
+        from .auth import PORTAL_SESSION_USER_KEY
+        session = self.client.session
+        session[PORTAL_SESSION_USER_KEY] = self.user.pk
+        session.save()
+
+    def test_servico_anonimo_retorna_total_sem_lidos(self):
+        from .services.progresso import calcular_progresso_modulo
+        p = calcular_progresso_modulo(None, self.modulo)
+        self.assertEqual(p["total_artigos"], 2)  # so publicados
+        self.assertEqual(p["lidos"], 0)
+        self.assertEqual(p["status"], "nao_iniciado")
+
+    def test_servico_user_sem_progresso(self):
+        from .services.progresso import calcular_progresso_modulo
+        p = calcular_progresso_modulo(self.user, self.modulo)
+        self.assertEqual(p["percentual"], 0)
+        self.assertEqual(p["status"], "nao_iniciado")
+
+    def test_servico_user_em_andamento(self):
+        from .models import ProgressoArtigo
+        from .services.progresso import calcular_progresso_modulo
+        ProgressoArtigo.objects.create(
+            user=self.user, artigo=self.a1,
+            lido_em=timezone.now(), progresso_percentual=100,
+        )
+        p = calcular_progresso_modulo(self.user, self.modulo)
+        self.assertEqual(p["lidos"], 1)
+        self.assertEqual(p["percentual"], 50)
+        self.assertEqual(p["status"], "em_andamento")
+
+    def test_servico_user_concluido(self):
+        from .models import ProgressoArtigo
+        from .services.progresso import calcular_progresso_modulo
+        for a in (self.a1, self.a2):
+            ProgressoArtigo.objects.create(
+                user=self.user, artigo=a,
+                lido_em=timezone.now(), progresso_percentual=100,
+            )
+        p = calcular_progresso_modulo(self.user, self.modulo)
+        self.assertEqual(p["percentual"], 100)
+        self.assertEqual(p["status"], "concluido")
+
+    def test_marcar_lido_exige_login(self):
+        url = reverse("portal_artigo_marcar_lido", kwargs={"slug": self.a1.slug})
+        resp = self.client.post(url)
+        self.assertIn(resp.status_code, (302, 303))
+        self.assertIn(reverse("portal_login"), resp["Location"])
+
+    def test_marcar_lido_cria_progresso(self):
+        from .models import ProgressoArtigo
+        self._login()
+        url = reverse("portal_artigo_marcar_lido", kwargs={"slug": self.a1.slug})
+        resp = self.client.post(url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertEqual(data["status"], "ok")
+        self.assertEqual(data["lidos"], 1)
+        self.assertEqual(data["total_artigos"], 2)
+        self.assertEqual(data["percentual_modulo"], 50)
+        self.assertTrue(
+            ProgressoArtigo.objects.filter(
+                user=self.user, artigo=self.a1, lido_em__isnull=False
+            ).exists()
+        )
+
+    def test_marcar_lido_idempotente(self):
+        from .models import ProgressoArtigo
+        self._login()
+        url = reverse("portal_artigo_marcar_lido", kwargs={"slug": self.a1.slug})
+        self.client.post(url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        self.client.post(url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        self.assertEqual(
+            ProgressoArtigo.objects.filter(user=self.user, artigo=self.a1).count(),
+            1,
+        )
+
+    def test_artigo_rascunho_nao_marca_lido(self):
+        self._login()
+        url = reverse("portal_artigo_marcar_lido", kwargs={"slug": self.a3.slug})
+        resp = self.client.post(url)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_modulo_detalhe_logado_exibe_barra(self):
+        self._login()
+        resp = self.client.get(reverse("portal_modulo_detalhe", kwargs={"slug": self.modulo.slug}))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "portal-progresso__track")
+        self.assertContains(resp, "data-progresso-modulo")

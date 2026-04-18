@@ -109,9 +109,15 @@ def _build_notification_item(
     url=None,
     unread=True,
     tone=None,
+    tipo=None,
 ):
+    if tipo is None:
+        tipo = NotificacaoSistema.tipo_da_chave(key)
+    label_map = dict(NotificacaoSistema.Tipo.choices)
     return {
         "key": key,
+        "tipo": tipo,
+        "tipo_label": label_map.get(tipo, "Notificações"),
         "title": title,
         "titulo": title,
         "description": description,
@@ -144,11 +150,14 @@ def mark_operational_notification_as_read(*, user, key, empresa=None, notificati
         return None
 
     notification = notification or {}
+    tipo = notification.get("tipo") or NotificacaoSistema.tipo_da_chave(key)
     defaults = {
         "empresa": empresa,
+        "tipo": tipo,
         "titulo": notification.get("title", ""),
         "mensagem": notification.get("description", ""),
         "url": notification.get("url", "") or "",
+        "url_acao": notification.get("url", "") or "",
         "lida": True,
         "lida_em": timezone.now(),
     }
@@ -158,6 +167,53 @@ def mark_operational_notification_as_read(*, user, key, empresa=None, notificati
         defaults=defaults,
     )
     return record
+
+
+def mark_all_operational_notifications_as_read(*, user, empresa=None):
+    """Marca como lidas TODAS as notificações ativas (dinâmicas + persistentes) do usuário."""
+    if not user or not getattr(user, "is_authenticated", False):
+        return 0
+
+    now = timezone.now()
+    # 1) persiste flag para todas as chaves dinâmicas visíveis
+    pending = build_operational_notifications(user=user, empresa=empresa, limit=100)
+    count = 0
+    for notification in pending:
+        mark_operational_notification_as_read(
+            user=user, key=notification["key"], empresa=empresa, notification=notification
+        )
+        count += 1
+
+    # 2) marca qualquer NotificacaoSistema persistida ainda não lida
+    persisted = NotificacaoSistema.objects.do_usuario(user).ativas().filter(lida=False)
+    if empresa is not None:
+        persisted = persisted.da_empresa(empresa)
+    persisted_count = persisted.update(lida=True, lida_em=now)
+    return count + persisted_count
+
+
+def group_notifications_by_type(notifications):
+    """Agrupa uma lista de dicts (build_operational_notifications) por tipo.
+
+    Retorna lista ordenada [{"tipo", "label", "total", "itens"}] estável
+    pelo primeiro item de cada grupo.
+    """
+    label_map = dict(NotificacaoSistema.Tipo.choices)
+    buckets = {}
+    order = []
+    for notification in notifications:
+        tipo = notification.get("tipo") or NotificacaoSistema.tipo_da_chave(notification.get("key", ""))
+        if tipo not in buckets:
+            order.append(tipo)
+            buckets[tipo] = {
+                "tipo": tipo,
+                "label": label_map.get(tipo, "Notificações"),
+                "total": 0,
+                "itens": [],
+            }
+        buckets[tipo]["total"] += 1
+        buckets[tipo]["itens"].append(notification)
+    return [buckets[tipo] for tipo in order]
 
 
 def _build_programas_info(contas):

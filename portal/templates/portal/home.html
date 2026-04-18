@@ -496,6 +496,86 @@
                 </div>
             </div>
         </section>
+
+        {# ================================================================
+           Modulos de estudo — 1 amostra aberta + demais com gating por login
+           ================================================================ #}
+        {% if modulo_amostra or modulos_bloqueados or modulos_liberados %}
+        <section class="portal-modulos-gated" aria-labelledby="modulos-title">
+            <header class="portal-modulos-gated__header">
+                <h2 id="modulos-title" class="portal-modulos-gated__title">M&oacute;dulos de aprendizado</h2>
+                <p class="portal-modulos-gated__subtitle">
+                    {% if portal_user_is_authenticated %}
+                        Voc&ecirc; tem acesso completo aos m&oacute;dulos. Bons estudos!
+                    {% else %}
+                        Confira uma amostra gratuita. Fa&ccedil;a login para desbloquear todos os m&oacute;dulos.
+                    {% endif %}
+                </p>
+            </header>
+
+            {% if modulo_amostra %}
+            <article class="portal-modulo-amostra" style="--modulo-cor: {{ modulo_amostra.cor|default:'#2563eb' }};">
+                <span class="portal-modulo-amostra__badge">
+                    {% if portal_user_is_authenticated %}Dispon&iacute;vel{% else %}Amostra gr&aacute;tis{% endif %}
+                </span>
+                <h3 class="portal-modulo-amostra__title">{{ modulo_amostra.titulo }}</h3>
+                <p class="portal-modulo-amostra__desc">{{ modulo_amostra.descricao|truncatechars:220 }}</p>
+                {% if portal_user_is_authenticated %}
+                    {% include "portal/partials/progresso_bar.html" with progresso=modulo_amostra.progresso variant="card" %}
+                {% endif %}
+                <a href="{{ modulo_amostra.get_absolute_url }}" class="portal-modulo-amostra__cta"
+                   data-analytics-event="click_modulo_amostra">
+                    {% if portal_user_is_authenticated and modulo_amostra.progresso.status == 'em_andamento' %}Continuar m&oacute;dulo &raquo;
+                    {% elif portal_user_is_authenticated and modulo_amostra.progresso.status == 'concluido' %}Revisar m&oacute;dulo &raquo;
+                    {% else %}Abrir m&oacute;dulo &raquo;{% endif %}
+                </a>
+            </article>
+            {% endif %}
+
+            {% if modulos_bloqueados %}
+            <div class="portal-modulos-gated__grid" style="margin-top: 20px;">
+                {% for modulo in modulos_bloqueados %}
+                <div class="portal-modulo-locked" aria-label="M&oacute;dulo bloqueado — requer login">
+                    <div class="portal-modulo-locked__content" aria-hidden="true">
+                        <h3>{{ modulo.titulo }}</h3>
+                        <p>{{ modulo.descricao|truncatechars:90 }}</p>
+                    </div>
+                    <div class="portal-modulo-locked__overlay">
+                        <div class="portal-modulo-locked__lock" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Zm2 0h6V7a3 3 0 0 0-6 0Z" fill="currentColor"/></svg>
+                        </div>
+                        <a href="{% url 'portal_login' %}?next={{ request.path|urlencode }}"
+                           class="portal-modulo-locked__cta"
+                           data-analytics-event="click_modulo_bloqueado"
+                           data-analytics-label="{{ modulo.slug }}">
+                            Fa&ccedil;a login para desbloquear
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if modulos_liberados %}
+            <div class="portal-modulos-gated__grid" style="margin-top: 20px;">
+                {% for modulo in modulos_liberados %}
+                <a href="{{ modulo.get_absolute_url }}" class="portal-modulo-amostra" style="text-decoration:none; --modulo-cor: {{ modulo.cor|default:'#2563eb' }};">
+                    <h3 class="portal-modulo-amostra__title">{{ modulo.titulo }}</h3>
+                    <p class="portal-modulo-amostra__desc">{{ modulo.descricao|truncatechars:120 }}</p>
+                    {% if portal_user_is_authenticated %}
+                        {% include "portal/partials/progresso_bar.html" with progresso=modulo.progresso variant="card" %}
+                    {% endif %}
+                    <span class="portal-modulo-amostra__cta" style="padding:6px 12px;font-size:0.8rem;">
+                        {% if modulo.progresso.status == 'em_andamento' %}Continuar &raquo;
+                        {% elif modulo.progresso.status == 'concluido' %}Revisar &raquo;
+                        {% else %}Abrir &raquo;{% endif %}
+                    </span>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+        {% endif %}
     </section>
 </div>
 {% endblock %}

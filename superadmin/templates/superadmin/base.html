@@ -26,6 +26,26 @@
         .sidebar a { display: flex; align-items: center; gap: .5rem; padding: .6rem 1rem; color: #94a3b8; font-size: .875rem; border-radius: .375rem; transition: background .15s, color .15s; text-decoration: none; }
         .sidebar a:hover, .sidebar a.active { background: #1e293b; color: #f1f5f9; }
         .sidebar a.active { color: #60a5fa; }
+        /* Grupos colapsáveis */
+        .sidebar details { margin: 0; }
+        .sidebar summary {
+            list-style: none; cursor: pointer;
+            display: flex; align-items: center; gap: .5rem;
+            padding: .6rem 1rem; color: #94a3b8; font-size: .875rem;
+            border-radius: .375rem; transition: background .15s, color .15s;
+        }
+        .sidebar summary::-webkit-details-marker { display: none; }
+        .sidebar summary:hover,
+        .sidebar details[open] > summary { background: #1e293b; color: #f1f5f9; }
+        .sidebar summary .caret { margin-left: auto; transition: transform .2s ease; width: 14px; height: 14px; }
+        .sidebar details[open] > summary .caret { transform: rotate(180deg); }
+        .sidebar .subnav { margin: 2px 0 4px; display: grid; gap: 2px; padding-left: .5rem; }
+        .sidebar .subnav a {
+            padding: .5rem .75rem .5rem 2rem; font-size: .8125rem;
+            color: #94a3b8;
+        }
+        .sidebar .subnav a.active { color: #60a5fa; background: #1e293b; }
+        .sidebar .subnav a:hover { background: #1e293b; color: #e2e8f0; }
         .badge { display: inline-flex; align-items: center; padding: .15rem .5rem; border-radius: 9999px; font-size: .7rem; font-weight: 600; }
         .badge-green { background: #dcfce7; color: #166534; }
         .badge-yellow { background: #fef9c3; color: #854d0e; }
@@ -54,7 +74,7 @@
 <div class="flex min-h-screen">
 
     <!-- Sidebar -->
-    <aside class="sidebar flex-shrink-0 flex flex-col py-4 px-2 gap-1">
+    <aside class="sidebar flex-shrink-0 flex flex-col py-4 px-2 gap-1" aria-label="Navegação principal">
         <div class="px-3 mb-4">
             <span class="text-white font-bold text-sm tracking-wide">NC Fly</span>
             <span class="block text-xs text-slate-500 mt-0.5">Painel Interno</span>
@@ -68,40 +88,58 @@
             Dashboard
         </a>
 
-        <a href="{% url 'superadmin_noticias_list' %}" class="{% if menu_ativo == 'noticias' %}active{% endif %}">
-            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 6h16M4 10h16M4 14h10M4 18h8"/>
-            </svg>
-            Noticias
-        </a>
+        {# Grupo: Conteúdo (Portal B2C) #}
+        <details {% if menu_ativo == 'noticias' or menu_ativo == 'upload' or menu_ativo == 'artigos' or menu_ativo == 'modulos' %}open{% endif %}>
+            <summary aria-label="Abrir grupo Conteúdo">
+                <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 6h16M4 10h16M4 14h10M4 18h8"/>
+                </svg>
+                Conteúdo
+                <svg class="caret" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m4 6 4 4 4-4"/>
+                </svg>
+            </summary>
+            <div class="subnav">
+                <a href="{% url 'superadmin_noticias_list' %}" class="{% if menu_ativo == 'noticias' %}active{% endif %}">Notícias</a>
+                <a href="{% url 'superadmin_artigo_upload' %}" class="{% if menu_ativo == 'upload' %}active{% endif %}">Subir artigo</a>
+                <a href="{% url 'superadmin_artigos_list' %}" class="{% if menu_ativo == 'artigos' %}active{% endif %}">Artigos educativos</a>
+                <a href="{% url 'superadmin_modulos_list' %}" class="{% if menu_ativo == 'modulos' %}active{% endif %}">Módulos</a>
+            </div>
+        </details>
 
-        <a href="{% url 'superadmin_artigo_upload' %}" class="{% if menu_ativo == 'upload' %}active{% endif %}">
-            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 5v14M5 12l7-7 7 7"/>
-            </svg>
-            Subir Artigo
-        </a>
+        {# Grupo: SaaS (B2B) #}
+        <details {% if menu_ativo == 'empresas' %}open{% endif %}>
+            <summary aria-label="Abrir grupo SaaS">
+                <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 20h16M6 20V8h12v12M9 4h6v4H9z"/>
+                </svg>
+                SaaS
+                <svg class="caret" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m4 6 4 4 4-4"/>
+                </svg>
+            </summary>
+            <div class="subnav">
+                <a href="{% url 'superadmin_empresas_list' %}" class="{% if menu_ativo == 'empresas' %}active{% endif %}">Empresas</a>
+            </div>
+        </details>
 
-        <a href="{% url 'superadmin_artigos_list' %}" class="{% if menu_ativo == 'artigos' %}active{% endif %}">
-            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/>
-            </svg>
-            Artigos Educativos
-        </a>
-
-        <a href="{% url 'superadmin_modulos_list' %}" class="{% if menu_ativo == 'modulos' %}active{% endif %}">
-            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-            </svg>
-            Modulos
-        </a>
-
-        <a href="{% url 'superadmin_empresas_list' %}" class="{% if menu_ativo == 'empresas' %}active{% endif %}">
-            <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 20h16M6 20V8h12v12M9 4h6v4H9z"/>
-            </svg>
-            Empresas
-        </a>
+        {# Grupo: Financeiro (SaaS B2B) #}
+        <details {% if menu_ativo == 'financeiro' or menu_ativo == 'assinaturas' or menu_ativo == 'pagamentos' %}open{% endif %}>
+            <summary aria-label="Abrir grupo Financeiro">
+                <svg class="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 10h18M3 6h18v12H3z"/><path d="M7 14h4"/>
+                </svg>
+                Financeiro
+                <svg class="caret" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m4 6 4 4 4-4"/>
+                </svg>
+            </summary>
+            <div class="subnav">
+                <a href="{% url 'superadmin_financeiro_dashboard' %}" class="{% if menu_ativo == 'financeiro' %}active{% endif %}">Dashboard</a>
+                <a href="{% url 'superadmin_assinaturas_list' %}" class="{% if menu_ativo == 'assinaturas' %}active{% endif %}">Assinaturas</a>
+                <a href="{% url 'superadmin_pagamentos_list' %}" class="{% if menu_ativo == 'pagamentos' %}active{% endif %}">Pagamentos</a>
+            </div>
+        </details>
 
         <div class="mt-auto pt-4 border-t border-slate-700 mx-2">
             <span class="block text-xs text-slate-500 px-2 truncate" title="{{ request.user.email }}">{{ request.user.email }}</span>
@@ -125,13 +163,15 @@
 
         <!-- Messages -->
         {% if messages %}
-        <div class="px-6 pt-4 space-y-2">
+        <div class="px-6 pt-4 space-y-2" role="status" aria-live="polite">
             {% for msg in messages %}
-            <div class="px-4 py-2 rounded-lg text-sm font-medium
+            <div class="px-4 py-2 rounded-lg text-sm font-medium flex items-start justify-between gap-3
                 {% if msg.tags == 'success' %}bg-green-50 text-green-800 border border-green-200
                 {% elif msg.tags == 'error' %}bg-red-50 text-red-800 border border-red-200
                 {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
-                {{ msg }}
+                <span>{{ msg }}</span>
+                <button type="button" aria-label="Fechar aviso" onclick="this.parentElement.remove()"
+                        class="text-current opacity-60 hover:opacity-100 leading-none text-lg">&times;</button>
             </div>
             {% endfor %}
         </div>

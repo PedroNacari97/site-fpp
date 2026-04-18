@@ -1,5 +1,8 @@
+import hashlib
+import secrets
 import unicodedata
 
+from django.contrib.auth.hashers import check_password, make_password
 from django.db import models
 from django.template.defaultfilters import slugify
 from django.urls import reverse
@@ -376,6 +379,11 @@ class ModuloEstudo(models.Model):
     cor = models.CharField(max_length=7, default="#2563eb", help_text="Cor hex do módulo")
     ordem = models.PositiveIntegerField(default=0, db_index=True)
     ativo = models.BooleanField(default=True, db_index=True)
+    destaque_home = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="Se marcado, aparece como módulo de amostra aberto na home pública (apenas 1 deve ficar marcado)",
+    )
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 
@@ -471,7 +479,7 @@ class ArtigoVideoYoutube(models.Model):
     termo_busca = models.CharField(max_length=200, blank=True)
     ordem = models.PositiveIntegerField(default=0)
     ativo = models.BooleanField(default=True, db_index=True)
-    buscado_em = models.DateTimeField(auto_now_add=True)
+    buscado_em = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     class Meta:
         verbose_name = "Vídeo do YouTube (artigo)"
@@ -487,3 +495,283 @@ class ArtigoVideoYoutube(models.Model):
     @property
     def youtube_url(self):
         return f"https://www.youtube.com/watch?v={self.video_id}"
+
+
+# ---------------------------------------------------------------------------
+# Portal B2C — autenticacao isolada do SaaS B2B (nao usa auth.User do Django)
+# ---------------------------------------------------------------------------
+
+
+def _gen_unsubscribe_token() -> str:
+    return secrets.token_urlsafe(32)
+
+
+class PortalUser(models.Model):
+    """Conta de usuario do Portal B2C (notícias/alertas/artigos).
+
+    Totalmente isolada de `auth.User`:
+    - nao tem `is_staff`, `is_superuser`, grupos nem permissoes Django
+    - nao pode logar no SaaS B2B nem no Admin
+    - senha gravada via Django PBKDF2 (`make_password`) — mesmo algoritmo do
+      `auth.User`, mas sem acoplamento de tabela
+    - identificada pela sessao Django via chave `portal_user_id`
+    """
+
+    email = models.EmailField(unique=True, db_index=True)
+    nome = models.CharField(max_length=180, blank=True)
+    senha_hash = models.CharField(max_length=256, blank=True, default="")
+    google_sub = models.CharField(
+        max_length=64,
+        blank=True,
+        default="",
+        db_index=True,
+        help_text="Google account 'sub' (ID estavel) — unico por usuario Google",
+    )
+    email_verificado = models.BooleanField(default=False, db_index=True)
+    ativo = models.BooleanField(default=True, db_index=True)
+
+    ip_cadastro = models.CharField(max_length=45, blank=True, default="")
+    user_agent_cadastro = models.CharField(max_length=255, blank=True, default="")
+    source_environment = models.CharField(max_length=20, default="local", db_index=True)
+    source_host = models.CharField(max_length=120, blank=True, db_index=True)
+
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+    ultimo_login_em = models.DateTimeField(null=True, blank=True)
+    ultimo_login_ip = models.CharField(max_length=45, blank=True, default="")
+
+    class Meta:
+        verbose_name = "Usuario do portal B2C"
+        verbose_name_plural = "Usuarios do portal B2C"
+        ordering = ["-criado_em"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["google_sub"],
+                name="unique_portal_user_google_sub",
+                condition=models.Q(google_sub__gt=""),
+            ),
+        ]
+
+    def __str__(self):
+        return self.email
+
+    # ------------------------------------------------------------------
+    # Senha — PBKDF2 via django.contrib.auth.hashers
+    # ------------------------------------------------------------------
+    def set_password(self, raw_password: str) -> None:
+        self.senha_hash = make_password(raw_password) if raw_password else ""
+
+    def check_password(self, raw_password: str) -> bool:
+        if not self.senha_hash or not raw_password:
+            return False
+        return check_password(raw_password, self.senha_hash)
+
+    def has_password(self) -> bool:
+        return bool(self.senha_hash)
+
+    # ------------------------------------------------------------------
+    # Identidade para views (equivale a request.user.is_authenticated)
+    # ------------------------------------------------------------------
+    @property
+    def is_authenticated(self) -> bool:
+        return self.ativo
+
+    def marcar_login(self, ip: str = "") -> None:
+        self.ultimo_login_em = timezone.now()
+        if ip:
+            self.ultimo_login_ip = ip[:45]
+        self.save(update_fields=["ultimo_login_em", "ultimo_login_ip", "atualizado_em"])
+
+
+class _OptInBase(models.Model):
+    """Base abstrata para opt-ins granulares do Portal B2C.
+
+    Cada tipo de opt-in vira tabela separada (ex.: alertas de passagens,
+    notificacao de artigos). Isso garante que `unsubscribe` em um canal NAO
+    afeta os outros (LGPD — consentimento granular e revogavel por canal).
+    """
+
+    user = models.ForeignKey(
+        PortalUser,
+        on_delete=models.CASCADE,
+        related_name="+",
+    )
+    email = models.EmailField(db_index=True)
+    ativo = models.BooleanField(default=True, db_index=True)
+    token_unsubscribe = models.CharField(
+        max_length=64,
+        unique=True,
+        default=_gen_unsubscribe_token,
+    )
+
+    # Evidencia do consentimento — LGPD art. 8
+    aceite_versao = models.CharField(max_length=40, blank=True, default="")
+    aceite_hash_documento = models.CharField(max_length=64, blank=True, default="")
+    aceito_em = models.DateTimeField(null=True, blank=True)
+    aceito_ip = models.CharField(max_length=45, blank=True, default="")
+    aceito_user_agent = models.CharField(max_length=255, blank=True, default="")
+
+    cancelado_em = models.DateTimeField(null=True, blank=True)
+    cancelado_ip = models.CharField(max_length=45, blank=True, default="")
+    motivo_cancelamento = models.CharField(max_length=80, blank=True, default="")
+
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+        ordering = ["-criado_em"]
+
+    def cancelar(self, *, ip: str = "", motivo: str = "") -> None:
+        self.ativo = False
+        self.cancelado_em = timezone.now()
+        self.cancelado_ip = (ip or "")[:45]
+        self.motivo_cancelamento = (motivo or "")[:80]
+        self.save(
+            update_fields=[
+                "ativo",
+                "cancelado_em",
+                "cancelado_ip",
+                "motivo_cancelamento",
+                "atualizado_em",
+            ]
+        )
+
+
+class OptInAlertaPassagem(_OptInBase):
+    """Opt-in para receber alertas de passagens (precos/milhas) por email."""
+
+    class Meta(_OptInBase.Meta):
+        verbose_name = "Opt-in de alerta de passagem"
+        verbose_name_plural = "Opt-ins de alertas de passagens"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user"],
+                name="unique_optin_alerta_passagem_por_user",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Alertas passagem — {self.email} ({'ativo' if self.ativo else 'cancelado'})"
+
+
+class OptInArtigoNovo(_OptInBase):
+    """Opt-in para receber notificacao quando um novo artigo/noticia for publicado."""
+
+    class Meta(_OptInBase.Meta):
+        verbose_name = "Opt-in de artigo novo"
+        verbose_name_plural = "Opt-ins de artigos novos"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user"],
+                name="unique_optin_artigo_novo_por_user",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Artigos — {self.email} ({'ativo' if self.ativo else 'cancelado'})"
+
+
+def _documento_hash(conteudo: str) -> str:
+    return hashlib.sha256((conteudo or "").encode("utf-8")).hexdigest()
+
+
+class ProgressoArtigo(models.Model):
+    """Progresso de leitura de um `ArtigoEstudo` por um `PortalUser`.
+
+    Isolado do SaaS B2B — referencia somente o `PortalUser`. Uma linha por
+    par (user, artigo). Usado para:
+    - montar barra de progresso por modulo (X de N artigos lidos)
+    - mostrar quais artigos ja foram lidos na lista do modulo
+    - permitir retomar leitura
+    """
+
+    user = models.ForeignKey(
+        PortalUser,
+        on_delete=models.CASCADE,
+        related_name="progressos_artigo",
+    )
+    artigo = models.ForeignKey(
+        ArtigoEstudo,
+        on_delete=models.CASCADE,
+        related_name="progressos",
+    )
+    lido_em = models.DateTimeField(null=True, blank=True, db_index=True)
+    primeira_visita_em = models.DateTimeField(auto_now_add=True)
+    ultima_visita_em = models.DateTimeField(auto_now=True)
+    progresso_percentual = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Progresso de artigo"
+        verbose_name_plural = "Progressos de artigos"
+        ordering = ["-ultima_visita_em"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "artigo"],
+                name="unique_progresso_user_artigo",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["user", "artigo"]),
+            models.Index(fields=["user", "lido_em"]),
+        ]
+
+    def __str__(self):
+        status = "lido" if self.lido_em else f"{self.progresso_percentual}%"
+        return f"{self.user.email} — {self.artigo.titulo} ({status})"
+
+    @property
+    def concluido(self) -> bool:
+        return bool(self.lido_em) or self.progresso_percentual >= 100
+
+    def marcar_como_lido(self) -> None:
+        """Seta `lido_em=now()` e `progresso_percentual=100`."""
+        now = timezone.now()
+        self.lido_em = now
+        self.progresso_percentual = 100
+        # `ultima_visita_em` é auto_now — atualizado no save()
+        self.save(
+            update_fields=[
+                "lido_em",
+                "progresso_percentual",
+                "ultima_visita_em",
+            ]
+        )
+
+
+def criar_opt_ins_no_cadastro(
+    user: PortalUser,
+    *,
+    ip: str,
+    user_agent: str,
+    versao_termos: str = "",
+    hash_termos: str = "",
+):
+    """Cria (ou reativa) os 2 opt-ins obrigatorios no cadastro.
+
+    Retorna tupla (opt_alerta, opt_artigo) — ambos `ativo=True` quando o
+    cadastro foi bem-sucedido. Evidencia de consentimento (IP/UA/timestamp/
+    versao+hash dos termos) e gravada no proprio opt-in, em linha com o
+    modelo `AceiteDocumentoPlataforma` do SaaS.
+    """
+
+    now = timezone.now()
+    base = {
+        "email": user.email,
+        "aceite_versao": versao_termos,
+        "aceite_hash_documento": hash_termos,
+        "aceito_em": now,
+        "aceito_ip": (ip or "")[:45],
+        "aceito_user_agent": (user_agent or "")[:255],
+        "ativo": True,
+    }
+
+    opt_alerta, _ = OptInAlertaPassagem.objects.update_or_create(
+        user=user,
+        defaults={**base, "cancelado_em": None, "cancelado_ip": "", "motivo_cancelamento": ""},
+    )
+    opt_artigo, _ = OptInArtigoNovo.objects.update_or_create(
+        user=user,
+        defaults={**base, "cancelado_em": None, "cancelado_ip": "", "motivo_cancelamento": ""},
+    )
+    return opt_alerta, opt_artigo

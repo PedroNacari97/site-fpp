@@ -163,7 +163,14 @@
                     </button>
                 </div>
             </form>
-            {% if request.user.is_authenticated %}
+            {% if portal_user_authenticated %}
+                {# Portal B2C — usuario leitor autenticado (isolado do SaaS) #}
+                <span class="portal-topbar__auth-user" title="{{ portal_user.email }}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-8 2-8 6v1h16v-1c0-4-4-6-8-6Z" fill="currentColor"/></svg>
+                    {{ portal_user.nome|default:portal_user.email }}
+                </span>
+                <a href="{% url 'portal_logout' %}" class="portal-topbar__auth-link">Sair</a>
+            {% elif request.user.is_authenticated %}
                 {% if request.user.is_staff or request.user.is_superuser %}
                 <a
                     href="{% url 'admin_dashboard' %}"
@@ -183,6 +190,9 @@
                     Painel
                 </a>
                 {% endif %}
+            {% else %}
+                <a href="{% url 'portal_login' %}" class="portal-topbar__auth-link">Entrar</a>
+                <a href="{% url 'portal_register' %}" class="portal-topbar__auth-link portal-topbar__auth-link--primary">Criar conta</a>
             {% endif %}
         </div>
     </div>

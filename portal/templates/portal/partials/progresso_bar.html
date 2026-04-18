@@ -1,0 +1,46 @@
+{% comment %}
+Barra de progresso de modulo (Portal B2C — Tarefa 5).
+
+Args (via include):
+    progresso: dict vindo de `calcular_progresso_modulo`:
+        {total_artigos, lidos, percentual, status, status_label}
+    variant (opcional): "card" (default — compacto) | "hero" (grande, branco sobre cor)
+    show_label (opcional): True/False (default True)
+
+So renderiza se user_authenticated do contexto externo for True.
+No home.html / hub / modulo_detalhe, o wrapper ja faz esse if.
+{% endcomment %}
+{% if progresso and progresso.total_artigos %}
+<div class="portal-progresso portal-progresso--{{ variant|default:'card' }} portal-progresso--{{ progresso.status }}"
+     data-progresso-modulo
+     role="group"
+     aria-label="Progresso do modulo: {{ progresso.lidos }} de {{ progresso.total_artigos }} artigos lidos">
+    {% if show_label|default_if_none:True %}
+    <div class="portal-progresso__label">
+        <span class="portal-progresso__status">
+            {% if progresso.status == 'concluido' %}
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
+                Conclu&iacute;do
+            {% elif progresso.status == 'em_andamento' %}
+                Em andamento
+            {% else %}
+                Comece agora
+            {% endif %}
+        </span>
+        <span class="portal-progresso__count" aria-hidden="true">
+            {{ progresso.lidos }}/{{ progresso.total_artigos }}
+        </span>
+    </div>
+    {% endif %}
+    <div class="portal-progresso__track" aria-hidden="true">
+        <div class="portal-progresso__fill"
+             style="width: {{ progresso.percentual }}%;"
+             data-percentual="{{ progresso.percentual }}"></div>
+    </div>
+    {% if show_label|default_if_none:True %}
+    <div class="portal-progresso__percent" aria-hidden="true">
+        {{ progresso.percentual }}%
+    </div>
+    {% endif %}
+</div>
+{% endif %}

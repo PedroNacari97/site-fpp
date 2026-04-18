@@ -1,0 +1,93 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Assinaturas — Painel NCfly{% endblock %}
+{% block page_title %}Assinaturas ({{ total }}){% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+
+    <form method="get" class="card p-4 flex flex-wrap gap-3 items-end">
+        <div class="flex-1 min-w-48">
+            <label for="q">Buscar empresa</label>
+            <input type="text" id="q" name="q" value="{{ busca }}" placeholder="Nome da empresa...">
+        </div>
+        <div>
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="">Todos</option>
+                <option value="trial" {% if status_filtro == "trial" %}selected{% endif %}>Trial</option>
+                <option value="ativa" {% if status_filtro == "ativa" %}selected{% endif %}>Ativa</option>
+                <option value="inadimplente" {% if status_filtro == "inadimplente" %}selected{% endif %}>Inadimplente</option>
+                <option value="suspensa" {% if status_filtro == "suspensa" %}selected{% endif %}>Suspensa</option>
+                <option value="cancelada" {% if status_filtro == "cancelada" %}selected{% endif %}>Cancelada</option>
+            </select>
+        </div>
+        <div>
+            <label for="plano">Plano</label>
+            <select id="plano" name="plano">
+                <option value="">Todos</option>
+                {% for p in planos_disponiveis %}
+                <option value="{{ p.id }}" {% if plano_filtro == p.id|stringformat:"s" %}selected{% endif %}>{{ p.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+            <a href="{% url 'superadmin_assinaturas_list' %}" class="btn btn-secondary">Limpar</a>
+        </div>
+    </form>
+
+    <div class="card overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="table-header text-xs text-slate-500 uppercase">
+                <tr>
+                    <th class="px-4 py-3 text-left">Empresa</th>
+                    <th class="px-4 py-3 text-left">Plano</th>
+                    <th class="px-4 py-3 text-center">Status</th>
+                    <th class="px-4 py-3 text-left">Próximo vencimento</th>
+                    <th class="px-4 py-3 text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in page_obj %}
+                <tr class="border-t border-slate-50 hover:bg-slate-50">
+                    <td class="px-4 py-2 font-medium text-slate-800">{{ a.empresa.nome }}</td>
+                    <td class="px-4 py-2 text-slate-600">{{ a.plano.nome }}</td>
+                    <td class="px-4 py-2 text-center">
+                        {% if a.status == 'ativa' %}<span class="badge badge-green">Ativa</span>
+                        {% elif a.status == 'trial' %}<span class="badge badge-yellow">Trial</span>
+                        {% elif a.status == 'inadimplente' %}<span class="badge badge-red">Inadimplente</span>
+                        {% elif a.status == 'suspensa' %}<span class="badge badge-red">Suspensa</span>
+                        {% else %}<span class="badge badge-gray">{{ a.get_status_display }}</span>{% endif %}
+                    </td>
+                    <td class="px-4 py-2 text-xs text-slate-600">
+                        {% if a.data_vencimento %}{{ a.data_vencimento|date:"d/m/Y" }}{% elif a.trial_fim %}trial até {{ a.trial_fim|date:"d/m/Y" }}{% else %}—{% endif %}
+                    </td>
+                    <td class="px-4 py-2 text-right">
+                        <a href="{% url 'superadmin_assinatura_detail' a.pk %}" class="btn btn-secondary text-xs">Ver</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-4 py-6 text-center text-slate-500">Nenhuma assinatura encontrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="flex items-center justify-between text-sm" aria-label="Paginação">
+        <span class="text-slate-500">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        <div class="flex gap-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ busca }}&status={{ status_filtro }}&plano={{ plano_filtro }}" class="btn btn-secondary">Anterior</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&q={{ busca }}&status={{ status_filtro }}&plano={{ plano_filtro }}" class="btn btn-secondary">Próxima</a>
+            {% endif %}
+        </div>
+    </nav>
+    {% endif %}
+
+</div>
+{% endblock %}

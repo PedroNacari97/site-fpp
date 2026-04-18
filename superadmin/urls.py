@@ -6,6 +6,7 @@ Path base: /ncadm/   (registrado em core/urls.py)
 from django.urls import path
 
 from . import views
+from . import views_financeiro
 
 urlpatterns = [
     # Dashboard
@@ -34,4 +35,31 @@ urlpatterns = [
     path("empresas/nova/", views.EmpresaCreateView.as_view(), name="superadmin_empresa_create"),
     path("empresas/<int:pk>/", views.EmpresaDetailView.as_view(), name="superadmin_empresa_detail"),
     path("empresas/<int:pk>/editar/", views.EmpresaEditView.as_view(), name="superadmin_empresa_edit"),
+
+    # Financeiro (SaaS B2B — assinaturas, pagamentos, MRR, churn)
+    path(
+        "financeiro/",
+        views_financeiro.FinanceiroDashboardView.as_view(),
+        name="superadmin_financeiro_dashboard",
+    ),
+    path(
+        "financeiro/assinaturas/",
+        views_financeiro.AssinaturasListView.as_view(),
+        name="superadmin_assinaturas_list",
+    ),
+    path(
+        "financeiro/assinaturas/<int:pk>/",
+        views_financeiro.AssinaturaDetailView.as_view(),
+        name="superadmin_assinatura_detail",
+    ),
+    path(
+        "financeiro/assinaturas/<int:pk>/status/",
+        views_financeiro.AssinaturaStatusChangeView.as_view(),
+        name="superadmin_assinatura_status_change",
+    ),
+    path(
+        "financeiro/pagamentos/",
+        views_financeiro.PagamentosListView.as_view(),
+        name="superadmin_pagamentos_list",
+    ),
 ]

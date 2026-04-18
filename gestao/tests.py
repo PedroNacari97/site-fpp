@@ -1645,3 +1645,105 @@ class AdminNotificationReadStateTest(TestCase):
         )
 
         self.assertEqual(response.status_code, 404)
+
+    def test_tipo_inferido_a_partir_da_chave(self):
+        self.assertEqual(
+            NotificacaoSistema.tipo_da_chave("cotacao_vencendo:42:2026-04-20:pendente"),
+            NotificacaoSistema.Tipo.COTACAO_VENCENDO,
+        )
+        self.assertEqual(
+            NotificacaoSistema.tipo_da_chave("voo_proximo:1:2026-04-20:true"),
+            NotificacaoSistema.Tipo.EMISSAO_PENDENTE,
+        )
+        self.assertEqual(
+            NotificacaoSistema.tipo_da_chave("alerta_recente:9"),
+            NotificacaoSistema.Tipo.ALERTA_PASSAGEM,
+        )
+        self.assertEqual(
+            NotificacaoSistema.tipo_da_chave("qualquer_coisa:1"),
+            NotificacaoSistema.Tipo.OUTROS,
+        )
+
+    def test_arquivar_antigas_respeita_janela_de_dias(self):
+        agora = timezone.now()
+        antiga = NotificacaoSistema.objects.create(
+            usuario=self.admin_user,
+            empresa=self.empresa,
+            chave="cotacao_vencendo:antiga",
+            titulo="antiga",
+            lida=True,
+            lida_em=agora - timedelta(days=60),
+        )
+        NotificacaoSistema.objects.filter(pk=antiga.pk).update(
+            criado_em=agora - timedelta(days=45)
+        )
+        recente = NotificacaoSistema.objects.create(
+            usuario=self.admin_user,
+            empresa=self.empresa,
+            chave="cotacao_vencendo:recente",
+            titulo="recente",
+            lida=True,
+            lida_em=agora,
+        )
+
+        total = NotificacaoSistema.arquivar_antigas(dias=30, agora=agora)
+
+        self.assertEqual(total, 1)
+        antiga.refresh_from_db()
+        recente.refresh_from_db()
+        self.assertIsNotNone(antiga.arquivada_em)
+        self.assertIsNone(recente.arquivada_em)
+
+    def test_marcar_todas_lidas_cria_registros_para_dinamicas(self):
+        response = self.client.post(
+            reverse("admin_notificacoes_ler_todas"),
+            data=json.dumps({}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["unread_count"], 0)
+        self.assertEqual(
+            len(
+                build_operational_notifications(
+                    user=self.admin_user,
+                    empresa=self.empresa,
+                    limit=6,
+                )
+            ),
+            0,
+        )
+
+    def test_arquivar_por_chave_remove_do_feed(self):
+        notifications = build_operational_notifications(
+            user=self.admin_user,
+            empresa=self.empresa,
+            limit=6,
+        )
+        self.assertTrue(notifications)
+        target = notifications[0]
+
+        response = self.client.post(
+            reverse("admin_notificacoes_arquivar_chave"),
+            data=json.dumps({"key": target["key"]}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["arquivada"])
+
+        persistida = NotificacaoSistema.objects.get(
+            usuario=self.admin_user, chave=target["key"]
+        )
+        self.assertIsNotNone(persistida.arquivada_em)
+        remaining = build_operational_notifications(
+            user=self.admin_user,
+            empresa=self.empresa,
+            limit=6,
+        )
+        self.assertFalse(any(item["key"] == target["key"] for item in remaining))
+
+    def test_pagina_notificacoes_renderiza(self):
+        response = self.client.get(reverse("admin_notificacoes"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Notificações")

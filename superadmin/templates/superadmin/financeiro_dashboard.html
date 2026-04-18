@@ -1,0 +1,161 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Financeiro — Painel NCfly{% endblock %}
+{% block page_title %}Financeiro — visão geral{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    {# Hero MRR #}
+    <section class="card p-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4" aria-label="MRR">
+        <div>
+            <span class="text-xs uppercase tracking-wide text-slate-500">MRR contratado</span>
+            <div class="text-4xl font-bold text-slate-900 mt-1">R$ {{ mrr|floatformat:2 }}</div>
+            <p class="text-xs text-slate-500 mt-2">
+                Soma do preço mensal das {{ total_ativa|add:total_trial }} assinaturas em trial ou ativas.
+                Não reflete caixa — reflete contrato.
+            </p>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+            <div class="bg-brand-50 rounded-lg px-4 py-3">
+                <div class="text-xs text-slate-600">Churn no mês</div>
+                <div class="text-xl font-bold text-slate-900">{{ churn_rate_mes|floatformat:2 }}%</div>
+                <div class="text-xs text-slate-500">{{ churn_canceladas }} de {{ churn_base }}</div>
+            </div>
+            <div class="bg-slate-50 rounded-lg px-4 py-3">
+                <div class="text-xs text-slate-600">LTV médio realizado</div>
+                <div class="text-xl font-bold text-slate-900">R$ {{ lifetime_value_medio|floatformat:2 }}</div>
+            </div>
+            <div class="bg-red-50 rounded-lg px-4 py-3">
+                <div class="text-xs text-slate-600">Inadimplência &gt;7d</div>
+                <div class="text-xl font-bold text-red-700">R$ {{ inadimplencia_valor|floatformat:2 }}</div>
+            </div>
+        </div>
+    </section>
+
+    {# KPIs secundários #}
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4" aria-label="Indicadores do mês">
+        <div class="card p-4">
+            <div class="text-xs uppercase text-slate-500">Assinaturas ativas</div>
+            <div class="text-2xl font-bold text-slate-900 mt-1">{{ total_ativa }}</div>
+            <div class="text-xs text-slate-500 mt-1">{{ total_trial }} em trial</div>
+        </div>
+        <div class="card p-4">
+            <div class="text-xs uppercase text-slate-500">Trials expirando &lt;7d</div>
+            <div class="text-2xl font-bold text-slate-900 mt-1">{{ trials_expirando|length }}</div>
+            <a href="{% url 'superadmin_assinaturas_list' %}?status=trial" class="text-xs text-brand-600 hover:underline mt-1 inline-block">Ver trials</a>
+        </div>
+        <div class="card p-4">
+            <div class="text-xs uppercase text-slate-500">Inadimplentes</div>
+            <div class="text-2xl font-bold text-slate-900 mt-1">{{ total_inadimplente }}</div>
+            <div class="text-xs text-slate-500 mt-1">{{ total_suspensa }} suspensas</div>
+        </div>
+        <div class="card p-4">
+            <div class="text-xs uppercase text-slate-500">Pagamentos confirmados (mês)</div>
+            <div class="text-2xl font-bold text-slate-900 mt-1">R$ {{ pagamentos_confirmados_mes|floatformat:2 }}</div>
+            <div class="text-xs text-slate-500 mt-1">{{ pagamentos_pendentes }} pendentes</div>
+        </div>
+    </section>
+
+    {# Graficos — barras CSS puras #}
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="card p-4">
+            <h2 class="text-sm font-semibold text-slate-700 mb-3">MRR — últimos 6 meses</h2>
+            <div class="flex items-end gap-2 h-40" role="img" aria-label="Gráfico de MRR dos últimos 6 meses">
+                {% for item in mrr_serie_6m %}
+                <div class="flex-1 flex flex-col items-center gap-1">
+                    <div class="w-full bg-brand-600 rounded-t" style="height: {{ item.pct|default:2 }}%;" title="R$ {{ item.mrr|floatformat:2 }}"></div>
+                    <span class="text-[0.65rem] text-slate-500">{{ item.mes }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="card p-4">
+            <h2 class="text-sm font-semibold text-slate-700 mb-3">Pagamentos confirmados — 6 meses</h2>
+            <div class="flex items-end gap-2 h-40" role="img" aria-label="Gráfico de pagamentos confirmados mensais">
+                {% for item in pagamentos_serie_6m %}
+                <div class="flex-1 flex flex-col items-center gap-1">
+                    <div class="w-full bg-green-600 rounded-t" style="height: {{ item.pct|default:2 }}%;" title="R$ {{ item.total|floatformat:2 }}"></div>
+                    <span class="text-[0.65rem] text-slate-500">{{ item.mes }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    {# Trials expirando #}
+    <section class="card p-4" aria-label="Trials expirando">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-slate-700">Trials expirando nos próximos 7 dias</h2>
+            <a href="{% url 'superadmin_assinaturas_list' %}?status=trial" class="text-xs text-brand-600 hover:underline">Ver todos</a>
+        </div>
+        {% if trials_expirando %}
+        <table class="w-full text-sm">
+            <thead class="table-header text-xs text-slate-500 uppercase">
+                <tr>
+                    <th class="px-3 py-2 text-left">Empresa</th>
+                    <th class="px-3 py-2 text-left">Plano</th>
+                    <th class="px-3 py-2 text-left">Trial termina em</th>
+                    <th class="px-3 py-2 text-right">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in trials_expirando %}
+                <tr class="border-t border-slate-100">
+                    <td class="px-3 py-2 font-medium text-slate-800">{{ a.empresa.nome }}</td>
+                    <td class="px-3 py-2 text-slate-600">{{ a.plano.nome }}</td>
+                    <td class="px-3 py-2 text-slate-600">{{ a.trial_fim|date:"d/m/Y H:i" }}</td>
+                    <td class="px-3 py-2 text-right">
+                        <a href="{% url 'superadmin_assinatura_detail' a.pk %}" class="text-brand-600 hover:underline text-xs">Ver</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-sm text-slate-500">Sem trials expirando na próxima semana.</p>
+        {% endif %}
+    </section>
+
+    {# Ultimos pagamentos #}
+    <section class="card p-4" aria-label="Últimos pagamentos">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-slate-700">Últimos pagamentos</h2>
+            <a href="{% url 'superadmin_pagamentos_list' %}" class="text-xs text-brand-600 hover:underline">Ver todos</a>
+        </div>
+        {% if ultimos_pagamentos %}
+        <table class="w-full text-sm">
+            <thead class="table-header text-xs text-slate-500 uppercase">
+                <tr>
+                    <th class="px-3 py-2 text-left">Data</th>
+                    <th class="px-3 py-2 text-left">Empresa</th>
+                    <th class="px-3 py-2 text-left">Plano</th>
+                    <th class="px-3 py-2 text-left">Método</th>
+                    <th class="px-3 py-2 text-right">Valor</th>
+                    <th class="px-3 py-2 text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in ultimos_pagamentos %}
+                <tr class="border-t border-slate-100">
+                    <td class="px-3 py-2 text-xs text-slate-500">{{ p.criado_em|date:"d/m/Y H:i" }}</td>
+                    <td class="px-3 py-2 font-medium text-slate-800">{{ p.assinatura.empresa.nome }}</td>
+                    <td class="px-3 py-2 text-slate-600">{{ p.assinatura.plano.nome }}</td>
+                    <td class="px-3 py-2 text-slate-600">{{ p.get_metodo_display|default:"—" }}</td>
+                    <td class="px-3 py-2 text-right font-mono">R$ {{ p.valor|floatformat:2 }}</td>
+                    <td class="px-3 py-2 text-center">
+                        {% if p.status == 'confirmado' %}<span class="badge badge-green">Confirmado</span>
+                        {% elif p.status == 'pendente' %}<span class="badge badge-yellow">Pendente</span>
+                        {% elif p.status == 'falhou' %}<span class="badge badge-red">Falhou</span>
+                        {% else %}<span class="badge badge-gray">{{ p.get_status_display }}</span>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-sm text-slate-500">Nenhum pagamento registrado ainda.</p>
+        {% endif %}
+    </section>
+
+</div>
+{% endblock %}

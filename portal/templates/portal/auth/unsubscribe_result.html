@@ -1,0 +1,21 @@
+{% extends "portal/base_public.html" %}
+{% block title %}Cancelamento confirmado | NC Fly{% endblock %}
+
+{% block content %}
+<section class="portal-auth-page">
+    <div class="portal-auth-card">
+        <header class="portal-auth-card__header">
+            <h1>Cancelamento confirmado</h1>
+            <p class="portal-auth-card__subtitle">
+                {% if cancelado %}
+                Pronto. O email <strong>{{ email }}</strong> nao recebera mais mensagens do canal
+                <strong>{{ canal }}</strong>. Os demais canais continuam ativos.
+                {% else %}
+                Este canal ja estava cancelado para o seu email.
+                {% endif %}
+            </p>
+        </header>
+        <a href="{% url 'portal_home' %}" class="portal-auth-submit">Voltar a home</a>
+    </div>
+</section>
+{% endblock %}

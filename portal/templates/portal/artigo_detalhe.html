@@ -30,6 +30,14 @@
 
     <!-- Header -->
     <header class="artigo-detalhe-header">
+        {% if portal_user_is_authenticated and progresso_modulo and artigo.modulo %}
+        <div class="artigo-detalhe-header__progresso" style="--modulo-cor: {{ artigo.modulo.cor|default:'#2563eb' }};">
+            <span class="artigo-detalhe-header__progresso-label">
+                Progresso em <a href="{{ artigo.modulo.get_absolute_url }}">{{ artigo.modulo.titulo }}</a>
+            </span>
+            {% include "portal/partials/progresso_bar.html" with progresso=progresso_modulo variant="inline" %}
+        </div>
+        {% endif %}
         <div class="artigo-detalhe-header__pills">
             {% if artigo.modulo %}
             <a href="{{ artigo.modulo.get_absolute_url }}" class="news-pill artigos-hub-pill-modulo" style="--modulo-cor: {{ artigo.modulo.cor|default:'#2563eb' }};">
@@ -37,6 +45,12 @@
             </a>
             {% endif %}
             <span class="news-pill news-pill--artigo">Artigo</span>
+            {% if portal_user_is_authenticated and artigo_lido %}
+            <span class="news-pill news-pill--done">
+                <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
+                Lido
+            </span>
+            {% endif %}
         </div>
         <h1>{{ artigo.titulo }}</h1>
         <div class="artigo-detalhe-header__meta news-meta">
@@ -77,6 +91,34 @@
         </aside>
 
     </div>
+
+    <!-- Marcar como lido (CTA de conclusao) -->
+    {% if portal_user_is_authenticated %}
+    <section class="artigo-detalhe-concluir" data-artigo-concluir>
+        {% if artigo_lido %}
+            <div class="artigo-detalhe-concluir__done">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>
+                <span>Voc&ecirc; marcou este artigo como lido. Bom trabalho!</span>
+            </div>
+        {% else %}
+            <form class="artigo-detalhe-concluir__form"
+                  method="post"
+                  action="{% url 'portal_artigo_marcar_lido' slug=artigo.slug %}"
+                  data-artigo-concluir-form
+                  data-modulo-slug="{{ artigo.modulo.slug }}">
+                {% csrf_token %}
+                <div class="artigo-detalhe-concluir__copy">
+                    <strong>Terminou a leitura?</strong>
+                    <small>Marque como lido para acompanhar seu progresso no m&oacute;dulo.</small>
+                </div>
+                <button type="submit" class="portal-button portal-button--primary">
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
+                    Marcar como lido
+                </button>
+            </form>
+        {% endif %}
+    </section>
+    {% endif %}
 
     <!-- Videos Relacionados -->
     {% if videos %}
@@ -225,6 +267,58 @@
             embed.innerHTML = ''; modal.classList.add('is-hidden'); modal.setAttribute('aria-hidden', 'true');
         });
     });
+
+    // --- Marcar como lido via AJAX ---
+    var concluirForm = document.querySelector('[data-artigo-concluir-form]');
+    if (concluirForm) {
+        concluirForm.addEventListener('submit', function(ev) {
+            ev.preventDefault();
+            var btn = concluirForm.querySelector('button[type="submit"]');
+            if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); }
+            var fd = new FormData(concluirForm);
+            fetch(concluirForm.action, {
+                method: 'POST',
+                body: fd,
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                },
+            })
+            .then(function(r) {
+                if (!r.ok) throw new Error('http_' + r.status);
+                return r.json();
+            })
+            .then(function(data) {
+                if (data.status !== 'ok') throw new Error('server_' + data.status);
+                var holder = document.querySelector('[data-artigo-concluir]');
+                if (holder) {
+                    holder.innerHTML = '<div class="artigo-detalhe-concluir__done">'
+                        + '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>'
+                        + '<span>Voc&ecirc; marcou este artigo como lido. Bom trabalho!</span>'
+                        + '</div>';
+                }
+                // Atualiza a barra de progresso no topo, se existir
+                var bar = document.querySelector('.artigo-detalhe-header__progresso [data-progresso-modulo]');
+                if (bar) {
+                    var fill = bar.querySelector('.portal-progresso__fill');
+                    var pctEl = bar.querySelector('.portal-progresso__percent');
+                    var countEl = bar.querySelector('.portal-progresso__count');
+                    if (fill) fill.style.width = data.percentual_modulo + '%';
+                    if (pctEl) pctEl.textContent = data.percentual_modulo + '%';
+                    if (countEl) countEl.textContent = data.lidos + '/' + data.total_artigos;
+                    bar.classList.remove('portal-progresso--nao_iniciado', 'portal-progresso--em_andamento', 'portal-progresso--concluido');
+                    bar.classList.add('portal-progresso--' + data.status_modulo);
+                }
+            })
+            .catch(function(err) {
+                if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); }
+                // fallback — submit "normal" para nao deixar o usuario travado
+                concluirForm.removeEventListener('submit', arguments.callee);
+                concluirForm.submit();
+            });
+        });
+    }
 })();
 </script>
 {% endblock %}

@@ -1,0 +1,91 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Pagamentos — Painel NCfly{% endblock %}
+{% block page_title %}Pagamentos ({{ total }}){% endblock %}
+
+{% block content %}
+<div class="space-y-4">
+
+    <form method="get" class="card p-4 flex flex-wrap gap-3 items-end">
+        <div class="flex-1 min-w-48">
+            <label for="q">Buscar empresa</label>
+            <input type="text" id="q" name="q" value="{{ busca }}" placeholder="Nome da empresa...">
+        </div>
+        <div>
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="">Todos</option>
+                <option value="pendente" {% if status_filtro == "pendente" %}selected{% endif %}>Pendente</option>
+                <option value="confirmado" {% if status_filtro == "confirmado" %}selected{% endif %}>Confirmado</option>
+                <option value="falhou" {% if status_filtro == "falhou" %}selected{% endif %}>Falhou</option>
+                <option value="estornado" {% if status_filtro == "estornado" %}selected{% endif %}>Estornado</option>
+            </select>
+        </div>
+        <div>
+            <label for="metodo">Método</label>
+            <select id="metodo" name="metodo">
+                <option value="">Todos</option>
+                <option value="cartao" {% if metodo_filtro == "cartao" %}selected{% endif %}>Cartão</option>
+                <option value="pix" {% if metodo_filtro == "pix" %}selected{% endif %}>PIX</option>
+                <option value="boleto" {% if metodo_filtro == "boleto" %}selected{% endif %}>Boleto</option>
+            </select>
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+            <a href="{% url 'superadmin_pagamentos_list' %}" class="btn btn-secondary">Limpar</a>
+        </div>
+    </form>
+
+    <div class="card overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="table-header text-xs text-slate-500 uppercase">
+                <tr>
+                    <th class="px-4 py-3 text-left">Data</th>
+                    <th class="px-4 py-3 text-left">Empresa</th>
+                    <th class="px-4 py-3 text-left">Plano</th>
+                    <th class="px-4 py-3 text-left">Método</th>
+                    <th class="px-4 py-3 text-right">Valor</th>
+                    <th class="px-4 py-3 text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in page_obj %}
+                <tr class="border-t border-slate-50 hover:bg-slate-50">
+                    <td class="px-4 py-2 text-xs text-slate-500">{{ p.criado_em|date:"d/m/Y H:i" }}</td>
+                    <td class="px-4 py-2 font-medium text-slate-800">
+                        <a href="{% url 'superadmin_assinatura_detail' p.assinatura.pk %}" class="text-brand-600 hover:underline">
+                            {{ p.assinatura.empresa.nome }}
+                        </a>
+                    </td>
+                    <td class="px-4 py-2 text-slate-600">{{ p.assinatura.plano.nome }}</td>
+                    <td class="px-4 py-2 text-slate-600">{{ p.get_metodo_display|default:"—" }}</td>
+                    <td class="px-4 py-2 text-right font-mono">R$ {{ p.valor|floatformat:2 }}</td>
+                    <td class="px-4 py-2 text-center">
+                        {% if p.status == 'confirmado' %}<span class="badge badge-green">Confirmado</span>
+                        {% elif p.status == 'pendente' %}<span class="badge badge-yellow">Pendente</span>
+                        {% elif p.status == 'falhou' %}<span class="badge badge-red">Falhou</span>
+                        {% else %}<span class="badge badge-gray">{{ p.get_status_display }}</span>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="px-4 py-6 text-center text-slate-500">Nenhum pagamento encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="flex items-center justify-between text-sm" aria-label="Paginação">
+        <span class="text-slate-500">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        <div class="flex gap-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ busca }}&status={{ status_filtro }}&metodo={{ metodo_filtro }}" class="btn btn-secondary">Anterior</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&q={{ busca }}&status={{ status_filtro }}&metodo={{ metodo_filtro }}" class="btn btn-secondary">Próxima</a>
+            {% endif %}
+        </div>
+    </nav>
+    {% endif %}
+
+</div>
+{% endblock %}

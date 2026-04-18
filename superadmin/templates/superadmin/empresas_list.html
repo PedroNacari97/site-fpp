@@ -65,7 +65,16 @@
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="px-4 py-8 text-center text-slate-400">Nenhuma empresa encontrada.</td>
+                <td colspan="6" class="px-4 py-10 text-center">
+                    <div class="flex flex-col items-center gap-2 text-slate-500">
+                        <svg class="w-10 h-10 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M4 20h16M6 20V8h12v12M9 4h6v4H9z"/>
+                        </svg>
+                        <p class="text-sm font-medium text-slate-600">Nenhuma empresa encontrada</p>
+                        <p class="text-xs text-slate-400">Ajuste os filtros ou cadastre uma nova empresa parceira.</p>
+                        <a href="{% url 'superadmin_empresa_create' %}" class="btn btn-primary mt-2">+ Nova empresa</a>
+                    </div>
+                </td>
             </tr>
             {% endfor %}
             </tbody>

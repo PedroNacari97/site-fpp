@@ -1,0 +1,63 @@
+{% extends "portal/base_public.html" %}
+{% load static %}
+{% block title %}Entrar | NC Fly{% endblock %}
+
+{% block content %}
+<section class="portal-auth-page">
+    <div class="portal-auth-card" role="region" aria-labelledby="portal-auth-title">
+        <header class="portal-auth-card__header">
+            <h1 id="portal-auth-title">Entrar no NC Fly</h1>
+            <p class="portal-auth-card__subtitle">Desbloqueie todos os artigos, alertas e conteudos.</p>
+        </header>
+
+        {% if messages %}
+        <div class="portal-auth-card__messages" role="status" aria-live="polite">
+            {% for message in messages %}
+                <div class="portal-auth-alert portal-auth-alert--{{ message.tags|default:'info' }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if google_oauth_enabled %}
+        <a href="{{ google_login_url }}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}"
+           class="portal-auth-google-btn"
+           data-analytics-event="click_google_login">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+                <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.71H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+                <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
+                <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.167 6.656 3.58 9 3.58z"/>
+            </svg>
+            <span>Entrar com Google</span>
+        </a>
+        <div class="portal-auth-divider"><span>ou com email</span></div>
+        {% endif %}
+
+        <form method="post" class="portal-auth-form" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next_url }}">
+
+            <label class="portal-auth-field">
+                <span class="portal-auth-field__label">Email</span>
+                <input type="email" name="email" autocomplete="email" inputmode="email"
+                       required autofocus value="{{ entered_email|default:'' }}"
+                       placeholder="voce@email.com">
+            </label>
+
+            <label class="portal-auth-field">
+                <span class="portal-auth-field__label">Senha</span>
+                <input type="password" name="senha" autocomplete="current-password" required
+                       placeholder="Digite sua senha">
+            </label>
+
+            <button type="submit" class="portal-auth-submit">Entrar</button>
+        </form>
+
+        <footer class="portal-auth-card__footer">
+            <p>Ainda nao tem conta? <a href="{% url 'portal_register' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}">Criar cadastro gratis</a></p>
+        </footer>
+    </div>
+</section>
+{% endblock %}

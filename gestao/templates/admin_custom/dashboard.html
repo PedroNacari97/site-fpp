@@ -4,8 +4,10 @@
 {% block header_title %}Dashboard{% endblock %}
 {% block header_subtitle %}<span>Visão consolidada da operação com foco financeiro, emissões e desempenho.</span>{% endblock %}
 {% block extra_head %}
+<link rel="stylesheet" href="{% static 'gestao/css/design-tokens.css' %}">
 <link rel="stylesheet" href="{% static 'gestao/css/home_figma.css' %}">
 <link rel="stylesheet" href="{% static 'gestao/css/dashboard_figma.css' %}">
+<link rel="stylesheet" href="{% static 'gestao/css/admin_dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -13,50 +15,73 @@
   <div class="miles-dashboard__shell">
     {# Titulo e subtitulo ja renderizados na top bar (header_title/header_subtitle) — bloco intro removido para evitar duplicacao. #}
 
-    <section class="home-ops__filters">
-      {% include "admin_custom/partials/home_management_filters.html" %}
+    {# ───────── Cluster de ações primárias ───────── #}
+    <section class="admin-dashboard__actions-cluster" aria-label="Ações rápidas">
+      <p class="admin-dashboard__actions-cluster-title">Ações rápidas</p>
+      {% for item in home_primary_actions %}
+        <a href="{{ item.url }}" class="admin-dashboard__action admin-dashboard__action--{{ item.tone }}">
+          {% if item.icon == 'cotacao' %}
+            <svg class="admin-dashboard__action-icon" viewBox="0 0 24 24" aria-hidden="true" width="16" height="16"><path d="M9 4h6l4 4v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3Zm6 0v4h4M9 13h6M9 17h4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+          {% elif item.icon == 'emissao' %}
+            <svg class="admin-dashboard__action-icon" viewBox="0 0 24 24" aria-hidden="true" width="16" height="16"><path d="M3 12l18-7-4 18-4-8-10-3Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+          {% elif item.icon == 'cliente' %}
+            <svg class="admin-dashboard__action-icon" viewBox="0 0 24 24" aria-hidden="true" width="16" height="16"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM20 8v6M17 11h6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>
+          {% elif item.icon == 'calculadora' %}
+            <svg class="admin-dashboard__action-icon" viewBox="0 0 24 24" aria-hidden="true" width="16" height="16"><rect x="5" y="3" width="14" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M16 15h0M8 19h2M12 19h2M16 19h0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+          {% endif %}
+          <span>{{ item.label }}</span>
+        </a>
+      {% endfor %}
     </section>
 
-    <section class="miles-dashboard__metrics-4">
-      <article class="miles-dashboard__card">
-        <p class="miles-dashboard__metric-label">Total de milhas</p>
-        <div class="miles-dashboard__metric-value">{{ management_dashboard.summary.milhas_utilizadas }}</div>
-        <p class="miles-dashboard__metric-note">Consumo consolidado no período filtrado.</p>
+    {# ───────── Hero metric + KPIs secundários (hierarquia clara) ───────── #}
+    <section class="admin-dashboard__hero" aria-label="Resumo do período">
+      <article class="admin-dashboard__hero-card">
+        <p class="admin-dashboard__hero-label">Receita no período &middot; vs. {{ management_dashboard.previous_period_label }}</p>
+        <p class="admin-dashboard__hero-value">{{ management_dashboard.summary.receita_total }}</p>
+        <p class="admin-dashboard__hero-note">
+          Lucro líquido: <strong>{{ management_dashboard.summary.lucro_total }}</strong> &middot;
+          {{ management_dashboard.summary.total_emissoes }} emissões &middot;
+          taxas {{ management_dashboard.summary.total_taxas }}
+        </p>
+        <a href="#tabela-voos" class="admin-dashboard__hero-cta">Ver tabela de emissões &darr;</a>
       </article>
-      <article class="miles-dashboard__card">
-        <p class="miles-dashboard__metric-label">Taxas pagas</p>
-        <div class="miles-dashboard__metric-value">{{ management_dashboard.summary.total_taxas }}</div>
-        <p class="miles-dashboard__metric-note">Custos adicionais cobrados nas emissões.</p>
-      </article>
-      <article class="miles-dashboard__card">
-        <p class="miles-dashboard__metric-label">Receita bruta</p>
-        <div class="miles-dashboard__metric-value">{{ management_dashboard.summary.receita_total }}</div>
-        <p class="miles-dashboard__metric-note">Valor comercializado no recorte atual.</p>
-      </article>
-      <article class="miles-dashboard__card">
-        <p class="miles-dashboard__metric-label">Lucro líquido</p>
-        <div class="miles-dashboard__metric-value">{{ management_dashboard.summary.lucro_total }}</div>
-        <p class="miles-dashboard__metric-note">Resultado final após custos e taxas.</p>
-      </article>
+      <div class="admin-dashboard__hero-kpis">
+        <a href="{% url 'admin_emissoes' %}" class="admin-dashboard__kpi admin-dashboard__kpi--blue">
+          <p class="admin-dashboard__kpi-label">Passagens emitidas</p>
+          <p class="admin-dashboard__kpi-value">{{ management_dashboard.summary.total_emissoes }}</p>
+          <p class="admin-dashboard__kpi-hint">Bilhetes com filtros atuais</p>
+        </a>
+        <a href="{% url 'admin_contas' %}" class="admin-dashboard__kpi admin-dashboard__kpi--purple">
+          <p class="admin-dashboard__kpi-label">Milhas utilizadas</p>
+          <p class="admin-dashboard__kpi-value">{{ management_dashboard.summary.milhas_utilizadas }}</p>
+          <p class="admin-dashboard__kpi-hint">Consumo no período</p>
+        </a>
+        <a href="{% url 'admin_clientes' %}" class="admin-dashboard__kpi admin-dashboard__kpi--green">
+          <p class="admin-dashboard__kpi-label">Passageiros</p>
+          <p class="admin-dashboard__kpi-value">{{ home_counts.passageiros|default:"0" }}</p>
+          <p class="admin-dashboard__kpi-hint">Base ativa</p>
+        </a>
+        <a href="{% url 'admin_emissoes' %}" class="admin-dashboard__kpi admin-dashboard__kpi--yellow">
+          <p class="admin-dashboard__kpi-label">Viagens no período</p>
+          <p class="admin-dashboard__kpi-value">{{ home_counts.viagens|default:"0" }}</p>
+          <p class="admin-dashboard__kpi-hint">Embarques vinculados</p>
+        </a>
+      </div>
     </section>
 
-    <section class="miles-dashboard__metrics-3">
-      <article class="miles-dashboard__card">
-        <p class="miles-dashboard__metric-label">N de passageiros</p>
-        <div class="miles-dashboard__metric-value">{{ home_counts.passageiros|default:"0" }}</div>
-        <p class="miles-dashboard__metric-note">Base de passageiros ativos na operacao.</p>
-      </article>
-      <article class="miles-dashboard__card">
-        <p class="miles-dashboard__metric-label">N de viagens</p>
-        <div class="miles-dashboard__metric-value">{{ home_counts.viagens|default:"0" }}</div>
-        <p class="miles-dashboard__metric-note">Viagens vinculadas ao mesmo intervalo.</p>
-      </article>
-      <article class="miles-dashboard__card">
-        <p class="miles-dashboard__metric-label">Passagens emitidas</p>
-        <div class="miles-dashboard__metric-value">{{ management_dashboard.summary.total_emissoes }}</div>
-        <p class="miles-dashboard__metric-note">Bilhetes emitidos com os filtros aplicados.</p>
-      </article>
-    </section>
+    {# ───────── Filtros (colapsados: só abrem quando precisar) ───────── #}
+    <details class="admin-dashboard__filters-wrap">
+      <summary class="admin-dashboard__filters-toggle" aria-label="Filtrar período e operação">
+        <span>Filtrar período, cliente, programa…</span>
+        <span class="admin-dashboard__filters-caret" aria-hidden="true">
+          <svg viewBox="0 0 16 16" width="12" height="12"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+        </span>
+      </summary>
+      <div class="home-ops__filters">
+        {% include "admin_custom/partials/home_management_filters.html" %}
+      </div>
+    </details>
 
     <section class="miles-dashboard__grid-2">
       <article class="miles-dashboard__card miles-dashboard__line-card">
@@ -237,13 +262,16 @@
       </article>
     </section>
 
-    <section class="miles-dashboard__table">
+    <section class="miles-dashboard__table" id="tabela-voos">
       <div class="miles-dashboard__table-header">
         <div>
           <p class="miles-dashboard__table-title">Dados de voos</p>
           <p class="miles-dashboard__table-note">Ultimas emissoes dentro dos filtros aplicados.</p>
         </div>
-        <span class="miles-dashboard__card-chip">{{ management_dashboard.summary.total_emissoes }} emissao(oes)</span>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <span class="miles-dashboard__card-chip">{{ management_dashboard.summary.total_emissoes }} emissao(oes)</span>
+          <a href="{% url 'admin_emissoes' %}" class="admin-dashboard__section-link">Ver todas &rarr;</a>
+        </div>
       </div>
       <div class="miles-dashboard__table-wrap">
         <table>

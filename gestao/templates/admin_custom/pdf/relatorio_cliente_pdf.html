@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Relatório — {{ resumo.nome }}</title>
+    <title>Relatório de viagens — {{ resumo.nome }}</title>
     <style>
         @page {
             size: A4 portrait;
@@ -24,6 +24,9 @@
         body {
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
             color: #1e293b;
+            line-height: 1.45;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
         {{ inline_css|safe }}
@@ -42,13 +45,13 @@
             background: #fff;
         }
 
-        /* ── Hero ── */
+        /* ── Hero (H1 — economia em destaque) ── */
         .rpt-hero {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 1.2rem;
-            padding: 1.3rem 1.4rem;
+            padding: 1.4rem 1.5rem;
             background: linear-gradient(90deg, #0f1b2d 0%, #ff6b6b 100%);
             color: #fff;
         }
@@ -65,7 +68,7 @@
             width: 2.6rem;
             height: 2.6rem;
             border-radius: 0.85rem;
-            background: rgba(255,255,255,0.16);
+            background: rgba(255,255,255,0.18);
         }
 
         .rpt-hero__mark svg {
@@ -73,39 +76,59 @@
             height: 1.4rem;
         }
 
-        .rpt-hero h2 {
+        .rpt-hero__kicker {
             margin: 0;
-            font-size: 1.25rem;
-            font-weight: 800;
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            opacity: 0.85;
         }
 
-        .rpt-hero p {
-            margin: 0.15rem 0 0;
-            font-size: 0.75rem;
-            opacity: 0.8;
+        .rpt-hero h1 {
+            margin: 0.1rem 0 0;
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+        }
+
+        .rpt-hero__subtitle {
+            margin: 0.2rem 0 0;
+            font-size: 0.78rem;
+            opacity: 0.85;
         }
 
         .rpt-hero__badge {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 0.2rem;
-            padding: 0.7rem 0.9rem;
-            border-radius: 0.85rem;
-            background: rgba(255,255,255,0.16);
-            text-align: center;
-        }
-
-        .rpt-hero__badge strong {
-            font-size: 1.35rem;
-            font-weight: 800;
+            align-items: flex-end;
+            gap: 0.15rem;
+            padding: 0.9rem 1.1rem;
+            border-radius: 0.95rem;
+            background: rgba(255,255,255,0.18);
+            text-align: right;
+            min-width: 9rem;
         }
 
         .rpt-hero__badge small {
-            font-size: 0.65rem;
-            opacity: 0.85;
+            font-size: 0.62rem;
+            opacity: 0.9;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+        }
+
+        .rpt-hero__badge strong {
+            font-size: 1.55rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.01em;
+        }
+
+        .rpt-hero__badge span {
+            font-size: 0.62rem;
+            opacity: 0.75;
+            margin-top: 0.1rem;
         }
 
         /* ── Meta (dados do cliente) ── */
@@ -113,8 +136,9 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 0.7rem;
-            padding: 1rem 1.4rem;
+            padding: 1rem 1.5rem;
             border-bottom: 1px solid #f1f5f9;
+            background: #fafbfc;
         }
 
         .rpt-meta__item {
@@ -124,10 +148,10 @@
         }
 
         .rpt-meta__label {
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.06em;
             color: #94a3b8;
         }
 
@@ -139,7 +163,7 @@
 
         /* ── Section ── */
         .rpt-section {
-            padding: 0.9rem 1.4rem;
+            padding: 1rem 1.5rem;
             break-inside: auto;
             page-break-inside: auto;
         }
@@ -151,8 +175,8 @@
         .rpt-section__heading {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.7rem;
+            gap: 0.55rem;
+            margin-bottom: 0.75rem;
         }
 
         .rpt-section__icon {
@@ -169,45 +193,65 @@
         .rpt-section__icon--orange { background: #fff7ed; color: #f97316; }
         .rpt-section__icon--purple { background: #faf5ff; color: #a855f7; }
         .rpt-section__icon--red { background: #fef2f2; color: #ef4444; }
+        .rpt-section__icon--slate { background: #f1f5f9; color: #475569; }
 
         .rpt-section__icon svg {
             width: 1rem;
             height: 1rem;
         }
 
-        .rpt-section h3 {
+        .rpt-section h2 {
             margin: 0;
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-weight: 700;
-            color: #1e293b;
+            color: #0f1b2d;
+            letter-spacing: -0.005em;
+        }
+
+        .rpt-section__lead {
+            margin: -0.3rem 0 0.9rem 2.3rem;
+            font-size: 0.72rem;
+            color: #64748b;
+        }
+
+        .rpt-section h3 {
+            margin: 1rem 0 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
 
         /* ── Indicadores grid ── */
         .rpt-indicators {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.6rem;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.55rem;
         }
 
         .rpt-indicator {
-            padding: 0.75rem 0.85rem;
-            border-radius: 0.8rem;
+            padding: 0.7rem 0.8rem;
+            border-radius: 0.75rem;
             background: #f8fafc;
             border: 1px solid #f1f5f9;
             break-inside: avoid;
         }
 
         .rpt-indicator__label {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #64748b;
             margin: 0 0 0.25rem;
+            font-weight: 600;
         }
 
         .rpt-indicator__value {
-            font-size: 1.35rem;
+            font-size: 1.3rem;
             font-weight: 800;
-            color: #1e293b;
+            color: #0f1b2d;
             margin: 0;
+            line-height: 1;
+            letter-spacing: -0.01em;
         }
 
         /* ── Valores ── */
@@ -221,7 +265,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.6rem 0.85rem;
+            padding: 0.65rem 0.9rem;
             border-radius: 0.75rem;
             background: #f8fafc;
             border: 1px solid #f1f5f9;
@@ -231,17 +275,23 @@
         .rpt-value-row__label {
             font-size: 0.8rem;
             color: #475569;
+            font-weight: 500;
         }
 
         .rpt-value-row__amount {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 700;
-            color: #1e293b;
+            color: #0f1b2d;
         }
 
         .rpt-value-row--highlight {
             background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
             border-color: #bbf7d0;
+        }
+
+        .rpt-value-row--highlight .rpt-value-row__label {
+            color: #166534;
+            font-weight: 600;
         }
 
         .rpt-value-row--highlight .rpt-value-row__amount {
@@ -251,17 +301,19 @@
         .rpt-value-row--total {
             background: linear-gradient(135deg, #0f1b2d 0%, #1e293b 100%);
             border-color: transparent;
-            padding: 0.8rem 0.95rem;
+            padding: 0.85rem 1rem;
         }
 
         .rpt-value-row--total .rpt-value-row__label {
-            color: #94a3b8;
+            color: #e2e8f0;
             font-weight: 600;
+            font-size: 0.82rem;
         }
 
         .rpt-value-row--total .rpt-value-row__amount {
             color: #fff;
-            font-size: 1.15rem;
+            font-size: 1.2rem;
+            letter-spacing: -0.01em;
         }
 
         /* ── Table ── */
@@ -273,19 +325,21 @@
 
         .rpt-table th {
             text-align: left;
-            padding: 0.45rem 0.55rem;
-            font-size: 0.65rem;
+            padding: 0.5rem 0.6rem;
+            font-size: 0.62rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.06em;
             color: #94a3b8;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            background: #fafbfc;
         }
 
         .rpt-table td {
-            padding: 0.5rem 0.55rem;
+            padding: 0.55rem 0.6rem;
             color: #334155;
-            border-bottom: 1px solid #f8fafc;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
         }
 
         .rpt-table tr:last-child td {
@@ -294,10 +348,11 @@
 
         .rpt-table .rpt-badge {
             display: inline-block;
-            padding: 0.15rem 0.45rem;
+            padding: 0.15rem 0.5rem;
             border-radius: 999px;
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             font-weight: 700;
+            letter-spacing: 0.02em;
         }
 
         .rpt-badge--green { background: #f0fdf4; color: #16a34a; }
@@ -317,10 +372,10 @@
             display: flex;
             align-items: center;
             gap: 0.35rem;
-            padding: 0.35rem 0.65rem;
+            padding: 0.4rem 0.75rem;
             border-radius: 999px;
             background: #f8fafc;
-            border: 1px solid #f1f5f9;
+            border: 1px solid #e2e8f0;
             font-size: 0.72rem;
             font-weight: 600;
             color: #475569;
@@ -328,27 +383,105 @@
 
         .rpt-status-chip strong {
             font-weight: 800;
-            color: #1e293b;
+            color: #0f1b2d;
+        }
+
+        /* ── Empty state ── */
+        .rpt-empty {
+            padding: 0.85rem 1rem;
+            border-radius: 0.75rem;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            font-size: 0.78rem;
+            color: #64748b;
+            text-align: center;
+            break-inside: avoid;
+        }
+
+        .rpt-empty strong {
+            display: block;
+            color: #334155;
+            font-weight: 700;
+            margin-bottom: 0.15rem;
+        }
+
+        /* ── Próximos passos ── */
+        .rpt-next {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
+        }
+
+        .rpt-next__card {
+            padding: 0.85rem 0.95rem;
+            border-radius: 0.85rem;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            break-inside: avoid;
+        }
+
+        .rpt-next__card--ok {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .rpt-next__title {
+            margin: 0 0 0.2rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #0f1b2d;
+        }
+
+        .rpt-next__desc {
+            margin: 0;
+            font-size: 0.72rem;
+            color: #475569;
+            line-height: 1.45;
         }
 
         /* ── Footer ── */
         .rpt-footer {
-            padding: 0.7rem 1.4rem;
+            padding: 0.85rem 1.5rem;
             border-top: 1px solid #f1f5f9;
+            background: #fafbfc;
+        }
+
+        .rpt-footer__row {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 1rem;
         }
 
         .rpt-footer__text {
-            font-size: 0.68rem;
+            font-size: 0.65rem;
             color: #94a3b8;
+            line-height: 1.5;
         }
 
         .rpt-footer__brand {
-            font-size: 0.68rem;
-            font-weight: 700;
-            color: #94a3b8;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #0f1b2d;
+            letter-spacing: 0.02em;
+        }
+
+        .rpt-footer__legal {
+            margin: 0.4rem 0 0;
+            font-size: 0.58rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        /* Evita quebra feia dentro de componentes pequenos */
+        .rpt-section__heading,
+        .rpt-hero,
+        .rpt-meta,
+        .rpt-indicator,
+        .rpt-value-row,
+        .rpt-next__card {
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
     </style>
 </head>
@@ -356,27 +489,33 @@
     <div class="rpt">
         <div class="rpt-sheet">
 
-            <!-- Hero -->
-            <div class="rpt-hero">
+            <!-- ═══════════════════════════════════════════════════════
+                 HERO — H1: quanto o cliente economizou (pirâmide invertida)
+                 ═══════════════════════════════════════════════════════ -->
+            <header class="rpt-hero">
                 <div class="rpt-hero__brand">
                     <div class="rpt-hero__mark">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 19.5 21 12 2.5 4.5 2.5 10 15 12 2.5 14Z"/></svg>
                     </div>
                     <div>
-                        <h2>Relatório do Cliente</h2>
-                        <p>{{ resumo.nome }}</p>
+                        <p class="rpt-hero__kicker">Seu relatório de viagens</p>
+                        <h1>Olá, {{ resumo.nome }}</h1>
+                        <p class="rpt-hero__subtitle">Veja o que a NCfly conquistou com você até aqui</p>
                     </div>
                 </div>
                 <div class="rpt-hero__badge">
+                    <small>Você economizou</small>
                     <strong>{{ economia_total }}</strong>
-                    <small>Economia total</small>
+                    <span>Somando passagens e hospedagens</span>
                 </div>
-            </div>
+            </header>
 
-            <!-- Dados do cliente -->
-            <div class="rpt-meta">
+            <!-- ═══════════════════════════════════════════════════════
+                 META — dados do cliente (identificação)
+                 ═══════════════════════════════════════════════════════ -->
+            <section class="rpt-meta" aria-label="Dados do cliente">
                 <div class="rpt-meta__item">
-                    <span class="rpt-meta__label">Nome</span>
+                    <span class="rpt-meta__label">Cliente</span>
                     <span class="rpt-meta__value">{{ resumo.nome }}</span>
                 </div>
                 <div class="rpt-meta__item">
@@ -392,41 +531,37 @@
                     <span class="rpt-meta__value">{{ resumo.cpf }}</span>
                 </div>
                 <div class="rpt-meta__item">
-                    <span class="rpt-meta__label">Empresa</span>
+                    <span class="rpt-meta__label">Atendido por</span>
                     <span class="rpt-meta__value">{{ resumo.empresa }}</span>
                 </div>
                 <div class="rpt-meta__item">
-                    <span class="rpt-meta__label">Data do relatório</span>
+                    <span class="rpt-meta__label">Emitido em</span>
                     <span class="rpt-meta__value">{{ resumo.data_relatorio }}</span>
                 </div>
-            </div>
+            </section>
 
-            <!-- Indicadores -->
-            <div class="rpt-section">
-                <div class="rpt-section__heading">
-                    <div class="rpt-section__icon rpt-section__icon--blue">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                    </div>
-                    <h3>Indicadores gerais</h3>
+            {% if not tem_dados %}
+            <!-- Estado vazio geral (acolhedor) -->
+            <section class="rpt-section">
+                <div class="rpt-empty">
+                    <strong>Ainda estamos começando juntos</strong>
+                    Assim que você fizer a primeira cotação ou reserva, seu relatório ganha forma com a economia, os voos e os pontos acumulados. Sua agência está pronta para te ajudar no próximo passo.
                 </div>
-                <div class="rpt-indicators">
-                    {% for ind in indicadores %}
-                    <div class="rpt-indicator">
-                        <p class="rpt-indicator__label">{{ ind.label }}</p>
-                        <p class="rpt-indicator__value">{{ ind.valor }}</p>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
+            </section>
+            {% else %}
 
-            <!-- Valores financeiros -->
-            <div class="rpt-section">
+            <!-- ═══════════════════════════════════════════════════════
+                 H2 — QUANTO ECONOMIZOU E INVESTIU (valor concreto primeiro)
+                 ═══════════════════════════════════════════════════════ -->
+            <section class="rpt-section">
                 <div class="rpt-section__heading">
                     <div class="rpt-section__icon rpt-section__icon--green">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                     </div>
-                    <h3>Resumo financeiro</h3>
+                    <h2>Quanto você economizou</h2>
                 </div>
+                <p class="rpt-section__lead">Comparando o valor cheio com o que foi pago usando pontos e estratégias da sua agência.</p>
+
                 <div class="rpt-values">
                     {% for v in valores %}
                     <div class="rpt-value-row{% if v.destaque %} rpt-value-row--highlight{% endif %}{% if forloop.last %} rpt-value-row--total{% endif %}">
@@ -435,49 +570,111 @@
                     </div>
                     {% endfor %}
                 </div>
-            </div>
+            </section>
 
-            <!-- Status das cotações -->
-            <div class="rpt-section">
+            <!-- ═══════════════════════════════════════════════════════
+                 H2 — RESUMO EM NÚMEROS (indicadores)
+                 ═══════════════════════════════════════════════════════ -->
+            <section class="rpt-section">
                 <div class="rpt-section__heading">
-                    <div class="rpt-section__icon rpt-section__icon--orange">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10l3 5-8 11L4 9l3-5Z"/></svg>
+                    <div class="rpt-section__icon rpt-section__icon--blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
                     </div>
-                    <h3>Cotações por status</h3>
+                    <h2>Seu resumo em números</h2>
                 </div>
-                <div class="rpt-status-grid">
-                    {% for status, qtd in cotacoes_por_status.items %}
-                    <div class="rpt-status-chip">
-                        {{ status }}: <strong>{{ qtd }}</strong>
+                <p class="rpt-section__lead">Tudo o que já passou pelas nossas mãos para cuidar da sua viagem.</p>
+
+                <div class="rpt-indicators">
+                    {% for ind in indicadores %}
+                    <div class="rpt-indicator">
+                        <p class="rpt-indicator__label">{{ ind.label }}</p>
+                        <p class="rpt-indicator__value">{{ ind.valor }}</p>
                     </div>
                     {% endfor %}
                 </div>
-            </div>
+            </section>
 
-            <!-- Últimas cotações -->
-            {% if cotacoes_lista %}
-            <div class="rpt-section">
+            <!-- ═══════════════════════════════════════════════════════
+                 H2 — PASSAGENS EMITIDAS (o que já aconteceu)
+                 ═══════════════════════════════════════════════════════ -->
+            <section class="rpt-section">
+                <div class="rpt-section__heading">
+                    <div class="rpt-section__icon rpt-section__icon--purple">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+                    </div>
+                    <h2>Passagens emitidas</h2>
+                </div>
+                {% if emissoes_lista %}
+                <p class="rpt-section__lead">As {{ emissoes_lista|length }} emissões mais recentes — as mais antigas ficam registradas na sua agência.</p>
+                <table class="rpt-table">
+                    <thead>
+                        <tr>
+                            <th>Trecho</th>
+                            <th>Embarque</th>
+                            <th>Programa</th>
+                            <th>Valor pago</th>
+                            <th>Localizador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in emissoes_lista %}
+                        <tr>
+                            <td><strong>{{ e.origem }} &rarr; {{ e.destino }}</strong></td>
+                            <td>{{ e.data }}</td>
+                            <td>{{ e.programa }}</td>
+                            <td>{{ e.valor }}</td>
+                            <td><span class="rpt-badge {% if e.localizador == 'Pendente' %}rpt-badge--orange{% else %}rpt-badge--green{% endif %}">{{ e.localizador }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="rpt-empty">
+                    <strong>Ainda não emitimos passagens no seu nome</strong>
+                    Quando a primeira emissão sair, ela aparece aqui com trecho, data e localizador para você ter tudo em um só lugar.
+                </div>
+                {% endif %}
+            </section>
+
+            <!-- ═══════════════════════════════════════════════════════
+                 H2 — COTAÇÕES (em andamento / histórico)
+                 ═══════════════════════════════════════════════════════ -->
+            <section class="rpt-section">
                 <div class="rpt-section__heading">
                     <div class="rpt-section__icon rpt-section__icon--orange">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10l3 5-8 11L4 9l3-5Z"/></svg>
                     </div>
-                    <h3>Últimas cotações</h3>
+                    <h2>Cotações em andamento</h2>
                 </div>
+                <p class="rpt-section__lead">Como estão distribuídas as buscas e propostas que a sua agência montou para você.</p>
+
+                <div class="rpt-status-grid">
+                    {% for status, qtd in cotacoes_por_status.items %}
+                    {% if qtd %}
+                    <div class="rpt-status-chip">
+                        {{ status }} <strong>{{ qtd }}</strong>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+                {% if cotacoes_lista %}
+                <h3>Últimas cotações</h3>
                 <table class="rpt-table">
                     <thead>
                         <tr>
-                            <th>Rota</th>
-                            <th>Data</th>
+                            <th>Trecho</th>
+                            <th>Embarque</th>
                             <th>Programa</th>
                             <th>Valor</th>
                             <th>Economia</th>
-                            <th>Status</th>
+                            <th>Situação</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for c in cotacoes_lista %}
                         <tr>
-                            <td>{{ c.origem }} → {{ c.destino }}</td>
+                            <td><strong>{{ c.origem }} &rarr; {{ c.destino }}</strong></td>
                             <td>{{ c.data }}</td>
                             <td>{{ c.programa }}</td>
                             <td>{{ c.valor }}</td>
@@ -487,67 +684,39 @@
                         {% endfor %}
                     </tbody>
                 </table>
-            </div>
-            {% endif %}
-
-            <!-- Últimas emissões -->
-            {% if emissoes_lista %}
-            <div class="rpt-section">
-                <div class="rpt-section__heading">
-                    <div class="rpt-section__icon rpt-section__icon--purple">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-                    </div>
-                    <h3>Últimas emissões</h3>
+                {% else %}
+                <div class="rpt-empty">
+                    <strong>Nenhuma cotação ativa no momento</strong>
+                    Tem alguma viagem em mente? Fale com a sua agência e a gente começa a procurar a melhor combinação de preço e pontos.
                 </div>
-                <table class="rpt-table">
-                    <thead>
-                        <tr>
-                            <th>Rota</th>
-                            <th>Data</th>
-                            <th>Programa</th>
-                            <th>Valor cobrado</th>
-                            <th>Localizador</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for e in emissoes_lista %}
-                        <tr>
-                            <td>{{ e.origem }} → {{ e.destino }}</td>
-                            <td>{{ e.data }}</td>
-                            <td>{{ e.programa }}</td>
-                            <td>{{ e.valor }}</td>
-                            <td><span class="rpt-badge {% if e.localizador == 'Pendente' %}rpt-badge--orange{% else %}rpt-badge--green{% endif %}">{{ e.localizador }}</span></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% endif %}
+                {% endif %}
+            </section>
 
-            <!-- Contas de fidelidade -->
+            <!-- ═══════════════════════════════════════════════════════
+                 H2 — PROGRAMAS DE FIDELIDADE (patrimônio em pontos)
+                 ═══════════════════════════════════════════════════════ -->
             {% if contas_lista %}
-            <div class="rpt-section">
+            <section class="rpt-section">
                 <div class="rpt-section__heading">
                     <div class="rpt-section__icon rpt-section__icon--red">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26Z"/></svg>
                     </div>
-                    <h3>Programas de fidelidade</h3>
+                    <h2>Seus programas de fidelidade</h2>
                 </div>
+                <p class="rpt-section__lead">Programas que acompanhamos para garantir que seus pontos virem passagem antes de expirarem.</p>
                 <table class="rpt-table">
                     <thead>
                         <tr>
                             <th>Programa</th>
-                            <th>Login</th>
                             <th>Clube</th>
                             <th>Pontos/mês</th>
-                            <th>Validade</th>
+                            <th>Próxima validade</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for c in contas_lista %}
                         <tr>
                             <td><strong>{{ c.programa }}</strong></td>
-                            <td>{{ c.login }}</td>
                             <td>{{ c.clube }}</td>
                             <td>{{ c.pontos_mes }}</td>
                             <td>{{ c.validade }}</td>
@@ -555,14 +724,56 @@
                         {% endfor %}
                     </tbody>
                 </table>
-            </div>
+            </section>
             {% endif %}
 
-            <!-- Footer -->
-            <div class="rpt-footer">
-                <span class="rpt-footer__text">Gerado em {{ resumo.data_relatorio }} — Dados sujeitos a atualização</span>
-                <span class="rpt-footer__brand">NCfly</span>
-            </div>
+            <!-- ═══════════════════════════════════════════════════════
+                 H2 — PRÓXIMOS PASSOS (o que vem a seguir)
+                 ═══════════════════════════════════════════════════════ -->
+            <section class="rpt-section">
+                <div class="rpt-section__heading">
+                    <div class="rpt-section__icon rpt-section__icon--slate">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </div>
+                    <h2>O que vem a seguir</h2>
+                </div>
+                <div class="rpt-next">
+                    {% if cotacoes_em_aberto %}
+                    <div class="rpt-next__card">
+                        <p class="rpt-next__title">Você tem {{ cotacoes_em_aberto }} cotação{{ cotacoes_em_aberto|pluralize:"ões" }} aguardando decisão</p>
+                        <p class="rpt-next__desc">Revise as propostas com o seu consultor antes que os preços ou a disponibilidade mudem.</p>
+                    </div>
+                    {% endif %}
+                    {% if emissoes_pendentes %}
+                    <div class="rpt-next__card">
+                        <p class="rpt-next__title">{{ emissoes_pendentes }} emissão{{ emissoes_pendentes|pluralize:"ões" }} ainda sem localizador</p>
+                        <p class="rpt-next__desc">A sua agência está finalizando a emissão. Você será avisado assim que o bilhete for confirmado.</p>
+                    </div>
+                    {% endif %}
+                    {% if not cotacoes_em_aberto and not emissoes_pendentes %}
+                    <div class="rpt-next__card rpt-next__card--ok">
+                        <p class="rpt-next__title">Está tudo em ordem por aqui</p>
+                        <p class="rpt-next__desc">Nenhuma pendência no momento. Quando quiser planejar uma nova viagem, é só chamar a sua agência.</p>
+                    </div>
+                    {% endif %}
+                    <div class="rpt-next__card rpt-next__card--ok">
+                        <p class="rpt-next__title">Quer viajar de novo economizando?</p>
+                        <p class="rpt-next__desc">Converse com a sua agência sobre o próximo destino — quanto antes planejarmos, maior é a chance de achar pontos no melhor valor.</p>
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- ═══════════════════════════════════════════════════════
+                 FOOTER — rodapé legal de confidencialidade
+                 ═══════════════════════════════════════════════════════ -->
+            <footer class="rpt-footer">
+                <div class="rpt-footer__row">
+                    <span class="rpt-footer__text">Relatório emitido em {{ resumo.data_relatorio }} &middot; Valores podem variar conforme disponibilidade dos programas.</span>
+                    <span class="rpt-footer__brand">NCfly</span>
+                </div>
+                <p class="rpt-footer__legal">Documento confidencial destinado a {{ resumo.nome }}. As informações aqui apresentadas refletem o histórico registrado na sua agência e podem sofrer alterações sem aviso prévio. Em caso de divergência, consulte o seu consultor.</p>
+            </footer>
 
         </div>
     </div>

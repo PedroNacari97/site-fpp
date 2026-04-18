@@ -1,3 +1,4 @@
+import hmac
 import json
 import logging
 import os
@@ -775,10 +776,16 @@ def telegram_alertas_webhook(request):
 
     config = get_telegram_alertas_config()
     expected_secret = config["secret"]
-    if expected_secret:
-        received_secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
-        if received_secret != expected_secret:
-            return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
+    if not expected_secret:
+        logger.error(
+            "telegram_alertas_webhook: TELEGRAM_ALERTS_WEBHOOK_SECRET nao configurado "
+            "\u2014 webhook rejeitado (fail-closed). ip=%s",
+            request.META.get("REMOTE_ADDR", ""),
+        )
+        return JsonResponse({"ok": False, "error": "webhook_not_configured"}, status=503)
+    received_secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+    if not hmac.compare_digest(received_secret or "", expected_secret):
+        return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
 
     try:
         payload = json.loads(request.body.decode("utf-8") or "{}")
@@ -821,10 +828,16 @@ def telegram_noticias_webhook(request):
 
     config = get_telegram_noticias_config()
     expected_secret = config["secret"]
-    if expected_secret:
-        received_secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
-        if received_secret != expected_secret:
-            return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
+    if not expected_secret:
+        logger.error(
+            "telegram_noticias_webhook: TELEGRAM_NEWS_WEBHOOK_SECRET nao configurado "
+            "\u2014 webhook rejeitado (fail-closed). ip=%s",
+            request.META.get("REMOTE_ADDR", ""),
+        )
+        return JsonResponse({"ok": False, "error": "webhook_not_configured"}, status=503)
+    received_secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+    if not hmac.compare_digest(received_secret or "", expected_secret):
+        return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
 
     try:
         payload = json.loads(request.body.decode("utf-8") or "{}")
@@ -932,11 +945,17 @@ def telegram_artigos_webhook(request):
         return HttpResponseNotAllowed(["POST"])
 
     expected_secret = _TELEGRAM_ARTIGOS_SECRET
-    if expected_secret:
-        received_secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
-        if received_secret != expected_secret:
-            logger.warning("telegram_artigos_webhook: secret invalido recebido.")
-            return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
+    if not expected_secret:
+        logger.error(
+            "telegram_artigos_webhook: TELEGRAM_ARTIGOS_SECRET nao configurado "
+            "\u2014 webhook rejeitado (fail-closed). ip=%s",
+            request.META.get("REMOTE_ADDR", ""),
+        )
+        return JsonResponse({"ok": False, "error": "webhook_not_configured"}, status=503)
+    received_secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+    if not hmac.compare_digest(received_secret or "", expected_secret):
+        logger.warning("telegram_artigos_webhook: secret invalido recebido.")
+        return JsonResponse({"ok": False, "error": "forbidden"}, status=403)
 
     try:
         payload = json.loads(request.body.decode("utf-8") or "{}")

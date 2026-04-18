@@ -1,0 +1,41 @@
+{% extends "portal/base_public.html" %}
+{% block title %}Cancelar {{ canal }} | NC Fly{% endblock %}
+
+{% block content %}
+<section class="portal-auth-page">
+    <div class="portal-auth-card">
+        <header class="portal-auth-card__header">
+            <h1>Cancelar {{ canal }}</h1>
+            <p class="portal-auth-card__subtitle">
+                Confirmando o cancelamento, o email <strong>{{ email }}</strong> nao recebera
+                mais mensagens <strong>apenas do canal de {{ canal }}</strong>. Os demais canais
+                continuam ativos — voce decide cada um separadamente.
+            </p>
+        </header>
+
+        {% if ja_cancelado %}
+        <div class="portal-auth-alert portal-auth-alert--info">
+            Este canal ja esta cancelado para o seu email.
+        </div>
+        <a href="{% url 'portal_home' %}" class="portal-auth-submit">Voltar a home</a>
+        {% else %}
+        <form method="post" class="portal-auth-form">
+            {% csrf_token %}
+            <label class="portal-auth-field">
+                <span class="portal-auth-field__label">Motivo (opcional)</span>
+                <select name="motivo">
+                    <option value="">Prefiro nao dizer</option>
+                    <option value="muitos_emails">Recebo muitos emails</option>
+                    <option value="conteudo_irrelevante">O conteudo nao e relevante</option>
+                    <option value="sem_interesse">Nao tenho mais interesse</option>
+                    <option value="nao_reconhece">Nao lembro de ter me cadastrado</option>
+                </select>
+            </label>
+            <button type="submit" class="portal-auth-submit portal-auth-submit--danger">
+                Confirmar cancelamento
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

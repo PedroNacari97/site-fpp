@@ -77,7 +77,12 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td class="px-4 py-4 text-slate-400 text-center" colspan="2">Nenhuma noticia ainda.</td></tr>
+                <tr>
+                    <td class="px-4 py-6 text-center" colspan="2">
+                        <p class="text-sm text-slate-500">Nenhuma notícia ainda.</p>
+                        <a href="{% url 'superadmin_artigo_upload' %}" class="text-xs text-brand-600 hover:underline mt-1 inline-block">Publicar a primeira</a>
+                    </td>
+                </tr>
                 {% endfor %}
                 </tbody>
             </table>
@@ -100,7 +105,10 @@
                 </p>
             </li>
             {% empty %}
-            <li class="px-4 py-4 text-xs text-slate-400">Nenhum job registrado.</li>
+            <li class="px-4 py-6 text-center">
+                <p class="text-xs text-slate-500">Nenhum job registrado.</p>
+                <p class="text-[11px] text-slate-400 mt-1">Os jobs aparecem aqui após a primeira execução.</p>
+            </li>
             {% endfor %}
             </ul>
         </div>

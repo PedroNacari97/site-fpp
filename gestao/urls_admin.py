@@ -49,6 +49,12 @@ from gestao.views import (
     emissao_detalhe,
     emissao_acompanhamento,
     marcar_notificacao_lida,
+    admin_notificacoes,
+    marcar_notificacao_lida_por_chave,
+    marcar_notificacao_lida_por_id,
+    marcar_todas_lidas,
+    arquivar_notificacao,
+    arquivar_por_chave,
     admin_companhias,
     criar_companhia,
     editar_companhia,
@@ -81,11 +87,22 @@ from gestao.views import (
 )
 from gestao.views.pipeline_hotel import pipeline_hotel_view, pipeline_hotel_mover
 from gestao.views.relatorio_cliente import relatorio_cliente_pdf
+from gestao.views.financeiro import (
+    financeiro_empresa,
+    financeiro_empresa_pagamentos,
+    financeiro_empresa_contrato,
+)
 
 urlpatterns = [
     path('painel/', admin_home, name='admin_dashboard'),
     path('painel/dashboard/', admin_dashboard, name='admin_dashboard_analytics'),
     path('painel/notificacoes/marcar-lida/', marcar_notificacao_lida, name='admin_marcar_notificacao_lida'),
+    path('notificacoes/', admin_notificacoes, name='admin_notificacoes'),
+    path('notificacoes/ler-chave/', marcar_notificacao_lida_por_chave, name='admin_notificacoes_ler_chave'),
+    path('notificacoes/ler-todas/', marcar_todas_lidas, name='admin_notificacoes_ler_todas'),
+    path('notificacoes/arquivar-chave/', arquivar_por_chave, name='admin_notificacoes_arquivar_chave'),
+    path('notificacoes/<int:notificacao_id>/ler/', marcar_notificacao_lida_por_id, name='admin_notificacoes_ler'),
+    path('notificacoes/<int:notificacao_id>/arquivar/', arquivar_notificacao, name='admin_notificacoes_arquivar'),
     path('clientes/', admin_clientes, name='admin_clientes'),
     path('clientes/<int:cliente_id>/editar/', editar_cliente, name='admin_editar_cliente'),
     path('clientes/novo/', criar_cliente, name='admin_novo_cliente'),
@@ -164,4 +181,9 @@ urlpatterns = [
     path('pipeline-hotel/mover/', pipeline_hotel_mover, name='admin_pipeline_hotel_mover'),
     path('api/voos-cliente/<int:cliente_id>/', api_voos_cliente, name='api_voos_cliente'),
     path('clientes/<int:cliente_id>/relatorio-pdf/', relatorio_cliente_pdf, name='admin_relatorio_cliente_pdf'),
+
+    # Financeiro da agencia (B2B SaaS — lado tenant)
+    path('financeiro/', financeiro_empresa, name='admin_financeiro'),
+    path('financeiro/pagamentos/', financeiro_empresa_pagamentos, name='admin_financeiro_pagamentos'),
+    path('financeiro/contrato/', financeiro_empresa_contrato, name='admin_financeiro_contrato'),
 ]

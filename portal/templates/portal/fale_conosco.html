@@ -37,7 +37,7 @@
             </div>
         </section>
 
-        <section class="portal-static-page__section">
+        <section class="portal-static-page__section" id="privacidade">
             <h2>Canais de contato</h2>
             <p>Os contatos institucionais da NC Fly para atendimento geral, assuntos comerciais e conversas de parceria aparecem abaixo.</p>
             <ul class="portal-static-page__list">
@@ -62,6 +62,24 @@
                 <li>Privacidade e dados pessoais devem ser tratados pelos canais oficiais informados pela NC Fly.</li>
                 {% endif %}
             </ul>
+        </section>
+
+        <section class="portal-static-page__section">
+            <h2>Direitos do titular de dados (LGPD)</h2>
+            <p>Em conformidade com o art. 18 da Lei n&ordm; 13.709/2018, o titular de dados pessoais pode solicitar &agrave; NC Fly, a qualquer momento e mediante requisi&ccedil;&atilde;o, as seguintes provid&ecirc;ncias:</p>
+            <ul class="portal-static-page__list">
+                <li>Confirma&ccedil;&atilde;o da exist&ecirc;ncia de tratamento de dados pessoais.</li>
+                <li>Acesso aos dados tratados.</li>
+                <li>Corre&ccedil;&atilde;o de dados incompletos, inexatos ou desatualizados.</li>
+                <li>Anonimiza&ccedil;&atilde;o, bloqueio ou elimina&ccedil;&atilde;o de dados desnecess&aacute;rios, excessivos ou tratados em desconformidade com a lei.</li>
+                <li>Portabilidade dos dados a outro fornecedor, observados os requisitos regulamentares.</li>
+                <li>Elimina&ccedil;&atilde;o de dados tratados com base em consentimento, ressalvadas as hip&oacute;teses de reten&ccedil;&atilde;o legal.</li>
+                <li>Informa&ccedil;&atilde;o sobre entidades p&uacute;blicas e privadas com as quais houve uso compartilhado.</li>
+                <li>Informa&ccedil;&atilde;o sobre a possibilidade de n&atilde;o fornecer consentimento e sobre as consequ&ecirc;ncias da nega&ccedil;&atilde;o.</li>
+                <li>Revoga&ccedil;&atilde;o do consentimento, nos termos do &sect; 5&ordm; do art. 8&ordm; da LGPD.</li>
+            </ul>
+            <p>As solicita&ccedil;&otilde;es devem ser encaminhadas para o Encarregado de Dados (DPO): {% if portal_dpo_email or portal_contact_email %}<a href="mailto:{{ portal_dpo_email|default:portal_contact_email }}?subject=Solicita%C3%A7%C3%A3o%20de%20direito%20do%20titular%20%E2%80%94%20LGPD">{{ portal_dpo_email|default:portal_contact_email }}</a>{% else %}canal oficial da NC Fly{% endif %}. Para viabilizar o atendimento, a NC Fly pode solicitar verifica&ccedil;&atilde;o razo&aacute;vel da identidade do solicitante. O prazo de resposta e os limites aplic&aacute;veis observar&atilde;o a LGPD, a regulamenta&ccedil;&atilde;o da ANPD e eventuais hip&oacute;teses legais de reten&ccedil;&atilde;o.</p>
+            <p>O titular pode ainda peticionar perante a Autoridade Nacional de Prote&ccedil;&atilde;o de Dados (ANPD), caso n&atilde;o concorde com a resposta recebida.</p>
         </section>
 
         <section class="portal-static-page__section">

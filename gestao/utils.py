@@ -1,3 +1,4 @@
+import hashlib
 import json
 import re
 from datetime import datetime
@@ -21,8 +22,13 @@ def safe_json_dumps(data) -> str:
 
 def normalize_cpf(cpf: str) -> str:
     """Remove caracteres não numéricos e retorna apenas os 11 dígitos."""
-
     return re.sub(r"\D", "", cpf or "")
+
+
+def hash_cpf(cpf: str) -> str:
+    """Retorna SHA-256 hex do CPF normalizado (apenas digitos)."""
+    digits = normalize_cpf(cpf)
+    return hashlib.sha256(digits.encode("utf-8")).hexdigest() if digits else ""
 
 
 def validate_cpf_digits(cpf: str, *, field_label: str = "CPF") -> str:

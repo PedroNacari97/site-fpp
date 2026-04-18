@@ -17,6 +17,9 @@
             <span class="artigos-modulo-hero__badge">
                 {{ artigos|length }} artigo{{ artigos|pluralize:"s" }}
             </span>
+            {% if portal_user_is_authenticated and progresso_modulo %}
+                {% include "portal/partials/progresso_bar.html" with progresso=progresso_modulo variant="hero" %}
+            {% endif %}
         </div>
     </section>
 
@@ -27,9 +30,15 @@
             {% if artigos %}
             <ol class="artigos-modulo-capitulos">
                 {% for artigo in artigos %}
-                <li class="artigos-modulo-capitulo">
+                <li class="artigos-modulo-capitulo {% if artigo.lido_pelo_user %}is-lido{% endif %}">
                     <a href="{{ artigo.get_absolute_url }}" class="artigos-modulo-capitulo__link">
-                        <span class="artigos-modulo-capitulo__num" aria-hidden="true">{{ forloop.counter }}</span>
+                        <span class="artigos-modulo-capitulo__num" aria-hidden="true">
+                            {% if artigo.lido_pelo_user %}
+                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
+                            {% else %}
+                                {{ forloop.counter }}
+                            {% endif %}
+                        </span>
                         <div class="artigos-modulo-capitulo__body">
                             <h2>{{ artigo.titulo }}</h2>
                             <p>{{ artigo.resumo|truncatechars:160 }}</p>
@@ -40,6 +49,13 @@
                                     <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5l2 1.5" stroke-linecap="round"/></svg>
                                     {{ artigo.tempo_leitura|default:"5" }} min
                                 </span>
+                                {% if portal_user_is_authenticated %}
+                                    {% if artigo.lido_pelo_user %}
+                                        <span class="portal-chip portal-chip--done">Lido</span>
+                                    {% else %}
+                                        <span class="portal-chip portal-chip--pending">Pendente</span>
+                                    {% endif %}
+                                {% endif %}
                             </div>
                         </div>
                         <svg class="artigos-modulo-capitulo__arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -64,9 +80,12 @@
                 {% for outro in outros_modulos %}
                 <a href="{{ outro.get_absolute_url }}" class="artigos-modulo-sidebar__item" style="--modulo-cor: {{ outro.cor|default:'#2563eb' }};">
                     <span class="artigos-modulo-sidebar__item-icon" aria-hidden="true">{{ outro.icone|default:"&#128218;" }}</span>
-                    <span>
+                    <span class="artigos-modulo-sidebar__item-body">
                         <strong>{{ outro.titulo }}</strong>
                         <small>{{ outro.total_artigos|default:"0" }} artigo{{ outro.total_artigos|pluralize:"s" }}</small>
+                        {% if portal_user_is_authenticated %}
+                            {% include "portal/partials/progresso_bar.html" with progresso=outro.progresso variant="mini" show_label=False %}
+                        {% endif %}
                     </span>
                 </a>
                 {% endfor %}

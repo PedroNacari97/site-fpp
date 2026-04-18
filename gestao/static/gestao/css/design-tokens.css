@@ -1,0 +1,68 @@
+/* ============================================================
+   NCfly Design System — Tokens
+   Fonte de verdade para valores visuais do admin.
+   Baseado no layout de produção (commit ff3b705).
+   ============================================================ */
+
+:root {
+  /* ── Spacing ── */
+  --ds-space-xs: 8px;
+  --ds-space-sm: 12px;
+  --ds-space-md: 16px;
+  --ds-space-lg: 20px;
+  --ds-space-xl: 24px;
+
+  /* ── Card ── */
+  --ds-card-padding: 16px 18px;
+  --ds-card-radius: 16px;
+  --ds-card-bg: rgba(255, 255, 255, 0.96);
+  --ds-card-border: 1px solid hsl(var(--border) / 0.9);
+  --ds-card-shadow: var(--shadow-card);
+
+  /* ── Stat Card ── */
+  --ds-stat-padding: 20px;
+  --ds-stat-radius: 20px;
+  --ds-stat-min-height: 110px;
+  --ds-stat-value-size: 20px;
+  --ds-stat-value-weight: 800;
+  --ds-stat-label-size: 13px;
+  --ds-stat-label-weight: 600;
+
+  /* ── Typography ── */
+  --ds-page-title-size: 14px;
+  --ds-section-title-size: 16px;
+  --ds-body-size: 14px;
+  --ds-small-size: 12px;
+  --ds-font-weight-normal: 400;
+  --ds-font-weight-medium: 500;
+  --ds-font-weight-semibold: 600;
+  --ds-font-weight-bold: 700;
+  --ds-font-weight-extrabold: 800;
+
+  /* ── Table ── */
+  --ds-th-padding: 12px 16px;
+  --ds-th-bg: var(--color-surface-muted);
+  --ds-th-color: var(--color-muted);
+  --ds-th-font-size: 12px;
+  --ds-th-font-weight: 600;
+  --ds-th-letter-spacing: 0.06em;
+  --ds-td-padding: 12px 16px;
+  --ds-td-font-size: 14px;
+  --ds-td-color: var(--color-heading);
+  --ds-tr-hover-bg: var(--color-surface-muted);
+  --ds-tr-border: 1px solid var(--color-border);
+
+  /* ── Filters / Headers ── */
+  --ds-filter-padding: 16px 18px;
+  --ds-filter-radius: 16px;
+
+  /* ── Buttons ── */
+  --ds-btn-height: 42px;
+  --ds-btn-padding: 0 16px;
+  --ds-btn-radius: 12px;
+  --ds-btn-font-size: 13px;
+
+  /* ── Gaps ── */
+  --ds-section-gap: 1rem;
+  --ds-card-gap: 12px;
+}

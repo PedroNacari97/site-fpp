@@ -94,6 +94,8 @@ const initAdminNotifications = () => {
   const badge = document.querySelector("[data-notification-badge]");
   const subtitle = document.querySelector("[data-notification-subtitle]");
   const markUrl = root?.dataset.notificationMarkUrl;
+  const markAllUrl = root?.dataset.notificationMarkAllUrl;
+  const archiveUrl = root?.dataset.notificationArchiveUrl;
 
   if (!root || !toggle || !panel) {
     return;
@@ -104,42 +106,57 @@ const initAdminNotifications = () => {
     return match ? decodeURIComponent(match[1]) : "";
   };
 
-  const updateUnreadState = (count) => {
-    if (subtitle) {
-      subtitle.textContent = `${count} não lida(s)`;
+  const postJson = async (url, body = {}) => {
+    if (!url) return null;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCsrfToken(),
+        Accept: "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
     }
+    try {
+      return await response.json();
+    } catch (_e) {
+      return {};
+    }
+  };
 
+  const setBadgeCount = (count) => {
+    if (subtitle) {
+      const plural = count === 1 ? "" : "s";
+      subtitle.textContent = `${count} não lida${plural}`;
+    }
     if (!badge) {
       return;
     }
-
     if (count > 0) {
       badge.hidden = false;
-      badge.textContent = String(count);
+      badge.textContent = count > 9 ? "9+" : String(count);
       return;
     }
-
     badge.hidden = true;
     badge.textContent = "";
   };
 
   const ensureEmptyState = () => {
-    if (!list) {
-      return;
-    }
-
+    if (!list) return;
     const remainingItems = list.querySelectorAll("[data-notification-item]");
     const currentEmpty = list.querySelector("[data-notification-empty]");
     if (remainingItems.length) {
       currentEmpty?.remove();
       return;
     }
-
     if (!currentEmpty) {
       const empty = document.createElement("div");
-      empty.className = "admin-notifications-panel__empty";
+      empty.className = "admin-notif__empty";
       empty.dataset.notificationEmpty = "true";
-      empty.textContent = "Sem notificações operacionais no momento.";
+      empty.textContent = "Tudo em dia — nenhuma notificação ativa.";
       list.appendChild(empty);
     }
   };
@@ -158,9 +175,9 @@ const initAdminNotifications = () => {
     event.stopPropagation();
     if (panel.hidden) {
       openPanel();
-      return;
+    } else {
+      closePanel();
     }
-    closePanel();
   });
 
   closeButton?.addEventListener("click", () => {
@@ -171,43 +188,82 @@ const initAdminNotifications = () => {
     event.stopPropagation();
   });
 
-  panel.addEventListener("click", async (event) => {
-    const markButton = event.target.closest("[data-notification-mark-read]");
-    if (!markButton) {
-      return;
-    }
+  // Expansão de grupos (agrupados por tipo)
+  panel.addEventListener("click", (event) => {
+    const groupButton = event.target.closest("[data-notification-group]");
+    if (!groupButton) return;
+    event.preventDefault();
+    const tipo = groupButton.dataset.notificationGroup;
+    const body = panel.querySelector(`[data-notification-group-body="${tipo}"]`);
+    if (!body) return;
+    const isOpen = groupButton.getAttribute("aria-expanded") === "true";
+    groupButton.setAttribute("aria-expanded", isOpen ? "false" : "true");
+    body.hidden = isOpen;
+  });
 
+  // Clique no corpo da notificação: marca como lida e navega
+  panel.addEventListener("click", async (event) => {
+    const openLink = event.target.closest("[data-notification-open]");
+    if (!openLink) return;
+    const item = openLink.closest("[data-notification-item]");
+    const key = item?.dataset.notificationKey;
+    const href = openLink.getAttribute("href");
+    if (key && markUrl) {
+      // Fire and forget — não bloquear navegação
+      postJson(markUrl, { key }).catch(() => {});
+    }
+    // Deixa o link navegar normalmente (a menos que href seja "#")
+    if (!href || href === "#") {
+      event.preventDefault();
+    }
+  });
+
+  // Arquivar individual (botão x)
+  panel.addEventListener("click", async (event) => {
+    const archiveButton = event.target.closest("[data-notification-archive]");
+    if (!archiveButton) return;
     event.preventDefault();
     event.stopPropagation();
-
-    const item = markButton.closest("[data-notification-item]");
+    const item = archiveButton.closest("[data-notification-item]");
     const key = item?.dataset.notificationKey;
-    if (!item || !key || !markUrl || markButton.disabled) {
-      return;
-    }
-
-    markButton.disabled = true;
-
+    if (!item || !key || !archiveUrl || archiveButton.disabled) return;
+    archiveButton.disabled = true;
     try {
-      const response = await fetch(markUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCsrfToken(),
-        },
-        body: JSON.stringify({ key }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Falha ao atualizar notificação.");
+      const payload = await postJson(archiveUrl, { key });
+      // Remove todas as ocorrências do mesmo key (pode estar em Resumo + Recentes)
+      panel
+        .querySelectorAll(`[data-notification-key="${CSS.escape(key)}"]`)
+        .forEach((node) => node.remove());
+      if (payload && typeof payload.unread_count === "number") {
+        setBadgeCount(payload.unread_count);
       }
-
-      const payload = await response.json();
-      item.remove();
-      updateUnreadState(payload.unread_count ?? 0);
       ensureEmptyState();
     } catch (error) {
-      markButton.disabled = false;
+      archiveButton.disabled = false;
+      console.error(error);
+    }
+  });
+
+  // Marcar todas como lidas
+  panel.addEventListener("click", async (event) => {
+    const markAllButton = event.target.closest("[data-notification-mark-all]");
+    if (!markAllButton) return;
+    event.preventDefault();
+    if (markAllButton.disabled || !markAllUrl) return;
+    markAllButton.disabled = true;
+    try {
+      await postJson(markAllUrl, {});
+      panel
+        .querySelectorAll("[data-notification-item]")
+        .forEach((node) => node.remove());
+      // Esconde também os grupos (já não há itens)
+      panel
+        .querySelectorAll(".admin-notif__groups li")
+        .forEach((node) => node.remove());
+      setBadgeCount(0);
+      ensureEmptyState();
+    } catch (error) {
+      markAllButton.disabled = false;
       console.error(error);
     }
   });

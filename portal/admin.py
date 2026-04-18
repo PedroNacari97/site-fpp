@@ -1,6 +1,16 @@
 from django.contrib import admin
 
-from .models import Fonte, JobExecucao, LeadAlertaEmail, MateriaBruta, NoticiaPublicada
+from .models import (
+    Fonte,
+    JobExecucao,
+    LeadAlertaEmail,
+    MateriaBruta,
+    NoticiaPublicada,
+    OptInAlertaPassagem,
+    OptInArtigoNovo,
+    PortalUser,
+    ProgressoArtigo,
+)
 
 
 @admin.register(Fonte)
@@ -56,3 +66,85 @@ class LeadAlertaEmailAdmin(admin.ModelAdmin):
         "criado_em",
         "atualizado_em",
     )
+
+
+@admin.register(PortalUser)
+class PortalUserAdmin(admin.ModelAdmin):
+    list_display = (
+        "email",
+        "nome",
+        "email_verificado",
+        "ativo",
+        "criado_em",
+        "ultimo_login_em",
+    )
+    list_filter = ("ativo", "email_verificado")
+    search_fields = ("email", "nome", "google_sub")
+    readonly_fields = (
+        "google_sub",
+        "senha_hash",
+        "ip_cadastro",
+        "user_agent_cadastro",
+        "source_environment",
+        "source_host",
+        "criado_em",
+        "atualizado_em",
+        "ultimo_login_em",
+        "ultimo_login_ip",
+    )
+
+
+class _OptInAdminBase(admin.ModelAdmin):
+    list_display = ("user", "email", "ativo", "aceito_em", "cancelado_em", "aceite_versao")
+    list_filter = ("ativo", "aceite_versao", "motivo_cancelamento")
+    search_fields = ("user__email", "user__nome", "email", "token_unsubscribe")
+    readonly_fields = (
+        "user",
+        "email",
+        "aceito_em",
+        "aceito_ip",
+        "aceito_user_agent",
+        "aceite_versao",
+        "aceite_hash_documento",
+        "token_unsubscribe",
+        "cancelado_em",
+        "cancelado_ip",
+        "motivo_cancelamento",
+        "criado_em",
+        "atualizado_em",
+    )
+
+
+@admin.register(OptInAlertaPassagem)
+class OptInAlertaPassagemAdmin(_OptInAdminBase):
+    pass
+
+
+@admin.register(OptInArtigoNovo)
+class OptInArtigoNovoAdmin(_OptInAdminBase):
+    pass
+
+
+@admin.register(ProgressoArtigo)
+class ProgressoArtigoAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "artigo",
+        "progresso_percentual",
+        "lido_em",
+        "ultima_visita_em",
+    )
+    list_filter = ("lido_em",)
+    search_fields = (
+        "user__email",
+        "user__nome",
+        "artigo__titulo",
+        "artigo__slug",
+    )
+    readonly_fields = (
+        "user",
+        "artigo",
+        "primeira_visita_em",
+        "ultima_visita_em",
+    )
+    list_select_related = ("user", "artigo", "artigo__modulo")

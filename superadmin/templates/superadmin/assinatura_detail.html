@@ -1,0 +1,101 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Assinatura de {{ assinatura.empresa.nome }} — Painel NCfly{% endblock %}
+{% block page_title %}{{ assinatura.empresa.nome }} — Assinatura{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+
+    {# Cabeçalho da assinatura #}
+    <section class="card p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="space-y-1">
+            <div class="text-xs uppercase tracking-wide text-slate-500">Empresa</div>
+            <h2 class="text-xl font-semibold text-slate-900">{{ assinatura.empresa.nome }}</h2>
+            <div class="text-sm text-slate-600">Plano: <strong>{{ assinatura.plano.nome }}</strong> (R$ {{ assinatura.plano.preco_mensal|floatformat:2 }}/mês)</div>
+            <div class="mt-2">
+                {% if assinatura.status == 'ativa' %}<span class="badge badge-green">Ativa</span>
+                {% elif assinatura.status == 'trial' %}<span class="badge badge-yellow">Trial</span>
+                {% elif assinatura.status == 'inadimplente' %}<span class="badge badge-red">Inadimplente</span>
+                {% elif assinatura.status == 'suspensa' %}<span class="badge badge-red">Suspensa</span>
+                {% else %}<span class="badge badge-gray">{{ assinatura.get_status_display }}</span>{% endif %}
+            </div>
+        </div>
+        <div>
+            <a href="{% url 'superadmin_assinaturas_list' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+    </section>
+
+    {# Mudanca de status #}
+    {% if transicoes_permitidas %}
+    <section class="card p-5" aria-label="Mudar status">
+        <h3 class="text-sm font-semibold text-slate-700 mb-3">Alterar status</h3>
+        <form method="post" action="{% url 'superadmin_assinatura_status_change' assinatura.pk %}" class="flex flex-wrap gap-3 items-end">
+            {% csrf_token %}
+            <div>
+                <label for="novo_status">Novo status</label>
+                <select id="novo_status" name="novo_status" required>
+                    <option value="">Selecione...</option>
+                    {% for opt in transicoes_permitidas %}
+                    <option value="{{ opt }}">{{ opt|capfirst }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Aplicar</button>
+            <p class="text-xs text-slate-500 w-full mt-1">A ação será registrada em log com timestamp e usuário.</p>
+        </form>
+    </section>
+    {% else %}
+    <section class="card p-5 text-sm text-slate-600">Esta assinatura está em estado terminal. Nenhuma transição possível.</section>
+    {% endif %}
+
+    {# Meta #}
+    <section class="card p-5" aria-label="Informações da assinatura">
+        <h3 class="text-sm font-semibold text-slate-700 mb-3">Informações</h3>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+            <div><dt class="text-xs text-slate-500">Data de início</dt><dd class="text-slate-800">{{ assinatura.data_inicio|date:"d/m/Y H:i"|default:"—" }}</dd></div>
+            <div><dt class="text-xs text-slate-500">Fim do trial</dt><dd class="text-slate-800">{{ assinatura.trial_fim|date:"d/m/Y H:i"|default:"—" }}</dd></div>
+            <div><dt class="text-xs text-slate-500">Próximo vencimento</dt><dd class="text-slate-800">{{ assinatura.data_vencimento|date:"d/m/Y H:i"|default:"—" }}</dd></div>
+            <div><dt class="text-xs text-slate-500">Cancelada em</dt><dd class="text-slate-800">{{ assinatura.cancelada_em|date:"d/m/Y H:i"|default:"—" }}</dd></div>
+            <div><dt class="text-xs text-slate-500">Vendedor ref.</dt><dd class="text-slate-800">{{ assinatura.ref_vendedor|default:"—" }}</dd></div>
+            <div><dt class="text-xs text-slate-500">Gateway subscription</dt><dd class="text-slate-800 font-mono text-xs break-all">{{ assinatura.gateway_subscription_id|default:"—" }}</dd></div>
+            <div><dt class="text-xs text-slate-500">Gateway customer</dt><dd class="text-slate-800 font-mono text-xs break-all">{{ assinatura.gateway_customer_id|default:"—" }}</dd></div>
+        </dl>
+    </section>
+
+    {# Historico de pagamentos #}
+    <section class="card overflow-hidden" aria-label="Histórico de pagamentos">
+        <div class="p-4 border-b border-slate-100">
+            <h3 class="text-sm font-semibold text-slate-700">Histórico de pagamentos</h3>
+        </div>
+        <table class="w-full text-sm">
+            <thead class="table-header text-xs text-slate-500 uppercase">
+                <tr>
+                    <th class="px-4 py-3 text-left">Data</th>
+                    <th class="px-4 py-3 text-left">Método</th>
+                    <th class="px-4 py-3 text-right">Valor</th>
+                    <th class="px-4 py-3 text-center">Status</th>
+                    <th class="px-4 py-3 text-left">Gateway ref.</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pagamentos %}
+                <tr class="border-t border-slate-50">
+                    <td class="px-4 py-2 text-xs text-slate-500">{{ p.criado_em|date:"d/m/Y H:i" }}</td>
+                    <td class="px-4 py-2 text-slate-600">{{ p.get_metodo_display|default:"—" }}</td>
+                    <td class="px-4 py-2 text-right font-mono">R$ {{ p.valor|floatformat:2 }}</td>
+                    <td class="px-4 py-2 text-center">
+                        {% if p.status == 'confirmado' %}<span class="badge badge-green">Confirmado</span>
+                        {% elif p.status == 'pendente' %}<span class="badge badge-yellow">Pendente</span>
+                        {% elif p.status == 'falhou' %}<span class="badge badge-red">Falhou</span>
+                        {% else %}<span class="badge badge-gray">{{ p.get_status_display }}</span>{% endif %}
+                    </td>
+                    <td class="px-4 py-2 text-xs text-slate-500 font-mono break-all">{{ p.gateway_ref }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="px-4 py-6 text-center text-slate-500">Nenhum pagamento registrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+</div>
+{% endblock %}

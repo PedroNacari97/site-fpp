@@ -359,6 +359,38 @@ def _build_home_context(*, user, empresa=None, request=None):
         {"label": "Movimentacoes", "url": reverse("admin_contas"), "tone": "orange"},
     ]
 
+    # Ações primárias (cluster de CTAs no topo) — mantém home_actions (compat) e adiciona primary_actions com CTAs diretos
+    primary_actions = [
+        {
+            "label": "Nova cotação",
+            "short_label": "Cotação",
+            "url": reverse("admin_nova_cotacao_voo"),
+            "tone": "primary",
+            "icon": "cotacao",
+        },
+        {
+            "label": "Nova emissão",
+            "short_label": "Emissão",
+            "url": reverse("admin_nova_emissao"),
+            "tone": "secondary",
+            "icon": "emissao",
+        },
+        {
+            "label": "Novo cliente",
+            "short_label": "Cliente",
+            "url": reverse("admin_novo_cliente"),
+            "tone": "secondary",
+            "icon": "cliente",
+        },
+        {
+            "label": "Calculadora",
+            "short_label": "Calcular",
+            "url": reverse("admin_calculadora_cotacao"),
+            "tone": "ghost",
+            "icon": "calculadora",
+        },
+    ]
+
     latest_movements = []
     for emissao in emissoes_qs.order_by("-criado_em")[:4]:
         latest_movements.append(
@@ -400,17 +432,68 @@ def _build_home_context(*, user, empresa=None, request=None):
         for e in upcoming
     ]
 
+    # Counts usados tanto em hero quanto nos KPIs secundários (evita refazer queries)
+    clientes_ativos_count = clientes_qs.filter(ativo=True).count()
+    cotacoes_pendentes_count = cotacoes_qs.filter(status="pendente").count()
+    emissoes_hoje_count = emissoes_hoje.count()
+    emissoes_periodo_count = emissoes_periodo.count()
+
+    home_hero = {
+        "label": "Lucro no período",
+        "value": f"R$ {lucro_periodo:,.2f}",
+        "note": (
+            f"{emissoes_periodo_count} emissões · ticket médio R$ {ticket_medio:,.2f}"
+        ),
+        "url": reverse("admin_emissoes"),
+        "cta_label": "Ver emissões",
+        "tone": "profit" if lucro_periodo >= 0 else "loss",
+    }
+
+    home_secondary_kpis = [
+        {
+            "label": "Emissões hoje",
+            "value": emissoes_hoje_count,
+            "hint": "Bilhetes emitidos no dia",
+            "url": reverse("admin_emissoes"),
+            "tone": "blue",
+        },
+        {
+            "label": "Cotações pendentes",
+            "value": cotacoes_pendentes_count,
+            "hint": "Aguardando retorno ou revisão",
+            "url": reverse("admin_cotacoes_voo"),
+            "tone": "yellow",
+        },
+        {
+            "label": "Clientes ativos",
+            "value": clientes_ativos_count,
+            "hint": "Base ativa da operação",
+            "url": reverse("admin_clientes"),
+            "tone": "green",
+        },
+        {
+            "label": "Milhas no período",
+            "value": f"{milhas_periodo:,}".replace(",", "."),
+            "hint": "Consumo de pontos no recorte",
+            "url": reverse("admin_contas"),
+            "tone": "purple",
+        },
+    ]
+
     return {
         "home_period_label": f"{start_date.strftime('%d/%m/%Y')} a {today.strftime('%d/%m/%Y')}",
+        "home_hero": home_hero,
+        "home_secondary_kpis": home_secondary_kpis,
+        "home_primary_actions": primary_actions,
         "home_kpis": [
-            {"label": "Emissoes hoje", "value": emissoes_hoje.count()},
-            {"label": "Emissoes no periodo", "value": emissoes_periodo.count()},
+            {"label": "Emissoes hoje", "value": emissoes_hoje_count},
+            {"label": "Emissoes no periodo", "value": emissoes_periodo_count},
             {"label": "Lucro hoje", "value": f"R$ {lucro_hoje:,.2f}"},
             {"label": "Lucro no periodo", "value": f"R$ {lucro_periodo:,.2f}"},
             {"label": "Milhas no periodo", "value": milhas_periodo},
-            {"label": "Clientes ativos", "value": clientes_qs.filter(ativo=True).count()},
+            {"label": "Clientes ativos", "value": clientes_ativos_count},
             {"label": "Contas administrativas ativas", "value": contas_qs.filter(ativo=True).count()},
-            {"label": "Cotacoes pendentes", "value": cotacoes_qs.filter(status="pendente").count()},
+            {"label": "Cotacoes pendentes", "value": cotacoes_pendentes_count},
         ],
         "home_alerts": alerts,
         "home_actions": quick_actions,
