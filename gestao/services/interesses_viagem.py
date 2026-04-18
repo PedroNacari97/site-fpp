@@ -68,7 +68,7 @@ def match_interesse_viagem(alerta: AlertaViagem, interesse: InteresseViagemClien
 
     comparisons = [
         ("continente", alerta.continente, interesse.continente, "Continente"),
-        ("pais", alerta.pais, interesse.pais, "Pais"),
+        ("pais", alerta.pais, interesse.pais, "País"),
         ("cidade_destino", alerta.cidade_destino, interesse.cidade_destino, "Cidade"),
         ("origem", alerta.origem, interesse.origem, "Origem"),
         ("destino", alerta.destino, interesse.destino, "Destino"),
@@ -89,14 +89,14 @@ def match_interesse_viagem(alerta: AlertaViagem, interesse: InteresseViagemClien
         expected = {int(month) for month in interesse.meses_ida}
         if not months.intersection(expected):
             return False, []
-        reasons.append("Mes de ida")
+        reasons.append("Mês de ida")
 
     if interesse.meses_volta:
         months = _month_numbers(alerta.datas_volta)
         expected = {int(month) for month in interesse.meses_volta}
         if not months.intersection(expected):
             return False, []
-        reasons.append("Mes de volta")
+        reasons.append("Mês de volta")
 
     if interesse.dias_ida:
         days = _day_numbers(alerta.datas_ida)

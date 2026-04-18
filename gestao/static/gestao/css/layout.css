@@ -554,7 +554,7 @@ span {
 
 /* ── Breadcrumbs ── */
 .admin-breadcrumb {
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .admin-breadcrumb ol {

@@ -64,10 +64,11 @@
 
 .miles-dashboard__summary-card {
   min-width: 183px;
-  padding: 14px 20px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 6px;
+  justify-content: center;
 }
 
 .miles-dashboard__summary-label,
@@ -75,7 +76,7 @@
   margin: 0;
   font-size: 12px;
   line-height: 16px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--dashboard-text-muted);
   font-weight: 600;
@@ -83,8 +84,9 @@
 
 .miles-dashboard__summary-value {
   margin: 0;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 26px;
+  line-height: 1.1;
+  font-weight: 700;
   color: var(--dashboard-text);
 }
 
@@ -184,20 +186,20 @@
 }
 
 .miles-dashboard__card {
-  padding: 16px 18px;
+  padding: 14px 16px;
   min-width: 0;
 }
 
 .miles-dashboard__metric-value {
-  margin-top: 10px;
-  font-size: 24px;
-  line-height: 1.15;
+  margin-top: 4px;
+  font-size: 26px;
+  line-height: 1.1;
   font-weight: 700;
   color: var(--dashboard-text);
 }
 
 .miles-dashboard__metric-note {
-  margin: 12px 0 0;
+  margin: 6px 0 0;
   font-size: 12px;
   line-height: 16px;
   color: var(--dashboard-text-muted);

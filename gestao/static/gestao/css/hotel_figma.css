@@ -106,14 +106,18 @@
   border: 1px solid #1e2939;
   border-radius: 14px;
   background: #1a2332;
-  padding: 20px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
 }
 
 .hotel-page__stat-label {
-  margin: 0 0 12px;
+  margin: 0;
   color: #6a7282;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.08em;
   line-height: 16px;
   text-transform: uppercase;
@@ -122,9 +126,9 @@
 .hotel-page__stat-value {
   margin: 0;
   color: #ffffff;
-  font-size: 32px;
-  font-weight: 600;
-  line-height: 1;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
 }
 
 .hotel-page__table-card {

@@ -5,7 +5,7 @@ from django.db.models import Q, Sum, Case, When, DecimalField, Value
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, models, transaction
 from django.urls import reverse
 from django.utils import timezone
 
@@ -20,6 +20,7 @@ from ..forms import (
     CotacaoVooForm,
     PassageiroFrequenteForm,
     InteresseViagemClienteForm,
+    CartaoClienteForm,
 )
 from ..models import (
     Cliente,
@@ -36,6 +37,9 @@ from ..models import (
     AcessoClienteLog,
     PassageiroFrequente,
     InteresseViagemCliente,
+    InteresseViagemMatch,
+    CartaoCliente,
+    ProgramaSalaVip,
 )
 from gestao.utils import generate_unique_username, sync_cliente_activation
 from gestao.services.dashboard import (
@@ -68,8 +72,8 @@ MONTH_LABELS = {
 }
 
 SEMESTER_LABELS = {
-    1: "1o semestre",
-    2: "2o semestre",
+    1: "1º semestre",
+    2: "2º semestre",
 }
 
 
@@ -366,7 +370,7 @@ def visualizar_cliente(request, cliente_id):
     active_client_tab = request.GET.get("tab", "passageiros")
     if active_client_tab == "programas":
         active_client_tab = "contas"
-    if active_client_tab not in {"passageiros", "interesses", "cotacoes", "contas", "emissoes"}:
+    if active_client_tab not in {"passageiros", "interesses", "cotacoes", "contas", "emissoes", "cartoes"}:
         active_client_tab = "passageiros"
     context = build_operational_dashboard_context(
         user=request.user,
@@ -377,7 +381,9 @@ def visualizar_cliente(request, cliente_id):
         selected_cidade=request.GET.get("cidade"),
     )
     passageiros = cliente.passageiros_frequentes.all().order_by("nome")
-    interesses_viagem = cliente.interesses_viagem.all().order_by("-criado_em")
+    interesses_viagem = cliente.interesses_viagem.annotate(
+        _matches_count=models.Count("matches_alerta")
+    ).order_by("-criado_em")
     cotacoes_cliente = (
         CotacaoVoo.objects.filter(cliente=cliente)
         .select_related("origem", "destino", "programa")
@@ -458,7 +464,7 @@ def visualizar_cliente(request, cliente_id):
         if interesse.cidade_destino:
             criteria.append(interesse.cidade_destino)
         if interesse.origem:
-            criteria.append(f"Saida {interesse.origem}")
+            criteria.append(f"Saída {interesse.origem}")
         if interesse.destino:
             criteria.append(f"Chegada {interesse.destino}")
 
@@ -517,12 +523,13 @@ def visualizar_cliente(request, cliente_id):
         interest_cards.append(
             {
                 "id": interesse.id,
-                "nome": interesse.nome or "Interesse sem titulo",
+                "nome": interesse.nome or "Interesse sem título",
                 "criterios": criteria or ["Qualquer destino e rota"],
                 "preferencias": preferences or ["Qualquer programa, companhia e classe"],
-                "janelas": time_windows or [{"label": "Janela", "items": ["Sem restricao de datas"]}],
+                "janelas": time_windows or [{"label": "Janela", "items": ["Sem restrição de datas"]}],
                 "status_label": "Ativo" if interesse.ativo else "Inativo",
                 "status_tone": "active" if interesse.ativo else "inactive",
+                "matches_count": getattr(interesse, "_matches_count", 0),
             }
         )
 
@@ -631,6 +638,70 @@ def visualizar_cliente(request, cliente_id):
             interesse.delete()
             messages.success(request, "Interesse de viagem removido com sucesso.")
             return _redirect_tab("interesses")
+        elif action == "add_cartao":
+            cartao_form = CartaoClienteForm(request.POST, cliente=cliente)
+            if cartao_form.is_valid():
+                cartao = cartao_form.save(commit=False)
+                cartao.cliente = cliente
+                cartao.save()
+                programas_json = cartao_form.cleaned_data.get("programas_sala_vip_json", "")
+                if programas_json:
+                    try:
+                        programas_list = json.loads(programas_json)
+                    except (json.JSONDecodeError, TypeError):
+                        programas_list = []
+                    for prog in programas_list:
+                        if isinstance(prog, dict) and prog.get("nome", "").strip():
+                            ProgramaSalaVip.objects.create(
+                                cartao=cartao,
+                                nome=prog["nome"].strip(),
+                                acessos_titular=int(prog.get("acessos_titular", 0)),
+                                acessos_convidados=int(prog.get("acessos_convidados", 0)),
+                            )
+                messages.success(request, "Cartao adicionado com sucesso.")
+                return _redirect_tab("cartoes")
+        elif action == "delete_cartao":
+            cartao = get_object_or_404(CartaoCliente, id=request.POST.get("cartao_id"), cliente=cliente)
+            cartao.delete()
+            messages.success(request, "Cartao removido com sucesso.")
+            return _redirect_tab("cartoes")
+
+    if "cartao_form" not in locals():
+        cartao_form = CartaoClienteForm(cliente=cliente)
+
+    # Build card list for cartoes tab
+    bandeira_labels = dict(CartaoCliente.BANDEIRA_CHOICES)
+    categoria_labels = dict(CartaoCliente.CATEGORIA_CHOICES)
+    bandeira_icons = {
+        "visa": "V", "mastercard": "M", "elo": "E", "amex": "A",
+        "hipercard": "H", "diners": "D", "discover": "Di", "outro": "?",
+    }
+    cartoes_qs = (
+        CartaoCliente.objects.filter(cliente=cliente)
+        .select_related("passageiro_frequente")
+        .prefetch_related("programas_sala_vip")
+        .order_by("-criado_em")
+    )
+    cartao_cards = []
+    for c in cartoes_qs:
+        cartao_cards.append({
+            "id": c.id,
+            "bandeira": c.bandeira,
+            "bandeira_label": bandeira_labels.get(c.bandeira, c.bandeira),
+            "bandeira_icon": bandeira_icons.get(c.bandeira, "?"),
+            "categoria_label": categoria_labels.get(c.categoria, c.categoria),
+            "banco": c.banco,
+            "titular": str(c.passageiro_frequente.nome) if c.passageiro_frequente else str(cliente),
+            "programas_vip": [
+                {
+                    "nome": p.nome,
+                    "acessos_titular_display": p.acessos_titular_display,
+                    "acessos_convidados_display": p.acessos_convidados_display,
+                }
+                for p in c.programas_sala_vip.all()
+            ],
+            "observacoes": c.observacoes or "",
+        })
 
     context.update(
         {
@@ -647,12 +718,15 @@ def visualizar_cliente(request, cliente_id):
             "detail_kpis": detail_kpis,
             "cliente_back_url": reverse("admin_clientes"),
             "active_client_tab": active_client_tab,
+            "cartao_form": cartao_form,
+            "cartao_cards": cartao_cards,
             "client_tab_urls": {
                 "passageiros": _tab_url("passageiros"),
                 "interesses": _tab_url("interesses"),
                 "cotacoes": _tab_url("cotacoes"),
                 "contas": _tab_url("contas"),
                 "emissoes": _tab_url("emissoes"),
+                "cartoes": _tab_url("cartoes"),
             },
             "cotacao_rows": cotacao_rows,
             "conta_rows": conta_rows,

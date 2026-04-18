@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}Cliente {{ cliente_obj }}{% endblock %}
 {% block header_title %}Painel do Cliente: {{ cliente_obj }}{% endblock %}
-{% block header_subtitle %}<span>Estatisticas do dashboard de numeros uteis e painel visual global.</span>{% endblock %}
+{% block header_subtitle %}<span>Estatísticas do dashboard de números úteis e painel visual global.</span>{% endblock %}
 {% block header_actions %}
 <a href="{% url 'admin_relatorio_cliente_pdf' cliente_obj.id %}" class="btn btn-primary" target="_blank">Relatório PDF</a>
 <a href="{{ cliente_back_url }}" class="btn btn-secondary">Voltar</a>
@@ -91,12 +91,13 @@
       {% endfor %}
     </section>
 
-    <nav class="detail-client__tabs" aria-label="Areas do cliente">
+    <nav class="detail-client__tabs" aria-label="Áreas do cliente">
       <a href="{{ client_tab_urls.passageiros }}" class="detail-client__tab {% if active_client_tab == 'passageiros' %}is-active{% endif %}">Passageiros frequentes</a>
       <a href="{{ client_tab_urls.interesses }}" class="detail-client__tab {% if active_client_tab == 'interesses' %}is-active{% endif %}">Interesses de viagem</a>
-      <a href="{{ client_tab_urls.cotacoes }}" class="detail-client__tab {% if active_client_tab == 'cotacoes' %}is-active{% endif %}">Cotacoes</a>
-      <a href="{{ client_tab_urls.contas }}" class="detail-client__tab {% if active_client_tab == 'contas' %}is-active{% endif %}">Contas Fidelidade</a>
-      <a href="{{ client_tab_urls.emissoes }}" class="detail-client__tab {% if active_client_tab == 'emissoes' %}is-active{% endif %}">Emissoes</a>
+      <a href="{{ client_tab_urls.cotacoes }}" class="detail-client__tab {% if active_client_tab == 'cotacoes' %}is-active{% endif %}">Cotações</a>
+      <a href="{{ client_tab_urls.contas }}" class="detail-client__tab {% if active_client_tab == 'contas' %}is-active{% endif %}">Contas fidelidade</a>
+      <a href="{{ client_tab_urls.emissoes }}" class="detail-client__tab {% if active_client_tab == 'emissoes' %}is-active{% endif %}">Emissões</a>
+      <a href="{{ client_tab_urls.cartoes }}" class="detail-client__tab {% if active_client_tab == 'cartoes' %}is-active{% endif %}">Cartões</a>
     </nav>
 
     <section class="detail-client__panel detail-client__tab-panel" {% if active_client_tab != 'passageiros' %}hidden{% endif %}>
@@ -111,7 +112,7 @@
             <input type="hidden" name="action" value="add_passageiro">
             {% if passageiro_form.errors %}
               <div class="detail-client__form-errors detail-client__form-span-full">
-                Corrija os campos destacados para salvar o passageiro.
+                Corrija os campos destacados para salvar o passageiro frequente.
               </div>
             {% endif %}
             <div class="detail-client__form-span-full">
@@ -143,7 +144,7 @@
               {{ passageiro_form.data_nascimento }}
             </div>
             <div class="detail-client__form-span-full">
-              <label for="{{ passageiro_form.relacao.id_for_label }}">Relacao</label>
+              <label for="{{ passageiro_form.relacao.id_for_label }}">Relação</label>
               {{ passageiro_form.relacao }}
             </div>
             <div class="detail-client__form-span-full">
@@ -196,7 +197,7 @@
                 <div class="detail-client__passenger-meta">
                   <div><span>CPF:</span><strong>{{ item.cpf }}</strong></div>
                   <div><span>Nascimento:</span><strong>{{ item.data_nascimento }}</strong></div>
-                  <div><span>Relacao:</span><strong>{{ item.relacao }}</strong></div>
+                  <div><span>Relação:</span><strong>{{ item.relacao }}</strong></div>
                 </div>
                 {# Formulário de edição inline #}
                 <div id="passenger-edit-{{ item.id }}" class="detail-client__passenger-edit-form" style="display:none;">
@@ -248,7 +249,7 @@
                 </div>
               </article>
             {% empty %}
-              <div class="detail-client__empty">Nenhum passageiro frequente cadastrado ainda.</div>
+              <div class="detail-client__empty">Nenhum passageiro frequente cadastrado.</div>
             {% endfor %}
           </div>
         </article>
@@ -268,126 +269,89 @@
       <div class="detail-client__passengers-grid">
         <article class="detail-client__passenger-column">
           <h3 class="detail-client__section-label">Cadastrar interesse</h3>
-          <form method="post" class="detail-client__interest-form">
+          <form method="post" class="detail-client__passenger-form">
             {% csrf_token %}
             <input type="hidden" name="action" value="add_interesse_viagem">
             {% if interesse_viagem_form.errors %}
-              <div class="detail-client__form-errors">
-                Corrija os campos destacados para salvar o interesse.
+              <div class="detail-client__form-errors detail-client__form-span-full">
+                Corrija os campos destacados para salvar o interesse de viagem.
               </div>
             {% endif %}
+            <div class="detail-client__form-span-full">
+              <label for="{{ interesse_viagem_form.nome.id_for_label }}">Nome do interesse</label>
+              {{ interesse_viagem_form.nome }}
+            </div>
 
-            <section class="detail-client__interest-block">
-              <div class="detail-client__interest-block-head">
-                <h4>Resumo do interesse</h4>
-                <p>Use um nome interno para organizar os perfis de viagem do cliente.</p>
-              </div>
-              <div class="detail-client__interest-grid detail-client__interest-grid--single">
-                <div>
-                  <label for="{{ interesse_viagem_form.nome.id_for_label }}">Nome</label>
-                  {{ interesse_viagem_form.nome }}
-                </div>
-                <label class="detail-client__toggle-field" for="{{ interesse_viagem_form.ativo.id_for_label }}">
-                  {{ interesse_viagem_form.ativo }}
-                  <span>Interesse ativo</span>
-                </label>
-              </div>
-            </section>
-
-            <section class="detail-client__interest-block">
-              <div class="detail-client__interest-block-head">
-                <h4>Destino e rota</h4>
-                <p>Voce pode combinar filtros amplos, como continente, com pontos especificos, como IATA.</p>
-              </div>
-              <div class="detail-client__interest-grid">
-                <div>
-                  <label for="{{ interesse_viagem_form.continente.id_for_label }}">Continente</label>
-                  {{ interesse_viagem_form.continente }}
-                </div>
-                <div>
-                  <label for="{{ interesse_viagem_form.pais.id_for_label }}">Pais</label>
-                  {{ interesse_viagem_form.pais }}
-                </div>
-                <div>
-                  <label for="{{ interesse_viagem_form.cidade_destino.id_for_label }}">Cidade de destino</label>
-                  {{ interesse_viagem_form.cidade_destino }}
-                </div>
-                <div>
-                  <label for="{{ interesse_viagem_form.destino.id_for_label }}">Aeroporto de destino</label>
-                  {{ interesse_viagem_form.destino }}
-                </div>
-                <div class="detail-client__interest-grid-span">
-                  <label for="{{ interesse_viagem_form.origem.id_for_label }}">Aeroporto de origem</label>
-                  {{ interesse_viagem_form.origem }}
-                </div>
-              </div>
-            </section>
-
-            <section class="detail-client__interest-block">
-              <div class="detail-client__interest-block-head">
-                <h4>Preferencias de emissao</h4>
-                <p>Trave programa, companhia e cabine apenas quando fizer sentido para o cliente.</p>
-              </div>
-              <div class="detail-client__interest-grid">
-                <div>
-                  <label for="{{ interesse_viagem_form.classe.id_for_label }}">Classe</label>
-                  {{ interesse_viagem_form.classe }}
-                </div>
-                <div>
-                  <label for="{{ interesse_viagem_form.programa_fidelidade.id_for_label }}">Programa</label>
-                  {{ interesse_viagem_form.programa_fidelidade }}
-                </div>
-                <div class="detail-client__interest-grid-span">
-                  <label for="{{ interesse_viagem_form.companhia_aerea.id_for_label }}">Companhia aerea</label>
-                  {{ interesse_viagem_form.companhia_aerea }}
-                </div>
-              </div>
-            </section>
-
-            <section class="detail-client__interest-block">
-              <div class="detail-client__interest-block-head">
-                <h4>Janela de ida</h4>
-                <p>Voce pode cruzar mes, dia do mes e semestre. Tudo que for preenchido vira criterio do match.</p>
-              </div>
-              <div class="detail-client__interest-grid detail-client__interest-grid--three">
-                <div>
-                  <label for="{{ interesse_viagem_form.meses_ida.id_for_label }}">{{ interesse_viagem_form.meses_ida.label }}</label>
-                  {{ interesse_viagem_form.meses_ida }}
-                </div>
-                <div>
-                  <label for="{{ interesse_viagem_form.dias_ida.id_for_label }}">{{ interesse_viagem_form.dias_ida.label }}</label>
-                  {{ interesse_viagem_form.dias_ida }}
-                </div>
-                <div>
-                  <label for="{{ interesse_viagem_form.semestres_ida.id_for_label }}">{{ interesse_viagem_form.semestres_ida.label }}</label>
-                  {{ interesse_viagem_form.semestres_ida }}
-                </div>
-              </div>
-            </section>
-
-            <section class="detail-client__interest-block">
-              <div class="detail-client__interest-block-head">
-                <h4>Janela de volta</h4>
-                <p>Preencha a volta apenas quando o retorno tambem fizer parte do interesse.</p>
-              </div>
-              <div class="detail-client__interest-grid detail-client__interest-grid--three">
-                <div>
-                  <label for="{{ interesse_viagem_form.meses_volta.id_for_label }}">{{ interesse_viagem_form.meses_volta.label }}</label>
-                  {{ interesse_viagem_form.meses_volta }}
-                </div>
-                <div>
-                  <label for="{{ interesse_viagem_form.dias_volta.id_for_label }}">{{ interesse_viagem_form.dias_volta.label }}</label>
-                  {{ interesse_viagem_form.dias_volta }}
-                </div>
-                <div>
-                  <label for="{{ interesse_viagem_form.semestres_volta.id_for_label }}">{{ interesse_viagem_form.semestres_volta.label }}</label>
-                  {{ interesse_viagem_form.semestres_volta }}
-                </div>
-              </div>
-            </section>
-
+            <div class="detail-client__form-divider detail-client__form-span-full">Destino e rota</div>
             <div>
-              <button type="submit" class="detail-client__button detail-client__button--full">Salvar interesse</button>
+              <label for="{{ interesse_viagem_form.continente.id_for_label }}">Continente</label>
+              {{ interesse_viagem_form.continente }}
+            </div>
+            <div>
+              <label for="{{ interesse_viagem_form.pais.id_for_label }}">País</label>
+              {{ interesse_viagem_form.pais }}
+            </div>
+            <div>
+              <label for="{{ interesse_viagem_form.cidade_destino.id_for_label }}">Cidade de destino</label>
+              {{ interesse_viagem_form.cidade_destino }}
+            </div>
+            <div>
+              <label for="{{ interesse_viagem_form.destino.id_for_label }}">Aeroporto destino</label>
+              {{ interesse_viagem_form.destino }}
+            </div>
+            <div class="detail-client__form-span-full">
+              <label for="{{ interesse_viagem_form.origem.id_for_label }}">Aeroporto de origem</label>
+              {{ interesse_viagem_form.origem }}
+            </div>
+
+            <div class="detail-client__form-divider detail-client__form-span-full">Preferências</div>
+            <div>
+              <label for="{{ interesse_viagem_form.classe.id_for_label }}">Classe</label>
+              {{ interesse_viagem_form.classe }}
+            </div>
+            <div>
+              <label for="{{ interesse_viagem_form.programa_fidelidade.id_for_label }}">Programa</label>
+              {{ interesse_viagem_form.programa_fidelidade }}
+            </div>
+            <div class="detail-client__form-span-full">
+              <label for="{{ interesse_viagem_form.companhia_aerea.id_for_label }}">Companhia aérea</label>
+              {{ interesse_viagem_form.companhia_aerea }}
+            </div>
+
+            <div class="detail-client__form-divider detail-client__form-span-full">Janela de ida</div>
+            <div>
+              <label for="{{ interesse_viagem_form.meses_ida.id_for_label }}">{{ interesse_viagem_form.meses_ida.label }}</label>
+              {{ interesse_viagem_form.meses_ida }}
+            </div>
+            <div>
+              <label for="{{ interesse_viagem_form.dias_ida.id_for_label }}">{{ interesse_viagem_form.dias_ida.label }}</label>
+              {{ interesse_viagem_form.dias_ida }}
+            </div>
+            <div class="detail-client__form-span-full">
+              <label for="{{ interesse_viagem_form.semestres_ida.id_for_label }}">{{ interesse_viagem_form.semestres_ida.label }}</label>
+              {{ interesse_viagem_form.semestres_ida }}
+            </div>
+
+            <div class="detail-client__form-divider detail-client__form-span-full">Janela de volta</div>
+            <div>
+              <label for="{{ interesse_viagem_form.meses_volta.id_for_label }}">{{ interesse_viagem_form.meses_volta.label }}</label>
+              {{ interesse_viagem_form.meses_volta }}
+            </div>
+            <div>
+              <label for="{{ interesse_viagem_form.dias_volta.id_for_label }}">{{ interesse_viagem_form.dias_volta.label }}</label>
+              {{ interesse_viagem_form.dias_volta }}
+            </div>
+            <div class="detail-client__form-span-full">
+              <label for="{{ interesse_viagem_form.semestres_volta.id_for_label }}">{{ interesse_viagem_form.semestres_volta.label }}</label>
+              {{ interesse_viagem_form.semestres_volta }}
+            </div>
+
+            <div class="detail-client__form-span-full" style="display:flex;align-items:center;gap:12px;">
+              <button type="submit" class="detail-client__button" style="flex:1;">Salvar interesse</button>
+              <label class="detail-client__toggle-field" for="{{ interesse_viagem_form.ativo.id_for_label }}">
+                {{ interesse_viagem_form.ativo }}
+                <span>Ativo</span>
+              </label>
             </div>
           </form>
         </article>
@@ -396,58 +360,61 @@
           <h3 class="detail-client__section-label">Interesses cadastrados</h3>
           <div class="detail-client__passenger-list">
             {% for item in interest_cards %}
-              <article class="detail-client__passenger-card">
+              <article class="detail-client__passenger-card detail-client__interesse-card {% if item.status_tone == 'inactive' %}detail-client__interesse-card--inactive{% endif %}">
                 <div class="detail-client__passenger-card-head">
                   <div class="detail-client__passenger-card-main">
-                    <div class="detail-client__passenger-avatar detail-client__passenger-avatar--purple">IV</div>
+                    <div class="detail-client__interesse-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    </div>
                     <div class="detail-client__passenger-identity">
                       <strong>{{ item.nome }}</strong>
-                      <span>{{ item.status_label }}</span>
+                      <span class="detail-client__interesse-status detail-client__interesse-status--{{ item.status_tone }}">{{ item.status_label }}</span>
                     </div>
                   </div>
-                  <form method="post">
+                  <form method="post" style="display:inline;">
                     {% csrf_token %}
                     <input type="hidden" name="interesse_id" value="{{ item.id }}">
                     <button type="submit" name="action" value="delete_interesse_viagem" class="detail-client__remove-button" data-confirm-submit data-confirm-msg="Remover o interesse &quot;{{ item.nome }}&quot;? Esta ação não pode ser desfeita.">Remover</button>
                   </form>
                 </div>
 
-                <div class="detail-client__interest-card-group">
-                  <span class="detail-client__interest-card-label">Destino e rota</span>
-                  <div class="detail-client__tag-list">
-                    {% for criterio in item.criterios %}
-                      <span class="detail-client__tag">{{ criterio }}</span>
-                    {% endfor %}
+                <div class="detail-client__interesse-details">
+                  <div class="detail-client__interesse-row">
+                    <span class="detail-client__interesse-label">Rota</span>
+                    <div class="detail-client__tag-list">
+                      {% for criterio in item.criterios %}
+                        <span class="detail-client__tag">{{ criterio }}</span>
+                      {% endfor %}
+                    </div>
                   </div>
-                </div>
-
-                <div class="detail-client__interest-card-group">
-                  <span class="detail-client__interest-card-label">Preferencias</span>
-                  <div class="detail-client__tag-list">
-                    {% for preferencia in item.preferencias %}
-                      <span class="detail-client__tag detail-client__tag--secondary">{{ preferencia }}</span>
-                    {% endfor %}
+                  <div class="detail-client__interesse-row">
+                    <span class="detail-client__interesse-label">Preferências</span>
+                    <div class="detail-client__tag-list">
+                      {% for preferencia in item.preferencias %}
+                        <span class="detail-client__tag detail-client__tag--secondary">{{ preferencia }}</span>
+                      {% endfor %}
+                    </div>
                   </div>
-                </div>
-
-                <div class="detail-client__interest-card-group">
-                  <span class="detail-client__interest-card-label">Janela</span>
-                  <div class="detail-client__interest-window-list">
-                    {% for janela in item.janelas %}
-                      <div class="detail-client__interest-window-item">
-                        <strong>{{ janela.label }}</strong>
-                        <div class="detail-client__tag-list">
-                          {% for valor in janela.items %}
-                            <span class="detail-client__tag detail-client__tag--tertiary">{{ valor }}</span>
-                          {% endfor %}
-                        </div>
-                      </div>
-                    {% endfor %}
+                  {% for janela in item.janelas %}
+                  <div class="detail-client__interesse-row">
+                    <span class="detail-client__interesse-label">{{ janela.label }}</span>
+                    <div class="detail-client__tag-list">
+                      {% for valor in janela.items %}
+                        <span class="detail-client__tag detail-client__tag--tertiary">{{ valor }}</span>
+                      {% endfor %}
+                    </div>
                   </div>
+                  {% endfor %}
+                  {% if item.matches_count %}
+                  <div class="detail-client__interesse-row">
+                    <span class="detail-client__interesse-label">Matches</span>
+                    <span class="detail-client__interesse-match-badge">{{ item.matches_count }} alerta{{ item.matches_count|pluralize:"s" }}</span>
+                  </div>
+                  {% endif %}
                 </div>
               </article>
             {% empty %}
-              <div class="detail-client__empty">Nenhum interesse de viagem cadastrado.</div>
+              <div class="detail-client__empty">Nenhum interesse de viagem cadastrado ainda.</div>
             {% endfor %}
           </div>
         </article>
@@ -456,7 +423,7 @@
 
     <section class="detail-client__panel detail-client__panel--table detail-client__tab-panel" {% if active_client_tab != 'cotacoes' %}hidden{% endif %}>
       <header class="detail-client__panel-head">
-        <h2 class="detail-client__panel-title">Cotacoes do cliente</h2>
+        <h2 class="detail-client__panel-title">Cotações do cliente</h2>
       </header>
       <div class="detail-client__table-wrap">
         <table class="detail-client__table">
@@ -468,7 +435,7 @@
               <th>Classe</th>
               <th>Status</th>
               <th>Valor</th>
-              <th>Acoes</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -489,7 +456,7 @@
               </tr>
             {% empty %}
               <tr>
-                <td colspan="7" class="detail-client__table-empty">Nenhuma cotacao encontrada.</td>
+                <td colspan="7" class="detail-client__table-empty">Nenhuma cotação encontrada.</td>
               </tr>
             {% endfor %}
           </tbody>
@@ -499,7 +466,7 @@
 
     <section class="detail-client__panel detail-client__panel--table detail-client__tab-panel" {% if active_client_tab != 'contas' %}hidden{% endif %}>
       <header class="detail-client__panel-head">
-        <h2 class="detail-client__panel-title">Contas fidelidade do cliente</h2>
+        <h2 class="detail-client__panel-title">Contas de fidelidade do cliente</h2>
       </header>
       <div class="detail-client__table-wrap">
         <table class="detail-client__table">
@@ -508,10 +475,10 @@
               <th>Programa</th>
               <th>Saldo</th>
               <th>Valor pago</th>
-              <th>Valor medio</th>
+              <th>Valor médio</th>
               <th>Limite CPFs</th>
-              <th>Disponiveis</th>
-              <th>Acoes</th>
+              <th>Disponíveis</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -524,12 +491,12 @@
                 <td>{{ row.cpfs_total }}</td>
                 <td>{{ row.cpfs_disponiveis }}</td>
                 <td>
-                  <a href="{{ row.movimentacoes_url }}" class="detail-client__table-link">Movimentacoes</a>
+                  <a href="{{ row.movimentacoes_url }}" class="detail-client__table-link">Movimentações</a>
                 </td>
               </tr>
             {% empty %}
               <tr>
-                <td colspan="7" class="detail-client__table-empty">Nenhuma conta fidelidade encontrada.</td>
+                <td colspan="7" class="detail-client__table-empty">Nenhuma conta de fidelidade encontrada.</td>
               </tr>
             {% endfor %}
           </tbody>
@@ -539,7 +506,7 @@
 
     <section class="detail-client__panel detail-client__panel--table detail-client__tab-panel" {% if active_client_tab != 'emissoes' %}hidden{% endif %}>
       <header class="detail-client__panel-head">
-        <h2 class="detail-client__panel-title">Emissoes do cliente</h2>
+        <h2 class="detail-client__panel-title">Emissões do cliente</h2>
       </header>
       <div class="detail-client__table-wrap">
         <table class="detail-client__table">
@@ -565,13 +532,220 @@
               </tr>
             {% empty %}
               <tr>
-                <td colspan="6" class="detail-client__table-empty">Nenhuma emissao encontrada.</td>
+                <td colspan="6" class="detail-client__table-empty">Nenhuma emissão encontrada.</td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     </section>
+    <section class="detail-client__panel detail-client__tab-panel" {% if active_client_tab != 'cartoes' %}hidden{% endif %}>
+      <header class="detail-client__panel-head">
+        <h2 class="detail-client__panel-title">Cartões do cliente</h2>
+      </header>
+      <div class="detail-client__passengers-grid">
+        <article class="detail-client__passenger-column">
+          <h3 class="detail-client__section-label">Adicionar cartão</h3>
+          <form method="post" class="detail-client__passenger-form" id="cartao-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_cartao">
+            {% if cartao_form.errors %}
+              <div class="detail-client__form-errors detail-client__form-span-full">
+                Corrija os campos destacados para salvar o cartão.
+              </div>
+            {% endif %}
+            <div>
+              <label for="{{ cartao_form.bandeira.id_for_label }}">Bandeira</label>
+              {{ cartao_form.bandeira }}
+            </div>
+            <div>
+              <label for="{{ cartao_form.categoria.id_for_label }}">Categoria</label>
+              {{ cartao_form.categoria }}
+            </div>
+            <div>
+              <label for="{{ cartao_form.banco.id_for_label }}">Banco</label>
+              {{ cartao_form.banco }}
+            </div>
+            <div>
+              <label for="{{ cartao_form.passageiro_frequente.id_for_label }}">Titular do cartão</label>
+              {{ cartao_form.passageiro_frequente }}
+            </div>
+            <div class="detail-client__form-span-full">
+              <label>Programas de sala VIP</label>
+              <div class="detail-client__vip-programs" id="vip-programs-container">
+                <div class="detail-client__vip-programs-list" id="vip-programs-list"></div>
+                <div class="detail-client__vip-add-row-stack">
+                  <input type="text" id="vip-program-input" placeholder="Nome do programa (ex: Priority Pass)" class="detail-client__vip-input detail-client__vip-input--name-full">
+                  <div class="detail-client__vip-add-fields">
+                    <div class="detail-client__vip-field">
+                      <label for="vip-acessos-titular">Acessos titular</label>
+                      <input type="number" id="vip-acessos-titular" placeholder="Ilimitado" min="0" class="detail-client__vip-input detail-client__vip-input--num">
+                    </div>
+                    <div class="detail-client__vip-field">
+                      <label for="vip-acessos-convidados">Acessos convidados</label>
+                      <input type="number" id="vip-acessos-convidados" placeholder="Ilimitado" min="0" class="detail-client__vip-input detail-client__vip-input--num">
+                    </div>
+                    <button type="button" id="vip-program-add-btn" class="detail-client__button detail-client__button--small">+ Incluir programa</button>
+                  </div>
+                  <p class="detail-client__vip-hint">Adicione cada programa de sala VIP que o cartão oferece (ex: Priority Pass, Salas Bradesco). Deixe a quantidade vazia para acessos ilimitados.</p>
+                </div>
+              </div>
+              {{ cartao_form.programas_sala_vip_json }}
+            </div>
+            <div class="detail-client__form-span-full">
+              <label for="{{ cartao_form.observacoes.id_for_label }}">Observações</label>
+              {{ cartao_form.observacoes }}
+            </div>
+            <div class="detail-client__form-span-full">
+              <button type="submit" class="detail-client__button detail-client__button--full">Adicionar cartão</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="detail-client__passenger-column">
+          <h3 class="detail-client__section-label">Cartões cadastrados</h3>
+          <div class="detail-client__passenger-list">
+            {% for card in cartao_cards %}
+              <article class="detail-client__passenger-card detail-client__cartao-card" id="cartao-card-{{ card.id }}">
+                <div class="detail-client__passenger-card-head">
+                  <div class="detail-client__passenger-card-main">
+                    <div class="detail-client__cartao-icon detail-client__cartao-icon--{{ card.bandeira }}">
+                      <span>{{ card.bandeira_icon }}</span>
+                    </div>
+                    <div class="detail-client__passenger-identity">
+                      <strong>{{ card.bandeira_label }} {{ card.categoria_label }}</strong>
+                      <span>{{ card.banco }}</span>
+                    </div>
+                  </div>
+                  <div class="detail-client__passenger-actions">
+                    <form method="post" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="cartao_id" value="{{ card.id }}">
+                      <button type="submit" name="action" value="delete_cartao" class="detail-client__remove-button" data-confirm-submit data-confirm-msg="Remover o cartão {{ card.bandeira_label }} {{ card.categoria_label }} - {{ card.banco }}? Esta ação não pode ser desfeita.">Remover</button>
+                    </form>
+                  </div>
+                </div>
+                <div class="detail-client__cartao-details">
+                  <div class="detail-client__cartao-detail-row">
+                    <span>Titular:</span>
+                    <strong>{{ card.titular }}</strong>
+                  </div>
+                </div>
+                {% if card.programas_vip %}
+                <div class="detail-client__cartao-vip-section">
+                  <span class="detail-client__interest-card-label">Programas de sala VIP</span>
+                  {% for prog in card.programas_vip %}
+                    <div class="detail-client__vip-program-block">
+                      <strong class="detail-client__vip-program-nome">{{ prog.nome }}</strong>
+                      <div class="detail-client__vip-program-counts">
+                        <div class="detail-client__vip-count">
+                          <span class="detail-client__vip-count-label">Titular</span>
+                          <span class="detail-client__vip-count-value">{{ prog.acessos_titular_display }}</span>
+                        </div>
+                        <div class="detail-client__vip-count">
+                          <span class="detail-client__vip-count-label">Convidados</span>
+                          <span class="detail-client__vip-count-value">{{ prog.acessos_convidados_display }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+                {% if card.observacoes %}
+                <div class="detail-client__cartao-obs">
+                  <span>{{ card.observacoes }}</span>
+                </div>
+                {% endif %}
+              </article>
+            {% empty %}
+              <div class="detail-client__empty">Nenhum cartão cadastrado ainda.</div>
+            {% endfor %}
+          </div>
+        </article>
+      </div>
+    </section>
+
   </div>
 </div>
+
+<script>
+(function() {
+  var container = document.getElementById('vip-programs-container');
+  if (!container) return;
+  var list = document.getElementById('vip-programs-list');
+  var nameInput = document.getElementById('vip-program-input');
+  var titularInput = document.getElementById('vip-acessos-titular');
+  var convidadosInput = document.getElementById('vip-acessos-convidados');
+  var addBtn = document.getElementById('vip-program-add-btn');
+  var hiddenField = document.querySelector('[name="programas_sala_vip_json"]');
+
+  var programs = [];
+  // Initialize from existing JSON
+  try {
+    var initial = hiddenField && hiddenField.value ? JSON.parse(hiddenField.value) : [];
+    if (Array.isArray(initial)) programs = initial;
+  } catch(e) {}
+
+  function fmtAcessos(n) {
+    return n === -1 ? 'Ilimitado' : String(n);
+  }
+
+  function parseAcessos(val) {
+    var s = val.trim();
+    if (s === '') return -1;
+    var n = parseInt(s, 10);
+    return isNaN(n) ? -1 : n;
+  }
+
+  function render() {
+    list.innerHTML = '';
+    programs.forEach(function(prog, idx) {
+      var row = document.createElement('div');
+      row.className = 'detail-client__vip-tag-row';
+      row.innerHTML =
+        '<div class="detail-client__vip-tag-info">' +
+          '<strong>' + prog.nome + '</strong>' +
+          '<div class="detail-client__vip-tag-counts">' +
+            '<span>Titular: <strong>' + fmtAcessos(prog.acessos_titular) + '</strong></span>' +
+            '<span>Convidados: <strong>' + fmtAcessos(prog.acessos_convidados) + '</strong></span>' +
+          '</div>' +
+        '</div>' +
+        '<button type="button" data-idx="' + idx + '" class="detail-client__vip-tag-remove">&times;</button>';
+      list.appendChild(row);
+    });
+    if (hiddenField) hiddenField.value = JSON.stringify(programs);
+  }
+
+  addBtn.addEventListener('click', function() {
+    var nome = nameInput.value.trim();
+    if (!nome) return;
+    var exists = programs.some(function(p) { return p.nome === nome; });
+    if (exists) return;
+    programs.push({
+      nome: nome,
+      acessos_titular: parseAcessos(titularInput.value),
+      acessos_convidados: parseAcessos(convidadosInput.value)
+    });
+    render();
+    nameInput.value = '';
+    titularInput.value = '';
+    convidadosInput.value = '';
+    nameInput.focus();
+  });
+
+  nameInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); addBtn.click(); }
+  });
+
+  list.addEventListener('click', function(e) {
+    var btn = e.target.closest('.detail-client__vip-tag-remove');
+    if (btn) {
+      programs.splice(parseInt(btn.dataset.idx, 10), 1);
+      render();
+    }
+  });
+
+  render();
+})();
+</script>
 {% endblock %}

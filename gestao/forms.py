@@ -29,6 +29,8 @@ from .models import (
     AcompanhamentoPassagem,
     InteresseViagemCliente,
     DocumentoPlataforma,
+    CartaoCliente,
+    ProgramaSalaVip,
 )
 
 
@@ -807,8 +809,8 @@ class InteresseViagemClienteForm(forms.ModelForm):
     destino = forms.ChoiceField(required=False, choices=[])
     programa_fidelidade = forms.ChoiceField(required=False, choices=[])
     companhia_aerea = forms.ChoiceField(required=False, choices=[])
-    meses_ida = forms.ChoiceField(required=False, choices=[], label="Mes de ida")
-    meses_volta = forms.ChoiceField(required=False, choices=[], label="Mes de volta")
+    meses_ida = forms.ChoiceField(required=False, choices=[], label="Mês de ida")
+    meses_volta = forms.ChoiceField(required=False, choices=[], label="Mês de volta")
     dias_ida = forms.ChoiceField(required=False, choices=[], label="Dia de ida")
     dias_volta = forms.ChoiceField(required=False, choices=[], label="Dia de volta")
     semestres_ida = forms.ChoiceField(required=False, choices=[], label="Semestre de ida")
@@ -843,8 +845,8 @@ class InteresseViagemClienteForm(forms.ModelForm):
         continent_choices = [("", "Qualquer continente"), *AlertaViagem.CONTINENTE_CHOICES]
         self.fields["continente"].choices = continent_choices
         self.fields["classe"].choices = [("", "Qualquer classe"), *InteresseViagemCliente.CLASSE_CHOICES[1:]]
-        self.fields["meses_ida"].choices = [("", "Qualquer mes"), *MONTH_CHOICES]
-        self.fields["meses_volta"].choices = [("", "Qualquer mes"), *MONTH_CHOICES]
+        self.fields["meses_ida"].choices = [("", "Qualquer mês"), *MONTH_CHOICES]
+        self.fields["meses_volta"].choices = [("", "Qualquer mês"), *MONTH_CHOICES]
         self.fields["dias_ida"].choices = [("", "Qualquer dia"), *DAY_CHOICES]
         self.fields["dias_volta"].choices = [("", "Qualquer dia"), *DAY_CHOICES]
         self.fields["semestres_ida"].choices = [("", "Qualquer semestre"), *SEMESTER_CHOICES]
@@ -880,7 +882,7 @@ class InteresseViagemClienteForm(forms.ModelForm):
                 choices.append((current_value, current_value))
             self.fields[field_name].choices = [("", default_label), *choices]
 
-        _append_current_choice("pais", sorted(country_choices, key=lambda item: item[1]), "Qualquer pais")
+        _append_current_choice("pais", sorted(country_choices, key=lambda item: item[1]), "Qualquer país")
         _append_current_choice("cidade_destino", sorted(city_choices, key=lambda item: item[1]), "Qualquer cidade")
         _append_current_choice("origem", airport_choices, "Qualquer origem")
         _append_current_choice("destino", airport_choices, "Qualquer destino")
@@ -1896,3 +1898,42 @@ class DocumentoPlataformaForm(forms.ModelForm):
             field.widget.attrs["autocomplete"] = "off"
             if field_name in placeholders:
                 field.widget.attrs["placeholder"] = placeholders[field_name]
+
+
+class CartaoClienteForm(forms.ModelForm):
+    # JSON string: [{"nome":"Priority Pass","acessos_titular":4,"acessos_convidados":0},...]
+    programas_sala_vip_json = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(),
+    )
+
+    class Meta:
+        model = CartaoCliente
+        fields = [
+            "passageiro_frequente",
+            "bandeira",
+            "categoria",
+            "banco",
+            "observacoes",
+        ]
+        widgets = {
+            "observacoes": forms.Textarea(attrs={"rows": 2, "placeholder": "Observacoes sobre o cartao"}),
+            "banco": forms.TextInput(attrs={"placeholder": "Ex: Itau, Nubank, Bradesco"}),
+        }
+
+    def __init__(self, *args, cliente=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["bandeira"].widget.attrs["class"] = ""
+        self.fields["categoria"].widget.attrs["class"] = ""
+        if cliente:
+            self.fields["passageiro_frequente"].queryset = cliente.passageiros_frequentes.all()
+        else:
+            self.fields["passageiro_frequente"].queryset = PassageiroFrequente.objects.none()
+        self.fields["passageiro_frequente"].required = False
+        self.fields["passageiro_frequente"].empty_label = "Titular (cliente)"
+        if self.instance and self.instance.pk:
+            import json as _json
+            programas = list(
+                self.instance.programas_sala_vip.values("nome", "acessos_titular", "acessos_convidados")
+            )
+            self.initial["programas_sala_vip_json"] = _json.dumps(programas)

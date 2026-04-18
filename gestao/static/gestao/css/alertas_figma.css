@@ -53,8 +53,12 @@
 }
 
 .alerts-page__card {
-  padding: 20px;
-  min-height: 140px;
+  padding: 14px 16px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
 }
 
 .alerts-page__stat-head {
@@ -73,15 +77,15 @@
 }
 
 .alerts-page__stat-value {
-  margin: 12px 0 0;
-  font-size: 42px;
-  line-height: 1;
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.1;
   font-weight: 700;
 }
 
 .alerts-page__stat-note {
-  margin: 18px 0 0;
-  font-size: 13px;
+  margin: 0;
+  font-size: 12px;
   color: var(--alerts-text-muted);
 }
 
