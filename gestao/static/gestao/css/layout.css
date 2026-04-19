@@ -3,6 +3,9 @@ body {
   width: 100%;
   height: 100%;
   overflow-x: hidden;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+  touch-action: pan-y;
 }
 
 :root {

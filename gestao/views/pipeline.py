@@ -32,6 +32,19 @@ def _avatar_info(user):
     return {"iniciais": iniciais, "cor": cor}
 
 
+_TIPO_OPERACAO_BADGE = {
+    "venda_direta": {"label": "Venda direta", "tone": "blue"},
+    "intermediario": {"label": "Intermediario", "tone": "gold"},
+    "concierge": {"label": "Concierge", "tone": "purple"},
+    "emissor_parceiro": {"label": "Emissor parceiro", "tone": "green"},
+}
+
+
+def _tipo_operacao_badge(obj):
+    codigo = getattr(obj, "tipo_operacao", "") or "venda_direta"
+    return _TIPO_OPERACAO_BADGE.get(codigo) or {"label": codigo.replace("_", " ").title(), "tone": "blue"}
+
+
 def _cotacao_card(obj):
     cliente = getattr(obj, "cliente", None)
     operador_user = getattr(obj, "criado_por", None)
@@ -47,11 +60,23 @@ def _cotacao_card(obj):
         valor = emissao.valor_cobrado_cliente or emissao.valor_venda_final or emissao.valor_total_final or obj.valor_vista or obj.valor_passagem or 0
         loc_origem = getattr(e_origem, "iata", "") if e_origem else (getattr(origem, "iata", "") if origem else "\u2014")
         loc_destino = getattr(e_destino, "iata", "") if e_destino else (getattr(destino, "iata", "") if destino else "\u2014")
+        badge = _tipo_operacao_badge(emissao)
     else:
         data = obj.data_ida
         valor = obj.valor_vista or obj.valor_passagem or 0
         loc_origem = getattr(origem, "iata", "") if origem else "\u2014"
         loc_destino = getattr(destino, "iata", "") if destino else "\u2014"
+        badge = _tipo_operacao_badge(cliente) if cliente and getattr(cliente, "tipo_cliente", None) else {"label": "Pendente", "tone": "blue"}
+        if cliente and getattr(cliente, "tipo_cliente", ""):
+            tipo_cli = cliente.tipo_cliente
+            if tipo_cli == "concierge":
+                badge = {"label": "Concierge", "tone": "purple"}
+            elif tipo_cli == "intermediario":
+                badge = {"label": "Intermediario", "tone": "gold"}
+            elif tipo_cli == "conta_administrada":
+                badge = {"label": "Conta admin.", "tone": "green"}
+            else:
+                badge = {"label": "Passageiro direto", "tone": "blue"}
 
     return {
         "tipo": "cotacao",
@@ -64,6 +89,9 @@ def _cotacao_card(obj):
         "programa": str(obj.programa) if obj.programa_id else "",
         "avatar": _avatar_info(operador_user),
         "url_detalhe": reverse("admin_visualizar_cotacao_voo", args=(obj.id,)) if _has_url("admin_visualizar_cotacao_voo") else "#",
+        "tipo_op_label": badge["label"],
+        "tipo_op_tone": badge["tone"],
+        "convertida": bool(emissao and emissao.localizador),
     }
 
 
@@ -73,6 +101,7 @@ def _emissao_card(obj):
     origem = getattr(obj, "aeroporto_partida", None)
     destino = getattr(obj, "aeroporto_destino", None)
     valor = obj.valor_cobrado_cliente or obj.valor_venda_final or obj.valor_total_final or obj.valor_referencia or 0
+    badge = _tipo_operacao_badge(obj)
     return {
         "tipo": "emissao",
         "id": obj.id,
@@ -84,6 +113,9 @@ def _emissao_card(obj):
         "programa": str(obj.programa) if obj.programa_id else "",
         "avatar": _avatar_info(operador_user),
         "url_detalhe": reverse("admin_editar_emissao", args=(obj.id,)) if _has_url("admin_editar_emissao") else "#",
+        "tipo_op_label": badge["label"],
+        "tipo_op_tone": badge["tone"],
+        "convertida": False,
     }
 
 
@@ -143,6 +175,17 @@ def pipeline_view(request):
         status="emissao", emissao__isnull=False
     ).exclude(emissao__localizador="").filter(emissao__data_ida__lt=hoje).order_by("-emissao__data_ida")[:100]
     finalizada = [_cotacao_card(c) for c in finalizada_qs]
+
+    # Emissoes standalone (sem cotacao vinculada) entram nas colunas emitida/finalizada
+    emissoes_standalone = emissoes_base.filter(cotacaovoo__isnull=True).exclude(localizador="")
+    emitida_emissoes = emissoes_standalone.filter(data_ida__gte=hoje).order_by("-data_ida")[:100]
+    finalizada_emissoes = emissoes_standalone.filter(data_ida__lt=hoje).order_by("-data_ida")[:100]
+    emitida = emitida + [_emissao_card(e) for e in emitida_emissoes]
+    finalizada = finalizada + [_emissao_card(e) for e in finalizada_emissoes]
+
+    # Emissoes sem localizador sem cotacao entram em em_emissao
+    emissoes_em_preparacao = emissoes_base.filter(cotacaovoo__isnull=True).filter(localizador="").order_by("-criado_em")[:100]
+    em_emissao = em_emissao + [_emissao_card(e) for e in emissoes_em_preparacao]
 
     # Cancelada
     cancelada = [_cotacao_card(c) for c in cotacoes_base.filter(status="rejeitada").order_by("-criado_em")[:100]]

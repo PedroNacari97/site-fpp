@@ -29,10 +29,16 @@
         </div>
         <div class="pipeline-col__body" data-sortable>
             {% for card in col.cards %}
-            <div class="pipeline-card" data-tipo="{{ card.tipo }}" data-id="{{ card.id }}">
+            <div class="pipeline-card pipeline-card--{{ card.tipo_op_tone|default:"blue" }}" data-tipo="{{ card.tipo }}" data-id="{{ card.id }}">
                 <div class="pipeline-card__top">
                     <span class="pipeline-card__cliente">{{ card.cliente_nome }}</span>
                     <div class="pipeline-card__avatar" style="background:{{ card.avatar.cor }}">{{ card.avatar.iniciais }}</div>
+                </div>
+                <div class="pipeline-card__meta-row">
+                    {% if card.tipo_op_label %}<span class="pipeline-card__tipo-op pipeline-card__tipo-op--{{ card.tipo_op_tone }}">{{ card.tipo_op_label }}</span>{% endif %}
+                    {% if card.tipo == "emissao" %}<span class="pipeline-card__origin-tag pipeline-card__origin-tag--emissao">Emissao</span>
+                    {% elif card.convertida %}<span class="pipeline-card__origin-tag pipeline-card__origin-tag--convertida">Convertida</span>
+                    {% else %}<span class="pipeline-card__origin-tag pipeline-card__origin-tag--cotacao">Cotacao</span>{% endif %}
                 </div>
                 <div class="pipeline-card__route">
                     {{ card.origem }} &rarr; {{ card.destino }}

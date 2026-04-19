@@ -71,15 +71,21 @@
           {% for e in emissoes %}
             <tr>
               <td data-label="Cliente/Titular">
-                {% if e.cliente %}
-                  {{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}
-                {% elif e.conta_administrada %}
-                  {{ e.conta_administrada.nome }}
-                {% elif e.emissor_parceiro %}
-                  {{ e.emissor_parceiro.nome }}
-                {% else %}
-                  -
-                {% endif %}
+                <div class="emissions-page__cliente-cell">
+                  {% if e.cliente %}
+                    <strong>{{ e.cliente.usuario.get_full_name|default:e.cliente.usuario.username }}</strong>
+                    <small class="emissions-page__cliente-tipo emissions-page__cliente-tipo--{{ e.cliente.tipo_cliente|default:"passageiro_direto" }}">{{ e.cliente.get_tipo_cliente_display|default:"Passageiro direto" }}</small>
+                  {% elif e.conta_administrada %}
+                    <strong>{{ e.conta_administrada.nome }}</strong>
+                    <small class="emissions-page__cliente-tipo emissions-page__cliente-tipo--conta_administrada">Conta administrada</small>
+                  {% elif e.emissor_parceiro %}
+                    <strong>{{ e.emissor_parceiro.nome }}</strong>
+                    <small class="emissions-page__cliente-tipo emissions-page__cliente-tipo--emissor_parceiro">Emissor parceiro</small>
+                  {% else %}
+                    -
+                  {% endif %}
+                  {% if e.cotacao_origem %}<small class="emissions-page__cotacao-badge emissions-page__cotacao-badge--convertida" title="Convertida da cotacao #{{ e.cotacao_origem.id }}">⇄ De cotacao</small>{% endif %}
+                </div>
               </td>
               <td data-label="Programa">{{ e.programa|default:"-" }}</td>
               <td data-label="Origem">{{ e.aeroporto_partida|default:"-" }}</td>

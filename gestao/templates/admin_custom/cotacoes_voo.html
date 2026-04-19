@@ -48,7 +48,13 @@
                 <tbody>
                     {% for c in cotacoes %}
                     <tr>
-                        <td data-label="Cliente">{{ c.cliente.usuario.get_full_name|default:c.cliente.usuario.username|default:'-' }}</td>
+                        <td data-label="Cliente">
+                          <div class="emissions-page__cliente-cell">
+                            <strong>{{ c.cliente.usuario.get_full_name|default:c.cliente.usuario.username|default:'-' }}</strong>
+                            {% if c.cliente %}<small class="emissions-page__cliente-tipo emissions-page__cliente-tipo--{{ c.cliente.tipo_cliente|default:"passageiro_direto" }}">{{ c.cliente.get_tipo_cliente_display|default:"Passageiro direto" }}</small>{% endif %}
+                            {% if c.emissao_id %}<small class="emissions-page__cotacao-badge emissions-page__cotacao-badge--emitida">✓ Emitida</small>{% endif %}
+                          </div>
+                        </td>
                         <td data-label="Conta">{{ c.conta_administrada|default:'-' }}</td>
                         <td data-label="Programa">{{ c.programa|default:'-' }}</td>
                         <td data-label="Origem">{{ c.origem }}</td>

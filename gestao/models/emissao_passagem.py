@@ -247,3 +247,10 @@ class EmissaoPassagem(models.Model):
     def __str__(self):
         titular = self.cliente or self.conta_administrada
         return f"{titular} - {self.programa} - {self.data_ida}"
+
+    @property
+    def cotacao_origem(self):
+        try:
+            return self.cotacaovoo
+        except Exception:
+            return None

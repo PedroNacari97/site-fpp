@@ -151,6 +151,74 @@
   width: fit-content;
 }
 
+.pipeline-card__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.pipeline-card__tipo-op,
+.pipeline-card__origin-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.pipeline-card__tipo-op--blue {
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.pipeline-card__tipo-op--gold {
+  background: rgba(234, 179, 8, 0.12);
+  color: #fcd34d;
+  border: 1px solid rgba(234, 179, 8, 0.25);
+}
+
+.pipeline-card__tipo-op--purple {
+  background: rgba(139, 92, 246, 0.12);
+  color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.pipeline-card__tipo-op--green {
+  background: rgba(34, 197, 94, 0.12);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.pipeline-card__origin-tag--cotacao {
+  background: rgba(148, 163, 184, 0.1);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.pipeline-card__origin-tag--emissao {
+  background: rgba(34, 197, 94, 0.1);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.pipeline-card__origin-tag--convertida {
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+/* Variação de acento lateral do card baseado no tipo de operação */
+.pipeline-card--blue { border-left: 3px solid rgba(59, 130, 246, 0.4); }
+.pipeline-card--gold { border-left: 3px solid rgba(234, 179, 8, 0.4); }
+.pipeline-card--purple { border-left: 3px solid rgba(139, 92, 246, 0.4); }
+.pipeline-card--green { border-left: 3px solid rgba(34, 197, 94, 0.4); }
+
 .pipeline-card__bottom {
   display: flex;
   align-items: center;
