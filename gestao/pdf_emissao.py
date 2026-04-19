@@ -12,6 +12,7 @@ from gestao.services.empresa_contact import (
     build_empresa_contact_context,
     get_empresa_from_operational_record,
 )
+from gestao.utils import format_cpf_display
 
 def gerar_pdf_emissao(emissao):
     """
@@ -127,7 +128,7 @@ def gerar_pdf_emissao(emissao):
         getattr(getattr(emissao, 'cliente', None), 'usuario', None)
         and (emissao.cliente.usuario.get_full_name() or emissao.cliente.usuario.username)
     ) or "-"
-    cliente_cpf = getattr(getattr(emissao, 'cliente', None), 'cpf', None) or "-"
+    cliente_cpf = format_cpf_display(getattr(getattr(emissao, 'cliente', None), 'cpf', '') or "", fallback="-")
     cliente_data = [
         [Paragraph("NOME COMPLETO", estilo_label), Paragraph("CPF", estilo_label)],
         [Paragraph(cliente_nome, estilo_valor), Paragraph(cliente_cpf, estilo_valor)]
@@ -391,7 +392,7 @@ def gerar_pdf_emissao(emissao):
                     'Categoria', parent=estilo_valor, fontName='Helvetica-Bold', fontSize=10, textColor=cor_primaria)), ""])
                 for p in passageiros_qs:
                     nome = getattr(p, 'nome', '-') or '-'
-                    cpf = getattr(p, 'cpf', '-') or '-'
+                    cpf = format_cpf_display(getattr(p, 'cpf', '') or '', fallback='-')
                     passageiros_data.append([Paragraph(nome, estilo_valor), Paragraph(cpf, estilo_valor)])
 
     passageiros_table = Table(passageiros_data, colWidths=[100*mm, 60*mm])

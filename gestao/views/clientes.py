@@ -41,7 +41,7 @@ from ..models import (
     CartaoCliente,
     ProgramaSalaVip,
 )
-from gestao.utils import generate_unique_username, sync_cliente_activation
+from gestao.utils import format_cpf_display, generate_unique_username, sync_cliente_activation
 from gestao.services.dashboard import (
     build_operational_dashboard_context,
 )
@@ -444,12 +444,7 @@ def visualizar_cliente(request, cliente_id):
     )
 
     def _format_cpf(cpf_raw):
-        digits = "".join(filter(str.isdigit, cpf_raw or ""))
-        if len(digits) == 11 and not digits.startswith("9"):
-            return f"{digits[:3]}.{digits[3:6]}.{digits[6:9]}-{digits[9:]}"
-        if len(digits) == 11 and digits.startswith("9"):
-            return "--"
-        return cpf_raw or "--"
+        return format_cpf_display(cpf_raw or "", fallback="--")
 
     def _initials(nome):
         parts = [p[0].upper() for p in (nome or "").split()[:2] if p]

@@ -541,6 +541,18 @@
     return Object.keys(grouped).sort((a, b) => Number(a) - Number(b)).map((key) => grouped[key]);
   }
 
+  // Agrupa passageiros por categoria para que incrementar uma categoria
+  // nao reposicione dados de outra categoria em slots errados.
+  function groupSeedByCategoria(seed) {
+    const byCategoria = {};
+    (seed || []).forEach((item) => {
+      const cat = item?.categoria || "adulto";
+      byCategoria[cat] = byCategoria[cat] || [];
+      byCategoria[cat].push(item);
+    });
+    return byCategoria;
+  }
+
   function passengerSeed() {
     const fromDom = collectCurrentPassengerValues();
     if (fromDom.some((item) => Object.values(item).some((value) => value !== "" && value !== null && value !== undefined))) {
@@ -573,14 +585,16 @@
     if (!refs.passageirosContainer || !refs.totalPassageiros) return;
     updatePassengerCountLabels();
     const seed = passengerSeed();
+    const seedByCat = groupSeedByCategoria(seed);
     const clientContext = getCurrentClientContext();
     const frequentes = clientContext?.passageiros_frequentes || [];
     refs.passageirosContainer.innerHTML = "";
     let index = 0;
     passengerKinds.forEach((kind) => {
       const quantity = Number(kind.field?.value || 0);
+      const pool = seedByCat[kind.key] || [];
       for (let position = 0; position < quantity; position += 1) {
-        const previous = seed[index] || {};
+        const previous = pool[position] || {};
         const titular = frequentes.find((item) => item.is_titular);
         const naoTitulares = frequentes.filter((item) => !item.is_titular);
         const titularOpt = titular
@@ -669,14 +683,16 @@
     if (!refs.passageirosContainer || !refs.totalPassageiros) return;
     updatePassengerCountLabels();
     const seed = passengerSeed();
+    const seedByCat = groupSeedByCategoria(seed);
     const clientContext = getCurrentClientContext();
     const frequentes = clientContext?.passageiros_frequentes || [];
     refs.passageirosContainer.innerHTML = "";
     let index = 0;
     passengerKinds.forEach((kind) => {
       const quantity = Number(kind.field?.value || 0);
+      const pool = seedByCat[kind.key] || [];
       for (let position = 0; position < quantity; position += 1) {
-        const previous = seed[index] || {};
+        const previous = pool[position] || {};
         const titular = frequentes.find((item) => item.is_titular);
         const naoTitulares = frequentes.filter((item) => !item.is_titular);
         const titularOpt = titular

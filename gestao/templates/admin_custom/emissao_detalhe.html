@@ -1,4 +1,5 @@
 {% extends "admin_custom/base_admin.html" %}
+{% load gestao_tags %}
 
 {% block title %}Detalhe da Emissão{% endblock %}
 {% block header_title %}Detalhe da Emissão{% endblock %}
@@ -124,7 +125,7 @@
           {% for passageiro in passageiros %}
           <tr>
             <td>{{ passageiro.nome }}</td>
-            <td>{{ passageiro.cpf }}</td>
+            <td>{{ passageiro.cpf|cpf_display:"—" }}</td>
             <td>{{ passageiro.rg|default:"—" }}</td>
             <td>{{ passageiro.passaporte|default:"—" }}</td>
             <td>{% if passageiro.passaporte_validade %}{{ passageiro.passaporte_validade|date:"d/m/Y" }}{% else %}—{% endif %}</td>

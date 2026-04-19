@@ -15,6 +15,7 @@ from gestao.models import (
     ContaFidelidade,
 )
 from services.browser_pdf import render_pdf_from_template
+from gestao.utils import format_cpf_display
 from .permissions import require_admin_or_operator, scope_queryset_to_company
 
 
@@ -138,7 +139,7 @@ def relatorio_cliente_pdf(request, cliente_id):
         "nome": nome_cliente,
         "email": cliente.usuario.email,
         "telefone": cliente.telefone or "-",
-        "cpf": f"{cliente.cpf[:3]}.{cliente.cpf[3:6]}.{cliente.cpf[6:9]}-{cliente.cpf[9:]}" if cliente.cpf and len(cliente.cpf) == 11 else cliente.cpf or "-",
+        "cpf": format_cpf_display(cliente.cpf or "", fallback="-"),
         "empresa": str(cliente.empresa) if cliente.empresa else "-",
         "data_relatorio": hoje.strftime("%d/%m/%Y %H:%M"),
     }

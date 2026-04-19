@@ -81,6 +81,8 @@ def _displayable_cpf(value):
     digits = normalize_cpf(value)
     if not digits:
         return ""
+    if digits.startswith("9"):
+        return ""
     return digits if _is_valid_cpf_for_display(digits) else ""
 
 

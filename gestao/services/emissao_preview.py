@@ -8,6 +8,7 @@ from gestao.services.empresa_contact import (
     get_empresa_from_operational_record,
 )
 from gestao.services.acompanhamento_passagem import build_acompanhamento_summary
+from gestao.utils import format_cpf_display
 
 
 def format_currency_brl(value):
@@ -162,7 +163,7 @@ def _build_passageiros_context(emissao):
                 "nome": passageiro.nome,
                 "categoria": passageiro.get_categoria_display(),
                 "fields": [
-                    {"label": "CPF", "value": passageiro.cpf or "Nao informado"},
+                    {"label": "CPF", "value": format_cpf_display(passageiro.cpf or "", fallback="Nao informado")},
                     {
                         "label": "Data Nascimento",
                         "value": _format_date(passageiro.data_nascimento),

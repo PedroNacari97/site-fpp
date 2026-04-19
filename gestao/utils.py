@@ -25,6 +25,23 @@ def normalize_cpf(cpf: str) -> str:
     return re.sub(r"\D", "", cpf or "")
 
 
+def is_fake_cpf(cpf: str) -> bool:
+    """CPFs gerados internamente começam com 9 (ver forms._generate_internal_cpf).
+
+    Esses CPFs não são reais e devem ser ocultados do usuário final.
+    """
+    digits = normalize_cpf(cpf)
+    return len(digits) == 11 and digits.startswith("9")
+
+
+def format_cpf_display(cpf: str, fallback: str = "--") -> str:
+    """Formata CPF como 000.000.000-00; oculta CPFs internos (fake) como fallback."""
+    digits = normalize_cpf(cpf)
+    if len(digits) == 11 and not digits.startswith("9"):
+        return f"{digits[:3]}.{digits[3:6]}.{digits[6:9]}-{digits[9:]}"
+    return fallback
+
+
 def hash_cpf(cpf: str) -> str:
     """Retorna SHA-256 hex do CPF normalizado (apenas digitos)."""
     digits = normalize_cpf(cpf)
