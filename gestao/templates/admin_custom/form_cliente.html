@@ -107,22 +107,24 @@
                       {% if form.cpf.errors %}<div class="client-form__field-error">{{ form.cpf.errors }}</div>{% endif %}
                     </div>
                     <div class="client-form__field">
-                      <label for="id_rg_proxy">RG</label>
-                      <input type="text" id="id_rg_proxy" placeholder="00.000.000-0" disabled>
+                      <label for="{{ form.rg.id_for_label }}">RG</label>
+                      {{ form.rg }}
+                      {% if form.rg.errors %}<div class="client-form__field-error">{{ form.rg.errors }}</div>{% endif %}
                     </div>
                   </div>
 
                   <div class="client-form__grid client-form__grid--two">
                     <div class="client-form__field">
-                      <label for="id_passaporte_proxy">Passaporte</label>
-                      <input type="text" id="id_passaporte_proxy" placeholder="Numero do passaporte" disabled>
+                      <label for="{{ form.passaporte.id_for_label }}">Passaporte</label>
+                      {{ form.passaporte }}
+                      {% if form.passaporte.errors %}<div class="client-form__field-error">{{ form.passaporte.errors }}</div>{% endif %}
                     </div>
                     <div class="client-form__field">
-                      <label for="id_passaporte_validade_proxy">Validade do passaporte</label>
-                      <input type="text" id="id_passaporte_validade_proxy" placeholder="DD/MM/AAAA" disabled>
+                      <label for="{{ form.passaporte_validade.id_for_label }}">Validade do passaporte</label>
+                      {{ form.passaporte_validade }}
+                      {% if form.passaporte_validade.errors %}<div class="client-form__field-error">{{ form.passaporte_validade.errors }}</div>{% endif %}
                     </div>
                   </div>
-                  <p class="client-form__note">RG e passaporte ainda nao existem no modelo de cliente deste projeto.</p>
                 </div>
               </section>
 

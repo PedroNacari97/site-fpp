@@ -434,6 +434,9 @@ class ClienteForm(forms.ModelForm):
             "telefone",
             "data_nascimento",
             "cpf",
+            "rg",
+            "passaporte",
+            "passaporte_validade",
             "cep",
             "endereco",
             "numero",
@@ -475,6 +478,16 @@ class ClienteForm(forms.ModelForm):
                     "maxlength": "9",
                 }
             ),
+            "rg": forms.TextInput(attrs={"placeholder": "00.000.000-0"}),
+            "passaporte": forms.TextInput(attrs={"placeholder": "Numero do passaporte"}),
+            "passaporte_validade": forms.TextInput(
+                attrs={
+                    "placeholder": "DD/MM/AAAA",
+                    "data-mask": "date",
+                    "inputmode": "numeric",
+                    "maxlength": "10",
+                }
+            ),
             "endereco": forms.TextInput(attrs={"placeholder": "Rua, avenida..."}),
             "numero": forms.TextInput(attrs={"placeholder": "Numero"}),
             "complemento": forms.TextInput(attrs={"placeholder": "Apto, bloco, referencia..."}),
@@ -490,6 +503,9 @@ class ClienteForm(forms.ModelForm):
             "bairro": "Bairro",
             "cidade": "Cidade",
             "estado": "UF",
+            "rg": "RG",
+            "passaporte": "Passaporte",
+            "passaporte_validade": "Validade do passaporte",
         }
 
     def __init__(self, *args, **kwargs):
@@ -510,6 +526,9 @@ class ClienteForm(forms.ModelForm):
             "programas_concierge",
             "razao_social",
             "cnpj",
+            "rg",
+            "passaporte",
+            "passaporte_validade",
         ):
             self.fields[field_name].required = False
         self.fields["ativo"].initial = True
@@ -539,6 +558,9 @@ class ClienteForm(forms.ModelForm):
 
     def clean_data_nascimento(self):
         return parse_br_date(self.cleaned_data.get("data_nascimento"), field_label="Data de nascimento")
+
+    def clean_passaporte_validade(self):
+        return parse_br_date(self.cleaned_data.get("passaporte_validade"), field_label="Validade do passaporte")
 
     def clean_cep(self):
         return _format_cep(self.cleaned_data.get("cep"))

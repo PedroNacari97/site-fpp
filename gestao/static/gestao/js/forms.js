@@ -38,6 +38,14 @@
       if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
       return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
     },
+
+    rg(value) {
+      const clean = String(value || "").toUpperCase().replace(/[^0-9X]/g, "").slice(0, 9);
+      if (clean.length <= 2) return clean;
+      if (clean.length <= 5) return `${clean.slice(0, 2)}.${clean.slice(2)}`;
+      if (clean.length <= 8) return `${clean.slice(0, 2)}.${clean.slice(2, 5)}.${clean.slice(5)}`;
+      return `${clean.slice(0, 2)}.${clean.slice(2, 5)}.${clean.slice(5, 8)}-${clean.slice(8)}`;
+    },
   };
 
   const aliases = {
@@ -103,6 +111,7 @@
     const tokens = fieldTokens(field);
     if (tokens.includes("cpf")) return "cpf";
     if (tokens.includes("cep")) return "cep";
+    if (tokens.includes("rg")) return "rg";
     if (tokens.some((token) => ["telefone", "celular", "whatsapp", "phone", "tel"].includes(token))) {
       return "telefone";
     }
