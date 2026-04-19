@@ -175,6 +175,19 @@
                                 </div>
                             </div>
 
+                            <div id="escala-ida-wrapper" class="quote-scale-card quote-collapsible">
+                                <div class="quote-scale-card__head">
+                                    <div>
+                                        <h3 class="quote-scale-card__title">Escalas da ida</h3>
+                                        <p class="quote-helper">Inclua apenas aeroportos intermediarios do trecho principal. A duracao somada entra no calculo da chegada.</p>
+                                    </div>
+                                    <button type="button" class="btn btn--outline btn--sm" data-add-escala="ida">Adicionar escala</button>
+                                </div>
+                                <input type="hidden" name="qtd_escalas_ida" id="id_qtd_escalas_ida" value="0">
+                                <input type="hidden" name="total_escalas_ida" id="id_total_escalas_ida" value="0">
+                                <div id="escalas-ida-container" class="quote-scale-list"></div>
+                            </div>
+
                             <div class="quote-grid quote-grid--three">
                                 <div>
                                     <label class="quote-label" for="{{ form.duracao_voo_ida_minutos.id_for_label }}">Tempo de voo da ida <span class="label-optional">(opcional)</span></label>
@@ -191,21 +204,8 @@
                                     <div class="quote-arrival-card">
                                         <strong id="route-preview-arrival-ida" aria-live="polite">--</strong>
                                     </div>
-                                    <p class="quote-helper">Calculado com base na partida, duracao e fuso.</p>
+                                    <p class="quote-helper">Soma partida, duracao do voo, escalas e fuso.</p>
                                 </div>
-                            </div>
-
-                            <div id="escala-ida-wrapper" class="quote-scale-card quote-collapsible">
-                                <div class="quote-scale-card__head">
-                                    <div>
-                                        <h3 class="quote-scale-card__title">Escalas da ida</h3>
-                                        <p class="quote-helper">Inclua apenas aeroportos intermediarios do trecho principal.</p>
-                                    </div>
-                                    <button type="button" class="btn btn--outline btn--sm" data-add-escala="ida">Adicionar escala</button>
-                                </div>
-                                <input type="hidden" name="qtd_escalas_ida" id="id_qtd_escalas_ida" value="0">
-                                <input type="hidden" name="total_escalas_ida" id="id_total_escalas_ida" value="0">
-                                <div id="escalas-ida-container" class="quote-scale-list"></div>
                             </div>
                         </div>
 
@@ -235,6 +235,19 @@
                                 </div>
                             </div>
 
+                            <div id="escala-volta-wrapper" class="quote-scale-card quote-collapsible">
+                                <div class="quote-scale-card__head">
+                                    <div>
+                                        <h3 class="quote-scale-card__title">Escalas da volta</h3>
+                                        <p class="quote-helper">Use apenas quando o retorno tiver conexoes. A duracao somada entra no calculo da chegada.</p>
+                                    </div>
+                                    <button type="button" class="btn btn--outline btn--sm" data-add-escala="volta">Adicionar escala</button>
+                                </div>
+                                <input type="hidden" name="qtd_escalas_volta" id="id_qtd_escalas_volta" value="0">
+                                <input type="hidden" name="total_escalas_volta" id="id_total_escalas_volta" value="0">
+                                <div id="escalas-volta-container" class="quote-scale-list"></div>
+                            </div>
+
                             <div class="quote-grid quote-grid--three">
                                 <div>
                                     <label class="quote-label" for="{{ form.duracao_voo_volta_minutos.id_for_label }}">Tempo de voo da volta <span class="label-optional">(opcional)</span></label>
@@ -251,21 +264,8 @@
                                     <div class="quote-arrival-card">
                                         <strong id="route-preview-arrival-volta" aria-live="polite">--</strong>
                                     </div>
-                                    <p class="quote-helper">Calculado automaticamente quando houver volta.</p>
+                                    <p class="quote-helper">Soma partida, duracao do voo, escalas e fuso.</p>
                                 </div>
-                            </div>
-
-                            <div id="escala-volta-wrapper" class="quote-scale-card quote-collapsible">
-                                <div class="quote-scale-card__head">
-                                    <div>
-                                        <h3 class="quote-scale-card__title">Escalas da volta</h3>
-                                        <p class="quote-helper">Use apenas quando o retorno tiver conexoes.</p>
-                                    </div>
-                                    <button type="button" class="btn btn--outline btn--sm" data-add-escala="volta">Adicionar escala</button>
-                                </div>
-                                <input type="hidden" name="qtd_escalas_volta" id="id_qtd_escalas_volta" value="0">
-                                <input type="hidden" name="total_escalas_volta" id="id_total_escalas_volta" value="0">
-                                <div id="escalas-volta-container" class="quote-scale-list"></div>
                             </div>
                         </div>
                     </div>

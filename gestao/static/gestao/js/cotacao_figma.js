@@ -129,11 +129,22 @@
     return (hours * 60) + minutes;
   };
 
-  const calculateArrival = (departureValue, durationMinutes, timezoneOffsetHours) => {
+  const calculateArrival = (departureValue, durationMinutes, timezoneOffsetHours, escalasMinutes) => {
     if (!departureValue || !durationMinutes) return null;
     const departure = new Date(departureValue);
     if (Number.isNaN(departure.getTime())) return null;
-    return new Date(departure.getTime() + ((durationMinutes + (timezoneOffsetHours * 60)) * 60000));
+    const escalas = Number(escalasMinutes) || 0;
+    return new Date(departure.getTime() + ((durationMinutes + escalas + (timezoneOffsetHours * 60)) * 60000));
+  };
+
+  const sumEscalaMinutes = (tipo) => {
+    const container = document.querySelector(`#escalas-${tipo}-container`);
+    if (!container) return 0;
+    let total = 0;
+    container.querySelectorAll('input[type="time"][name*="-duracao"]').forEach((input) => {
+      total += parseDurationMinutes(input.value);
+    });
+    return total;
   };
 
   const getAirportMeta = (select) => {
@@ -251,20 +262,22 @@
     row.innerHTML = `
       <div class="quote-scale-row__head">
         <span class="quote-scale-row__title">Escala ${index + 1}</span>
-        <button type="button" class="quote-scale-row__remove" data-remove-escala="${tipo}" data-index="${index}">Remover</button>
       </div>
       <div class="quote-scale-row__grid">
         <div>
-          <label class="quote-label">Aeroporto</label>
+          <label class="quote-label">IATA da escala</label>
           <select name="escala-${tipo}-${index}-aeroporto">${options}</select>
         </div>
         <div>
-          <label class="quote-label">Horario da escala</label>
-          <input type="time" name="escala-${tipo}-${index}-duracao" value="${data?.duracao || ""}">
+          <label class="quote-label">Cidade / observacao</label>
+          <input type="text" name="escala-${tipo}-${index}-cidade" value="${data?.cidade || ""}">
         </div>
         <div>
-          <label class="quote-label">Cidade / pais</label>
-          <input type="text" name="escala-${tipo}-${index}-cidade" value="${data?.cidade || ""}">
+          <label class="quote-label">Duracao da escala</label>
+          <input type="time" name="escala-${tipo}-${index}-duracao" value="${data?.duracao || ""}">
+        </div>
+        <div class="quote-scale-row__actions">
+          <button type="button" class="quote-scale-row__remove" data-remove-escala="${tipo}" data-index="${index}">Remover</button>
         </div>
       </div>
     `;
@@ -362,10 +375,12 @@
     const duracaoVoltaMinutos = parseDurationMinutes(refs.duracaoVolta?.value);
     const fusoIda = refs.idaTemFuso?.checked ? toNumber(refs.fusoIda?.value) : 0;
     const fusoVolta = refs.voltaTemFuso?.checked ? toNumber(refs.fusoVolta?.value) : 0;
-    const chegadaIda = calculateArrival(dataIda, duracaoIdaMinutos, fusoIda);
-    const chegadaVolta = calculateArrival(dataVolta, duracaoVoltaMinutos, fusoVolta);
     const idaEscalas = Number(qs("#id_qtd_escalas_ida")?.value || 0);
     const voltaEscalas = Number(qs("#id_qtd_escalas_volta")?.value || 0);
+    const escalasIdaMinutos = idaEscalas > 0 ? sumEscalaMinutes("ida") : 0;
+    const escalasVoltaMinutos = voltaEscalas > 0 ? sumEscalaMinutes("volta") : 0;
+    const chegadaIda = calculateArrival(dataIda, duracaoIdaMinutos, fusoIda, escalasIdaMinutos);
+    const chegadaVolta = calculateArrival(dataVolta, duracaoVoltaMinutos, fusoVolta, escalasVoltaMinutos);
     const qtdPassageiros = refs.qtdPassageiros?.value || "0";
     const qtdPassageirosNum = Math.max(parseInt(qtdPassageiros, 10) || 0, 0);
     const factor = qtdPassageirosNum || 1;

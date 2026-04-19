@@ -147,11 +147,22 @@
     return (hours * 60) + minutes;
   }
 
-  function calculateArrival(departureValue, durationMinutes, timezoneOffsetHours) {
+  function calculateArrival(departureValue, durationMinutes, timezoneOffsetHours, escalasMinutes) {
     if (!departureValue || !durationMinutes) return null;
     const departure = new Date(departureValue);
     if (Number.isNaN(departure.getTime())) return null;
-    return new Date(departure.getTime() + ((durationMinutes + (timezoneOffsetHours * 60)) * 60000));
+    const escalas = Number(escalasMinutes) || 0;
+    return new Date(departure.getTime() + ((durationMinutes + escalas + (timezoneOffsetHours * 60)) * 60000));
+  }
+
+  function sumEscalaMinutes(tipo) {
+    const container = document.querySelector(`#escalas-${tipo}-container`);
+    if (!container) return 0;
+    let total = 0;
+    container.querySelectorAll('input[type="time"][name*="-duracao"]').forEach((input) => {
+      total += parseDurationMinutes(input.value);
+    });
+    return total;
   }
 
   function toNumberSafe(value) {
@@ -409,8 +420,10 @@
     const duracaoVoltaMinutos = parseDurationMinutes(refs.duracaoVolta?.value);
     const fusoIdaHoras = toNumberSafe(refs.fusoIda?.value);
     const fusoVoltaHoras = toNumberSafe(refs.fusoVolta?.value);
-    const chegadaIda = calculateArrival(dataIda, duracaoIdaMinutos, fusoIdaHoras);
-    const chegadaVolta = hasVolta() ? calculateArrival(dataVolta, duracaoVoltaMinutos, fusoVoltaHoras) : null;
+    const escalasIdaMinutos = idaTemEscala ? sumEscalaMinutes("ida") : 0;
+    const escalasVoltaMinutos = voltaTemEscala ? sumEscalaMinutes("volta") : 0;
+    const chegadaIda = calculateArrival(dataIda, duracaoIdaMinutos, fusoIdaHoras, escalasIdaMinutos);
+    const chegadaVolta = hasVolta() ? calculateArrival(dataVolta, duracaoVoltaMinutos, fusoVoltaHoras, escalasVoltaMinutos) : null;
     if (refs.routeOrigin) refs.routeOrigin.textContent = origem;
     if (refs.routeDestination) refs.routeDestination.textContent = destino;
     if (refs.routeArrivalIda) refs.routeArrivalIda.textContent = chegadaIda ? formatDateTime(chegadaIda) : "--";
