@@ -523,6 +523,12 @@ class ClienteForm(forms.ModelForm):
         )
         self.fields["razao_social"].widget.attrs.setdefault("placeholder", "Razao social da agencia parceira")
         self.fields["cnpj"].widget.attrs.setdefault("placeholder", "00.000.000/0000-00")
+        if self.instance and self.instance.pk and self.instance.usuario_id:
+            usuario_field = self.fields.get("usuario")
+            if usuario_field is not None:
+                usuario_field.queryset = usuario_field.queryset.filter(pk=self.instance.usuario_id)
+                usuario_field.disabled = True
+                usuario_field.help_text = "Usuario vinculado a este cliente (nao editavel)."
 
     def clean_cpf(self):
         cpf = self.cleaned_data.get("cpf") or getattr(self.instance, "cpf", "") or _generate_internal_cpf()
