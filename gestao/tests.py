@@ -17,6 +17,7 @@ from gestao.models import (
     Empresa,
     Cliente,
     CompanhiaAerea,
+    ContaAdministrada,
     ContaFidelidade,
     CotacaoVoo,
     EmissaoPassagem,
@@ -28,6 +29,7 @@ from gestao.models import (
     ProgramaFidelidade,
     TelegramAlertaEvento,
     TelegramNoticiaEvento,
+    UsoCPF,
 )
 from gestao.services.dashboard import build_operational_notifications
 from gestao.services.interesses_viagem import sync_alerta_interest_matches
@@ -1377,6 +1379,61 @@ class AdminCompanyScopeTest(TestCase):
         self.assertEqual(InteresseViagemMatch.objects.count(), 0)
 
 
+@override_settings(ALLOWED_HOSTS=["testserver", "localhost"])
+class ContasAdministradasListagemTest(TestCase):
+    def setUp(self):
+        self.empresa = Empresa.objects.create(
+            nome="Empresa Contas",
+            limite_colaboradores=5,
+        )
+        self.admin_user = User.objects.create_user(
+            username="admin-contas",
+            password="secret",
+        )
+        self.admin_user.is_staff = True
+        self.admin_user.save(update_fields=["is_staff"])
+        Cliente.objects.create(
+            usuario=self.admin_user,
+            empresa=self.empresa,
+            cpf="55544433322",
+            perfil="admin",
+            ativo=True,
+        )
+        self.programa = ProgramaFidelidade.objects.create(nome="Programa ADM")
+        self.assertTrue(self.client.login(username="admin-contas", password="secret"))
+
+    def test_conta_administrada_sem_programa_aparece_na_tabela(self):
+        ContaAdministrada.objects.create(nome="Conta sem programa", empresa=self.empresa)
+
+        response = self.client.get(reverse("admin_contas_administradas"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Conta sem programa")
+        self.assertContains(response, "Nenhum programa vinculado")
+        self.assertContains(response, "Sem programa")
+
+    def test_conta_fidelidade_administrada_aparece_nas_duas_tabelas(self):
+        conta_administrada = ContaAdministrada.objects.create(
+            nome="Conta ADM visivel",
+            empresa=self.empresa,
+        )
+        ContaFidelidade.objects.create(
+            conta_administrada=conta_administrada,
+            programa=self.programa,
+        )
+
+        contas_response = self.client.get(reverse("admin_contas"))
+        administradas_response = self.client.get(reverse("admin_contas_administradas"))
+
+        self.assertEqual(contas_response.status_code, 200)
+        self.assertContains(contas_response, "Conta ADM visivel")
+        self.assertContains(contas_response, "Programa ADM")
+        self.assertContains(contas_response, "Conta administrada")
+        self.assertEqual(administradas_response.status_code, 200)
+        self.assertContains(administradas_response, "Conta ADM visivel")
+        self.assertContains(administradas_response, "Programa ADM")
+
+
 class EmissaoFrontendPrivacyTest(TestCase):
     def setUp(self):
         self.empresa = Empresa.objects.create(nome="Empresa Privacidade", limite_colaboradores=5)
@@ -1511,6 +1568,35 @@ class CadastroMinimoClienteECotacaoOpcionalTest(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(len(form.cleaned_data["cpf"]), 11)
 
+    def test_novo_cliente_form_aceita_nome_completo_sem_campos_ocultos(self):
+        form = NovoClienteForm(
+            data={
+                "full_name": "Ana Maria",
+                "email": "",
+                "telefone": "",
+                "data_nascimento": "",
+                "cpf": "",
+                "cep": "01001000",
+                "endereco": "Praca da Se",
+                "numero": "100",
+                "complemento": "Apto 1",
+                "bairro": "Se",
+                "cidade": "Sao Paulo",
+                "estado": "sp",
+                "password": "",
+                "confirm_password": "",
+                "observacoes": "",
+                "ativo": "on",
+                "perfil": "cliente",
+            }
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data["first_name"], "Ana")
+        self.assertEqual(form.cleaned_data["last_name"], "Maria")
+        self.assertEqual(form.cleaned_data["cep"], "01001-000")
+        self.assertEqual(form.cleaned_data["estado"], "SP")
+
     def test_criar_cliente_aceita_cadastro_minimo(self):
         response = self.client.post(
             reverse("admin_novo_cliente"),
@@ -1533,6 +1619,44 @@ class CadastroMinimoClienteECotacaoOpcionalTest(TestCase):
         novo_cliente = Cliente.objects.exclude(usuario=self.admin_user).get(usuario__first_name="Maria", usuario__last_name="Silva")
         self.assertEqual(novo_cliente.empresa, self.empresa)
         self.assertEqual(len(novo_cliente.cpf), 11)
+
+    def test_criar_cliente_aceita_nome_completo_sem_javascript(self):
+        response = self.client.post(
+            reverse("admin_novo_cliente"),
+            {
+                "full_name": "Joao Cliente",
+                "email": "",
+                "telefone": "",
+                "data_nascimento": "",
+                "cpf": "",
+                "cep": "01001000",
+                "endereco": "Praca da Se",
+                "numero": "100",
+                "complemento": "Apto 1",
+                "bairro": "Se",
+                "cidade": "Sao Paulo",
+                "estado": "sp",
+                "password": "",
+                "confirm_password": "",
+                "observacoes": "",
+                "ativo": "on",
+                "perfil": "cliente",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        novo_cliente = Cliente.objects.exclude(usuario=self.admin_user).get(
+            usuario__first_name="Joao",
+            usuario__last_name="Cliente",
+        )
+        self.assertEqual(novo_cliente.empresa, self.empresa)
+        self.assertTrue(novo_cliente.cpf_hash)
+        self.assertEqual(novo_cliente.cep, "01001-000")
+        self.assertEqual(novo_cliente.endereco, "Praca da Se")
+        self.assertEqual(novo_cliente.numero, "100")
+        self.assertEqual(novo_cliente.bairro, "Se")
+        self.assertEqual(novo_cliente.cidade, "Sao Paulo")
+        self.assertEqual(novo_cliente.estado, "SP")
 
     def test_cotacao_form_aceita_programa_vazio(self):
         form = CotacaoVooForm(
@@ -1747,3 +1871,292 @@ class AdminNotificationReadStateTest(TestCase):
         response = self.client.get(reverse("admin_notificacoes"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Notificações")
+
+
+class ContasAdministradasKebabRefatorTest(TestCase):
+    """QA — testes da refatoração de Contas Administradas (coluna CPFs unificada + kebab)."""
+
+    def setUp(self):
+        self.empresa = Empresa.objects.create(
+            nome="Empresa Kebab",
+            limite_colaboradores=20,
+        )
+        self.admin_user = User.objects.create_user(
+            username="admin-kebab",
+            password="secret",
+        )
+        self.admin_user.is_staff = True
+        self.admin_user.save(update_fields=["is_staff"])
+        Cliente.objects.create(
+            usuario=self.admin_user,
+            empresa=self.empresa,
+            cpf="55511122233",
+            perfil="admin",
+            ativo=True,
+        )
+        # programa com limite baixo para forçar bloqueio
+        self.programa_bloqueado = ProgramaFidelidade.objects.create(
+            nome="Programa Bloqueado",
+            quantidade_cpfs_disponiveis=2,
+            limite_cpfs=2,
+        )
+        # programa sem limite (ilimitado)
+        self.programa_ilimitado = ProgramaFidelidade.objects.create(
+            nome="Programa Ilimitado",
+            quantidade_cpfs_disponiveis=None,
+            limite_cpfs=None,
+        )
+        # programa com limite alto (disponível) — usaremos override por conta
+        self.programa_disp = ProgramaFidelidade.objects.create(
+            nome="Programa Disponivel",
+            quantidade_cpfs_disponiveis=10,
+            limite_cpfs=10,
+        )
+        self.assertTrue(self.client.login(username="admin-kebab", password="secret"))
+
+    # -------- helpers --------
+
+    def _criar_conta_sem_programa(self, nome="Conta Sem Programa"):
+        return ContaAdministrada.objects.create(nome=nome, empresa=self.empresa)
+
+    def _criar_conta_com_programa(self, nome, programa, override_limite=None):
+        conta = ContaAdministrada.objects.create(nome=nome, empresa=self.empresa)
+        kwargs = {
+            "conta_administrada": conta,
+            "programa": programa,
+        }
+        if override_limite is not None:
+            kwargs["quantidade_cpfs_disponiveis"] = override_limite
+        ContaFidelidade.objects.create(**kwargs)
+        return conta
+
+    def _usar_cpf(self, conta_admin, qtd):
+        cf = conta_admin.contas_fidelidade.first()
+        base_date = date(2026, 1, 1)
+        for i in range(qtd):
+            UsoCPF.objects.create(
+                conta_fidelidade=cf,
+                cpf=f"111222333{i:02d}"[-11:],
+                data_ultima_emissao=base_date,
+            )
+
+    # -------- 1) view renderiza, componentes novos presentes --------
+
+    def test_rota_retorna_200_e_renderiza_componentes_kebab(self):
+        self._criar_conta_com_programa("Conta Alpha", self.programa_disp)
+        response = self.client.get(reverse("admin_contas_administradas"))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        # Kebab e aria
+        self.assertIn("admin-table-menu", content)
+        self.assertIn('aria-haspopup="menu"', content)
+        self.assertIn('aria-expanded="false"', content)
+        self.assertIn('aria-controls="row-menu-', content)
+        self.assertIn('id="row-menu-', content)
+        # Script do menu
+        self.assertIn("admin_table_menu.js", content)
+        # Botão primário Programas
+        self.assertIn("admin-managed__action--primary", content)
+        self.assertIn("Programas", content)
+
+    def test_header_exibe_nova_conta_e_url_resolve(self):
+        self._criar_conta_sem_programa()
+        response = self.client.get(reverse("admin_contas_administradas"))
+        self.assertEqual(response.status_code, 200)
+        # Link "Nova Conta" no header
+        self.assertContains(response, reverse("admin_nova_conta_administrada"))
+
+    # -------- 2) colspan correto (7, não 8) no estado vazio --------
+
+    def test_estado_vazio_usa_colspan_7(self):
+        # busca que não bate com nada
+        response = self.client.get(reverse("admin_contas_administradas") + "?busca=zzzzzzNaoExiste")
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn('colspan="7"', content)
+        self.assertNotIn('colspan="8"', content)
+        self.assertIn("Nenhuma conta administrada encontrada.", content)
+
+    # -------- 3) Três estados de CPFs na coluna unificada --------
+
+    def test_estado_cpfs_sem_programa_exibe_traco_sem_progressbar(self):
+        conta = self._criar_conta_sem_programa("Conta Sem Prog")
+        response = self.client.get(reverse("admin_contas_administradas"))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        # célula CPFs tem o traço "—" nesta linha
+        self.assertIn("admin-managed__cpfs-value--muted", content)
+        self.assertIn("—", content)
+        # para essa linha (sem programa) não deve haver progressbar
+        # há apenas uma linha; então role=progressbar não aparece
+        self.assertNotIn('role="progressbar"', content)
+
+    def test_estado_cpfs_ilimitado_exibe_infinito_sem_progressbar(self):
+        self._criar_conta_com_programa("Conta Ilimitada", self.programa_ilimitado)
+        response = self.client.get(reverse("admin_contas_administradas"))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        # "0 / ∞" presente (cpfs_usados=0 porque não há uso)
+        self.assertIn("/ ∞", content)
+        # sem progressbar na linha ilimitada (apenas 1 linha)
+        self.assertNotIn('role="progressbar"', content)
+
+    def test_estado_cpfs_com_limite_exibe_progressbar_com_aria(self):
+        conta = self._criar_conta_com_programa("Conta Disp", self.programa_disp)
+        self._usar_cpf(conta, 3)  # 3 de 10
+        response = self.client.get(reverse("admin_contas_administradas"))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn('role="progressbar"', content)
+        self.assertIn('aria-valuenow="3"', content)
+        self.assertIn('aria-valuemax="10"', content)
+        self.assertIn('aria-valuemin="0"', content)
+        self.assertIn("3 / 10", content)
+
+    def test_estado_cpfs_proximo_do_limite_aplica_fill_warning(self):
+        # 8 de 10 = 80% => proximo
+        conta = self._criar_conta_com_programa("Conta Proxima", self.programa_disp)
+        self._usar_cpf(conta, 8)
+        response = self.client.get(reverse("admin_contas_administradas"))
+        content = response.content.decode()
+        self.assertIn("admin-managed__cpfs-bar-fill--warning", content)
+        self.assertNotIn("admin-managed__cpfs-bar-fill--danger", content)
+
+    def test_estado_cpfs_bloqueado_aplica_fill_danger(self):
+        # 2 de 2 => bloqueado
+        conta = self._criar_conta_com_programa("Conta Bloqueada", self.programa_bloqueado)
+        self._usar_cpf(conta, 2)
+        response = self.client.get(reverse("admin_contas_administradas"))
+        content = response.content.decode()
+        self.assertIn("admin-managed__cpfs-bar-fill--danger", content)
+        # status também reflete bloqueado
+        self.assertContains(response, "Bloqueado")
+
+    def test_cpfs_usados_maior_que_limite_nao_estoura_aria_valuemax(self):
+        """Edge case: se alguém conseguiu usar mais CPFs que o limite,
+        aria-valuemax deve ser ajustado para cpfs_usados para coerência."""
+        conta = self._criar_conta_com_programa(
+            "Conta Excedida", self.programa_disp, override_limite=2
+        )
+        self._usar_cpf(conta, 5)  # usou 5, limite 2
+        response = self.client.get(reverse("admin_contas_administradas"))
+        content = response.content.decode()
+        self.assertIn('aria-valuenow="5"', content)
+        self.assertIn('aria-valuemax="5"', content)  # ajustado para usados
+        self.assertIn("5 / 2", content)
+
+    def test_os_tres_estados_convivem_na_mesma_pagina(self):
+        self._criar_conta_sem_programa("A Sem Programa")
+        self._criar_conta_com_programa("B Ilimitada", self.programa_ilimitado)
+        conta = self._criar_conta_com_programa("C Com Limite", self.programa_disp)
+        self._usar_cpf(conta, 4)
+        response = self.client.get(reverse("admin_contas_administradas"))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        # 1 progressbar (apenas a com limite)
+        self.assertEqual(content.count('role="progressbar"'), 1)
+        # traço da sem-programa
+        self.assertIn("admin-managed__cpfs-value--muted", content)
+        # ilimitado
+        self.assertIn("/ ∞", content)
+        # com limite
+        self.assertIn("4 / 10", content)
+
+    # -------- 4) ids únicos por linha (aria-controls ↔ popover id) --------
+
+    def test_aria_controls_corresponde_a_ids_unicos_por_linha(self):
+        c1 = self._criar_conta_sem_programa("Linha 1")
+        c2 = self._criar_conta_sem_programa("Linha 2")
+        response = self.client.get(reverse("admin_contas_administradas"))
+        content = response.content.decode()
+        for c in (c1, c2):
+            self.assertIn(f'aria-controls="row-menu-{c.id}"', content)
+            self.assertIn(f'id="row-menu-{c.id}"', content)
+        # Dois triggers, dois popovers
+        self.assertEqual(content.count('aria-controls="row-menu-'), 2)
+        self.assertEqual(content.count('id="row-menu-'), 2)
+
+    # -------- 5) Itens do kebab e confirm-delete --------
+
+    def test_kebab_contem_tres_acoes_esperadas(self):
+        conta = self._criar_conta_sem_programa("Conta Ações")
+        response = self.client.get(reverse("admin_contas_administradas"))
+        content = response.content.decode()
+        # Adicionar programa → admin_nova_conta com query string
+        add_url = reverse("admin_nova_conta") + f"?conta_administrada={conta.id}"
+        self.assertIn(add_url, content)
+        # Editar titular
+        self.assertIn(reverse("admin_editar_conta_administrada", args=[conta.id]), content)
+        # Deletar com data-confirm-delete (para a delegação em base_admin.html)
+        self.assertIn("data-confirm-delete", content)
+        self.assertIn(
+            'data-url="' + reverse("admin_deletar_conta_administrada", args=[conta.id]) + '"',
+            content,
+        )
+        self.assertIn('data-label="Conta Ações"', content)
+
+    def test_botao_primario_programas_aponta_para_url_correta(self):
+        conta = self._criar_conta_sem_programa("Conta Primario")
+        response = self.client.get(reverse("admin_contas_administradas"))
+        content = response.content.decode()
+        self.assertIn(
+            reverse("admin_programas_da_conta_administrada", args=[conta.id]),
+            content,
+        )
+
+    # -------- 6) Regressão — busca e paginação --------
+
+    def test_busca_filtra_por_nome_da_conta(self):
+        self._criar_conta_sem_programa("Alpha Match")
+        self._criar_conta_sem_programa("Bravo Distinct")
+        response = self.client.get(reverse("admin_contas_administradas") + "?busca=Alpha")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Alpha Match")
+        self.assertNotContains(response, "Bravo Distinct")
+
+    def test_paginacao_renderiza_links_quando_mais_de_20_contas(self):
+        for i in range(25):
+            ContaAdministrada.objects.create(nome=f"Conta {i:02d}", empresa=self.empresa)
+        response = self.client.get(reverse("admin_contas_administradas"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Proxima")
+        # Página 2 existe e tem link "Anterior"
+        response2 = self.client.get(reverse("admin_contas_administradas") + "?page=2")
+        self.assertEqual(response2.status_code, 200)
+        self.assertContains(response2, "Anterior")
+
+    # -------- 7) Smoke — autenticação obrigatória --------
+
+    def test_rota_exige_autenticacao(self):
+        self.client.logout()
+        response = self.client.get(reverse("admin_contas_administradas"))
+        # login_required redireciona
+        self.assertIn(response.status_code, (302, 301))
+
+    # -------- 8) N+1 detection (relato, não corrige) --------
+
+    def test_contagem_de_queries_com_cinco_contas(self):
+        """Mede queries para sinalizar N+1; não falha build, apenas grava baseline."""
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        for i in range(5):
+            conta = ContaAdministrada.objects.create(
+                nome=f"Perf {i}", empresa=self.empresa
+            )
+            ContaFidelidade.objects.create(
+                conta_administrada=conta,
+                programa=self.programa_disp,
+            )
+
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(reverse("admin_contas_administradas"))
+            self.assertEqual(response.status_code, 200)
+
+        # Baseline — se subir drasticamente com N linhas, há N+1.
+        # Hoje esperamos <= ~25 queries. Falha só se explodir.
+        self.assertLess(
+            len(ctx.captured_queries),
+            60,
+            f"Listagem com 5 contas usou {len(ctx.captured_queries)} queries — possível N+1",
+        )

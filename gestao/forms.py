@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxLengthValidator
 from django.db import transaction
 from django.db.models import Q
 from uuid import uuid4
@@ -89,6 +90,43 @@ def _generate_internal_cpf():
         candidate = f"9{uuid4().int % 10**10:010d}"
         if not Cliente.objects.filter(cpf=candidate).exists():
             return candidate
+
+
+def _split_full_name(value):
+    normalized = " ".join(str(value or "").split())
+    if not normalized:
+        return "", ""
+    first_name, _, last_name = normalized.partition(" ")
+    return first_name, last_name
+
+
+def _format_cep(value):
+    digits = normalize_cpf(value)[:8]
+    if not digits:
+        return ""
+    if len(digits) != 8:
+        raise forms.ValidationError("CEP deve conter 8 digitos.")
+    return f"{digits[:5]}-{digits[5:]}"
+
+
+def _format_uf(value):
+    return "".join(ch for ch in str(value or "").upper() if ch.isalpha())[:2]
+
+
+def _configure_masked_cpf_field(field):
+    field.max_length = 14
+    field.validators = [
+        validator for validator in field.validators
+        if not isinstance(validator, MaxLengthValidator)
+    ]
+    field.validators.append(MaxLengthValidator(14))
+    field.widget.attrs.update({
+        "placeholder": "000.000.000-00",
+        "data-mask": "cpf",
+        "inputmode": "numeric",
+        "maxlength": "14",
+    })
+
 
 class ContaFidelidadeForm(forms.ModelForm):
     clube_ativo = forms.BooleanField(required=False)
@@ -391,8 +429,32 @@ class ContaAdministradaForm(forms.ModelForm):
 class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
-        fields = ['usuario', 'telefone', 'data_nascimento', 'cpf', 'perfil', 'observacoes', 'ativo']
+        fields = [
+            "usuario",
+            "telefone",
+            "data_nascimento",
+            "cpf",
+            "cep",
+            "endereco",
+            "numero",
+            "complemento",
+            "bairro",
+            "cidade",
+            "estado",
+            "perfil",
+            "observacoes",
+            "ativo",
+        ]
         widgets = {
+            "telefone": forms.TextInput(attrs={"placeholder": "(00) 00000-0000"}),
+            "cpf": forms.TextInput(
+                attrs={
+                    "placeholder": "000.000.000-00",
+                    "data-mask": "cpf",
+                    "inputmode": "numeric",
+                    "maxlength": "14",
+                }
+            ),
             "data_nascimento": forms.TextInput(
                 attrs={
                     "placeholder": "DD/MM/AAAA",
@@ -401,24 +463,65 @@ class ClienteForm(forms.ModelForm):
                     "maxlength": "10",
                 }
             ),
+            "cep": forms.TextInput(
+                attrs={
+                    "placeholder": "00000-000",
+                    "data-mask": "cep",
+                    "inputmode": "numeric",
+                    "maxlength": "9",
+                }
+            ),
+            "endereco": forms.TextInput(attrs={"placeholder": "Rua, avenida..."}),
+            "numero": forms.TextInput(attrs={"placeholder": "Numero"}),
+            "complemento": forms.TextInput(attrs={"placeholder": "Apto, bloco, referencia..."}),
+            "bairro": forms.TextInput(attrs={"placeholder": "Bairro"}),
+            "cidade": forms.TextInput(attrs={"placeholder": "Cidade"}),
+            "estado": forms.TextInput(attrs={"placeholder": "UF", "maxlength": "2"}),
+        }
+        labels = {
+            "cep": "CEP",
+            "endereco": "Rua / Logradouro",
+            "numero": "Numero",
+            "complemento": "Complemento",
+            "bairro": "Bairro",
+            "cidade": "Cidade",
+            "estado": "UF",
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["cpf"].required = False
-        self.fields["telefone"].required = False
-        self.fields["data_nascimento"].required = False
-        self.fields["observacoes"].required = False
+        _configure_masked_cpf_field(self.fields["cpf"])
+        for field_name in (
+            "cpf",
+            "telefone",
+            "data_nascimento",
+            "cep",
+            "endereco",
+            "numero",
+            "complemento",
+            "bairro",
+            "cidade",
+            "estado",
+            "observacoes",
+        ):
+            self.fields[field_name].required = False
         self.fields["ativo"].initial = True
 
     def clean_cpf(self):
-        cpf = validate_cpf_digits(self.cleaned_data.get("cpf"))
+        cpf = self.cleaned_data.get("cpf") or getattr(self.instance, "cpf", "") or _generate_internal_cpf()
+        cpf = validate_cpf_digits(cpf)
         if Cliente.objects.exclude(pk=self.instance.pk).filter(cpf=cpf).exists():
             raise forms.ValidationError("Já existe um cliente com este CPF.")
         return cpf
 
     def clean_data_nascimento(self):
         return parse_br_date(self.cleaned_data.get("data_nascimento"), field_label="Data de nascimento")
+
+    def clean_cep(self):
+        return _format_cep(self.cleaned_data.get("cep"))
+
+    def clean_estado(self):
+        return _format_uf(self.cleaned_data.get("estado"))
 
 
 class NovoClienteForm(forms.ModelForm):
@@ -430,8 +533,21 @@ class NovoClienteForm(forms.ModelForm):
         required=False,
         widget=forms.PasswordInput(attrs={"placeholder": "Confirme a senha"})
     )
-    first_name = forms.CharField(required=True, widget=forms.TextInput(attrs={"placeholder": "Nome"}))
-    last_name = forms.CharField(required=True, widget=forms.TextInput(attrs={"placeholder": "Sobrenome"}))
+    full_name = forms.CharField(
+        required=False,
+        max_length=300,
+        widget=forms.TextInput(attrs={"placeholder": "Digite o nome completo"}),
+    )
+    first_name = forms.CharField(
+        required=False,
+        max_length=150,
+        widget=forms.TextInput(attrs={"placeholder": "Nome"}),
+    )
+    last_name = forms.CharField(
+        required=False,
+        max_length=150,
+        widget=forms.TextInput(attrs={"placeholder": "Sobrenome"}),
+    )
     email = forms.EmailField(required=False, widget=forms.EmailInput(attrs={"placeholder": "exemplo@email.com"}))
     perfil = forms.CharField(widget=forms.HiddenInput(), initial="cliente")
 
@@ -441,13 +557,41 @@ class NovoClienteForm(forms.ModelForm):
             "telefone",
             "data_nascimento",
             "cpf",
+            "cep",
+            "endereco",
+            "numero",
+            "complemento",
+            "bairro",
+            "cidade",
+            "estado",
             "observacoes",
             "ativo",
             "perfil",
         ]
         widgets = {
             "telefone": forms.TextInput(attrs={"placeholder": "(00) 00000-0000"}),
-            "cpf": forms.TextInput(attrs={"placeholder": "000.000.000-00"}),
+            "cpf": forms.TextInput(
+                attrs={
+                    "placeholder": "000.000.000-00",
+                    "data-mask": "cpf",
+                    "inputmode": "numeric",
+                    "maxlength": "14",
+                }
+            ),
+            "cep": forms.TextInput(
+                attrs={
+                    "placeholder": "00000-000",
+                    "data-mask": "cep",
+                    "inputmode": "numeric",
+                    "maxlength": "9",
+                }
+            ),
+            "endereco": forms.TextInput(attrs={"placeholder": "Rua, avenida..."}),
+            "numero": forms.TextInput(attrs={"placeholder": "Numero"}),
+            "complemento": forms.TextInput(attrs={"placeholder": "Apto, bloco, referencia..."}),
+            "bairro": forms.TextInput(attrs={"placeholder": "Bairro"}),
+            "cidade": forms.TextInput(attrs={"placeholder": "Cidade"}),
+            "estado": forms.TextInput(attrs={"placeholder": "UF", "maxlength": "2"}),
             "observacoes": forms.Textarea(
                 attrs={
                     "rows": 5,
@@ -463,31 +607,43 @@ class NovoClienteForm(forms.ModelForm):
                 }
             ),
         }
+        labels = {
+            "cep": "CEP",
+            "endereco": "Rua / Logradouro",
+            "numero": "Numero",
+            "complemento": "Complemento",
+            "bairro": "Bairro",
+            "cidade": "Cidade",
+            "estado": "UF",
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["cpf"].required = False
-        self.fields["telefone"].required = False
-        self.fields["data_nascimento"].required = False
-        self.fields["observacoes"].required = False
+        _configure_masked_cpf_field(self.fields["cpf"])
+        for field_name in (
+            "cpf",
+            "telefone",
+            "data_nascimento",
+            "cep",
+            "endereco",
+            "numero",
+            "complemento",
+            "bairro",
+            "cidade",
+            "estado",
+            "observacoes",
+        ):
+            self.fields[field_name].required = False
         self.fields["ativo"].initial = True
-
-    def clean_cpf(self):
-        cpf = validate_cpf_digits(self.cleaned_data.get("cpf"))
-        if Cliente.objects.filter(cpf=cpf).exists():
-            raise forms.ValidationError("Já existe um cliente com este CPF.")
-        return cpf
 
     def clean_data_nascimento(self):
         return parse_br_date(self.cleaned_data.get("data_nascimento"), field_label="Data de nascimento")
 
-    def clean(self):
-        cleaned = super().clean()
-        password = cleaned.get("password")
-        confirm_password = cleaned.get("confirm_password")
-        if password and confirm_password and password != confirm_password:
-            self.add_error("confirm_password", "As senhas nao coincidem.")
-        return cleaned
+    def clean_cep(self):
+        return _format_cep(self.cleaned_data.get("cep"))
+
+    def clean_estado(self):
+        return _format_uf(self.cleaned_data.get("estado"))
 
     def clean_cpf(self):
         cpf = self.cleaned_data.get("cpf")
@@ -495,11 +651,27 @@ class NovoClienteForm(forms.ModelForm):
             return _generate_internal_cpf()
         cpf = validate_cpf_digits(cpf)
         if Cliente.objects.filter(cpf=cpf).exists():
-            raise forms.ValidationError("JÃ¡ existe um cliente com este CPF.")
+            raise forms.ValidationError("Ja existe um cliente com este CPF.")
         return cpf
 
     def clean(self):
         cleaned = super().clean()
+        full_name = " ".join(str(cleaned.get("full_name") or self.data.get("full_name") or "").split())
+        first_name = " ".join(str(cleaned.get("first_name") or "").split())
+        last_name = " ".join(str(cleaned.get("last_name") or "").split())
+        full_first_name, full_last_name = _split_full_name(full_name)
+
+        if full_name:
+            first_name = first_name or full_first_name
+            last_name = last_name or full_last_name
+
+        if not first_name:
+            self.add_error("full_name", "Informe o nome do cliente.")
+
+        cleaned["full_name"] = " ".join([first_name, last_name]).strip()
+        cleaned["first_name"] = first_name
+        cleaned["last_name"] = last_name
+
         password = cleaned.get("password")
         confirm_password = cleaned.get("confirm_password")
         if password or confirm_password:
@@ -773,6 +945,14 @@ class PassageiroFrequenteForm(forms.ModelForm):
             "relacao",
         ]
         widgets = {
+            "cpf": forms.TextInput(
+                attrs={
+                    "placeholder": "000.000.000-00",
+                    "data-mask": "cpf",
+                    "inputmode": "numeric",
+                    "maxlength": "14",
+                }
+            ),
             "data_nascimento": forms.TextInput(
                 attrs={
                     "placeholder": "DD/MM/AAAA",
@@ -784,6 +964,10 @@ class PassageiroFrequenteForm(forms.ModelForm):
             "passaporte_validade": forms.DateInput(attrs={"type": "date"}),
             "relacao": forms.TextInput(attrs={"placeholder": "Ex.: Filho, Cônjuge, Sócio"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _configure_masked_cpf_field(self.fields["cpf"])
 
     def clean_cpf(self):
         return validate_cpf_digits(self.cleaned_data.get("cpf"), field_label="CPF do passageiro")

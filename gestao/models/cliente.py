@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from gestao.utils import hash_cpf, normalize_cpf
+
 
 User = get_user_model()
 
@@ -19,6 +21,13 @@ class Cliente(models.Model):
     data_nascimento = models.DateField(null=True, blank=True)
     cpf = models.CharField(max_length=11, unique=True)
     cpf_hash = models.CharField(max_length=64, blank=True, db_index=True)
+    cep = models.CharField(max_length=9, blank=True)
+    endereco = models.CharField(max_length=255, blank=True)
+    numero = models.CharField(max_length=20, blank=True)
+    complemento = models.CharField(max_length=100, blank=True)
+    bairro = models.CharField(max_length=120, blank=True)
+    cidade = models.CharField(max_length=120, blank=True)
+    estado = models.CharField(max_length=2, blank=True)
     PERFIS = (
         ("admin", "Administrador"),
         ("operador", "Operador"),
@@ -34,3 +43,8 @@ class Cliente(models.Model):
 
     def __str__(self):
         return self.usuario.get_full_name() or self.usuario.username
+
+    def save(self, *args, **kwargs):
+        self.cpf = normalize_cpf(self.cpf)
+        self.cpf_hash = hash_cpf(self.cpf)
+        super().save(*args, **kwargs)

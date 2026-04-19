@@ -26,7 +26,7 @@
 <form method="get" class="loyalty-accounts__filter-grid" data-auto-submit-filters>
         <div class="loyalty-accounts__field">
           <label for="busca">Buscar conta</label>
-          <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar por cliente ou programa...">
+          <input type="text" id="busca" name="busca" value="{{ busca }}" placeholder="Buscar por titular, conta administrada ou programa...">
         </div>
         <div class="loyalty-accounts__actions">
           <button type="submit" class="loyalty-accounts__button">Filtrar</button>
@@ -67,7 +67,7 @@
         <table class="loyalty-accounts__table data-table">
           <thead>
             <tr>
-              <th>Cliente</th>
+              <th>Titular</th>
               <th>Programa</th>
               <th>Pontos</th>
               <th>Valor pago</th>
@@ -81,21 +81,35 @@
           <tbody>
             {% for conta in page_obj %}
               <tr>
-                <td data-label="Cliente">{{ conta.cliente.usuario.get_full_name|default:conta.cliente.usuario.username }}</td>
+                <td data-label="Titular">
+                  {% if conta.cliente_id %}
+                    {{ conta.cliente.usuario.get_full_name|default:conta.cliente.usuario.username }}<br>
+                    <small>Cliente</small>
+                  {% elif conta.conta_administrada_id %}
+                    {{ conta.conta_administrada.nome }}<br>
+                    <small>Conta administrada</small>
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
                 <td data-label="Programa">{{ conta.programa.nome }}</td>
                 <td data-label="Pontos">{{ conta.saldo_pontos }}</td>
                 <td data-label="Valor pago">R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
-                <td data-label="Valor médio">R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
+                <td data-label="Valor medio">R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
                 <td data-label="CPFs usados">{{ conta.cpfs_usados }}</td>
-                <td data-label="CPFs disponíveis">{{ conta.cpfs_disponiveis|default:"Ilimitado" }}</td>
+                <td data-label="CPFs disponiveis">{{ conta.cpfs_disponiveis|default:"Ilimitado" }}</td>
                 <td data-label="Status">
                   <span class="loyalty-accounts__badge loyalty-accounts__badge--{{ conta.status_cpf.tone }}">{{ conta.status_cpf.label }}</span>
                 </td>
-                <td data-label="Ações">
+                <td data-label="Acoes">
                   <div class="loyalty-accounts__row-actions">
-                    <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="loyalty-accounts__row-button loyalty-accounts__row-button--secondary">Programas</a>
+                    {% if conta.cliente_id %}
+                      <a href="{% url 'admin_programas_do_cliente' conta.cliente.id %}" class="loyalty-accounts__row-button loyalty-accounts__row-button--secondary">Programas</a>
+                    {% elif conta.conta_administrada_id %}
+                      <a href="{% url 'admin_programas_da_conta_administrada' conta.conta_administrada.id %}" class="loyalty-accounts__row-button loyalty-accounts__row-button--secondary">Programas</a>
+                    {% endif %}
                     <a href="{% url 'admin_editar_conta' conta.id %}" class="loyalty-accounts__row-button loyalty-accounts__row-button--secondary">Editar</a>
-                    <button type="button" class="loyalty-accounts__row-button loyalty-accounts__row-button--danger" data-confirm-delete data-url="{% url 'admin_deletar_conta' conta.id %}" data-label="{{ conta.programa.nome }} — {{ conta.cliente.usuario.get_full_name|default:conta.cliente.usuario.username }}">Excluir</button>
+                    <button type="button" class="loyalty-accounts__row-button loyalty-accounts__row-button--danger" data-confirm-delete data-url="{% url 'admin_deletar_conta' conta.id %}" data-label="{{ conta }}">Excluir</button>
                   </div>
                 </td>
               </tr>

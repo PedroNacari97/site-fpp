@@ -4,10 +4,11 @@ from collections.abc import Iterable
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.utils import timezone
 
 from gestao.models import ContaFidelidade, UsoCPF
-from gestao.utils import normalize_cpf
+from gestao.utils import hash_cpf, normalize_cpf
 
 
 def _normalize_cpfs(cpfs: Iterable[str]) -> set[str]:
@@ -91,8 +92,21 @@ def registrar_uso_cpfs(conta: ContaFidelidade | None, cpfs: Iterable[str], data_
         return
     data_emissao = data_emissao or timezone.localdate()
     for cpf in _normalize_cpfs(cpfs):
-        UsoCPF.objects.update_or_create(
-            conta_fidelidade=conta,
-            cpf=cpf,
-            defaults={'data_ultima_emissao': data_emissao},
+        cpf_h = hash_cpf(cpf)
+        uso = (
+            UsoCPF.objects.filter(conta_fidelidade=conta)
+            .filter(Q(cpf_hash=cpf_h) | Q(cpf=cpf))
+            .order_by("id")
+            .first()
         )
+        if uso:
+            uso.cpf = cpf
+            uso.data_ultima_emissao = data_emissao
+            uso.save(update_fields=["cpf", "cpf_hash", "data_ultima_emissao"])
+        else:
+            UsoCPF.objects.create(
+                conta_fidelidade=conta,
+                cpf=cpf,
+                cpf_hash=cpf_h,
+                data_ultima_emissao=data_emissao,
+            )

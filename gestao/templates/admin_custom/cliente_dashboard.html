@@ -112,40 +112,58 @@
             <input type="hidden" name="action" value="add_passageiro">
             {% if passageiro_form.errors %}
               <div class="detail-client__form-errors detail-client__form-span-full">
-                Corrija os campos destacados para salvar o passageiro frequente.
+                <strong>Corrija os campos para salvar o passageiro frequente:</strong>
+                <ul>
+                  {% for field in passageiro_form %}
+                    {% for error in field.errors %}
+                      <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                  {% endfor %}
+                  {% for error in passageiro_form.non_field_errors %}
+                    <li>{{ error }}</li>
+                  {% endfor %}
+                </ul>
               </div>
             {% endif %}
             <div class="detail-client__form-span-full">
               <label for="{{ passageiro_form.nome.id_for_label }}">Nome</label>
               {{ passageiro_form.nome }}
+              {% if passageiro_form.nome.errors %}<div class="detail-client__form-errors">{{ passageiro_form.nome.errors }}</div>{% endif %}
             </div>
             <div>
               <label for="{{ passageiro_form.tipo.id_for_label }}">Tipo</label>
               {{ passageiro_form.tipo }}
+              {% if passageiro_form.tipo.errors %}<div class="detail-client__form-errors">{{ passageiro_form.tipo.errors }}</div>{% endif %}
             </div>
             <div>
               <label for="{{ passageiro_form.cpf.id_for_label }}">CPF</label>
               {{ passageiro_form.cpf }}
+              {% if passageiro_form.cpf.errors %}<div class="detail-client__form-errors">{{ passageiro_form.cpf.errors }}</div>{% endif %}
             </div>
             <div>
               <label for="{{ passageiro_form.rg.id_for_label }}">RG</label>
               {{ passageiro_form.rg }}
+              {% if passageiro_form.rg.errors %}<div class="detail-client__form-errors">{{ passageiro_form.rg.errors }}</div>{% endif %}
             </div>
             <div>
               <label for="{{ passageiro_form.passaporte.id_for_label }}">Passaporte</label>
               {{ passageiro_form.passaporte }}
+              {% if passageiro_form.passaporte.errors %}<div class="detail-client__form-errors">{{ passageiro_form.passaporte.errors }}</div>{% endif %}
             </div>
             <div>
               <label for="{{ passageiro_form.passaporte_validade.id_for_label }}">Validade passaporte</label>
               {{ passageiro_form.passaporte_validade }}
+              {% if passageiro_form.passaporte_validade.errors %}<div class="detail-client__form-errors">{{ passageiro_form.passaporte_validade.errors }}</div>{% endif %}
             </div>
             <div>
               <label for="{{ passageiro_form.data_nascimento.id_for_label }}">Data nascimento</label>
               {{ passageiro_form.data_nascimento }}
+              {% if passageiro_form.data_nascimento.errors %}<div class="detail-client__form-errors">{{ passageiro_form.data_nascimento.errors }}</div>{% endif %}
             </div>
             <div class="detail-client__form-span-full">
               <label for="{{ passageiro_form.relacao.id_for_label }}">Relação</label>
               {{ passageiro_form.relacao }}
+              {% if passageiro_form.relacao.errors %}<div class="detail-client__form-errors">{{ passageiro_form.relacao.errors }}</div>{% endif %}
             </div>
             <div class="detail-client__form-span-full">
               <button type="submit" class="detail-client__button detail-client__button--full">Adicionar</button>

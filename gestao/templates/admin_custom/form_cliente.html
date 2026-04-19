@@ -35,7 +35,8 @@
                 <div class="client-form__section-body">
                   <div class="client-form__field">
                     <label for="id_full_name">Nome completo <span>*</span></label>
-                    <input type="text" id="id_full_name" placeholder="Digite o nome completo">
+                    {{ form.full_name }}
+                    {% if form.full_name.errors %}<div class="client-form__field-error">{{ form.full_name.errors }}</div>{% endif %}
                     {% if form.first_name.errors %}<div class="client-form__field-error">{{ form.first_name.errors }}</div>{% endif %}
                     {% if form.last_name.errors %}<div class="client-form__field-error">{{ form.last_name.errors }}</div>{% endif %}
                   </div>
@@ -89,7 +90,7 @@
                       <input type="text" id="id_passaporte_validade_proxy" placeholder="DD/MM/AAAA" disabled>
                     </div>
                   </div>
-                  <p class="client-form__note">RG, passaporte e endereco ainda nao existem no modelo de cliente deste projeto.</p>
+                  <p class="client-form__note">RG e passaporte ainda nao existem no modelo de cliente deste projeto.</p>
                 </div>
               </section>
 
@@ -99,9 +100,49 @@
                   <h3 class="client-form__section-subtitle">Localizacao completa</h3>
                 </header>
                 <div class="client-form__section-body">
-                  <div class="client-form__field">
-                    <label for="id_endereco_proxy">Endereco completo</label>
-                    <input type="text" id="id_endereco_proxy" placeholder="Rua, numero, complemento, bairro, cidade, estado, CEP" disabled>
+                  <div class="client-form__grid client-form__grid--two">
+                    <div class="client-form__field">
+                      <label for="{{ form.cep.id_for_label }}">CEP</label>
+                      {{ form.cep }}
+                      <span class="client-form__note" id="cep-status" aria-live="polite"></span>
+                      {% if form.cep.errors %}<div class="client-form__field-error">{{ form.cep.errors }}</div>{% endif %}
+                    </div>
+                    <div class="client-form__field">
+                      <label for="{{ form.endereco.id_for_label }}">Rua / Logradouro</label>
+                      {{ form.endereco }}
+                      {% if form.endereco.errors %}<div class="client-form__field-error">{{ form.endereco.errors }}</div>{% endif %}
+                    </div>
+                  </div>
+
+                  <div class="client-form__grid client-form__grid--three">
+                    <div class="client-form__field">
+                      <label for="{{ form.numero.id_for_label }}">Numero</label>
+                      {{ form.numero }}
+                      {% if form.numero.errors %}<div class="client-form__field-error">{{ form.numero.errors }}</div>{% endif %}
+                    </div>
+                    <div class="client-form__field">
+                      <label for="{{ form.complemento.id_for_label }}">Complemento</label>
+                      {{ form.complemento }}
+                      {% if form.complemento.errors %}<div class="client-form__field-error">{{ form.complemento.errors }}</div>{% endif %}
+                    </div>
+                    <div class="client-form__field">
+                      <label for="{{ form.bairro.id_for_label }}">Bairro</label>
+                      {{ form.bairro }}
+                      {% if form.bairro.errors %}<div class="client-form__field-error">{{ form.bairro.errors }}</div>{% endif %}
+                    </div>
+                  </div>
+
+                  <div class="client-form__grid client-form__grid--two">
+                    <div class="client-form__field">
+                      <label for="{{ form.cidade.id_for_label }}">Cidade</label>
+                      {{ form.cidade }}
+                      {% if form.cidade.errors %}<div class="client-form__field-error">{{ form.cidade.errors }}</div>{% endif %}
+                    </div>
+                    <div class="client-form__field">
+                      <label for="{{ form.estado.id_for_label }}">UF</label>
+                      {{ form.estado }}
+                      {% if form.estado.errors %}<div class="client-form__field-error">{{ form.estado.errors }}</div>{% endif %}
+                    </div>
                   </div>
                 </div>
               </section>
@@ -158,7 +199,7 @@
                 <div class="client-form__tips">
                   <h3>Dicas</h3>
                   <ul>
-                    <li>Somente nome e sobrenome sao obrigatorios</li>
+                    <li>Informe pelo menos o nome do cliente</li>
                     <li>Email, telefone e CPF podem ser preenchidos depois</li>
                     <li>O cliente e criado sem acesso ao portal neste cadastro</li>
                     <li>Se informar CPF, ele deve ser unico no sistema</li>
@@ -180,6 +221,7 @@
                 <div class="client-form__field {% if field.name == 'observacoes' %}client-form__field--full{% endif %}">
                   <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                   {{ field }}
+                  {% if field.name == 'cep' %}<span class="client-form__note" id="cep-status" aria-live="polite"></span>{% endif %}
                   {% if field.errors %}<div class="client-form__field-error">{{ field.errors }}</div>{% endif %}
                 </div>
               {% endfor %}
@@ -200,7 +242,5 @@
 {% endblock %}
 
 {% block extra_body %}
-{% if not form.instance.pk %}
 <script src="{% static 'gestao/js/cliente_form.js' %}"></script>
-{% endif %}
 {% endblock %}

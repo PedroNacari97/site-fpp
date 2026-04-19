@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.db import models
 from django.utils import timezone
 
-from gestao.utils import normalize_cpf
+from gestao.utils import hash_cpf, normalize_cpf
 
 from .conta_fidelidade import ContaFidelidade
 
@@ -26,6 +26,7 @@ class UsoCPF(models.Model):
 
     def save(self, *args, **kwargs):
         self.cpf = normalize_cpf(self.cpf)
+        self.cpf_hash = hash_cpf(self.cpf)
         super().save(*args, **kwargs)
 
     @property

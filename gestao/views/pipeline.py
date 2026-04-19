@@ -106,12 +106,18 @@ def pipeline_view(request):
     cotacoes_base = CotacaoVoo.objects.select_related(
         "cliente__usuario", "cliente__criado_por", "programa", "origem", "destino", "cliente__empresa"
     )
-    cotacoes_base = scope_queryset_to_company(cotacoes_base, request)
+    cotacoes_base = scope_queryset_to_company(cotacoes_base, request, "cliente__empresa", "conta_administrada__empresa")
 
     emissoes_base = EmissaoPassagem.objects.select_related(
         "cliente__usuario", "cliente__criado_por", "programa", "aeroporto_partida", "aeroporto_destino", "cliente__empresa"
     )
-    emissoes_base = scope_queryset_to_company(emissoes_base, request)
+    emissoes_base = scope_queryset_to_company(
+        emissoes_base,
+        request,
+        "cliente__empresa",
+        "conta_administrada__empresa",
+        "emissor_parceiro__empresa",
+    )
 
     # Cotacoes por stage — cada deal aparece em UMA unica coluna
     novo_pedido = [_cotacao_card(c) for c in cotacoes_base.filter(status="pendente").order_by("-criado_em")[:100]]
