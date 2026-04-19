@@ -4,6 +4,7 @@
 {% block header_title %}Painel do Cliente: {{ cliente_obj }}{% endblock %}
 {% block header_subtitle %}<span>Estatísticas do dashboard de números úteis e painel visual global.</span>{% endblock %}
 {% block header_actions %}
+<a href="{% url 'admin_editar_cliente' cliente_obj.id %}" class="btn btn-secondary">Editar titular</a>
 <a href="{% url 'admin_relatorio_cliente_pdf' cliente_obj.id %}" class="btn btn-primary" target="_blank">Relatório PDF</a>
 <a href="{{ cliente_back_url }}" class="btn btn-secondary">Voltar</a>
 {% endblock %}
