@@ -68,7 +68,12 @@
         <tbody>
           {% for row in page_rows %}
           <tr>
-            <td data-label="Titular / Conta">{{ row.conta.nome }}</td>
+            <td data-label="Titular / Conta">
+              <div class="admin-managed__titular-cell">
+                <strong>{{ row.conta.nome }}</strong>
+                <small class="admin-managed__titular-tipo admin-managed__titular-tipo--conta_administrada">Conta administrada</small>
+              </div>
+            </td>
             <td data-label="Programas">
               {{ row.programas_nomes }}
               <br><small>{{ row.programas_count }} programa(s)</small>

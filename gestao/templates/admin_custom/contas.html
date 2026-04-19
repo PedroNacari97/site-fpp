@@ -82,15 +82,17 @@
             {% for conta in page_obj %}
               <tr>
                 <td data-label="Titular">
+                  <div class="loyalty-accounts__titular-cell">
                   {% if conta.cliente_id %}
-                    {{ conta.cliente.usuario.get_full_name|default:conta.cliente.usuario.username }}<br>
-                    <small>Cliente</small>
+                    <strong>{{ conta.cliente.usuario.get_full_name|default:conta.cliente.usuario.username }}</strong>
+                    <small class="loyalty-accounts__titular-tipo loyalty-accounts__titular-tipo--{{ conta.cliente.tipo_cliente|default:"passageiro_direto" }}">{{ conta.cliente.get_tipo_cliente_display|default:"Passageiro direto" }}</small>
                   {% elif conta.conta_administrada_id %}
-                    {{ conta.conta_administrada.nome }}<br>
-                    <small>Conta administrada</small>
+                    <strong>{{ conta.conta_administrada.nome }}</strong>
+                    <small class="loyalty-accounts__titular-tipo loyalty-accounts__titular-tipo--conta_administrada">Conta administrada</small>
                   {% else %}
                     -
                   {% endif %}
+                  </div>
                 </td>
                 <td data-label="Programa">{{ conta.programa.nome }}</td>
                 <td data-label="Pontos">{{ conta.saldo_pontos }}</td>

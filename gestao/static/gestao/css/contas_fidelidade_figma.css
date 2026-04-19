@@ -238,6 +238,31 @@
   color: var(--loyalty-text-muted);
 }
 
+.loyalty-accounts__titular-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.loyalty-accounts__titular-cell strong {
+  font-weight: 600;
+}
+
+.loyalty-accounts__titular-tipo {
+  font-size: 10.5px;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.loyalty-accounts__titular-tipo--concierge { color: #c4b5fd; }
+.loyalty-accounts__titular-tipo--intermediario { color: #fcd34d; }
+.loyalty-accounts__titular-tipo--conta_administrada { color: #6ee7b7; }
+.loyalty-accounts__titular-tipo--emissor_parceiro { color: #67e8f9; }
+.loyalty-accounts__titular-tipo--passageiro_direto { color: #93c5fd; }
+
 .loyalty-accounts__card-footer {
   padding: 14px 20px;
   border-top: 1px solid var(--loyalty-border);

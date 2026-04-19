@@ -225,6 +225,31 @@
   color: var(--managed-text);
 }
 
+.admin-managed__titular-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-managed__titular-cell strong {
+  font-weight: 600;
+}
+
+.admin-managed__titular-tipo {
+  font-size: 10.5px;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.admin-managed__titular-tipo--concierge { color: #c4b5fd; }
+.admin-managed__titular-tipo--intermediario { color: #fcd34d; }
+.admin-managed__titular-tipo--conta_administrada { color: #6ee7b7; }
+.admin-managed__titular-tipo--emissor_parceiro { color: #67e8f9; }
+.admin-managed__titular-tipo--passageiro_direto { color: #93c5fd; }
+
 .admin-managed__status {
   min-height: 24px;
   padding: 4px 10px;
