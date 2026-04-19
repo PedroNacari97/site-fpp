@@ -45,6 +45,10 @@
     destinoField: qs("#id_aeroporto_destino"),
     companhiaField: qs("#id_companhia_aerea"),
     dataIda: qs("#id_data_ida"),
+    duracaoIda: qs("#id_duracao_voo_ida_minutos"),
+    fusoIda: qs("#id_fuso_horario_ida"),
+    routeArrivalIda: qs("#route-preview-arrival-ida"),
+    routeArrivalVolta: qs("#route-preview-arrival-volta"),
     bagagemMao: qs("#id_bagagem_mao"),
     bagagemDespachada: qs("#id_bagagem_despachada"),
     pontos: qs("#id_pontos_utilizados"),
@@ -63,6 +67,8 @@
     economiaHighlight: qs("#economia-highlight"),
     possuiVolta: qs("#possui-volta"),
     dataVolta: qs("#id_data_volta"),
+    duracaoVolta: qs("#id_duracao_voo_volta_minutos"),
+    fusoVolta: qs("#id_fuso_horario_volta"),
     vooVoltaCard: qs("#voo-volta-card"),
     escalaIdaToggle: qs("#ida-tem-escala"),
     escalaIdaWrapper: qs("#escala-ida-wrapper"),
@@ -116,6 +122,35 @@
   function formatCurrency(value) {
     const numeric = Number.isFinite(Number(value)) ? Number(value) : 0;
     return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(numeric);
+  }
+
+  function formatDateTime(value) {
+    if (!value) return "";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return new Intl.DateTimeFormat("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(parsed);
+  }
+
+  function parseDurationMinutes(value) {
+    if (!value) return 0;
+    const [hours, minutes] = String(value).split(":").map((item) => Number(item || 0));
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return 0;
+    return (hours * 60) + minutes;
+  }
+
+  function calculateArrival(departureValue, durationMinutes, timezoneOffsetHours) {
+    if (!departureValue || !durationMinutes) return null;
+    const departure = new Date(departureValue);
+    if (Number.isNaN(departure.getTime())) return null;
+    return new Date(departure.getTime() + ((durationMinutes + (timezoneOffsetHours * 60)) * 60000));
+  }
+
+  function toNumberSafe(value) {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : 0;
   }
 
   function buildContextUrl(template, id) {
@@ -320,8 +355,16 @@
     const idaTemEscala = Number(refs.qtdEscalasIda?.value || 0) > 0;
     const voltaTemEscala = Number(refs.qtdEscalasVolta?.value || 0) > 0;
     const total = passengerKinds.reduce((sum, item) => sum + Number(item.field?.value || 0), 0);
+    const duracaoIdaMinutos = parseDurationMinutes(refs.duracaoIda?.value);
+    const duracaoVoltaMinutos = parseDurationMinutes(refs.duracaoVolta?.value);
+    const fusoIdaHoras = toNumberSafe(refs.fusoIda?.value);
+    const fusoVoltaHoras = toNumberSafe(refs.fusoVolta?.value);
+    const chegadaIda = calculateArrival(dataIda, duracaoIdaMinutos, fusoIdaHoras);
+    const chegadaVolta = hasVolta() ? calculateArrival(dataVolta, duracaoVoltaMinutos, fusoVoltaHoras) : null;
     if (refs.routeOrigin) refs.routeOrigin.textContent = origem;
     if (refs.routeDestination) refs.routeDestination.textContent = destino;
+    if (refs.routeArrivalIda) refs.routeArrivalIda.textContent = chegadaIda ? formatDateTime(chegadaIda) : "--";
+    if (refs.routeArrivalVolta) refs.routeArrivalVolta.textContent = chegadaVolta ? formatDateTime(chegadaVolta) : "--";
     if (refs.resumoTrechos) refs.resumoTrechos.textContent = origem !== "-" && destino !== "-" ? `${origem} -> ${destino}${idaTemEscala ? " | Ida com escala" : ""}${voltaTemEscala ? " | Volta com escala" : ""}` : "Preencha partida e destino.";
     if (refs.resumoDatas) refs.resumoDatas.textContent = `${dataIda ? `Ida: ${dataIda}` : "Ida pendente"} | ${hasVolta() ? (dataVolta ? `Volta: ${dataVolta}` : "Volta pendente") : "Somente ida"}`;
     if (refs.resumoPassageiros) refs.resumoPassageiros.textContent = `${total} passageiro(s)`;

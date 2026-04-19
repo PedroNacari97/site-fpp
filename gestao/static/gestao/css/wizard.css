@@ -265,6 +265,25 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.wizard-arrival-card {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--wizard-border);
+  background: var(--wizard-surface-2);
+}
+
+.wizard-arrival-card strong {
+  color: var(--wizard-text);
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .wizard-label {
   display: block;
   margin-bottom: 8px;
