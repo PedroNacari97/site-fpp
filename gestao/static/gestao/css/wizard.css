@@ -470,15 +470,16 @@
 
 .route-preview__point strong {
   display: block;
-  margin-top: 6px;
-  font-size: 28px;
-  font-weight: 700;
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--wizard-text);
+  line-height: 1.35;
 }
 
 .route-preview__arrow {
   color: var(--wizard-primary);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
 }
 
@@ -495,6 +496,26 @@
 .toggle-panel--stack {
   justify-content: flex-start;
   gap: 16px;
+}
+
+.toggle-panel--inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px 28px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+}
+
+.toggle-panel--inline .toggle-pill {
+  min-height: 32px;
+}
+
+.toggle-panel--inline .wizard-helper {
+  margin: 0;
+  flex: 1 1 180px;
+  min-width: 140px;
+  font-size: 12px;
 }
 
 .toggle-pill {

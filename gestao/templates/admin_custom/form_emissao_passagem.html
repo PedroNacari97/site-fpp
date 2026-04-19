@@ -172,23 +172,22 @@
                         </div>
                     </div>
 
-                    <div class="wizard-grid wizard-grid--double">
-                        <div>
-                            <label class="wizard-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span class="required-asterisk">*</span></label>
-                            {{ form.data_ida }}
-                        </div>
-                        <div class="toggle-panel toggle-panel--stack">
-                            <label class="toggle-pill" for="ida-tem-escala">
-                                <input type="checkbox" id="ida-tem-escala" name="ida_tem_escala">
-                                Possui escala?
-                            </label>
-                            <p class="wizard-helper">Ative para adicionar escalas no voo de ida.</p>
-                            <label class="toggle-pill" for="possui-volta">
-                                <input type="checkbox" id="possui-volta">
-                                Possui voo de volta?
-                            </label>
-                            <p class="wizard-helper">Ative para informar o trecho de retorno.</p>
-                        </div>
+                    <div class="wizard-block">
+                        <label class="wizard-label" for="{{ form.data_ida.id_for_label }}">Data e horário da ida <span class="required-asterisk">*</span></label>
+                        {{ form.data_ida }}
+                    </div>
+
+                    <div class="toggle-panel toggle-panel--inline">
+                        <label class="toggle-pill" for="ida-tem-escala">
+                            <input type="checkbox" id="ida-tem-escala" name="ida_tem_escala">
+                            Possui escala?
+                        </label>
+                        <p class="wizard-helper">Ative para adicionar escalas no voo de ida.</p>
+                        <label class="toggle-pill" for="possui-volta">
+                            <input type="checkbox" id="possui-volta">
+                            Possui voo de volta?
+                        </label>
+                        <p class="wizard-helper">Ative para informar o trecho de retorno.</p>
                     </div>
 
                     <div class="wizard-grid wizard-grid--triple">
