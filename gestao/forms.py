@@ -773,6 +773,11 @@ class EmissaoPassagemForm(forms.ModelForm):
         self.fields["conta_administrada"].queryset = contas_adm_qs
         self.fields["bagagem_mao"].required = False
         self.fields["bagagem_despachada"].required = False
+        self.fields["valor_referencia"].required = False
+        if "valor_taxas" in self.fields:
+            self.fields["valor_taxas"].required = False
+        if "valor_total_final" in self.fields:
+            self.fields["valor_total_final"].required = False
         self.fields["bagagem_mao"].choices = [
             ("", "Sob consulta"),
             *self.fields["bagagem_mao"].choices,
@@ -977,8 +982,6 @@ class PassageiroFrequenteForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        if not (cleaned.get("rg") or "").strip():
-            self.add_error("rg", "Informe o RG.")
         passaporte = (cleaned.get("passaporte") or "").strip()
         if passaporte and not cleaned.get("passaporte_validade"):
             self.add_error("passaporte_validade", "Informe a validade do passaporte.")

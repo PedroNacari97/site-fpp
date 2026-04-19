@@ -66,7 +66,7 @@
                                 <p class="quote-helper">Habilitado apos selecionar o tipo.</p>
                             </div>
                             <div>
-                                <label class="quote-label" for="{{ form.programa.id_for_label }}">Programa de milhas</label>
+                                <label class="quote-label" for="{{ form.programa.id_for_label }}">Programa de milhas <span class="label-optional">(opcional)</span></label>
                                 {{ form.programa }}
                                 <p class="quote-helper">Opcional. Use quando a cotacao ja estiver vinculada a um programa.</p>
                             </div>
@@ -74,7 +74,7 @@
 
                         <div id="conta-adm-wrapper" class="quote-grid quote-grid--single" style="display:none;">
                             <div>
-                                <label class="quote-label" for="{{ form.conta_administrada.id_for_label }}">Conta administrada</label>
+                                <label class="quote-label" for="{{ form.conta_administrada.id_for_label }}">Conta administrada <span class="label-optional">(opcional)</span></label>
                                 {{ form.conta_administrada }}
                                 <p class="quote-helper">Use somente quando a cotacao sair de uma conta da operacao.</p>
                             </div>
@@ -177,12 +177,12 @@
 
                             <div class="quote-grid quote-grid--three">
                                 <div>
-                                    <label class="quote-label" for="{{ form.duracao_voo_ida_minutos.id_for_label }}">Tempo de voo da ida</label>
+                                    <label class="quote-label" for="{{ form.duracao_voo_ida_minutos.id_for_label }}">Tempo de voo da ida <span class="label-optional">(opcional)</span></label>
                                     {{ form.duracao_voo_ida_minutos }}
                                     <p class="quote-helper">Use HH:MM para calcular automaticamente o horario de chegada.</p>
                                 </div>
                                 <div id="ida-fuso-wrapper" class="quote-field-collapsible">
-                                    <label class="quote-label" for="{{ form.fuso_horario_ida.id_for_label }}">Diferenca de fuso da ida</label>
+                                    <label class="quote-label" for="{{ form.fuso_horario_ida.id_for_label }}">Diferenca de fuso da ida <span class="label-optional">(opcional)</span></label>
                                     {{ form.fuso_horario_ida }}
                                     <p class="quote-helper">Exemplo: +1 se o destino estiver uma hora a frente.</p>
                                 </div>
@@ -219,7 +219,7 @@
 
                             <div class="quote-grid quote-grid--two">
                                 <div>
-                                    <label class="quote-label" for="{{ form.data_volta.id_for_label }}">Data e horario da volta</label>
+                                    <label class="quote-label" for="{{ form.data_volta.id_for_label }}">Data e horario da volta <span class="label-optional">(opcional)</span></label>
                                     {{ form.data_volta }}
                                     <p class="quote-helper">Deixe vazio quando for somente ida.</p>
                                 </div>
@@ -237,12 +237,12 @@
 
                             <div class="quote-grid quote-grid--three">
                                 <div>
-                                    <label class="quote-label" for="{{ form.duracao_voo_volta_minutos.id_for_label }}">Tempo de voo da volta</label>
+                                    <label class="quote-label" for="{{ form.duracao_voo_volta_minutos.id_for_label }}">Tempo de voo da volta <span class="label-optional">(opcional)</span></label>
                                     {{ form.duracao_voo_volta_minutos }}
                                     <p class="quote-helper">Preencha quando a proposta incluir retorno.</p>
                                 </div>
                                 <div id="volta-fuso-wrapper" class="quote-field-collapsible">
-                                    <label class="quote-label" for="{{ form.fuso_horario_volta.id_for_label }}">Diferenca de fuso da volta</label>
+                                    <label class="quote-label" for="{{ form.fuso_horario_volta.id_for_label }}">Diferenca de fuso da volta <span class="label-optional">(opcional)</span></label>
                                     {{ form.fuso_horario_volta }}
                                     <p class="quote-helper">Use sinal negativo se o destino voltar no horario local.</p>
                                 </div>
@@ -316,17 +316,17 @@
                                     <p class="quote-helper">Use o valor de mercado por pessoa para comparar a proposta.</p>
                                 </div>
                                 <div>
-                                    <label class="quote-label" for="{{ form.milhas.id_for_label }}">Pontos / milhas</label>
+                                    <label class="quote-label" for="{{ form.milhas.id_for_label }}">Pontos / milhas <span class="label-optional">(opcional)</span></label>
                                     {{ form.milhas }}
                                 </div>
                                 <div>
-                                    <label class="quote-label" for="{{ form.valor_milheiro.id_for_label }}">Valor do milheiro (R$)</label>
+                                    <label class="quote-label" for="{{ form.valor_milheiro.id_for_label }}">Valor do milheiro (R$) <span class="label-optional">(opcional)</span></label>
                                     {{ form.valor_milheiro }}
                                 </div>
                             </div>
                             <div class="quote-grid quote-grid--single" style="margin-top:0.75rem;">
                                 <div>
-                                    <label class="quote-label" for="{{ form.valor_referencia_manual.id_for_label }}">Valor de referencia manual (R$)</label>
+                                    <label class="quote-label" for="{{ form.valor_referencia_manual.id_for_label }}">Valor de referencia manual (R$) <span class="label-optional">(opcional)</span></label>
                                     {{ form.valor_referencia_manual }}
                                     <p class="quote-helper">Opcional. Se preenchido, sobrescreve o valor calculado pelas milhas como referencia da cotacao.</p>
                                 </div>
@@ -348,15 +348,15 @@
                             <h3 class="quote-value-group__title">Parcelamento e descontos</h3>
                             <div class="quote-grid quote-grid--four">
                                 <div id="parcelado-config-wrapper">
-                                    <label class="quote-label" for="{{ form.parcelas.id_for_label }}">Parcelas s/ juros</label>
+                                    <label class="quote-label" for="{{ form.parcelas.id_for_label }}">Parcelas s/ juros <span class="label-optional">(opcional)</span></label>
                                     {{ form.parcelas }}
                                 </div>
                                 <div id="juros-config-wrapper">
-                                    <label class="quote-label" for="{{ form.juros.id_for_label }}">Juros (%)</label>
+                                    <label class="quote-label" for="{{ form.juros.id_for_label }}">Juros (%) <span class="label-optional">(opcional)</span></label>
                                     {{ form.juros }}
                                 </div>
                                 <div>
-                                    <label class="quote-label" for="{{ form.desconto.id_for_label }}">Desconto (%)</label>
+                                    <label class="quote-label" for="{{ form.desconto.id_for_label }}">Desconto (%) <span class="label-optional">(opcional)</span></label>
                                     {{ form.desconto }}
                                 </div>
                                 <div class="quote-choice-panel">
@@ -396,7 +396,7 @@
                             <h3 class="quote-value-group__title">Status e validade</h3>
                             <div class="quote-grid quote-grid--two">
                                 <div>
-                                    <label class="quote-label" for="{{ form.validade.id_for_label }}">Validade da cotacao</label>
+                                    <label class="quote-label" for="{{ form.validade.id_for_label }}">Validade da cotacao <span class="label-optional">(opcional)</span></label>
                                     {{ form.validade }}
                                 </div>
                                 <div>
@@ -406,7 +406,7 @@
                             </div>
                             <div class="quote-grid quote-grid--single">
                                 <div>
-                                    <label class="quote-label" for="{{ form.observacoes.id_for_label }}">Observacoes internas</label>
+                                    <label class="quote-label" for="{{ form.observacoes.id_for_label }}">Observacoes internas <span class="label-optional">(opcional)</span></label>
                                     {{ form.observacoes }}
                                 </div>
                             </div>

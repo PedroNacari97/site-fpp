@@ -124,6 +124,11 @@ def _build_passageiros_context(emissao):
                         "label": "Passaporte",
                         "value": passageiro.passaporte or "Nao informado",
                     },
+                    {"label": "Email", "value": passageiro.email or "Nao informado"},
+                    {
+                        "label": "Telefone",
+                        "value": passageiro.telefone or "Nao informado",
+                    },
                 ],
             }
         )

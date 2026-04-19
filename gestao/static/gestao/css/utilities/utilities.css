@@ -6,6 +6,13 @@
   color: var(--color-danger);
 }
 
+.label-optional {
+  color: var(--color-text-muted, #94a3b8);
+  font-weight: 400;
+  font-size: 0.8125em;
+  margin-left: 4px;
+}
+
 .alert-rounded {
   border-radius: var(--radius-lg);
 }

@@ -113,7 +113,7 @@
                     </div>
 
                     <div id="emissor-parceiro-wrapper" class="wizard-block">
-                        <label class="wizard-label" for="{{ form.emissor_parceiro.id_for_label }}">Emissor parceiro</label>
+                        <label class="wizard-label" for="{{ form.emissor_parceiro.id_for_label }}">Emissor parceiro <span class="label-optional">(opcional)</span></label>
                         {{ form.emissor_parceiro }}
                         <p class="wizard-helper">Obrigatório quando o tipo de emissão for emissor parceiro.</p>
                     </div>
@@ -185,12 +185,12 @@
 
                     <div class="wizard-grid wizard-grid--triple">
                         <div>
-                            <label class="wizard-label" for="{{ form.duracao_voo_ida_minutos.id_for_label }}">Tempo de voo da ida</label>
+                            <label class="wizard-label" for="{{ form.duracao_voo_ida_minutos.id_for_label }}">Tempo de voo da ida <span class="label-optional">(opcional)</span></label>
                             {{ form.duracao_voo_ida_minutos }}
                             <p class="wizard-helper">Use HH:MM para calcular automaticamente o horário de chegada.</p>
                         </div>
                         <div>
-                            <label class="wizard-label" for="{{ form.fuso_horario_ida.id_for_label }}">Diferença de fuso da ida</label>
+                            <label class="wizard-label" for="{{ form.fuso_horario_ida.id_for_label }}">Diferença de fuso da ida <span class="label-optional">(opcional)</span></label>
                             {{ form.fuso_horario_ida }}
                             <p class="wizard-helper">Exemplo: +1 se o destino estiver uma hora à frente.</p>
                         </div>
@@ -205,12 +205,12 @@
 
                     <div class="wizard-grid wizard-grid--double">
                         <div>
-                            <label class="wizard-label" for="{{ form.bagagem_mao.id_for_label }}">Bagagem de mao</label>
+                            <label class="wizard-label" for="{{ form.bagagem_mao.id_for_label }}">Bagagem de mao <span class="label-optional">(opcional)</span></label>
                             {{ form.bagagem_mao }}
                             <p class="wizard-helper">Defina a franquia prevista para o embarque desta emissao.</p>
                         </div>
                         <div>
-                            <label class="wizard-label" for="{{ form.bagagem_despachada.id_for_label }}">Bagagem despachada</label>
+                            <label class="wizard-label" for="{{ form.bagagem_despachada.id_for_label }}">Bagagem despachada <span class="label-optional">(opcional)</span></label>
                             {{ form.bagagem_despachada }}
                             <p class="wizard-helper">Use &quot;Sob consulta&quot; quando a regra ainda depender da tarifa ou companhia.</p>
                         </div>
@@ -235,7 +235,7 @@
                     </div>
                     <div class="wizard-grid wizard-grid--double">
                         <div>
-                            <label class="wizard-label" for="{{ form.data_volta.id_for_label }}">Data e horário da volta</label>
+                            <label class="wizard-label" for="{{ form.data_volta.id_for_label }}">Data e horário da volta <span class="label-optional">(opcional)</span></label>
                             {{ form.data_volta }}
                             <p class="wizard-helper">Deixe vazio caso seja somente ida.</p>
                         </div>
@@ -250,12 +250,12 @@
 
                     <div class="wizard-grid wizard-grid--triple">
                         <div>
-                            <label class="wizard-label" for="{{ form.duracao_voo_volta_minutos.id_for_label }}">Tempo de voo da volta</label>
+                            <label class="wizard-label" for="{{ form.duracao_voo_volta_minutos.id_for_label }}">Tempo de voo da volta <span class="label-optional">(opcional)</span></label>
                             {{ form.duracao_voo_volta_minutos }}
                             <p class="wizard-helper">Preencha quando a proposta incluir retorno.</p>
                         </div>
                         <div>
-                            <label class="wizard-label" for="{{ form.fuso_horario_volta.id_for_label }}">Diferença de fuso da volta</label>
+                            <label class="wizard-label" for="{{ form.fuso_horario_volta.id_for_label }}">Diferença de fuso da volta <span class="label-optional">(opcional)</span></label>
                             {{ form.fuso_horario_volta }}
                             <p class="wizard-helper">Use sinal negativo se o destino voltar no horário local.</p>
                         </div>
@@ -311,16 +311,17 @@
 
                     <div class="wizard-grid wizard-grid--triple">
                         <div>
-                            <label class="wizard-label" for="{{ form.pontos_utilizados.id_for_label }}">Quantidade de milhas</label>
+                            <label class="wizard-label" for="{{ form.pontos_utilizados.id_for_label }}">Quantidade de milhas <span class="label-optional">(opcional)</span></label>
                             {{ form.pontos_utilizados }}
                         </div>
                         <div>
-                            <label class="wizard-label" for="{{ form.valor_referencia_pontos.id_for_label }}">Custo das milhas (R$)</label>
+                            <label class="wizard-label" for="{{ form.valor_referencia_pontos.id_for_label }}">Custo das milhas (R$) <span class="label-optional">(opcional)</span></label>
                             {{ form.valor_referencia_pontos }}
                         </div>
                         <div>
                             <label class="wizard-label" for="{{ form.valor_taxas.id_for_label }}">Taxas (R$) <span class="required-asterisk">*</span></label>
                             {{ form.valor_taxas }}
+                            <p class="wizard-helper" data-rule-for="valor_taxas">Taxas da companhia aérea e aeroporto. Somam no valor total.</p>
                         </div>
                     </div>
 
@@ -332,58 +333,60 @@
 
                     <div class="wizard-grid wizard-grid--financial">
                         <div id="valor-milheiro-parceiro-wrapper">
-                            <label class="wizard-label" for="{{ form.valor_milheiro_parceiro.id_for_label }}">Valor do milheiro (R$)</label>
+                            <label class="wizard-label" for="{{ form.valor_milheiro_parceiro.id_for_label }}">Valor do milheiro (R$) <span class="label-optional">(opcional)</span></label>
                             {{ form.valor_milheiro_parceiro }}
                             <p class="wizard-helper">Automático para conta do cliente e conta administrada. Manual para emissor parceiro.</p>
                         </div>
                         <div id="valor-venda-final-wrapper">
-                            <label class="wizard-label" for="{{ form.valor_venda_final.id_for_label }}">Valor final ao cliente (R$)</label>
+                            <label class="wizard-label" for="{{ form.valor_venda_final.id_for_label }}">Valor venda milhas (R$) <span class="required-asterisk">*</span></label>
                             {{ form.valor_venda_final }}
+                            <p class="wizard-helper" data-rule-for="valor_venda_final">Valor das milhas vendidas ao cliente (sem taxas).</p>
                         </div>
                         <div id="valor-total-final-wrapper">
-                            <label class="wizard-label" for="{{ form.valor_total_final.id_for_label }}">Valor total final (R$)</label>
+                            <label class="wizard-label" for="{{ form.valor_total_final.id_for_label }}">Valor total final (R$) <span class="label-optional">(auto)</span></label>
                             {{ form.valor_total_final }}
+                            <p class="wizard-helper" data-rule-for="valor_total_final">Soma automática: valor venda milhas + taxas.</p>
                         </div>
                         <div id="lucro-wrapper">
-                            <label class="wizard-label" for="{{ form.lucro.id_for_label }}">Lucro (R$)</label>
+                            <label class="wizard-label" for="{{ form.lucro.id_for_label }}">Lucro (R$) <span class="label-optional">(auto)</span></label>
                             {{ form.lucro }}
                         </div>
                         <div>
-                            <label class="wizard-label" for="{{ form.custo_emissor.id_for_label }}">Custo emissor (R$)</label>
+                            <label class="wizard-label" for="{{ form.custo_emissor.id_for_label }}">Custo emissor (R$) <span class="label-optional">(opcional)</span></label>
                             {{ form.custo_emissor }}
                         </div>
                         <div>
-                            <label class="wizard-label" for="{{ form.valor_cobrado_cliente.id_for_label }}">Valor cobrado cliente (R$)</label>
+                            <label class="wizard-label" for="{{ form.valor_cobrado_cliente.id_for_label }}">Valor cobrado cliente (R$) <span class="label-optional">(opcional)</span></label>
                             {{ form.valor_cobrado_cliente }}
                         </div>
                         <div>
-                            <label class="wizard-label" for="{{ form.milhas_do_cliente.id_for_label }}">Milhas do cliente?</label>
+                            <label class="wizard-label" for="{{ form.milhas_do_cliente.id_for_label }}">Milhas do cliente? <span class="label-optional">(opcional)</span></label>
                             {{ form.milhas_do_cliente }}
                         </div>
                     </div>
 
                     <div class="wizard-grid wizard-grid--double">
                         <div>
-                            <label class="wizard-label" for="{{ form.valor_referencia.id_for_label }}">Valor de referência (R$) <span class="required-asterisk">*</span></label>
+                            <label class="wizard-label" for="{{ form.valor_referencia.id_for_label }}">Valor de referência (R$) <span class="label-optional">(opcional)</span></label>
                             {{ form.valor_referencia }}
                         </div>
                         <div>
-                            <label class="wizard-label" for="{{ form.economia_obtida.id_for_label }}">Economia obtida (R$)</label>
+                            <label class="wizard-label" for="{{ form.economia_obtida.id_for_label }}">Economia obtida (R$) <span class="label-optional">(auto)</span></label>
                             {{ form.economia_obtida }}
                         </div>
                     </div>
 
                     <div class="wizard-grid wizard-grid--triple">
                         <div>
-                            <label class="wizard-label" for="{{ form.hotel_vinculado.id_for_label }}">Hotel vinculado</label>
+                            <label class="wizard-label" for="{{ form.hotel_vinculado.id_for_label }}">Hotel vinculado <span class="label-optional">(opcional)</span></label>
                             {{ form.hotel_vinculado }}
                         </div>
                         <div>
-                            <label class="wizard-label" for="{{ form.criar_hotel_nome.id_for_label }}">Ou criar novo hotel</label>
+                            <label class="wizard-label" for="{{ form.criar_hotel_nome.id_for_label }}">Ou criar novo hotel <span class="label-optional">(opcional)</span></label>
                             {{ form.criar_hotel_nome }}
                         </div>
                         <div>
-                            <label class="wizard-label" for="{{ form.criar_hotel_check_in.id_for_label }}">Check-in / Check-out</label>
+                            <label class="wizard-label" for="{{ form.criar_hotel_check_in.id_for_label }}">Check-in / Check-out <span class="label-optional">(opcional)</span></label>
                             <div class="checkin-grid">{{ form.criar_hotel_check_in }}{{ form.criar_hotel_check_out }}</div>
                         </div>
                     </div>
@@ -394,13 +397,13 @@
                             {{ form.localizador }}
                         </div>
                         <div>
-                            <label class="wizard-label" for="{{ form.detalhes.id_for_label }}">Observações</label>
+                            <label class="wizard-label" for="{{ form.detalhes.id_for_label }}">Observações <span class="label-optional">(opcional)</span></label>
                             {{ form.detalhes }}
                         </div>
                     </div>
                     <div class="wizard-grid wizard-grid--double" style="margin-top:1.25rem;">
                         <div>
-                            <label class="wizard-label" for="{{ form.comprovante_pagamento.id_for_label }}">Comprovante de pagamento</label>
+                            <label class="wizard-label" for="{{ form.comprovante_pagamento.id_for_label }}">Comprovante de pagamento <span class="label-optional">(opcional)</span></label>
                             {% if form.instance.pk and form.instance.comprovante_pagamento %}
                             <p class="wizard-helper" style="margin-bottom:0.4rem;">
                                 Arquivo atual:

@@ -224,6 +224,8 @@ def emissao_passageiro_frequente_detalhe(request, passageiro_id):
             "passaporte": passageiro.passaporte or "",
             "passaporte_validade": passageiro.passaporte_validade.isoformat() if passageiro.passaporte_validade else "",
             "data_nascimento": passageiro.data_nascimento.isoformat() if passageiro.data_nascimento else "",
+            "email": getattr(passageiro, "email", "") or "",
+            "telefone": getattr(passageiro, "telefone", "") or "",
         }
     )
 
@@ -300,6 +302,8 @@ def _parse_passageiros(post_data):
         passaporte = post_data.get(f"passageiro-{i}-passaporte")
         passaporte_validade = post_data.get(f"passageiro-{i}-passaporte-validade")
         data_nascimento = post_data.get(f"passageiro-{i}-data-nascimento")
+        email = post_data.get(f"passageiro-{i}-email")
+        telefone = post_data.get(f"passageiro-{i}-telefone")
         observacoes = post_data.get(f"passageiro-{i}-observacoes")
         categoria = post_data.get(f"passageiro-{i}-categoria")
 
@@ -311,6 +315,8 @@ def _parse_passageiros(post_data):
                 "passaporte": passaporte,
                 "passaporte_validade": passaporte_validade,
                 "data_nascimento": data_nascimento,
+                "email": email,
+                "telefone": telefone,
                 "observacoes": observacoes,
                 "categoria": categoria,
             }
@@ -373,6 +379,8 @@ def _validate_passageiros(passageiros):
         passageiro["nome"] = nome
         passageiro["passaporte"] = passaporte
         passageiro["rg"] = (passageiro.get("rg") or "").strip()
+        passageiro["email"] = (passageiro.get("email") or "").strip()
+        passageiro["telefone"] = (passageiro.get("telefone") or "").strip()
         passageiro["observacoes"] = (passageiro.get("observacoes") or "").strip()
     return errors
 
@@ -766,6 +774,8 @@ def nova_emissao(request):
                                 passaporte=passageiro.get("passaporte"),
                                 passaporte_validade=passageiro.get("passaporte_validade"),
                                 data_nascimento=passageiro.get("data_nascimento"),
+                                email=passageiro.get("email") or "",
+                                telefone=passageiro.get("telefone") or "",
                                 observacoes=passageiro.get("observacoes"),
                                 categoria=passageiro.get("categoria"),
                             )
@@ -914,6 +924,8 @@ def editar_emissao(request, emissao_id):
                                 "passaporte",
                                 "passaporte_validade",
                                 "data_nascimento",
+                                "email",
+                                "telefone",
                                 "observacoes",
                                 "categoria",
                             )
@@ -926,6 +938,8 @@ def editar_emissao(request, emissao_id):
                                 "passaporte",
                                 "passaporte_validade",
                                 "data_nascimento",
+                                "email",
+                                "telefone",
                                 "observacoes",
                                 "categoria",
                             )
@@ -938,6 +952,8 @@ def editar_emissao(request, emissao_id):
                                 "passaporte",
                                 "passaporte_validade",
                                 "data_nascimento",
+                                "email",
+                                "telefone",
                                 "observacoes",
                                 "categoria",
                             )
@@ -991,6 +1007,8 @@ def editar_emissao(request, emissao_id):
                                 "passaporte",
                                 "passaporte_validade",
                                 "data_nascimento",
+                                "email",
+                                "telefone",
                                 "observacoes",
                                 "categoria",
                             )
@@ -1003,6 +1021,8 @@ def editar_emissao(request, emissao_id):
                                 "passaporte",
                                 "passaporte_validade",
                                 "data_nascimento",
+                                "email",
+                                "telefone",
                                 "observacoes",
                                 "categoria",
                             )
@@ -1015,6 +1035,8 @@ def editar_emissao(request, emissao_id):
                                 "passaporte",
                                 "passaporte_validade",
                                 "data_nascimento",
+                                "email",
+                                "telefone",
                                 "observacoes",
                                 "categoria",
                             )
@@ -1042,6 +1064,8 @@ def editar_emissao(request, emissao_id):
                             passaporte=passageiro.get("passaporte"),
                             passaporte_validade=passageiro.get("passaporte_validade"),
                             data_nascimento=passageiro.get("data_nascimento"),
+                            email=passageiro.get("email") or "",
+                            telefone=passageiro.get("telefone") or "",
                             observacoes=passageiro.get("observacoes"),
                             categoria=passageiro.get("categoria"),
                         )
@@ -1080,6 +1104,8 @@ def editar_emissao(request, emissao_id):
             "passaporte",
             "passaporte_validade",
             "data_nascimento",
+            "email",
+            "telefone",
             "observacoes",
             "categoria",
         )
@@ -1092,6 +1118,8 @@ def editar_emissao(request, emissao_id):
             "passaporte",
             "passaporte_validade",
             "data_nascimento",
+            "email",
+            "telefone",
             "observacoes",
             "categoria",
         )
@@ -1104,6 +1132,8 @@ def editar_emissao(request, emissao_id):
             "passaporte",
             "passaporte_validade",
             "data_nascimento",
+            "email",
+            "telefone",
             "observacoes",
             "categoria",
         )

@@ -382,19 +382,43 @@
     const custoMilhas = (pontos / 1000) * valorMilheiro;
     if (refs.valorRefPontos) refs.valorRefPontos.value = custoMilhas ? String(custoMilhas.toFixed(2)) : "";
     const valorVenda = parseFloat(refs.vendaFinal?.value || 0);
-    const valorTotal = parseFloat(refs.valorTotalFinal?.value || 0);
+    const valorTotalAuto = (valorVenda || 0) + (valorTaxas || 0);
+    if (refs.valorTotalFinal) {
+      refs.valorTotalFinal.value = valorTotalAuto ? String(valorTotalAuto.toFixed(2)) : "";
+      refs.valorTotalFinal.setAttribute("readonly", "readonly");
+    }
+    const valorTotal = valorTotalAuto;
     const custoEmissor = parseFloat(refs.custoEmissor?.value || 0);
     const valorCobrado = parseFloat(refs.valorCobrado?.value || 0);
     const baseCusto = tipo === "cliente" ? custoMilhas + valorTaxas : custoMilhas;
     if (refs.economia) {
-      const valorCliente = tipo === "parceiro" ? valorCobrado : valorVenda || valorTotal || 0;
-      refs.economia.value = valorCliente ? String((valorCliente - valorReferencia).toFixed(2)) : "";
+      const valorCliente = tipo === "parceiro" ? valorCobrado : valorTotal || valorVenda || 0;
+      refs.economia.value = valorCliente && valorReferencia ? String((valorCliente - valorReferencia).toFixed(2)) : "";
     }
     if (refs.lucro) refs.lucro.value = tipo === "parceiro" ? (valorCobrado ? String((valorCobrado - custoEmissor).toFixed(2)) : "") : ((valorTotal || valorVenda) ? String(((valorTotal || valorVenda) - baseCusto).toFixed(2)) : "");
     if (refs.lucroHighlight) refs.lucroHighlight.textContent = formatCurrency(refs.lucro?.value || 0);
     if (refs.totalHighlight) refs.totalHighlight.textContent = formatCurrency(valorTotal || valorVenda || 0);
     if (refs.economiaHighlight) refs.economiaHighlight.textContent = formatCurrency(refs.economia?.value || 0);
+    updateValueRules(tipo);
     updateResumo();
+  }
+
+  function updateValueRules(tipo) {
+    const rules = {
+      valor_taxas: tipo === "administrada"
+        ? "Conta administrada: taxas pagas pela agência. Somam no valor total."
+        : "Taxas da companhia aérea e aeroporto. Somam no valor total.",
+      valor_venda_final: tipo === "administrada"
+        ? "Conta administrada: informe o valor das milhas vendidas (entrada manual)."
+        : tipo === "parceiro"
+          ? "Emissor parceiro: valor final cobrado ao cliente."
+          : "Valor das milhas vendidas ao cliente (sem taxas).",
+      valor_total_final: "Soma automática: valor venda milhas + taxas.",
+    };
+    Object.entries(rules).forEach(([name, text]) => {
+      const helper = document.querySelector(`[data-rule-for="${name}"]`);
+      if (helper) helper.textContent = text;
+    });
   }
 
   function setVoltaVisibility() {
@@ -419,13 +443,32 @@
     if (!shouldShow && currentStep === 3) currentStep = 4;
   }
 
+  function collectCurrentPassengerValues() {
+    const grouped = {};
+    const inputs = form.querySelectorAll('[name^="passageiro-"]');
+    inputs.forEach((input) => {
+      const match = input.name.match(/^passageiro-(\d+)-(.+)$/);
+      if (!match) return;
+      const [, idx, rawField] = match;
+      const field = rawField.replace(/-/g, "_");
+      grouped[idx] = grouped[idx] || {};
+      grouped[idx][field] = input.type === "checkbox" ? input.checked : input.value;
+    });
+    return Object.keys(grouped).sort((a, b) => Number(a) - Number(b)).map((key) => grouped[key]);
+  }
+
   function passengerSeed() {
+    const fromDom = collectCurrentPassengerValues();
+    if (fromDom.some((item) => Object.values(item).some((value) => value !== "" && value !== null && value !== undefined))) {
+      return fromDom;
+    }
     const grouped = {};
     Object.entries(loadedDraft || {}).forEach(([name, value]) => {
       const match = name.match(/^passageiro-(\d+)-(.+)$/);
       if (!match) return;
+      const field = match[2].replace(/-/g, "_");
       grouped[match[1]] = grouped[match[1]] || {};
-      grouped[match[1]][match[2]] = value;
+      grouped[match[1]][field] = value;
     });
     const fromDraft = Object.keys(grouped).sort((a, b) => Number(a) - Number(b)).map((key) => grouped[key]);
     return fromDraft.length ? fromDraft : context.passageirosData || [];
@@ -466,7 +509,7 @@
         ].join("");
         const card = document.createElement("div");
         card.className = "passenger-card passageiro-fields";
-        card.innerHTML = `<div class="passenger-card__head"><span class="passenger-card__badge passenger-card__badge--${kind.key}">${kind.title} ${position + 1}</span><button type="button" class="passenger-card__remove" data-remove-kind="${kind.key}">Remover</button></div><div class="passenger-card__fields"><div><label class="wizard-label">${kind.title} ${position + 1} - Passageiro frequente</label><select name="passageiro-${index}-frequente" data-passageiro-frequente="${index}">${options}</select></div><div><label class="wizard-label">Nome completo</label><input type="text" name="passageiro-${index}-nome" value="${previous.nome || ""}" required></div><div><label class="wizard-label">CPF</label><input type="text" name="passageiro-${index}-cpf" value="${previous.cpf || ""}" required></div><div><label class="wizard-label">RG</label><input type="text" name="passageiro-${index}-rg" value="${previous.rg || ""}"></div><div><label class="wizard-label">Passaporte</label><input type="text" name="passageiro-${index}-passaporte" value="${previous.passaporte || ""}"></div><div><label class="wizard-label">Validade do passaporte</label><input type="date" name="passageiro-${index}-passaporte-validade" value="${previous.passaporte_validade || ""}"></div><div><label class="wizard-label">Data de nascimento</label><input type="date" name="passageiro-${index}-data-nascimento" value="${previous.data_nascimento || ""}" required></div><div><label class="wizard-label">Observacoes</label><textarea name="passageiro-${index}-observacoes" rows="3">${previous.observacoes || ""}</textarea></div></div><input type="hidden" name="passageiro-${index}-categoria" value="${previous.categoria || kind.key}">`;
+        card.innerHTML = `<div class="passenger-card__head"><span class="passenger-card__badge passenger-card__badge--${kind.key}">${kind.title} ${position + 1}</span><button type="button" class="passenger-card__remove" data-remove-kind="${kind.key}">Remover</button></div><div class="passenger-card__fields"><div><label class="wizard-label">${kind.title} ${position + 1} - Passageiro frequente</label><select name="passageiro-${index}-frequente" data-passageiro-frequente="${index}">${options}</select></div><div><label class="wizard-label">Nome completo <span class="required-asterisk">*</span></label><input type="text" name="passageiro-${index}-nome" value="${previous.nome || ""}" required></div><div><label class="wizard-label">CPF <span class="required-asterisk">*</span></label><input type="text" name="passageiro-${index}-cpf" value="${previous.cpf || ""}" required></div><div><label class="wizard-label">RG <span class="label-optional">(opcional)</span></label><input type="text" name="passageiro-${index}-rg" value="${previous.rg || ""}"></div><div><label class="wizard-label">Passaporte <span class="label-optional">(opcional)</span></label><input type="text" name="passageiro-${index}-passaporte" value="${previous.passaporte || ""}"></div><div><label class="wizard-label">Validade do passaporte <span class="label-optional">(opcional)</span></label><input type="date" name="passageiro-${index}-passaporte-validade" value="${previous.passaporte_validade || ""}"></div><div><label class="wizard-label">Data de nascimento <span class="required-asterisk">*</span></label><input type="date" name="passageiro-${index}-data-nascimento" value="${previous.data_nascimento || ""}" required></div><div><label class="wizard-label">Email <span class="label-optional">(opcional)</span></label><input type="email" name="passageiro-${index}-email" value="${previous.email || ""}" placeholder="passageiro@exemplo.com"></div><div><label class="wizard-label">Telefone <span class="label-optional">(opcional)</span></label><input type="tel" name="passageiro-${index}-telefone" value="${previous.telefone || ""}" placeholder="(11) 99999-9999"></div><div><label class="wizard-label">Observacoes <span class="label-optional">(opcional)</span></label><textarea name="passageiro-${index}-observacoes" rows="3">${previous.observacoes || ""}</textarea></div></div><input type="hidden" name="passageiro-${index}-categoria" value="${previous.categoria || kind.key}">`;
         refs.passageirosContainer.appendChild(card);
         index += 1;
       }
@@ -486,34 +529,30 @@
       const clientContext = getCurrentClientContext();
       if (selectedValue === "__titular__" || selectedValue === "__cliente__") {
         const titularData = clientContext?.passageiros_frequentes?.find((item) => item.is_titular);
-        const nome = form.querySelector(`[name="passageiro-${indexValue}-nome"]`);
-        const cpf = form.querySelector(`[name="passageiro-${indexValue}-cpf"]`);
-        const rg = form.querySelector(`[name="passageiro-${indexValue}-rg"]`);
-        const passaporte = form.querySelector(`[name="passageiro-${indexValue}-passaporte"]`);
-        const passaporteValidade = form.querySelector(`[name="passageiro-${indexValue}-passaporte-validade"]`);
-        const dataNascimento = form.querySelector(`[name="passageiro-${indexValue}-data-nascimento"]`);
-        if (nome) nome.value = titularData?.nome || clientContext?.cliente?.nome || "";
-        if (cpf) cpf.value = titularData?.cpf || clientContext?.cliente?.cpf || "";
-        if (rg) rg.value = titularData?.rg || "";
-        if (passaporte) passaporte.value = titularData?.passaporte || "";
-        if (passaporteValidade) passaporteValidade.value = titularData?.passaporte_validade || "";
-        if (dataNascimento) dataNascimento.value = titularData?.data_nascimento || "";
+        fillPassengerFields(indexValue, {
+          nome: titularData?.nome || clientContext?.cliente?.nome || "",
+          cpf: titularData?.cpf || clientContext?.cliente?.cpf || "",
+          rg: titularData?.rg || "",
+          passaporte: titularData?.passaporte || "",
+          passaporte_validade: titularData?.passaporte_validade || "",
+          data_nascimento: titularData?.data_nascimento || "",
+          email: titularData?.email || clientContext?.cliente?.email || "",
+          telefone: titularData?.telefone || clientContext?.cliente?.telefone || "",
+        });
       } else if (selectedValue) {
         const lista = context.passageirosFrequentes?.[parseInt(refs.cliente?.value || 0, 10)] || [];
         const selected = lista.find((item) => String(item.id) === selectedValue);
         if (selected) {
-          const nome = form.querySelector(`[name="passageiro-${indexValue}-nome"]`);
-          const cpf = form.querySelector(`[name="passageiro-${indexValue}-cpf"]`);
-          const rg = form.querySelector(`[name="passageiro-${indexValue}-rg"]`);
-          const passaporte = form.querySelector(`[name="passageiro-${indexValue}-passaporte"]`);
-          const passaporteValidade = form.querySelector(`[name="passageiro-${indexValue}-passaporte-validade"]`);
-          const dataNascimento = form.querySelector(`[name="passageiro-${indexValue}-data-nascimento"]`);
-          if (nome) nome.value = selected.nome || "";
-          if (cpf) cpf.value = selected.cpf || "";
-          if (rg) rg.value = selected.rg || "";
-          if (passaporte) passaporte.value = selected.passaporte || "";
-          if (passaporteValidade) passaporteValidade.value = selected.passaporte_validade || "";
-          if (dataNascimento) dataNascimento.value = selected.data_nascimento || "";
+          fillPassengerFields(indexValue, {
+            nome: selected.nome || "",
+            cpf: selected.cpf || "",
+            rg: selected.rg || "",
+            passaporte: selected.passaporte || "",
+            passaporte_validade: selected.passaporte_validade || "",
+            data_nascimento: selected.data_nascimento || "",
+            email: selected.email || "",
+            telefone: selected.telefone || "",
+          });
         }
       }
       updateCpfLimite();
@@ -530,12 +569,16 @@
     const passaporte = form.querySelector(`[name="passageiro-${indexValue}-passaporte"]`);
     const passaporteValidade = form.querySelector(`[name="passageiro-${indexValue}-passaporte-validade"]`);
     const dataNascimento = form.querySelector(`[name="passageiro-${indexValue}-data-nascimento"]`);
+    const email = form.querySelector(`[name="passageiro-${indexValue}-email"]`);
+    const telefone = form.querySelector(`[name="passageiro-${indexValue}-telefone"]`);
     if (nome) nome.value = values?.nome || "";
     if (cpf) cpf.value = values?.cpf || "";
     if (rg) rg.value = values?.rg || "";
     if (passaporte) passaporte.value = values?.passaporte || "";
     if (passaporteValidade) passaporteValidade.value = values?.passaporte_validade || "";
     if (dataNascimento) dataNascimento.value = values?.data_nascimento || "";
+    if (email) email.value = values?.email || "";
+    if (telefone) telefone.value = values?.telefone || "";
   }
 
   renderPassengers = function renderPassengersSecure() {
@@ -562,7 +605,7 @@
         ].join("");
         const card = document.createElement("div");
         card.className = "passenger-card passageiro-fields";
-        card.innerHTML = `<div class="passenger-card__head"><span class="passenger-card__badge passenger-card__badge--${kind.key}">${kind.title} ${position + 1}</span><button type="button" class="passenger-card__remove" data-remove-kind="${kind.key}">Remover</button></div><div class="passenger-card__fields"><div><label class="wizard-label">${kind.title} ${position + 1} - Passageiro frequente</label><select name="passageiro-${index}-frequente" data-passageiro-frequente="${index}">${options}</select></div><div><label class="wizard-label">Nome completo</label><input type="text" name="passageiro-${index}-nome" value="${previous.nome || ""}" required></div><div><label class="wizard-label">CPF</label><input type="text" name="passageiro-${index}-cpf" value="${previous.cpf || ""}" required></div><div><label class="wizard-label">RG</label><input type="text" name="passageiro-${index}-rg" value="${previous.rg || ""}"></div><div><label class="wizard-label">Passaporte</label><input type="text" name="passageiro-${index}-passaporte" value="${previous.passaporte || ""}"></div><div><label class="wizard-label">Validade do passaporte</label><input type="date" name="passageiro-${index}-passaporte-validade" value="${previous.passaporte_validade || ""}"></div><div><label class="wizard-label">Data de nascimento</label><input type="date" name="passageiro-${index}-data-nascimento" value="${previous.data_nascimento || ""}" required></div><div><label class="wizard-label">Observacoes</label><textarea name="passageiro-${index}-observacoes" rows="3">${previous.observacoes || ""}</textarea></div></div><input type="hidden" name="passageiro-${index}-categoria" value="${previous.categoria || kind.key}">`;
+        card.innerHTML = `<div class="passenger-card__head"><span class="passenger-card__badge passenger-card__badge--${kind.key}">${kind.title} ${position + 1}</span><button type="button" class="passenger-card__remove" data-remove-kind="${kind.key}">Remover</button></div><div class="passenger-card__fields"><div><label class="wizard-label">${kind.title} ${position + 1} - Passageiro frequente</label><select name="passageiro-${index}-frequente" data-passageiro-frequente="${index}">${options}</select></div><div><label class="wizard-label">Nome completo <span class="required-asterisk">*</span></label><input type="text" name="passageiro-${index}-nome" value="${previous.nome || ""}" required></div><div><label class="wizard-label">CPF <span class="required-asterisk">*</span></label><input type="text" name="passageiro-${index}-cpf" value="${previous.cpf || ""}" required></div><div><label class="wizard-label">RG <span class="label-optional">(opcional)</span></label><input type="text" name="passageiro-${index}-rg" value="${previous.rg || ""}"></div><div><label class="wizard-label">Passaporte <span class="label-optional">(opcional)</span></label><input type="text" name="passageiro-${index}-passaporte" value="${previous.passaporte || ""}"></div><div><label class="wizard-label">Validade do passaporte <span class="label-optional">(opcional)</span></label><input type="date" name="passageiro-${index}-passaporte-validade" value="${previous.passaporte_validade || ""}"></div><div><label class="wizard-label">Data de nascimento <span class="required-asterisk">*</span></label><input type="date" name="passageiro-${index}-data-nascimento" value="${previous.data_nascimento || ""}" required></div><div><label class="wizard-label">Email <span class="label-optional">(opcional)</span></label><input type="email" name="passageiro-${index}-email" value="${previous.email || ""}" placeholder="passageiro@exemplo.com"></div><div><label class="wizard-label">Telefone <span class="label-optional">(opcional)</span></label><input type="tel" name="passageiro-${index}-telefone" value="${previous.telefone || ""}" placeholder="(11) 99999-9999"></div><div><label class="wizard-label">Observacoes <span class="label-optional">(opcional)</span></label><textarea name="passageiro-${index}-observacoes" rows="3">${previous.observacoes || ""}</textarea></div></div><input type="hidden" name="passageiro-${index}-categoria" value="${previous.categoria || kind.key}">`;
         refs.passageirosContainer.appendChild(card);
         index += 1;
       }
@@ -589,6 +632,8 @@
           passaporte: titularData?.passaporte || "",
           passaporte_validade: titularData?.passaporte_validade || "",
           data_nascimento: titularData?.data_nascimento || "",
+          email: titularData?.email || clienteContextPayload?.cliente?.email || "",
+          telefone: titularData?.telefone || clienteContextPayload?.cliente?.telefone || "",
         });
       } else if (selectedValue) {
         fillPassengerFields(indexValue, await ensurePassengerDetail(selectedValue));

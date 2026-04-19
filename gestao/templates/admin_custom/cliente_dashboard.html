@@ -126,42 +126,42 @@
               </div>
             {% endif %}
             <div class="detail-client__form-span-full">
-              <label for="{{ passageiro_form.nome.id_for_label }}">Nome</label>
+              <label for="{{ passageiro_form.nome.id_for_label }}">Nome <span class="required-asterisk">*</span></label>
               {{ passageiro_form.nome }}
               {% if passageiro_form.nome.errors %}<div class="detail-client__form-errors">{{ passageiro_form.nome.errors }}</div>{% endif %}
             </div>
             <div>
-              <label for="{{ passageiro_form.tipo.id_for_label }}">Tipo</label>
+              <label for="{{ passageiro_form.tipo.id_for_label }}">Tipo <span class="required-asterisk">*</span></label>
               {{ passageiro_form.tipo }}
               {% if passageiro_form.tipo.errors %}<div class="detail-client__form-errors">{{ passageiro_form.tipo.errors }}</div>{% endif %}
             </div>
             <div>
-              <label for="{{ passageiro_form.cpf.id_for_label }}">CPF</label>
+              <label for="{{ passageiro_form.cpf.id_for_label }}">CPF <span class="required-asterisk">*</span></label>
               {{ passageiro_form.cpf }}
               {% if passageiro_form.cpf.errors %}<div class="detail-client__form-errors">{{ passageiro_form.cpf.errors }}</div>{% endif %}
             </div>
             <div>
-              <label for="{{ passageiro_form.rg.id_for_label }}">RG</label>
+              <label for="{{ passageiro_form.rg.id_for_label }}">RG <span class="label-optional">(opcional)</span></label>
               {{ passageiro_form.rg }}
               {% if passageiro_form.rg.errors %}<div class="detail-client__form-errors">{{ passageiro_form.rg.errors }}</div>{% endif %}
             </div>
             <div>
-              <label for="{{ passageiro_form.passaporte.id_for_label }}">Passaporte</label>
+              <label for="{{ passageiro_form.passaporte.id_for_label }}">Passaporte <span class="label-optional">(opcional)</span></label>
               {{ passageiro_form.passaporte }}
               {% if passageiro_form.passaporte.errors %}<div class="detail-client__form-errors">{{ passageiro_form.passaporte.errors }}</div>{% endif %}
             </div>
             <div>
-              <label for="{{ passageiro_form.passaporte_validade.id_for_label }}">Validade passaporte</label>
+              <label for="{{ passageiro_form.passaporte_validade.id_for_label }}">Validade passaporte <span class="label-optional">(opcional)</span></label>
               {{ passageiro_form.passaporte_validade }}
               {% if passageiro_form.passaporte_validade.errors %}<div class="detail-client__form-errors">{{ passageiro_form.passaporte_validade.errors }}</div>{% endif %}
             </div>
             <div>
-              <label for="{{ passageiro_form.data_nascimento.id_for_label }}">Data nascimento</label>
+              <label for="{{ passageiro_form.data_nascimento.id_for_label }}">Data nascimento <span class="required-asterisk">*</span></label>
               {{ passageiro_form.data_nascimento }}
               {% if passageiro_form.data_nascimento.errors %}<div class="detail-client__form-errors">{{ passageiro_form.data_nascimento.errors }}</div>{% endif %}
             </div>
             <div class="detail-client__form-span-full">
-              <label for="{{ passageiro_form.relacao.id_for_label }}">Relação</label>
+              <label for="{{ passageiro_form.relacao.id_for_label }}">Relação <span class="label-optional">(opcional)</span></label>
               {{ passageiro_form.relacao }}
               {% if passageiro_form.relacao.errors %}<div class="detail-client__form-errors">{{ passageiro_form.relacao.errors }}</div>{% endif %}
             </div>

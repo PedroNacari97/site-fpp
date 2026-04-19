@@ -128,8 +128,12 @@ class EmissaoPassagem(models.Model):
     qtd_criancas = models.PositiveIntegerField(default=0)
     qtd_bebes = models.PositiveIntegerField(default=0)
     localizador = models.CharField(max_length=100, blank=True)
-    valor_referencia = models.DecimalField(max_digits=10, decimal_places=2)
-    valor_taxas = models.DecimalField(max_digits=10, decimal_places=2)
+    valor_referencia = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    valor_taxas = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
     pontos_utilizados = models.IntegerField(null=True, blank=True)
     valor_referencia_pontos = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True

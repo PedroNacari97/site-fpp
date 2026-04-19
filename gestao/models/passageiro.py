@@ -19,6 +19,8 @@ class Passageiro(models.Model):
     passaporte = models.CharField(max_length=30, blank=True)
     passaporte_validade = models.DateField(null=True, blank=True)
     data_nascimento = models.DateField(null=True, blank=True)
+    email = models.EmailField(blank=True)
+    telefone = models.CharField(max_length=30, blank=True)
     observacoes = models.TextField(blank=True)
     categoria = models.CharField(max_length=10, choices=CATEGORIA_CHOICES)
 
