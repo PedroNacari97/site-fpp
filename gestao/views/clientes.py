@@ -445,8 +445,10 @@ def visualizar_cliente(request, cliente_id):
 
     def _format_cpf(cpf_raw):
         digits = "".join(filter(str.isdigit, cpf_raw or ""))
-        if len(digits) == 11:
+        if len(digits) == 11 and not digits.startswith("9"):
             return f"{digits[:3]}.{digits[3:6]}.{digits[6:9]}-{digits[9:]}"
+        if len(digits) == 11 and digits.startswith("9"):
+            return "--"
         return cpf_raw or "--"
 
     def _initials(nome):

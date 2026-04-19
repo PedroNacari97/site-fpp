@@ -118,6 +118,18 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.client-form__grid--endereco-cep {
+  grid-template-columns: minmax(130px, 160px) minmax(0, 1fr);
+}
+
+.client-form__grid--endereco-linha {
+  grid-template-columns: minmax(90px, 110px) minmax(140px, 180px) minmax(0, 1fr);
+}
+
+.client-form__grid--endereco-cidade {
+  grid-template-columns: minmax(0, 1fr) minmax(80px, 96px);
+}
+
 .client-form__field {
   min-width: 0;
 }

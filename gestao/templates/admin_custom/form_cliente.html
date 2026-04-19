@@ -132,7 +132,7 @@
                   <h3 class="client-form__section-subtitle">Localizacao completa</h3>
                 </header>
                 <div class="client-form__section-body">
-                  <div class="client-form__grid client-form__grid--two">
+                  <div class="client-form__grid client-form__grid--endereco-cep">
                     <div class="client-form__field">
                       <label for="{{ form.cep.id_for_label }}">CEP</label>
                       {{ form.cep }}
@@ -146,7 +146,7 @@
                     </div>
                   </div>
 
-                  <div class="client-form__grid client-form__grid--three">
+                  <div class="client-form__grid client-form__grid--endereco-linha">
                     <div class="client-form__field">
                       <label for="{{ form.numero.id_for_label }}">Numero</label>
                       {{ form.numero }}
@@ -164,7 +164,7 @@
                     </div>
                   </div>
 
-                  <div class="client-form__grid client-form__grid--two">
+                  <div class="client-form__grid client-form__grid--endereco-cidade">
                     <div class="client-form__field">
                       <label for="{{ form.cidade.id_for_label }}">Cidade</label>
                       {{ form.cidade }}
