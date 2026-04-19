@@ -57,6 +57,8 @@
         <thead>
           <tr>
             <th>Nome do Emissor</th>
+            <th>Contato</th>
+            <th>Programas</th>
             <th>Status</th>
             <th>Acoes</th>
           </tr>
@@ -67,7 +69,27 @@
             <td data-label="Nome do Emissor">
               <div class="partner-page__name">
                 <span class="partner-page__name-badge">{{ emissor.nome|first|upper }}</span>
-                <span class="partner-page__name-text">{{ emissor.nome }}</span>
+                <div class="partner-page__name-block">
+                  <span class="partner-page__name-text">{{ emissor.nome }}</span>
+                  <small class="partner-page__name-tipo">Emissor parceiro</small>
+                </div>
+              </div>
+            </td>
+            <td data-label="Contato">
+              <div class="partner-page__contact">
+                {% if emissor.telefone %}<span>{{ emissor.telefone }}</span>{% endif %}
+                {% if emissor.email %}<span class="partner-page__contact-sub">{{ emissor.email }}</span>{% endif %}
+                {% if not emissor.telefone and not emissor.email %}<span class="partner-page__contact-sub">—</span>{% endif %}
+              </div>
+            </td>
+            <td data-label="Programas">
+              <div class="partner-page__programs">
+                {% for prog in emissor.programas.all|slice:":3" %}
+                <span class="partner-page__program-chip">{{ prog.nome }}</span>
+                {% empty %}
+                <span class="partner-page__contact-sub">—</span>
+                {% endfor %}
+                {% if emissor.programas.count > 3 %}<span class="partner-page__program-chip partner-page__program-chip--more">+{{ emissor.programas.count|add:"-3" }}</span>{% endif %}
               </div>
             </td>
             <td data-label="Status">
@@ -85,7 +107,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="3" class="partner-page__empty empty-row">
+            <td colspan="5" class="partner-page__empty empty-row">
               Nenhum emissor parceiro cadastrado ainda.
               <a href="{% url 'admin_novo_emissor_parceiro' %}" class="partner-page__action">+ Novo emissor parceiro</a>
             </td>

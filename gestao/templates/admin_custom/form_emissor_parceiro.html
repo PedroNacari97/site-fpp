@@ -63,6 +63,38 @@
         </div>
 
         <div class="partner-form__field">
+          <label for="{{ form.email.id_for_label }}">E-mail</label>
+          {{ form.email }}
+          {% for error in form.email.errors %}
+          <div class="partner-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="partner-form__field">
+          <label for="{{ form.endereco.id_for_label }}">Endereco</label>
+          {{ form.endereco }}
+          {% for error in form.endereco.errors %}
+          <div class="partner-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="partner-form__field">
+          <label for="{{ form.site.id_for_label }}">Site</label>
+          {{ form.site }}
+          {% for error in form.site.errors %}
+          <div class="partner-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="partner-form__field">
+          <label for="{{ form.instagram.id_for_label }}">Instagram</label>
+          {{ form.instagram }}
+          {% for error in form.instagram.errors %}
+          <div class="partner-form__field-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="partner-form__field">
           <label for="{{ form.usuario.id_for_label }}">Usuario Vinculado</label>
           {{ form.usuario }}
           <p class="partner-form__hint">Define o usuario que acessara a sessao do parceiro.</p>
@@ -90,30 +122,36 @@
           <h2>Configuracao de acesso</h2>
         </header>
         <div class="partner-form__card-body">
-          <div class="partner-form__program-list">
+          <div class="partner-form__program-multi" data-multi-programas>
             {% with selected_programas=form.programas.value %}
-              {% for programa in form.programas.field.queryset %}
-              <label class="partner-form__program-card">
-                <div class="partner-form__program-head">
-                  <div>
-                    <p class="partner-form__program-name">{{ programa.nome }}</p>
-                    <p class="partner-form__program-meta">Programa de pontos {{ programa.nome }}</p>
-                  </div>
-                  <span class="partner-form__program-icon">{{ programa.nome|first|upper }}</span>
-                </div>
-                <div class="partner-form__program-toggle">
-                  <input
-                    type="checkbox"
-                    name="programas"
-                    value="{{ programa.id }}"
-                    {% if selected_programas and programa.id|stringformat:"s" in selected_programas %}checked{% endif %}
-                  >
-                  <span>Ativar programa</span>
-                </div>
-              </label>
-              {% empty %}
-              <div class="partner-form__empty-box">Nenhum programa de fidelidade disponivel para esta empresa.</div>
-              {% endfor %}
+              <button type="button" class="partner-form__multi-trigger" data-multi-trigger aria-haspopup="listbox" aria-expanded="false">
+                <span class="partner-form__multi-label" data-multi-label>Selecione os programas</span>
+                <span class="partner-form__multi-caret" aria-hidden="true">▾</span>
+              </button>
+              <div class="partner-form__multi-chips" data-multi-chips></div>
+              <div class="partner-form__multi-panel" data-multi-panel hidden>
+                <input type="search" class="partner-form__multi-search" data-multi-search placeholder="Buscar programa...">
+                <ul class="partner-form__multi-list" role="listbox" aria-multiselectable="true">
+                  {% for programa in form.programas.field.queryset %}
+                  <li class="partner-form__multi-option" data-multi-option data-label="{{ programa.nome|lower }}">
+                    <label>
+                      <input
+                        type="checkbox"
+                        name="programas"
+                        value="{{ programa.id }}"
+                        data-multi-checkbox
+                        data-name="{{ programa.nome }}"
+                        {% if selected_programas and programa.id|stringformat:"s" in selected_programas %}checked{% endif %}
+                      >
+                      <span class="partner-form__multi-option-icon">{{ programa.nome|first|upper }}</span>
+                      <span class="partner-form__multi-option-name">{{ programa.nome }}</span>
+                    </label>
+                  </li>
+                  {% empty %}
+                  <li class="partner-form__multi-empty">Nenhum programa disponivel para esta empresa.</li>
+                  {% endfor %}
+                </ul>
+              </div>
             {% endwith %}
           </div>
           <p class="partner-form__hint">Selecione os programas disponiveis para este emissor (opcional).</p>
@@ -148,4 +186,72 @@
     </div>
   </form>
 </div>
+
+<script>
+(function() {
+  var wrapper = document.querySelector('[data-multi-programas]');
+  if (!wrapper) return;
+  var trigger = wrapper.querySelector('[data-multi-trigger]');
+  var panel = wrapper.querySelector('[data-multi-panel]');
+  var label = wrapper.querySelector('[data-multi-label]');
+  var chips = wrapper.querySelector('[data-multi-chips]');
+  var search = wrapper.querySelector('[data-multi-search]');
+  var checkboxes = wrapper.querySelectorAll('[data-multi-checkbox]');
+  var options = wrapper.querySelectorAll('[data-multi-option]');
+
+  function renderChips() {
+    chips.innerHTML = '';
+    var count = 0;
+    checkboxes.forEach(function(cb) {
+      if (cb.checked) {
+        count++;
+        var chip = document.createElement('span');
+        chip.className = 'partner-form__multi-chip';
+        chip.innerHTML = '<span>' + cb.dataset.name + '</span><button type="button" class="partner-form__multi-chip-remove" aria-label="Remover">×</button>';
+        chip.querySelector('button').addEventListener('click', function(e) {
+          e.stopPropagation();
+          cb.checked = false;
+          renderChips();
+        });
+        chips.appendChild(chip);
+      }
+    });
+    label.textContent = count === 0
+      ? 'Selecione os programas'
+      : count + ' programa' + (count === 1 ? '' : 's') + ' selecionado' + (count === 1 ? '' : 's');
+  }
+
+  trigger.addEventListener('click', function() {
+    var isOpen = trigger.getAttribute('aria-expanded') === 'true';
+    trigger.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+    panel.hidden = isOpen;
+    if (!isOpen && search) {
+      setTimeout(function() { search.focus(); }, 50);
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!wrapper.contains(e.target)) {
+      trigger.setAttribute('aria-expanded', 'false');
+      panel.hidden = true;
+    }
+  });
+
+  checkboxes.forEach(function(cb) {
+    cb.addEventListener('change', renderChips);
+  });
+
+  if (search) {
+    search.addEventListener('input', function() {
+      var term = search.value.toLowerCase().trim();
+      options.forEach(function(opt) {
+        var labelText = opt.dataset.label || '';
+        opt.hidden = term && labelText.indexOf(term) === -1;
+      });
+    });
+  }
+
+  renderChips();
+})();
+</script>
 {% endblock %}

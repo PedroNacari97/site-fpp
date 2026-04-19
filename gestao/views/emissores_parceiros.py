@@ -13,13 +13,17 @@ def admin_emissores_parceiros(request):
     if permission_denied := require_admin_or_operator(request):
         return permission_denied
     empresa = getattr(getattr(request.user, "cliente_gestao", None), "empresa", None)
-    emissores = EmissorParceiro.objects.all()
+    emissores = EmissorParceiro.objects.all().prefetch_related("programas")
     if empresa:
         emissores = emissores.filter(empresa=empresa)
     search = (request.GET.get("q") or "").strip()
     status = (request.GET.get("status") or "").strip()
     if search:
-        emissores = emissores.filter(Q(nome__icontains=search) | Q(telefone__icontains=search))
+        emissores = emissores.filter(
+            Q(nome__icontains=search)
+            | Q(telefone__icontains=search)
+            | Q(email__icontains=search)
+        )
     if status == "ativo":
         emissores = emissores.filter(ativo=True)
     elif status == "inativo":

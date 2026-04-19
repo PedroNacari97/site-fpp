@@ -1249,7 +1249,18 @@ class EmissaoHotelForm(forms.ModelForm):
 class EmissorParceiroForm(forms.ModelForm):
     class Meta:
         model = EmissorParceiro
-        fields = ["nome", "telefone", "usuario", "programas", "ativo", "observacoes"]
+        fields = [
+            "nome",
+            "telefone",
+            "email",
+            "endereco",
+            "site",
+            "instagram",
+            "usuario",
+            "programas",
+            "ativo",
+            "observacoes",
+        ]
         widgets = {
             "observacoes": forms.Textarea(attrs={"rows": 5}),
         }
@@ -1264,6 +1275,22 @@ class EmissorParceiroForm(forms.ModelForm):
         })
         self.fields["telefone"].widget.attrs.update({
             "placeholder": "Ex: (11) 99999-9999",
+            "autocomplete": "off",
+        })
+        self.fields["email"].widget.attrs.update({
+            "placeholder": "Ex: contato@parceiro.com",
+            "autocomplete": "off",
+        })
+        self.fields["endereco"].widget.attrs.update({
+            "placeholder": "Ex: Av. Paulista, 1000 — Sao Paulo/SP",
+            "autocomplete": "off",
+        })
+        self.fields["site"].widget.attrs.update({
+            "placeholder": "Ex: https://www.parceiro.com",
+            "autocomplete": "off",
+        })
+        self.fields["instagram"].widget.attrs.update({
+            "placeholder": "Ex: @parceiro",
             "autocomplete": "off",
         })
         self.fields["usuario"].empty_label = "Selecione o usuario"

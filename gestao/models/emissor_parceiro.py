@@ -21,6 +21,10 @@ class EmissorParceiro(models.Model):
     )
     nome = models.CharField(max_length=150)
     telefone = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(max_length=254, blank=True)
+    endereco = models.CharField(max_length=255, blank=True)
+    site = models.URLField(max_length=255, blank=True)
+    instagram = models.CharField(max_length=100, blank=True)
     programas = models.ManyToManyField(
         ProgramaFidelidade, related_name="emissores_parceiros", blank=True
     )
