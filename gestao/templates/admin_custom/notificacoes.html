@@ -1,99 +1,134 @@
 {% extends "admin_custom/base_admin.html" %}
 {% load static %}
+{% load gestao_tags %}
 
 {% block title %}Notificações{% endblock %}
 {% block header_title %}Notificações{% endblock %}
-{% block header_subtitle %}<span>Central de alertas operacionais agrupados por tipo.</span>{% endblock %}
+{% block header_subtitle %}<span>Central de alertas operacionais agrupados por tipo, com ações rápidas.</span>{% endblock %}
 
 {% block extra_head %}
-<style>
-  .notif-page { display: grid; gap: 20px; }
-  .notif-page .surface-card { padding: 16px 18px; }
-  .notif-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-  .notif-filters label { font-size: 12px; color: var(--color-muted); margin-right: 4px; }
-  .notif-filters select { min-width: 180px; padding: 8px 10px; border-radius: 8px; }
-  .notif-groups { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .notif-group { padding: 10px 14px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface); display: flex; align-items: center; gap: 12px; }
-  .notif-group__count { min-width: 32px; height: 28px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: hsl(var(--primary) / 0.12); color: hsl(var(--primary)); font-size: 13px; font-weight: 700; }
-  .notif-group__label { font-weight: 600; color: var(--color-heading); }
-  .notif-group__detail { font-size: 12px; color: var(--color-muted); margin-left: auto; }
-  .notif-list { display: grid; gap: 8px; }
-  .notif-item { padding: 12px 14px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface); display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
-  .notif-item.is-unread { border-left: 3px solid hsl(var(--primary)); }
-  .notif-item__meta { display: flex; gap: 10px; align-items: center; font-size: 11px; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 4px; }
-  .notif-item__title { font-weight: 600; color: var(--color-heading); font-size: 14px; margin: 2px 0; }
-  .notif-item__desc { color: var(--color-muted); font-size: 13px; line-height: 1.4; }
-  .notif-item__time { color: var(--color-muted); font-size: 11px; margin-top: 4px; }
-  .notif-item__actions { display: flex; gap: 6px; align-items: center; }
-  .notif-item__actions form { display: inline; margin: 0; }
-  .notif-item__actions button, .notif-item__actions a { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-heading); font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; }
-  .notif-item__actions button:hover, .notif-item__actions a:hover { background: var(--color-surface-muted); }
-  .notif-item__actions .danger:hover { border-color: #ef4444; color: #ef4444; }
-  .notif-bulk { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
-  .notif-bulk button { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-heading); font-size: 13px; font-weight: 600; cursor: pointer; }
-  .notif-bulk button:hover { background: var(--color-surface-muted); }
-  .notif-empty { padding: 24px; text-align: center; color: var(--color-muted); font-size: 13px; }
-</style>
+<link rel="stylesheet" href="{% static 'gestao/css/notificacoes_figma.css' %}">
+{% endblock %}
+
+{% block breadcrumbs %}
+<nav aria-label="Breadcrumb" class="admin-breadcrumb">
+  <ol>
+    <li><a href="{% url 'admin_dashboard' %}">Início</a></li>
+    <li aria-current="page">Notificações</li>
+  </ol>
+</nav>
 {% endblock %}
 
 {% block content %}
-<div class="notif-page">
-  <section class="surface-card">
-    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-      <h2 style="margin:0; font-size:16px; font-weight:700;">{{ total_nao_lidas }} não lida{{ total_nao_lidas|pluralize }}</h2>
-      <div class="notif-bulk" style="margin-left:auto;">
-        <form method="post" action="{% url 'admin_notificacoes_ler_todas' %}">
-          {% csrf_token %}
-          <input type="hidden" name="next" value="{{ request.get_full_path }}">
-          <button type="submit" {% if not total_nao_lidas %}disabled style="opacity:.55;cursor:not-allowed;"{% endif %}>Marcar todas como lidas</button>
-        </form>
+<div class="notif-shell">
+  <section class="notif-summary">
+    <article class="notif-summary__card notif-summary__card--featured">
+      <p class="notif-summary__label">Nao lidas</p>
+      <p class="notif-summary__value">{{ total_nao_lidas }}</p>
+      <p class="notif-summary__hint">
+        {% if total_nao_lidas %}Alertas ativos aguardando acao.{% else %}Tudo em dia. Nenhum alerta pendente.{% endif %}
+      </p>
+      <form method="post" action="{% url 'admin_notificacoes_ler_todas' %}" style="margin:0;">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button type="submit" class="notif-summary__action" {% if not total_nao_lidas %}disabled{% endif %}>
+          Marcar todas como lidas
+        </button>
+      </form>
+    </article>
+
+    <article class="notif-summary__card">
+      <p class="notif-summary__label">Tipos ativos</p>
+      <p class="notif-summary__value">{{ grupos_dinamicos|length }}</p>
+      <p class="notif-summary__hint">Categorias com ao menos um alerta pendente agora.</p>
+    </article>
+
+    <article class="notif-summary__card">
+      <p class="notif-summary__label">Historico</p>
+      <p class="notif-summary__value">{{ historico|length }}</p>
+      <p class="notif-summary__hint">Registros recentes (ate 200) conforme filtros.</p>
+    </article>
+
+    <article class="notif-summary__card">
+      <p class="notif-summary__label">Filtros ativos</p>
+      <p class="notif-summary__value">
+        {% if filtro_tipo or filtro_estado and filtro_estado != 'todas' %}
+          {% if filtro_tipo %}1{% else %}0{% endif %}{% if filtro_estado and filtro_estado != 'todas' %}+1{% endif %}
+        {% else %}0{% endif %}
+      </p>
+      <p class="notif-summary__hint">
+        {% if filtro_tipo or filtro_estado and filtro_estado != 'todas' %}Use o filtro do historico para limpar.{% else %}Nenhum filtro aplicado.{% endif %}
+      </p>
+    </article>
+  </section>
+
+  {% if grupos_dinamicos %}
+  <section class="notif-panel">
+    <header class="notif-panel__head">
+      <div>
+        <h2 class="notif-panel__title">Resumo por tipo</h2>
+        <p class="notif-panel__subtitle">Distribuicao dos {{ total_nao_lidas }} alerta{{ total_nao_lidas|pluralize }} nao lido{{ total_nao_lidas|pluralize }}.</p>
+      </div>
+    </header>
+    <div class="notif-panel__body">
+      <ul class="notif-types">
+        {% for grupo in grupos_dinamicos %}
+          <li class="notif-type notif-type--tone-{{ grupo.tipo|notif_tone }}">
+            <span class="notif-type__dot">{{ grupo.tipo|notif_icon }}</span>
+            <div class="notif-type__body">
+              <p class="notif-type__label">{{ grupo.label }}</p>
+              <p class="notif-type__count">{{ grupo.total }} pendente{{ grupo.total|pluralize }}</p>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="notif-panel">
+    <header class="notif-panel__head">
+      <div>
+        <h2 class="notif-panel__title">Alertas ativos</h2>
+        <p class="notif-panel__subtitle">Notificacoes dinamicas recalculadas a cada acesso.</p>
+      </div>
+    </header>
+    <div class="notif-panel__body">
+      <div class="notif-feed">
+        {% for item in dynamic_notifications %}
+          <article class="notif-item notif-item--unread notif-item--tone-{{ item.tipo|notif_tone }}">
+            <span class="notif-item__icon">{{ item.tipo|notif_icon }}</span>
+            <div class="notif-item__body">
+              <div class="notif-item__meta">
+                <span class="notif-item__tag">{{ item.tipo_label }}</span>
+                <span>· {{ item.time_label }}</span>
+              </div>
+              <h3 class="notif-item__title">{{ item.title }}</h3>
+              {% if item.description %}<p class="notif-item__desc">{{ item.description }}</p>{% endif %}
+            </div>
+            <div class="notif-item__actions">
+              {% if item.url %}
+                <a href="{{ item.url }}" class="notif-item__btn notif-item__btn--primary">Abrir</a>
+              {% endif %}
+            </div>
+          </article>
+        {% empty %}
+          <div class="notif-empty">
+            <strong>Nenhum alerta ativo.</strong>
+            Voce esta em dia com cotacoes, emissoes e alertas operacionais.
+          </div>
+        {% endfor %}
       </div>
     </div>
   </section>
 
-  {% if grupos_dinamicos %}
-    <section class="surface-card">
-      <h2 style="margin:0 0 10px; font-size:14px; font-weight:700; color:var(--color-heading);">Resumo por tipo</h2>
-      <ul class="notif-groups">
-        {% for grupo in grupos_dinamicos %}
-          <li class="notif-group">
-            <span class="notif-group__count">{{ grupo.total }}</span>
-            <span class="notif-group__label">{{ grupo.label }}</span>
-            <span class="notif-group__detail">{{ grupo.total }} pendente{{ grupo.total|pluralize }}</span>
-          </li>
-        {% endfor %}
-      </ul>
-    </section>
-  {% endif %}
-
-  <section class="surface-card">
-    <h2 style="margin:0 0 10px; font-size:14px; font-weight:700;">Notificações ativas</h2>
-    <div class="notif-list">
-      {% for item in dynamic_notifications %}
-        <article class="notif-item is-unread">
-          <div>
-            <div class="notif-item__meta">
-              <span>{{ item.tipo_label }}</span>
-              <span>·</span>
-              <span>{{ item.time_label }}</span>
-            </div>
-            <div class="notif-item__title">{{ item.title }}</div>
-            <div class="notif-item__desc">{{ item.description }}</div>
-          </div>
-          <div class="notif-item__actions">
-            {% if item.url %}<a href="{{ item.url }}">Abrir</a>{% endif %}
-          </div>
-        </article>
-      {% empty %}
-        <div class="notif-empty">Nenhuma notificação ativa no momento.</div>
-      {% endfor %}
-    </div>
-  </section>
-
-  <section class="surface-card">
-    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
-      <h2 style="margin:0; font-size:14px; font-weight:700;">Histórico</h2>
-      <form method="get" class="notif-filters" style="margin-left:auto;">
+  <section class="notif-panel">
+    <header class="notif-panel__head">
+      <div>
+        <h2 class="notif-panel__title">Historico</h2>
+        <p class="notif-panel__subtitle">Notificacoes persistidas e seus estados.</p>
+      </div>
+      <form method="get" class="notif-panel__filters">
         <label for="filtro-tipo">Tipo</label>
         <select id="filtro-tipo" name="tipo" onchange="this.form.submit()">
           <option value="">Todos</option>
@@ -104,43 +139,50 @@
         <label for="filtro-estado">Estado</label>
         <select id="filtro-estado" name="estado" onchange="this.form.submit()">
           <option value="todas" {% if filtro_estado == 'todas' %}selected{% endif %}>Todas</option>
-          <option value="nao_lidas" {% if filtro_estado == 'nao_lidas' %}selected{% endif %}>Não lidas</option>
+          <option value="nao_lidas" {% if filtro_estado == 'nao_lidas' %}selected{% endif %}>Nao lidas</option>
           <option value="lidas" {% if filtro_estado == 'lidas' %}selected{% endif %}>Lidas</option>
         </select>
       </form>
-    </div>
-    <div class="notif-list">
-      {% for notif in historico %}
-        <article class="notif-item {% if not notif.lida %}is-unread{% endif %}">
-          <div>
-            <div class="notif-item__meta">
-              <span>{{ notif.get_tipo_display }}</span>
-              <span>·</span>
-              <span>{{ notif.criado_em|date:"d/m/Y H:i" }}</span>
-              {% if notif.lida %}<span>·</span><span style="color:#22c55e;">Lida</span>{% endif %}
+    </header>
+    <div class="notif-panel__body">
+      <div class="notif-feed">
+        {% for notif in historico %}
+          <article class="notif-item {% if not notif.lida %}notif-item--unread{% endif %} notif-item--tone-{{ notif.tipo|notif_tone }}">
+            <span class="notif-item__icon">{{ notif.tipo|notif_icon }}</span>
+            <div class="notif-item__body">
+              <div class="notif-item__meta">
+                <span class="notif-item__tag">{{ notif.get_tipo_display }}</span>
+                <span>· {{ notif.criado_em|date:"d/m/Y H:i" }}</span>
+                {% if notif.lida %}<span class="notif-item__read-flag">Lida</span>{% endif %}
+              </div>
+              <h3 class="notif-item__title">{{ notif.titulo|default:"Notificacao" }}</h3>
+              {% if notif.mensagem %}<p class="notif-item__desc">{{ notif.mensagem }}</p>{% endif %}
             </div>
-            <div class="notif-item__title">{{ notif.titulo|default:"Notificação" }}</div>
-            {% if notif.mensagem %}<div class="notif-item__desc">{{ notif.mensagem }}</div>{% endif %}
-          </div>
-          <div class="notif-item__actions">
-            {% if notif.url_destino %}<a href="{{ notif.url_destino }}">Abrir</a>{% endif %}
-            {% if not notif.lida %}
-              <form method="post" action="{% url 'admin_notificacoes_ler' notif.id %}">
+            <div class="notif-item__actions">
+              {% if notif.url_destino %}
+                <a href="{{ notif.url_destino }}" class="notif-item__btn notif-item__btn--primary">Abrir</a>
+              {% endif %}
+              {% if not notif.lida %}
+                <form method="post" action="{% url 'admin_notificacoes_ler' notif.id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                  <button type="submit" class="notif-item__btn">Marcar como lida</button>
+                </form>
+              {% endif %}
+              <form method="post" action="{% url 'admin_notificacoes_arquivar' notif.id %}">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <button type="submit">Marcar como lida</button>
+                <button type="submit" class="notif-item__btn notif-item__btn--danger" aria-label="Arquivar">Arquivar</button>
               </form>
-            {% endif %}
-            <form method="post" action="{% url 'admin_notificacoes_arquivar' notif.id %}">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <button type="submit" class="danger" aria-label="Arquivar">Arquivar</button>
-            </form>
+            </div>
+          </article>
+        {% empty %}
+          <div class="notif-empty">
+            <strong>Sem historico para os filtros atuais.</strong>
+            Ajuste os filtros para ver registros persistidos.
           </div>
-        </article>
-      {% empty %}
-        <div class="notif-empty">Sem histórico para os filtros atuais.</div>
-      {% endfor %}
+        {% endfor %}
+      </div>
     </div>
   </section>
 </div>
