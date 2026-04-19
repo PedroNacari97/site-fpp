@@ -12,6 +12,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/css/contas_fidelidade_figma.css' %}">
 <link rel="stylesheet" href="{% static 'gestao/css/contas_administradas_figma.css' %}">
+<script defer src="{% static 'gestao/js/admin_table_menu.js' %}"></script>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -42,9 +43,13 @@
     <header class="admin-managed__panel-head admin-managed__panel-head--table">
       <div>
         <p class="admin-managed__eyebrow">Contas Administradas</p>
-        <h2 class="admin-managed__title">Tabelas com rotacao horizontal e botoes consistentes.</h2>
+        <h2 class="admin-managed__title">Cadastros de contas administradas e seus programas vinculados.</h2>
       </div>
-      <div class="admin-managed__count">Total: <strong>{{ total_contas }}</strong> contas administradas</div>
+      <div class="admin-managed__count">
+        Total: <strong>{{ total_contas }}</strong> contas administradas -
+        <strong>{{ total_programas }}</strong> programas -
+        <strong>{{ contas_sem_programa }}</strong> sem programa
+      </div>
     </header>
 
     <div class="admin-managed__table-wrap">
@@ -52,41 +57,66 @@
         <thead>
           <tr>
             <th>Titular / Conta</th>
-            <th>Programa</th>
+            <th>Programas</th>
             <th>Pontos</th>
             <th>Valor</th>
-            <th>Resgates</th>
-            <th>Limite CPFs</th>
+            <th>CPFs (usados / limite)</th>
             <th>Status</th>
             <th>Acoes</th>
           </tr>
         </thead>
         <tbody>
-          {% for conta in page_obj %}
+          {% for row in page_rows %}
           <tr>
-            <td data-label="Titular / Conta">{{ conta.conta_administrada.nome }}</td>
-            <td data-label="Programa">{{ conta.programa.nome }}</td>
-            <td data-label="Pontos">{{ conta.saldo_pontos }}</td>
-            <td data-label="Valor">R$ {{ conta.valor_total_pago|floatformat:2 }}</td>
-            <td data-label="Resgates">R$ {{ conta.valor_medio_por_mil|floatformat:2 }}</td>
-            <td data-label="Limite CPFs">{{ conta.cpfs_disponiveis|default:"ilimitado" }}</td>
+            <td data-label="Titular / Conta">{{ row.conta.nome }}</td>
+            <td data-label="Programas">
+              {{ row.programas_nomes }}
+              <br><small>{{ row.programas_count }} programa(s)</small>
+            </td>
+            <td data-label="Pontos">{{ row.saldo_pontos }}</td>
+            <td data-label="Valor">R$ {{ row.valor_total_pago|floatformat:2 }}</td>
+            <td data-label="CPFs (usados / limite)">
+              {% if row.programas_count == 0 %}
+                <div class="admin-managed__cpfs">
+                  <span class="admin-managed__cpfs-value admin-managed__cpfs-value--muted">—</span>
+                </div>
+              {% elif row.limite_cpfs is None %}
+                <div class="admin-managed__cpfs">
+                  <span class="admin-managed__cpfs-value">{{ row.cpfs_usados }} / ∞</span>
+                </div>
+              {% else %}
+                {% widthratio row.cpfs_usados row.limite_cpfs 100 as pct %}
+                <div class="admin-managed__cpfs">
+                  <span class="admin-managed__cpfs-value">{{ row.cpfs_usados }} / {{ row.limite_cpfs }}</span>
+                  <span class="admin-managed__cpfs-bar" role="progressbar" aria-valuemin="0" aria-valuemax="{% if row.cpfs_usados > row.limite_cpfs %}{{ row.cpfs_usados }}{% else %}{{ row.limite_cpfs }}{% endif %}" aria-valuenow="{{ row.cpfs_usados }}" aria-label="CPFs usados: {{ row.cpfs_usados }} de {{ row.limite_cpfs }}">
+                    <span class="admin-managed__cpfs-bar-fill {% if row.status.tone == 'bloqueado' %}admin-managed__cpfs-bar-fill--danger{% elif row.status.tone == 'proximo' %}admin-managed__cpfs-bar-fill--warning{% endif %}" style="width: {{ pct }}%;"></span>
+                  </span>
+                </div>
+              {% endif %}
+            </td>
             <td data-label="Status">
-              <span class="admin-managed__status {% if conta.status_cpf.tone == "bloqueado" %}admin-managed__status--blocked{% elif conta.status_cpf.tone == "proximo" %}admin-managed__status--warning{% else %}admin-managed__status--available{% endif %}">
-                {{ conta.status_cpf.label }}
+              <span class="admin-managed__status {% if row.status.tone == "bloqueado" %}admin-managed__status--blocked{% elif row.status.tone == "proximo" or row.status.tone == "sem-programa" %}admin-managed__status--warning{% else %}admin-managed__status--available{% endif %}">
+                {{ row.status.label }}
               </span>
             </td>
-            <td data-label="Ações">
+            <td data-label="Acoes">
               <div class="admin-managed__actions">
-                <a href="{% url 'admin_editar_conta' conta.id %}" class="admin-managed__action">Editar</a>
-                <button type="button" class="admin-managed__action admin-managed__action--danger" data-confirm-delete data-url="{% url 'admin_deletar_conta' conta.id %}" data-label="{{ conta.programa.nome }} — {{ conta.conta_administrada }}">Deletar</button>
-                <a href="{% url 'admin_editar_conta_administrada' conta.conta_administrada.id %}" class="admin-managed__action admin-managed__action--accent">Editar titular</a>
-                <a href="{% url 'admin_programas_da_conta_administrada' conta.conta_administrada.id %}" class="admin-managed__action admin-managed__action--info">Programas</a>
+                <a href="{% url 'admin_programas_da_conta_administrada' row.conta.id %}" class="admin-managed__action admin-managed__action--primary">Programas</a>
+                <div class="admin-table-menu" data-row-menu>
+                  <button type="button" class="admin-table-menu__trigger" aria-haspopup="menu" aria-expanded="false" aria-controls="row-menu-{{ row.conta.id }}" aria-label="Mais ações para {{ row.conta.nome }}">⋮</button>
+                  <div class="admin-table-menu__popover" id="row-menu-{{ row.conta.id }}" role="menu" hidden>
+                    <a role="menuitem" class="admin-table-menu__item" href="{% url 'admin_nova_conta' %}?conta_administrada={{ row.conta.id }}">Adicionar programa</a>
+                    <a role="menuitem" class="admin-table-menu__item" href="{% url 'admin_editar_conta_administrada' row.conta.id %}">Editar titular</a>
+                    <div class="admin-table-menu__divider" role="separator"></div>
+                    <button role="menuitem" type="button" class="admin-table-menu__item admin-table-menu__item--danger" data-confirm-delete data-url="{% url 'admin_deletar_conta_administrada' row.conta.id %}" data-label="{{ row.conta.nome }}">Deletar</button>
+                  </div>
+                </div>
               </div>
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="8" class="admin-managed__empty empty-row">Nenhuma conta administrada encontrada.</td>
+            <td colspan="7" class="admin-managed__empty empty-row">Nenhuma conta administrada encontrada.</td>
           </tr>
           {% endfor %}
         </tbody>
