@@ -118,6 +118,14 @@
                         <p class="wizard-helper">Obrigatório quando o tipo de emissão for emissor parceiro.</p>
                     </div>
 
+                    <div id="modelo-operacional-wrapper" class="wizard-block" style="display:none;">
+                        <label class="wizard-label" for="{{ form.modelo_operacional.id_for_label }}">Modelo operacional</label>
+                        {{ form.modelo_operacional }}
+                        <p class="wizard-helper">Modelo 1 (venda direta) exibe economia ao cliente. Modelo 2 (intermediário) oculta valor de referência.</p>
+                    </div>
+
+                    <div class="wizard-native-hidden">{{ form.tipo_operacao }}</div>
+
                     <div class="wizard-block">
                         <label class="wizard-label" for="{{ form.programa.id_for_label }}">Programa de Milhas <span class="required-asterisk">*</span></label>
                         <div class="wizard-native-hidden">{{ form.programa }}</div>
@@ -478,6 +486,7 @@ window.emissionWizardContext = {
     escalasVoltaData: {{ escalas_volta_json|safe }},
     aeroportos: {{ aeroportos_json|safe }},
     clienteProgramas: {{ cliente_programas_json|safe }},
+    clientesTipo: {{ clientes_tipo_json|safe }},
     contasAdmProgramas: {{ contas_adm_programas_json|safe }},
     empresaProgramas: {{ empresa_programas_json|safe }},
     cpfControleInicial: {{ cpf_controle_json|safe }},

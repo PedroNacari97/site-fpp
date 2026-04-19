@@ -23,6 +23,15 @@
         </div>
     </header>
 
+    {% if preview.tipo_cliente %}
+    <section class="emission-preview-tipo-band emission-preview-tipo-band--{{ preview.tipo_cliente.tone }}">
+        <div class="emission-preview-tipo-band__label">
+            <strong>{{ preview.tipo_cliente.label }}</strong>
+            <small>{{ preview.tipo_cliente.description }}</small>
+        </div>
+    </section>
+    {% endif %}
+
     <section class="quote-preview-meta emission-preview-meta">
         <div class="quote-preview-meta__item emission-preview-meta__item">
             <span>Data de Emissao</span>

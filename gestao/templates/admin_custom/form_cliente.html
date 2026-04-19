@@ -62,6 +62,38 @@
                 </div>
               </section>
 
+              <section class="client-form__section-card" data-tipo-cliente-section>
+                <header class="client-form__section-head">
+                  <p class="client-form__section-eyebrow">Tipo de Cliente</p>
+                  <h3 class="client-form__section-subtitle">Classificacao que controla o modelo operacional</h3>
+                </header>
+                <div class="client-form__section-body">
+                  <div class="client-form__field">
+                    <label for="{{ form.tipo_cliente.id_for_label }}">Tipo de cliente <span>*</span></label>
+                    {{ form.tipo_cliente }}
+                    <span class="client-form__note">{{ form.tipo_cliente.help_text|default:"" }}</span>
+                    {% if form.tipo_cliente.errors %}<div class="client-form__field-error">{{ form.tipo_cliente.errors }}</div>{% endif %}
+                  </div>
+                  <div class="client-form__field" data-show-for="concierge">
+                    <label for="{{ form.programas_concierge.id_for_label }}">Programas de fidelidade (concierge) <span class="label-optional">(opcional)</span></label>
+                    {{ form.programas_concierge }}
+                    {% if form.programas_concierge.errors %}<div class="client-form__field-error">{{ form.programas_concierge.errors }}</div>{% endif %}
+                  </div>
+                  <div class="client-form__grid client-form__grid--two" data-show-for="intermediario">
+                    <div class="client-form__field">
+                      <label for="{{ form.razao_social.id_for_label }}">Razao social <span class="label-optional">(opcional)</span></label>
+                      {{ form.razao_social }}
+                      {% if form.razao_social.errors %}<div class="client-form__field-error">{{ form.razao_social.errors }}</div>{% endif %}
+                    </div>
+                    <div class="client-form__field">
+                      <label for="{{ form.cnpj.id_for_label }}">CNPJ <span class="label-optional">(opcional)</span></label>
+                      {{ form.cnpj }}
+                      {% if form.cnpj.errors %}<div class="client-form__field-error">{{ form.cnpj.errors }}</div>{% endif %}
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               <section class="client-form__section-card">
                 <header class="client-form__section-head">
                   <p class="client-form__section-eyebrow">Documentos</p>

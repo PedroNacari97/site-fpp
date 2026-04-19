@@ -480,10 +480,52 @@ def _build_home_context(*, user, empresa=None, request=None):
         },
     ]
 
+    tipo_operacao_faixas = [
+        ("venda_direta", "Venda direta", "blue"),
+        ("intermediario", "Intermediário", "gold"),
+        ("concierge", "Concierge", "purple"),
+        ("emissor_parceiro", "Emissor parceiro", "green"),
+    ]
+    home_operacao_kpis = []
+    for codigo, label, tone in tipo_operacao_faixas:
+        faixa_qs = emissoes_periodo.filter(tipo_operacao=codigo)
+        faixa_count = faixa_qs.count()
+        faixa_lucro = sum(float(e.lucro or 0) for e in faixa_qs)
+        home_operacao_kpis.append(
+            {
+                "label": label,
+                "value": faixa_count,
+                "hint": f"Lucro: R$ {faixa_lucro:,.2f}",
+                "url": f"{reverse('admin_emissoes')}?tipo_operacao={codigo}",
+                "tone": tone,
+            }
+        )
+    tipo_cliente_map = {}
+    for tipo, _ in getattr(Cliente, "TIPO_CLIENTE_CHOICES", []):
+        tipo_cliente_map[tipo] = clientes_qs.filter(ativo=True, tipo_cliente=tipo).count()
+    home_clientes_kpis = [
+        {
+            "label": "Clientes concierge",
+            "value": tipo_cliente_map.get("concierge", 0),
+            "hint": "Base VIP sob gestão completa",
+            "url": f"{reverse('admin_clientes')}?tipo_cliente=concierge",
+            "tone": "purple",
+        },
+        {
+            "label": "Clientes intermediários",
+            "value": tipo_cliente_map.get("intermediario", 0),
+            "hint": "Agências revendedoras parceiras",
+            "url": f"{reverse('admin_clientes')}?tipo_cliente=intermediario",
+            "tone": "gold",
+        },
+    ]
+
     return {
         "home_period_label": f"{start_date.strftime('%d/%m/%Y')} a {today.strftime('%d/%m/%Y')}",
         "home_hero": home_hero,
         "home_secondary_kpis": home_secondary_kpis,
+        "home_operacao_kpis": home_operacao_kpis,
+        "home_clientes_kpis": home_clientes_kpis,
         "home_primary_actions": primary_actions,
         "home_kpis": [
             {"label": "Emissoes hoje", "value": emissoes_hoje_count},

@@ -92,6 +92,54 @@ def _resolve_cta_label(empresa, companhia_nome):
         return value
 
 
+def _get_tipo_cliente_context(emissao):
+    cliente = getattr(emissao, "cliente", None)
+    tipo = getattr(cliente, "tipo_cliente", "") or "passageiro_direto"
+    tipo_operacao = getattr(emissao, "tipo_operacao", "") or "venda_direta"
+    mapping = {
+        "passageiro_direto": {
+            "tone": "blue",
+            "label": "Voucher de Emissão",
+            "description": "Passageiro direto",
+            "hide_referencia": False,
+            "hide_economia": False,
+            "mostrar_lucro": False,
+            "observacao_extra": "",
+        },
+        "concierge": {
+            "tone": "purple",
+            "label": "Voucher VIP Concierge",
+            "description": "Pontos do próprio cliente (conta gerida)",
+            "hide_referencia": False,
+            "hide_economia": False,
+            "mostrar_lucro": False,
+            "observacao_extra": "Emissão realizada com pontos do cliente concierge. A agência repassa apenas as taxas aéreas cabíveis.",
+        },
+        "conta_administrada": {
+            "tone": "gold",
+            "label": "Voucher Conta Administrada",
+            "description": "Titular cedente da conta para a agência",
+            "hide_referencia": False,
+            "hide_economia": False,
+            "mostrar_lucro": False,
+            "observacao_extra": "Emissão operada com conta administrada cedida pelo titular. Contratação de milhas conforme termo vigente.",
+        },
+        "intermediario": {
+            "tone": "green",
+            "label": "Voucher de Revenda (B2B)",
+            "description": "Emissão para agência revendedora",
+            "hide_referencia": True,
+            "hide_economia": True,
+            "mostrar_lucro": False,
+            "observacao_extra": "Documento destinado a agência parceira. Valor de referência e comparativos não são exibidos.",
+        },
+    }
+    info = mapping.get(tipo, mapping["passageiro_direto"])
+    info["codigo"] = tipo
+    info["tipo_operacao"] = tipo_operacao
+    return info
+
+
 def _get_status_context(emissao):
     if emissao.localizador:
         return {
@@ -334,9 +382,13 @@ def build_emissao_preview_context(emissao, *, for_pdf=False):
         ],
     )
 
+    tipo_cliente_info = _get_tipo_cliente_context(emissao)
+    if tipo_cliente_info.get("observacao_extra"):
+        observacao = f"{tipo_cliente_info['observacao_extra']}\n\n{observacao}".strip()
     return {
         "emissao_numero": f"EM-{emissao.criado_em.year}-{emissao.id:03d}",
         "status": status,
+        "tipo_cliente": tipo_cliente_info,
         "created_display": _format_datetime(emissao.criado_em),
         "localizador_display": localizador,
         "pnr_display": localizador,

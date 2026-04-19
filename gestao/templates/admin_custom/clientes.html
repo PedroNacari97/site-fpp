@@ -45,6 +45,17 @@
             {% endfor %}
           </select>
         </div>
+        <div class="clients-page__field clients-page__field--tipo">
+          <label>Tipo de cliente</label>
+          <div class="clients-page__chip-row">
+            {% for item in tipo_cliente_options %}
+              <label class="clients-page__chip clients-page__chip--{{ item.tone }}{% if item.selected %} is-selected{% endif %}">
+                <input type="checkbox" name="tipo_cliente" value="{{ item.value }}" {% if item.selected %}checked{% endif %}>
+                <span>{{ item.label }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </div>
         <div class="clients-page__actions">
           <button type="submit" class="clients-page__button">Filtrar</button>
           <a href="{{ clear_filters_url }}" class="clients-page__button-secondary">Limpar</a>
@@ -85,6 +96,7 @@
               <div class="clients-page__identity">
                 <strong>{{ cliente.display_name }}</strong>
                 <span>{{ cliente.username }}</span>
+                <span class="clients-page__tipo-badge clients-page__tipo-badge--{{ cliente.tipo_tone }}">{{ cliente.tipo_label }}</span>
               </div>
               <div class="clients-page__status-block">
                 <span class="clients-page__status-label">Status</span>

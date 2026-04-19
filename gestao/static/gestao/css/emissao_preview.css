@@ -84,6 +84,23 @@
     border-bottom: 1px solid #e2e8f0;
 }
 
+.emission-preview-tipo-band {
+    margin: 0.5rem 1.25rem 1rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    color: #1e3a8a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.emission-preview-tipo-band__label strong { display: block; font-size: 0.9rem; }
+.emission-preview-tipo-band__label small { font-size: 0.72rem; opacity: 0.85; }
+.emission-preview-tipo-band--blue { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af; }
+.emission-preview-tipo-band--gold { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; }
+.emission-preview-tipo-band--purple { background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #5b21b6; }
+.emission-preview-tipo-band--green { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #166534; }
+
 .emission-preview-meta__item {
     min-width: 0;
 }

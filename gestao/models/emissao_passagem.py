@@ -47,6 +47,23 @@ class EmissaoPassagem(models.Model):
         (BAGAGEM_DESPACHADA_1X32, "1 bagagem despachada ate 32kg"),
     )
 
+    TIPO_VENDA_DIRETA = "venda_direta"
+    TIPO_INTERMEDIARIO = "intermediario"
+    TIPO_CONCIERGE = "concierge"
+    TIPO_EMISSOR_PARCEIRO = "emissor_parceiro"
+    TIPO_OPERACAO_CHOICES = (
+        (TIPO_VENDA_DIRETA, "Venda direta (Modelo 1)"),
+        (TIPO_INTERMEDIARIO, "Intermediario (Modelo 2)"),
+        (TIPO_CONCIERGE, "Concierge (Modelo 3)"),
+        (TIPO_EMISSOR_PARCEIRO, "Emissor parceiro (Modelo 1)"),
+    )
+    tipo_operacao = models.CharField(
+        max_length=20,
+        choices=TIPO_OPERACAO_CHOICES,
+        default=TIPO_VENDA_DIRETA,
+        db_index=True,
+    )
+
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, null=True, blank=True)
     conta_administrada = models.ForeignKey(
         ContaAdministrada,
@@ -158,39 +175,64 @@ class EmissaoPassagem(models.Model):
         if not self.cliente:
             raise ValidationError({"cliente": "Selecione o cliente que irá viajar."})
 
+    def _dec(self, value):
+        if value in (None, ""):
+            return Decimal("0")
+        return Decimal(value)
+
+    def _base_receita(self):
+        if self.valor_total_final not in (None, ""):
+            return Decimal(self.valor_total_final)
+        if self.valor_venda_final not in (None, ""):
+            return Decimal(self.valor_venda_final)
+        if self.valor_cobrado_cliente not in (None, ""):
+            return Decimal(self.valor_cobrado_cliente)
+        return None
+
     def save(self, *args, **kwargs):
         self.qtd_passageiros = self.qtd_adultos + self.qtd_criancas + self.qtd_bebes
-        pontos = Decimal(self.pontos_utilizados or 0)
-        valor_milheiro = Decimal(self.valor_milheiro_parceiro or 0)
+
+        if not self.tipo_operacao:
+            if self.emissor_parceiro_id:
+                self.tipo_operacao = self.TIPO_EMISSOR_PARCEIRO
+            else:
+                self.tipo_operacao = self.TIPO_VENDA_DIRETA
+
+        pontos = self._dec(self.pontos_utilizados)
+        valor_milheiro = self._dec(self.valor_milheiro_parceiro)
         custo_milhas = (pontos / Decimal("1000")) * valor_milheiro
-        incluir_taxas = not self.emissor_parceiro_id and not self.conta_administrada_id
-        custo_total = custo_milhas + (Decimal(self.valor_taxas or 0) if incluir_taxas else Decimal("0"))
-        if self.emissor_parceiro_id and self.custo_emissor not in (None, ""):
-            custo_total = Decimal(self.custo_emissor or 0)
-        self.custo_total = custo_total
-        valor_final_cliente = self.valor_venda_final
-        valor_total = self.valor_total_final
-        if self.emissor_parceiro_id and self.valor_cobrado_cliente not in (None, ""):
-            base_lucro = Decimal(self.valor_cobrado_cliente or 0)
-        elif valor_total not in (None, ""):
-            base_lucro = Decimal(valor_total or 0)
-        elif valor_final_cliente not in (None, ""):
-            base_lucro = Decimal(valor_final_cliente or 0)
+        taxas = self._dec(self.valor_taxas)
+        receita = self._base_receita()
+
+        if self.tipo_operacao == self.TIPO_EMISSOR_PARCEIRO:
+            custo_total = self._dec(self.custo_emissor)
+            base_lucro = self._dec(self.valor_cobrado_cliente) if self.valor_cobrado_cliente not in (None, "") else receita
+            lucro = (base_lucro - custo_total) if base_lucro is not None else None
+            economia = (self._dec(self.valor_referencia) - base_lucro) if base_lucro is not None else None
+        elif self.tipo_operacao == self.TIPO_CONCIERGE:
+            custo_total = Decimal("0")
+            lucro = Decimal("0")
+            ref = self._dec(self.valor_referencia)
+            equivalente = self._dec(self.valor_cobrado_cliente) if self.valor_cobrado_cliente not in (None, "") else custo_milhas
+            economia = ref - equivalente if ref else None
+        elif self.tipo_operacao == self.TIPO_INTERMEDIARIO:
+            custo_total = custo_milhas + taxas
+            base_lucro = receita
+            lucro = (base_lucro - custo_total) if base_lucro is not None else None
+            economia = None
         else:
-            base_lucro = None
-        if base_lucro is not None:
-            self.lucro = base_lucro - custo_total
+            custo_total = custo_milhas + taxas
+            base_lucro = receita
+            lucro = (base_lucro - custo_total) if base_lucro is not None else None
+            economia = (self._dec(self.valor_referencia) - base_lucro) if base_lucro is not None else None
+
+        self.custo_total = custo_total
+        if lucro is not None:
+            self.lucro = lucro
         elif self.lucro is None:
             self.lucro = Decimal("0")
-        valor_cliente = (
-            Decimal(self.valor_cobrado_cliente or 0)
-            if self.emissor_parceiro_id and self.valor_cobrado_cliente not in (None, "")
-            else (Decimal(valor_final_cliente or 0) if valor_final_cliente not in (None, "") else None)
-        )
-        if valor_cliente is not None:
-            self.economia_obtida = Decimal(self.valor_referencia or 0) - valor_cliente
-        else:
-            self.economia_obtida = None
+        self.economia_obtida = economia
+
         super().save(*args, **kwargs)
 
     class Meta:

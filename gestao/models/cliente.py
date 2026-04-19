@@ -34,6 +34,26 @@ class Cliente(models.Model):
         ("cliente", "Cliente"),
     )
     perfil = models.CharField(max_length=10, choices=PERFIS, default="cliente")
+
+    TIPO_PASSAGEIRO_DIRETO = "passageiro_direto"
+    TIPO_CONCIERGE = "concierge"
+    TIPO_CONTA_ADMINISTRADA = "conta_administrada"
+    TIPO_INTERMEDIARIO = "intermediario"
+    TIPO_CLIENTE_CHOICES = (
+        (TIPO_PASSAGEIRO_DIRETO, "Passageiro direto"),
+        (TIPO_CONCIERGE, "Concierge"),
+        (TIPO_CONTA_ADMINISTRADA, "Conta administrada"),
+        (TIPO_INTERMEDIARIO, "Intermediario"),
+    )
+    tipo_cliente = models.CharField(
+        max_length=20,
+        choices=TIPO_CLIENTE_CHOICES,
+        default=TIPO_PASSAGEIRO_DIRETO,
+        db_index=True,
+    )
+    programas_concierge = models.CharField(max_length=255, blank=True)
+    razao_social = models.CharField(max_length=255, blank=True)
+    cnpj = models.CharField(max_length=20, blank=True)
     observacoes = models.TextField(blank=True)
     ativo = models.BooleanField(default=True)
     criado_por = models.ForeignKey(

@@ -2160,3 +2160,101 @@ class ContasAdministradasKebabRefatorTest(TestCase):
             60,
             f"Listagem com 5 contas usou {len(ctx.captured_queries)} queries — possível N+1",
         )
+
+
+class TipoOperacaoMatrizTest(TestCase):
+    """Matriz de modelos operacionais aplicados no save() de EmissaoPassagem."""
+
+    def setUp(self):
+        self.empresa = Empresa.objects.create(nome="Matriz Ag", slug="matriz-ag")
+        self.programa = ProgramaFidelidade.objects.create(nome="Smiles-M")
+        self.companhia = CompanhiaAerea.objects.create(nome="Gol-M", codigo_iata="G3")
+        self.origem = Aeroporto.objects.create(sigla="GRU", nome="Guarulhos")
+        self.destino = Aeroporto.objects.create(sigla="GIG", nome="Galeão")
+
+    def _make_cliente(self, username, tipo=Cliente.TIPO_PASSAGEIRO_DIRETO, cpf="00000000000"):
+        user = User.objects.create_user(username=username, password="x")
+        cliente = Cliente.objects.create(
+            usuario=user,
+            empresa=self.empresa,
+            cpf=cpf,
+            tipo_cliente=tipo,
+            perfil="cliente",
+        )
+        return cliente
+
+    def _make_emissao(self, **overrides):
+        defaults = dict(
+            cliente=overrides.pop("cliente", None),
+            programa=self.programa,
+            companhia_aerea=self.companhia,
+            aeroporto_partida=self.origem,
+            aeroporto_destino=self.destino,
+            data_ida=timezone.now() + timedelta(days=5),
+            qtd_adultos=1,
+            pontos_utilizados=50000,
+            valor_milheiro_parceiro=Decimal("20.00"),
+            valor_taxas=Decimal("300.00"),
+            valor_venda_final=Decimal("2000.00"),
+            valor_total_final=Decimal("2300.00"),
+            valor_referencia=Decimal("4000.00"),
+        )
+        defaults.update(overrides)
+        emissao = EmissaoPassagem(**defaults)
+        emissao.save()
+        return emissao
+
+    def test_venda_direta_calcula_lucro_receita_menos_custo_e_taxas(self):
+        cli = self._make_cliente("vd1", Cliente.TIPO_PASSAGEIRO_DIRETO, cpf="00000000001")
+        e = self._make_emissao(cliente=cli, tipo_operacao=EmissaoPassagem.TIPO_VENDA_DIRETA)
+        # custo_milhas = 50 * 20 = 1000; taxas = 300; custo_total = 1300; lucro = 2300 - 1300 = 1000
+        self.assertEqual(e.tipo_operacao, EmissaoPassagem.TIPO_VENDA_DIRETA)
+        self.assertEqual(e.custo_total, Decimal("1300.00"))
+        self.assertEqual(e.lucro, Decimal("1000.00"))
+        self.assertEqual(e.economia_obtida, Decimal("1700.00"))  # 4000 - 2300
+
+    def test_intermediario_nao_calcula_economia(self):
+        cli = self._make_cliente("int1", Cliente.TIPO_INTERMEDIARIO, cpf="00000000002")
+        e = self._make_emissao(cliente=cli, tipo_operacao=EmissaoPassagem.TIPO_INTERMEDIARIO)
+        self.assertEqual(e.tipo_operacao, EmissaoPassagem.TIPO_INTERMEDIARIO)
+        self.assertEqual(e.lucro, Decimal("1000.00"))
+        self.assertIsNone(e.economia_obtida)
+
+    def test_concierge_nao_tem_lucro_para_agencia(self):
+        cli = self._make_cliente("con1", Cliente.TIPO_CONCIERGE, cpf="00000000003")
+        e = self._make_emissao(cliente=cli, tipo_operacao=EmissaoPassagem.TIPO_CONCIERGE)
+        self.assertEqual(e.tipo_operacao, EmissaoPassagem.TIPO_CONCIERGE)
+        self.assertEqual(e.lucro, Decimal("0"))
+        self.assertEqual(e.custo_total, Decimal("0"))
+
+    def test_emissor_parceiro_lucro_sem_somar_taxas(self):
+        cli = self._make_cliente("ep1", Cliente.TIPO_PASSAGEIRO_DIRETO, cpf="00000000004")
+        e = self._make_emissao(
+            cliente=cli,
+            tipo_operacao=EmissaoPassagem.TIPO_EMISSOR_PARCEIRO,
+            custo_emissor=Decimal("1500.00"),
+            valor_cobrado_cliente=Decimal("2500.00"),
+        )
+        self.assertEqual(e.tipo_operacao, EmissaoPassagem.TIPO_EMISSOR_PARCEIRO)
+        self.assertEqual(e.custo_total, Decimal("1500.00"))
+        self.assertEqual(e.lucro, Decimal("1000.00"))  # 2500 - 1500
+
+    def test_default_tipo_operacao_emissor_parceiro_quando_vazio(self):
+        from gestao.models import EmissorParceiro
+        emp = EmissorParceiro.objects.create(nome="Parc", empresa=self.empresa)
+        cli = self._make_cliente("def1", Cliente.TIPO_PASSAGEIRO_DIRETO, cpf="00000000005")
+        e = EmissaoPassagem(
+            cliente=cli,
+            programa=self.programa,
+            companhia_aerea=self.companhia,
+            aeroporto_partida=self.origem,
+            aeroporto_destino=self.destino,
+            data_ida=timezone.now() + timedelta(days=3),
+            qtd_adultos=1,
+            tipo_operacao="",
+            emissor_parceiro=emp,
+            custo_emissor=Decimal("1000"),
+            valor_cobrado_cliente=Decimal("1800"),
+        )
+        e.save()
+        self.assertEqual(e.tipo_operacao, EmissaoPassagem.TIPO_EMISSOR_PARCEIRO)

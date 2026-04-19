@@ -125,6 +125,8 @@ def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=
             clientes_ids.add(int(cliente_sel))
         except (TypeError, ValueError):
             pass
+    clientes_tipo_qs = Cliente.objects.filter(id__in=clientes_ids).values_list("id", "tipo_cliente") if clientes_ids else []
+    clientes_tipo = {str(pk): (tipo or "") for pk, tipo in clientes_tipo_qs}
     cliente_context_url_template = reverse("admin_emissao_cliente_contexto", args=[0]).replace("/0/", "/__ID__/")
     passageiro_frequente_url_template = reverse("admin_emissao_passageiro_frequente_detalhe", args=[0]).replace("/0/", "/__ID__/")
     return {
@@ -136,6 +138,7 @@ def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=
         'aeroportos_json': safe_json_dumps(aeroportos),
         'cliente_id': cliente_id,
         'cliente_programas_json': safe_json_dumps(cliente_programas),
+        'clientes_tipo_json': safe_json_dumps(clientes_tipo),
         'contas_adm_programas_json': safe_json_dumps(contas_adm_programas),
         'empresa_programas_json': safe_json_dumps(empresa_programas),
         'cpf_controle_json': safe_json_dumps(controle or {}),
@@ -197,6 +200,7 @@ def emissao_cliente_contexto(request, cliente_id):
                 "id": cliente.id,
                 "nome": cliente_nome,
                 "cpf": cliente_cpf,
+                "tipo_cliente": getattr(cliente, "tipo_cliente", "") or "",
             },
             "passageiros_frequentes": passageiros_list,
         }
@@ -572,6 +576,9 @@ def admin_emissoes(request):
         emissoes = emissoes.exclude(localizador="").exclude(localizador__isnull=True)
     elif selected_status == "pendente":
         emissoes = emissoes.filter(Q(localizador="") | Q(localizador__isnull=True))
+    tipo_operacao_filter = request.GET.getlist("tipo_operacao")
+    if tipo_operacao_filter:
+        emissoes = emissoes.filter(tipo_operacao__in=tipo_operacao_filter)
     emissoes = emissoes.order_by("-criado_em")
 
     if request.GET.get("export") == "excel":

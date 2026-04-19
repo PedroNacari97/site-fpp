@@ -102,6 +102,27 @@
     cepInput.addEventListener("blur", searchCep);
   };
 
+  const setupTipoClienteToggle = () => {
+    const tipoField = document.querySelector("#id_tipo_cliente, [name='tipo_cliente']");
+    if (!tipoField) return;
+    const conditionalBlocks = document.querySelectorAll("[data-show-for]");
+    if (!conditionalBlocks.length) return;
+    const applyVisibility = () => {
+      const current = (tipoField.value || "").trim();
+      conditionalBlocks.forEach((node) => {
+        const target = node.getAttribute("data-show-for");
+        const matches = target
+          .split(",")
+          .map((v) => v.trim())
+          .filter(Boolean);
+        node.style.display = matches.includes(current) ? "" : "none";
+      });
+    };
+    tipoField.addEventListener("change", applyVisibility);
+    applyVisibility();
+  };
+
   setupFullName();
   setupCepLookup();
+  setupTipoClienteToggle();
 })();

@@ -442,6 +442,10 @@ class ClienteForm(forms.ModelForm):
             "cidade",
             "estado",
             "perfil",
+            "tipo_cliente",
+            "programas_concierge",
+            "razao_social",
+            "cnpj",
             "observacoes",
             "ativo",
         ]
@@ -503,9 +507,22 @@ class ClienteForm(forms.ModelForm):
             "cidade",
             "estado",
             "observacoes",
+            "programas_concierge",
+            "razao_social",
+            "cnpj",
         ):
             self.fields[field_name].required = False
         self.fields["ativo"].initial = True
+        self.fields["tipo_cliente"].label = "Tipo de cliente"
+        self.fields["tipo_cliente"].help_text = (
+            "Passageiro direto = cliente final. Concierge = VIP com gestao completa. "
+            "Conta administrada = titular de conta de milhas cedida. Intermediario = agencia revendedora."
+        )
+        self.fields["programas_concierge"].widget.attrs.setdefault(
+            "placeholder", "Ex: Smiles, TudoAzul, LATAM Pass"
+        )
+        self.fields["razao_social"].widget.attrs.setdefault("placeholder", "Razao social da agencia parceira")
+        self.fields["cnpj"].widget.attrs.setdefault("placeholder", "00.000.000/0000-00")
 
     def clean_cpf(self):
         cpf = self.cleaned_data.get("cpf") or getattr(self.instance, "cpf", "") or _generate_internal_cpf()
@@ -564,6 +581,10 @@ class NovoClienteForm(forms.ModelForm):
             "bairro",
             "cidade",
             "estado",
+            "tipo_cliente",
+            "programas_concierge",
+            "razao_social",
+            "cnpj",
             "observacoes",
             "ativo",
             "perfil",
@@ -632,9 +653,13 @@ class NovoClienteForm(forms.ModelForm):
             "cidade",
             "estado",
             "observacoes",
+            "programas_concierge",
+            "razao_social",
+            "cnpj",
         ):
             self.fields[field_name].required = False
         self.fields["ativo"].initial = True
+        self.fields["tipo_cliente"].label = "Tipo de cliente"
 
     def clean_data_nascimento(self):
         return parse_br_date(self.cleaned_data.get("data_nascimento"), field_label="Data de nascimento")
@@ -701,11 +726,21 @@ class AeroportoForm(forms.ModelForm):
 class EmissaoPassagemForm(forms.ModelForm):
     tipo_emissao = forms.ChoiceField(
         choices=(
-            ("cliente", "Conta do Cliente"),
-            ("administrada", "Conta Administrada"),
-            ("parceiro", "Emissor Parceiro"),
+            ("cliente", "Conta propria da agencia"),
+            ("administrada", "Conta administrada"),
+            ("parceiro", "Emissor parceiro"),
+            ("concierge", "Pontos do cliente concierge"),
         ),
         initial="cliente",
+    )
+    modelo_operacional = forms.ChoiceField(
+        choices=(
+            ("", "Automatico"),
+            ("1", "Modelo 1 - Venda direta"),
+            ("2", "Modelo 2 - Intermediario"),
+        ),
+        required=False,
+        initial="",
     )
     conta_administrada = forms.ModelChoiceField(
         queryset=ContaAdministrada.objects.none(), required=False
@@ -774,6 +809,9 @@ class EmissaoPassagemForm(forms.ModelForm):
         self.fields["bagagem_mao"].required = False
         self.fields["bagagem_despachada"].required = False
         self.fields["valor_referencia"].required = False
+        if "tipo_operacao" in self.fields:
+            self.fields["tipo_operacao"].required = False
+            self.fields["tipo_operacao"].widget = forms.HiddenInput()
         if "valor_taxas" in self.fields:
             self.fields["valor_taxas"].required = False
         if "valor_total_final" in self.fields:
@@ -870,6 +908,22 @@ class EmissaoPassagemForm(forms.ModelForm):
             cleaned["conta_administrada"] = None
         else:
             cleaned["emissor_parceiro"] = None
+        if tipo == "concierge":
+            tipo_cli = getattr(cliente, "tipo_cliente", "") if cliente else ""
+            if tipo_cli != Cliente.TIPO_CONCIERGE:
+                raise forms.ValidationError(
+                    "Pontos do cliente concierge so podem ser usados quando o cliente e do tipo Concierge."
+                )
+        modelo_escolhido = (cleaned.get("modelo_operacional") or "").strip()
+        tipo_cli = getattr(cliente, "tipo_cliente", "") if cliente else ""
+        if tipo == "concierge":
+            cleaned["tipo_operacao"] = EmissaoPassagem.TIPO_CONCIERGE
+        elif tipo == "parceiro":
+            cleaned["tipo_operacao"] = EmissaoPassagem.TIPO_EMISSOR_PARCEIRO
+        elif tipo_cli == Cliente.TIPO_INTERMEDIARIO or modelo_escolhido == "2":
+            cleaned["tipo_operacao"] = EmissaoPassagem.TIPO_INTERMEDIARIO
+        else:
+            cleaned["tipo_operacao"] = EmissaoPassagem.TIPO_VENDA_DIRETA
         criar_nome = (cleaned.get("criar_hotel_nome") or "").strip()
         hotel_vinculado = cleaned.get("hotel_vinculado")
         if criar_nome and hotel_vinculado:
@@ -884,6 +938,8 @@ class EmissaoPassagemForm(forms.ModelForm):
         model = EmissaoPassagem
         fields = [
             'tipo_emissao',
+            'modelo_operacional',
+            'tipo_operacao',
             'cliente',
             'conta_administrada',
             'programa',

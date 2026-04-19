@@ -131,6 +131,10 @@ def criar_cliente(request):
                         cidade=form.cleaned_data.get("cidade", ""),
                         estado=form.cleaned_data.get("estado", ""),
                         perfil=perfil,
+                        tipo_cliente=form.cleaned_data.get("tipo_cliente") or Cliente.TIPO_PASSAGEIRO_DIRETO,
+                        programas_concierge=form.cleaned_data.get("programas_concierge", ""),
+                        razao_social=form.cleaned_data.get("razao_social", ""),
+                        cnpj=form.cleaned_data.get("cnpj", ""),
                         empresa=empresa,
                         observacoes=form.cleaned_data.get("observacoes", ""),
                         ativo=form.cleaned_data.get("ativo", True),
@@ -195,6 +199,7 @@ def admin_clientes(request):
     data_inicio = request.GET.get("data_inicio", "")
     data_fim = request.GET.get("data_fim", "")
     conta_id = request.GET.get("conta", "")
+    tipo_cliente_filter = request.GET.getlist("tipo_cliente")
 
     management_context = build_operational_dashboard_context(user=request.user, request=request)
     management_dashboard = management_context["management_dashboard"]
@@ -237,6 +242,11 @@ def admin_clientes(request):
                 cliente__isnull=False,
             ).values_list("cliente_id", flat=True)
         )
+    if tipo_cliente_filter:
+        valid_tipos = {code for code, _ in Cliente.TIPO_CLIENTE_CHOICES}
+        tipo_cliente_filter = [t for t in tipo_cliente_filter if t in valid_tipos]
+        if tipo_cliente_filter:
+            clientes = clientes.filter(tipo_cliente__in=tipo_cliente_filter)
 
     clientes = clientes.order_by("-usuario__date_joined", "usuario__username")
     total_clientes = clientes.count()
@@ -249,11 +259,19 @@ def admin_clientes(request):
     page_obj = paginator.get_page(page_number)
     displayed_count = len(page_obj.object_list)
 
+    tipo_labels = dict(Cliente.TIPO_CLIENTE_CHOICES)
+    tipo_tones = {
+        Cliente.TIPO_PASSAGEIRO_DIRETO: "blue",
+        Cliente.TIPO_CONCIERGE: "gold",
+        Cliente.TIPO_CONTA_ADMINISTRADA: "purple",
+        Cliente.TIPO_INTERMEDIARIO: "green",
+    }
     cliente_cards = []
     for cliente in page_obj.object_list:
         display_name = cliente.usuario.get_full_name() or cliente.usuario.username
         initials_source = [part[0].upper() for part in display_name.split()[:2] if part]
         initials = "".join(initials_source) or cliente.usuario.username[:2].upper()
+        tipo = cliente.tipo_cliente or Cliente.TIPO_PASSAGEIRO_DIRETO
         cliente_cards.append(
             {
                 "id": cliente.id,
@@ -261,11 +279,24 @@ def admin_clientes(request):
                 "username": cliente.usuario.username,
                 "status_label": "Ativo" if cliente.ativo else "Inativo",
                 "status_tone": "active" if cliente.ativo else "inactive",
+                "tipo": tipo,
+                "tipo_label": tipo_labels.get(tipo, tipo),
+                "tipo_tone": tipo_tones.get(tipo, "blue"),
                 "initials": initials,
                 "view_url": reverse("admin_visualizar_cliente", args=[cliente.id]),
                 "edit_url": reverse("admin_editar_cliente", args=[cliente.id]),
             }
         )
+
+    tipo_cliente_options = [
+        {
+            "value": code,
+            "label": label,
+            "tone": tipo_tones.get(code, "blue"),
+            "selected": code in tipo_cliente_filter,
+        }
+        for code, label in Cliente.TIPO_CLIENTE_CHOICES
+    ]
 
     account_options = [
         {
@@ -309,6 +340,8 @@ def admin_clientes(request):
             "data_fim": data_fim or management_dashboard["end_date"],
             "conta_id": conta_id,
             "account_options": account_options,
+            "tipo_cliente_options": tipo_cliente_options,
+            "tipo_cliente_selected": tipo_cliente_filter,
             "total_clientes": total_clientes,
             "clientes_ativos": clientes_ativos,
             "novos_mes": novos_mes,

@@ -29,6 +29,11 @@
     clienteWrapper: qs("#cliente-wrapper"),
     contaAdmWrapper: qs("#conta-adm-wrapper"),
     emissorParceiroWrapper: qs("#emissor-parceiro-wrapper"),
+    modeloOperacional: qs("#id_modelo_operacional"),
+    modeloOperacionalWrapper: qs("#modelo-operacional-wrapper"),
+    tipoOperacao: qs("#id_tipo_operacao"),
+    valorReferenciaWrapper: qs("#id_valor_referencia")?.closest("div") || null,
+    economiaWrapper: qs("#id_economia_obtida")?.closest("div") || null,
     contaAdmRequired: qs("#conta-adm-required"),
     routeOrigin: qs("#route-preview-origin"),
     routeDestination: qs("#route-preview-destination"),
@@ -88,9 +93,10 @@
   };
 
   const tipoMeta = {
-    cliente: { title: "Conta do Cliente", description: "Cliente usa suas proprias milhas", icon: "CL" },
-    administrada: { title: "Conta Administrada", description: "Usar milhas da empresa", icon: "ADM" },
-    parceiro: { title: "Emissor Parceiro", description: "Emissao por terceiros", icon: "PAR" },
+    cliente: { title: "Conta propria da agencia", description: "Usar milhas/conta da agencia", icon: "CL" },
+    administrada: { title: "Conta administrada", description: "Milhas de conta cedida", icon: "ADM" },
+    parceiro: { title: "Emissor parceiro", description: "Emissao via parceiro", icon: "PAR" },
+    concierge: { title: "Pontos do cliente concierge", description: "Conta e do cliente VIP", icon: "VIP" },
   };
 
   const passengerKinds = [
@@ -187,6 +193,35 @@
 
   function getTipoEmissao() {
     return refs.tipoEmissao?.value || "cliente";
+  }
+
+  function getClienteTipo() {
+    const clienteId = Number(refs.cliente?.value || 0);
+    if (!clienteId) return "";
+    const fromContext = clientContextCache[clienteId]?.cliente?.tipo_cliente;
+    if (fromContext) return fromContext;
+    const map = context.clientesTipo || {};
+    return map[clienteId] || "";
+  }
+
+  function getModeloOperacional() {
+    return (refs.modeloOperacional?.value || "").trim();
+  }
+
+  function deriveTipoOperacao() {
+    const tipo = getTipoEmissao();
+    if (tipo === "concierge") return "concierge";
+    if (tipo === "parceiro") return "emissor_parceiro";
+    const clienteTipo = getClienteTipo();
+    const modelo = getModeloOperacional();
+    if (clienteTipo === "intermediario" || modelo === "2") return "intermediario";
+    return "venda_direta";
+  }
+
+  function syncTipoOperacaoField() {
+    const tipoOp = deriveTipoOperacao();
+    if (refs.tipoOperacao) refs.tipoOperacao.value = tipoOp;
+    return tipoOp;
   }
 
   function getSelectedText(select) {
@@ -343,8 +378,23 @@
     if (tipo !== "administrada" && refs.contaAdm) refs.contaAdm.value = "";
     if (tipo !== "parceiro" && refs.emissorParceiro) refs.emissorParceiro.value = "";
     if (refs.custoParceiro) refs.custoParceiro.readOnly = tipo !== "parceiro";
+    const clienteTipo = getClienteTipo();
+    const showModelo = tipo === "administrada" && clienteTipo !== "intermediario" && clienteTipo !== "concierge";
+    if (refs.modeloOperacionalWrapper) refs.modeloOperacionalWrapper.style.display = showModelo ? "block" : "none";
+    if (!showModelo && refs.modeloOperacional) refs.modeloOperacional.value = "";
+    syncTipoOperacaoField();
+    applyTipoOperacaoVisibility();
     renderTipoCards();
     updateProgramaOptions();
+  }
+
+  function applyTipoOperacaoVisibility() {
+    const tipoOp = deriveTipoOperacao();
+    const hideReferencia = tipoOp === "intermediario";
+    if (refs.valorReferenciaWrapper) refs.valorReferenciaWrapper.style.display = hideReferencia ? "none" : "";
+    if (refs.economiaWrapper) refs.economiaWrapper.style.display = hideReferencia ? "none" : "";
+    if (hideReferencia && refs.valorReferencia) refs.valorReferencia.value = "";
+    if (hideReferencia && refs.economia) refs.economia.value = "";
   }
 
   function updateResumo() {
@@ -374,6 +424,8 @@
   function recalcValores() {
     const selected = getCurrentProgram();
     const tipo = getTipoEmissao();
+    const tipoOp = syncTipoOperacaoField();
+    applyTipoOperacaoVisibility();
     const pontos = parseFloat(refs.pontos?.value || 0);
     const valorTaxas = parseFloat(refs.valorTaxas?.value || 0);
     const valorReferencia = parseFloat(refs.valorReferencia?.value || 0);
@@ -390,29 +442,61 @@
     const valorTotal = valorTotalAuto;
     const custoEmissor = parseFloat(refs.custoEmissor?.value || 0);
     const valorCobrado = parseFloat(refs.valorCobrado?.value || 0);
-    const baseCusto = tipo === "cliente" ? custoMilhas + valorTaxas : custoMilhas;
-    if (refs.economia) {
-      const valorCliente = tipo === "parceiro" ? valorCobrado : valorTotal || valorVenda || 0;
-      refs.economia.value = valorCliente && valorReferencia ? String((valorCliente - valorReferencia).toFixed(2)) : "";
+    const receita = valorTotal || valorVenda || 0;
+
+    let lucroValor = 0;
+    let economiaValor = null;
+
+    if (tipoOp === "emissor_parceiro") {
+      const base = valorCobrado || receita;
+      lucroValor = base ? base - custoEmissor : 0;
+      economiaValor = valorReferencia && base ? valorReferencia - base : null;
+    } else if (tipoOp === "concierge") {
+      lucroValor = 0;
+      const equivalente = valorCobrado || custoMilhas;
+      economiaValor = valorReferencia && equivalente ? valorReferencia - equivalente : null;
+    } else if (tipoOp === "intermediario") {
+      lucroValor = receita ? receita - (custoMilhas + valorTaxas) : 0;
+      economiaValor = null;
+    } else {
+      lucroValor = receita ? receita - (custoMilhas + valorTaxas) : 0;
+      economiaValor = valorReferencia && receita ? valorReferencia - receita : null;
     }
-    if (refs.lucro) refs.lucro.value = tipo === "parceiro" ? (valorCobrado ? String((valorCobrado - custoEmissor).toFixed(2)) : "") : ((valorTotal || valorVenda) ? String(((valorTotal || valorVenda) - baseCusto).toFixed(2)) : "");
+
+    if (refs.lucro) refs.lucro.value = lucroValor ? String(lucroValor.toFixed(2)) : "";
+    if (refs.economia) {
+      refs.economia.value = economiaValor !== null && !Number.isNaN(economiaValor) ? String(economiaValor.toFixed(2)) : "";
+    }
     if (refs.lucroHighlight) refs.lucroHighlight.textContent = formatCurrency(refs.lucro?.value || 0);
     if (refs.totalHighlight) refs.totalHighlight.textContent = formatCurrency(valorTotal || valorVenda || 0);
     if (refs.economiaHighlight) refs.economiaHighlight.textContent = formatCurrency(refs.economia?.value || 0);
-    updateValueRules(tipo);
+    updateValueRules(tipo, tipoOp);
     updateResumo();
   }
 
-  function updateValueRules(tipo) {
+  function updateValueRules(tipo, tipoOp) {
+    const regras = {
+      venda_direta: {
+        taxas: "Taxas da companhia e aeroporto. Somam no valor total final.",
+        venda: "Valor das milhas vendidas ao cliente (sem taxas).",
+      },
+      intermediario: {
+        taxas: "Taxas repassadas no valor final cobrado. Referência não se aplica.",
+        venda: "Valor total negociado com a agência revendedora.",
+      },
+      concierge: {
+        taxas: "Concierge: apenas taxas aéreas repassadas. Lucro zero (conta do cliente).",
+        venda: "Concierge: normalmente não há venda de milhas (pontos do próprio cliente).",
+      },
+      emissor_parceiro: {
+        taxas: "Emissor parceiro: taxas incluídas no valor final cobrado ao cliente.",
+        venda: "Valor final cobrado ao cliente na emissão via parceiro.",
+      },
+    };
+    const atual = regras[tipoOp] || regras.venda_direta;
     const rules = {
-      valor_taxas: tipo === "administrada"
-        ? "Conta administrada: taxas pagas pela agência. Somam no valor total."
-        : "Taxas da companhia aérea e aeroporto. Somam no valor total.",
-      valor_venda_final: tipo === "administrada"
-        ? "Conta administrada: informe o valor das milhas vendidas (entrada manual)."
-        : tipo === "parceiro"
-          ? "Emissor parceiro: valor final cobrado ao cliente."
-          : "Valor das milhas vendidas ao cliente (sem taxas).",
+      valor_taxas: atual.taxas,
+      valor_venda_final: atual.venda,
       valor_total_final: "Soma automática: valor venda milhas + taxas.",
     };
     Object.entries(rules).forEach(([name, text]) => {
@@ -799,8 +883,9 @@
     }));
     refs.prevButton?.addEventListener("click", () => setStep(getPrevStep(currentStep)));
     refs.nextButton?.addEventListener("click", () => { if (validateStep(currentStep)) setStep(getNextStep(currentStep)); });
-    refs.tipoEmissao?.addEventListener("change", () => { toggleTitularFields(); updateResumo(); saveDraft(); });
-    refs.cliente?.addEventListener("change", async () => { await ensureClientContext(refs.cliente?.value); updateProgramaOptions(); renderPassengers(); updateResumo(); saveDraft(); });
+    refs.tipoEmissao?.addEventListener("change", () => { toggleTitularFields(); recalcValores(); updateResumo(); saveDraft(); });
+    refs.cliente?.addEventListener("change", async () => { await ensureClientContext(refs.cliente?.value); toggleTitularFields(); updateProgramaOptions(); renderPassengers(); recalcValores(); updateResumo(); saveDraft(); });
+    refs.modeloOperacional?.addEventListener("change", () => { recalcValores(); updateResumo(); saveDraft(); });
     refs.contaAdm?.addEventListener("change", () => { updateProgramaOptions(); updateResumo(); saveDraft(); });
     refs.emissorParceiro?.addEventListener("change", () => { updateResumo(); saveDraft(); });
     refs.programa?.addEventListener("change", () => { updateProgramaInfo(); updateResumo(); saveDraft(); });
