@@ -2340,6 +2340,9 @@ def robots_txt(request):
         [
             "User-agent: *",
             "Allow: /",
+            "Disallow: /adm/",
+            "Disallow: /ncadm/",
+            "Disallow: /django/admin/",
             f"Sitemap: {sitemap_url}",
         ]
     )
