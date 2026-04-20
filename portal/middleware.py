@@ -233,8 +233,13 @@ class PreUserTrackingMiddleware:
     def _maybe_update(self, pre_user, *, ip, url):
         """Atualiza `ultimo_ip`/`ultima_url`/`total_visitas` com throttle via cache."""
         cache_key = self._cache_key(pre_user.uid)
-        if cache.get(cache_key):
-            return  # dentro da janela de throttle — nao escreve
+        # cache indisponivel (ex.: tabela django_cache nao criada) nao pode
+        # derrubar o portal. Em caso de falha, segue sem throttle.
+        try:
+            if cache.get(cache_key):
+                return  # dentro da janela de throttle — nao escreve
+        except Exception:
+            logger.warning("PreUser: cache.get falhou — seguindo sem throttle", exc_info=True)
         try:
             from .models import PreUser
 
