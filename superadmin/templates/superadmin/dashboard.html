@@ -5,6 +5,28 @@
 {% block content %}
 <div class="space-y-6">
 
+    <!-- Cadastros consolidados -->
+    <section>
+        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Cadastros</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Cadastros no site (Portal B2C)</p>
+                <p class="text-3xl font-bold text-slate-800">{{ total_portal_users }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">{{ portal_users_ativos }} ativos · recebem alertas + novos módulos</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Leads de Alertas (email)</p>
+                <p class="text-3xl font-bold text-slate-800">{{ total_leads_alertas }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">{{ alertas_ativos }} ativos · só alertas</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Leads da Plataforma (SaaS)</p>
+                <p class="text-3xl font-bold text-slate-800">{{ total_leads_plataforma }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">{{ leads_novos }} novos · {{ leads_7d }} nos últimos 7d</p>
+            </div>
+        </div>
+    </section>
+
     <!-- Metricas noticias -->
     <section>
         <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Noticias</h2>

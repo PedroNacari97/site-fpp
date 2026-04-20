@@ -70,9 +70,15 @@ Sem exclamações. Sem linguagem de vendas agressiva. O CTA deve ser a última f
 **Evite:**
 - Jargão corporativo: "no âmbito de", "tendo em vista que", "cabe ressaltar", "visando", "sendo assim".
 - Verbos formais desnecessários: "realizar" → "fazer"; "utilizar" → "usar"; "adquirir" → "comprar"; "efetuar" → "fazer".
-- Traços isolados no meio de frases (—) como artifício estilístico.
 - Adjetivos de marketing: "incrível", "revolucionário", "imperdível", "fantástico".
 - Superlativo sem dado que sustente: "o melhor cartão do mercado" sem comparativo concreto.
+
+**Travessão e meia-risca — PROIBIDOS em todos os campos (HARD RULE):**
+- NUNCA use o travessão "—" (U+2014, em dash) em qualquer lugar: `titulo`, `resumo`, `conteudo`, `seo_title`, `meta_description`, `tags`, `slug`, `imagem_prompt`, `topico`.
+- NUNCA use a meia-risca "–" (U+2013, en dash) nem o figure dash "‒" (U+2012). Hífen comum "-" é permitido apenas em palavras compostas legítimas ("e-mail", "pré-pago", "luso-brasileiro") e no `slug`.
+- Não use travessão para pausar oração, introduzir aposto, separar explicação, marcar contraste, indicar consequência ou substituir dois-pontos. Troque sempre por vírgula, dois-pontos, ponto final ou parênteses, conforme o caso.
+- Motivo editorial: o travessão é a assinatura visual mais óbvia de texto gerado por IA. Mantê-lo entrega que o artigo foi escrito por máquina e derruba a credibilidade do NC Fly. Remover travessão é requisito não-negociável.
+- Antes de devolver o JSON, faça uma última passada e confirme que nenhum campo contém "—" ou "–". Se encontrar, reescreva a frase com pontuação comum.
 
 **Formatação:**
 - **Negrito** apenas para termos-chave essenciais — no máximo 3 por artigo, usados com parcimônia.
@@ -211,7 +217,8 @@ Gere uma descrição fotorrealística de cena para geração de imagem por IA (D
 10. O `resumo` é diferente do primeiro parágrafo do `conteudo`?
 11. O `conteudo` tem no mínimo 600 palavras (não conte as tags HTML)?
 12. `imagem_prompt` está em inglês, descreve uma cena editorial, sem logos, sem texto visível?
-13. O JSON está completo com todos os 11 campos obrigatórios?
+13. Nenhum campo do JSON contém travessão "—" nem meia-risca "–"? (releia campo por campo antes de fechar)
+14. O JSON está completo com todos os 11 campos obrigatórios?
 
 Responda APENAS com o JSON. Sem texto antes ou depois. Sem blocos de código markdown. Apenas o objeto JSON puro."""
 

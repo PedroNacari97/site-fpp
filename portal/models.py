@@ -438,6 +438,15 @@ class ArtigoEstudo(models.Model):
     metadata_json = models.JSONField(default=dict, blank=True)
     ia_revisao_json = models.JSONField(default=dict, blank=True)
     publicado_em = models.DateTimeField(null=True, blank=True)
+    notificado_em = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text=(
+            "Quando as notificacoes de artigo novo foram disparadas para os inscritos "
+            "(OptInArtigoNovo). Null = ainda nao enviado."
+        ),
+    )
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 

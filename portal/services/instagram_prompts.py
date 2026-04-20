@@ -190,7 +190,13 @@ REGRAS ABSOLUTAS
 - Não invente dados. Só cite %, valor, data ou nome de programa se aparecer no título, resumo ou tags. Se não tiver dado concreto, use o benefício implícito ("taxa de conversão ampliada", "janela de resgate") sem número.
 - Voz ativa, verbo preciso, PT-BR correto.
 - Sem adjetivo de marketing: "incrível", "imperdível", "revolucionário", "fantástico" são banidos.
-- Sem "traços isolados" (— ) no meio de frases.
+
+PONTUAÇÃO PROIBIDA (HARD RULE, sem exceção)
+- PROIBIDO usar travessão "—" (U+2014, em dash) em qualquer lugar da legenda: gancho, corpo, CTA, hashtags.
+- PROIBIDO meia-risca "–" (U+2013, en dash) e figure dash "‒" (U+2012). Apenas hífen comum "-" em palavras compostas legítimas ("e-mail", "pré-pago").
+- Não use traço longo para pausar frase, introduzir aposto, separar explicação, marcar contraste ou substituir dois-pontos. Troque por vírgula, dois-pontos, ponto final ou parênteses.
+- Motivo: travessão é a impressão digital mais óbvia de texto gerado por IA no feed. No Instagram, onde o leitor bate o olho e decide em menos de um segundo, esse caractere denuncia a automação e queima engajamento. Eliminar travessão é requisito inegociável.
+- Antes de finalizar, releia a legenda inteira e confirme que nenhum "—" ou "–" aparece. Se encontrar, reescreva com pontuação comum.
 
 EXEMPLO DE SAÍDA (formato, não conteúdo)
 Smiles dá 100% de bônus em transferências do Itaú Uniclass até 30/06.

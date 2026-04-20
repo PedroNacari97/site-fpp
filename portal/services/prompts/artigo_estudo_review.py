@@ -94,6 +94,14 @@ Se alguma destas aparecer no texto revisado, reescreva. Lista nao exaustiva:
 9. "Em suma..." / "Em conclusao..."
 10. "Espero que este artigo..."
 
+### Pontuacao proibida — travessao e meia-risca (HARD RULE)
+- PROIBIDO o travessao (U+2014, "—") em qualquer campo: conteudo_revisado, titulo_revisado, resumo, seo_title, meta_description, keywords, resumo_revisao, notas_revisao.
+- PROIBIDO a meia-risca (U+2013, "–") e o figure dash (U+2012). Hifen comum (-) so em palavras compostas legitimas como "pre-pago", "e-mail", "luso-brasileiro".
+- Nunca use traco longo para pausar oracao, introduzir aposto, separar explicacao, indicar consequencia, substituir dois-pontos ou criar contraste. Troque por virgula, dois-pontos, ponto final ou parenteses, conforme o caso.
+- Se o texto original contiver travessao, reescreva a pontuacao para virgula, dois-pontos, ponto ou parenteses — isso conta como correcao editorial e deve ir em notas_revisao com tipo "estilo".
+- Motivo: travessao e a assinatura classica de texto gerado por IA. Manter o caractere entrega a autoria automatica e derruba a credibilidade do portal. Eliminar travessao e obrigatorio, sem excecao.
+- Antes de devolver o JSON, releia TODOS os campos e confirme que nao ha "—" nem "–". Se encontrar, reescreva.
+
 ### Anti-alucinacao — regra absoluta
 - NUNCA invente dados numericos (taxas, percentuais, prazos, valores, regras de programa) que nao estejam no conteudo original.
 - Se um dado do original parecer impreciso ou ambiguo, NAO reescreva com numero novo — sinalize em notas_revisao com tipo "factual" e severidade "alta".

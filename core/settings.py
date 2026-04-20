@@ -415,7 +415,7 @@ PASSWORD_RESET_FROM_EMAIL = (
     or SUPPORT_FROM_EMAIL
 )
 PORTAL_ALERTS_FROM_EMAIL = (
-    os.environ.get("PORTAL_ALERTS_FROM_EMAIL", "alertas@ncfly.com.br").strip()
+    os.environ.get("PORTAL_ALERTS_FROM_EMAIL", "alerta@ncfly.com.br").strip()
     or DEFAULT_FROM_EMAIL
 )
 PORTAL_ALERTS_REPLY_TO = (

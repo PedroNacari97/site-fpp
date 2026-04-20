@@ -3,7 +3,8 @@ from __future__ import annotations
 import logging
 import math
 import re
-from datetime import date
+from dataclasses import dataclass
+from datetime import date, datetime
 from html import escape as html_escape
 from urllib.parse import quote
 
@@ -13,7 +14,11 @@ from django.core.mail import EmailMultiAlternatives
 from django.urls import reverse
 from django.utils import timezone
 
-from portal.models import AlertEmailDigestItem, LeadAlertaEmail
+from portal.models import (
+    AlertEmailDigestItem,
+    LeadAlertaEmail,
+    OptInAlertaPassagem,
+)
 from portal.services.public_alerts import PUBLIC_HOME_ALERT_MAX_AGE_DAYS
 from portal.templatetags.portal_extras import repair_portuguese_text
 
@@ -231,7 +236,7 @@ def build_alert_unsubscribe_token(email: str) -> str:
     )
 
 
-def get_alert_email_lead_by_unsubscribe_token(token: str) -> LeadAlertaEmail | None:
+def get_email_from_unsubscribe_token(token: str) -> str | None:
     try:
         payload = signing.loads(token, salt=UNSUBSCRIBE_SALT, max_age=60 * 60 * 24 * 365)
     except signing.BadSignature:
@@ -241,6 +246,11 @@ def get_alert_email_lead_by_unsubscribe_token(token: str) -> LeadAlertaEmail | N
         return None
 
     email = str(payload.get("email") or "").strip().lower()
+    return email or None
+
+
+def get_alert_email_lead_by_unsubscribe_token(token: str) -> LeadAlertaEmail | None:
+    email = get_email_from_unsubscribe_token(token)
     if not email:
         return None
 
@@ -251,9 +261,31 @@ def get_alert_email_lead_by_unsubscribe_token(token: str) -> LeadAlertaEmail | N
     return lead
 
 
+def has_active_alert_subscription_for_token(token: str) -> bool:
+    """Indica se existe Lead ATIVO ou OptIn ATIVO para o email do token."""
+    email = get_email_from_unsubscribe_token(token)
+    if not email:
+        return False
+    has_lead = LeadAlertaEmail.objects.filter(
+        email=email, status=LeadAlertaEmail.STATUS_ATIVO
+    ).exists()
+    has_optin = OptInAlertaPassagem.objects.filter(email=email, ativo=True).exists()
+    return has_lead or has_optin
+
+
 def unsubscribe_alert_email_by_token(token: str, *, motivo: str = "") -> LeadAlertaEmail | None:
-    lead = get_alert_email_lead_by_unsubscribe_token(token)
-    if not lead:
+    """Cancela a inscricao de alertas para o email do token.
+
+    Cancela simultaneamente:
+    - LeadAlertaEmail (captura de lead sem cadastro) se existir
+    - OptInAlertaPassagem (PortalUser cadastrado no site) se existir
+
+    Retorna o Lead quando encontrado (compat) ou None caso so exista opt-in.
+    O canal OptInArtigoNovo (notificacao de novo modulo de estudo) NAO eh
+    afetado — cancelamento eh granular por canal (LGPD).
+    """
+    email = get_email_from_unsubscribe_token(token)
+    if not email:
         return None
 
     valid_motivos = {value for value, _label in LeadAlertaEmail.MOTIVO_CANCELAMENTO_CHOICES}
@@ -261,14 +293,60 @@ def unsubscribe_alert_email_by_token(token: str, *, motivo: str = "") -> LeadAle
     if motivo not in valid_motivos:
         motivo = ""
 
-    update_fields = ["status", "cancelado_em", "atualizado_em"]
-    lead.status = LeadAlertaEmail.STATUS_DESCADASTRADO
-    lead.cancelado_em = timezone.now()
-    if motivo:
-        lead.motivo_cancelamento = motivo
-        update_fields.append("motivo_cancelamento")
-    lead.save(update_fields=update_fields)
+    lead = LeadAlertaEmail.objects.filter(email=email).order_by("-id").first()
+    if lead and lead.status != LeadAlertaEmail.STATUS_DESCADASTRADO:
+        update_fields = ["status", "cancelado_em", "atualizado_em"]
+        lead.status = LeadAlertaEmail.STATUS_DESCADASTRADO
+        lead.cancelado_em = timezone.now()
+        if motivo:
+            lead.motivo_cancelamento = motivo
+            update_fields.append("motivo_cancelamento")
+        lead.save(update_fields=update_fields)
+
+    for opt in OptInAlertaPassagem.objects.filter(email=email, ativo=True):
+        opt.cancelar(motivo=motivo or "unsubscribe_email")
+
     return lead
+
+
+@dataclass(frozen=True)
+class _AlertRecipient:
+    """Adapter para unificar destinatarios de LeadAlertaEmail e PortalUser (opt-in)."""
+
+    email: str
+    first_name: str
+    ref_id: str
+    criado_em: datetime | None
+    source: str  # "lead" ou "portal_user"
+
+
+def _first_name_from_full_name(nome_completo: str, fallback: str = "cliente") -> str:
+    nome = (nome_completo or "").strip()
+    if not nome:
+        return fallback
+    return nome.split()[0]
+
+
+def _recipient_from_lead(lead: LeadAlertaEmail) -> _AlertRecipient:
+    return _AlertRecipient(
+        email=lead.email,
+        first_name=_first_name_from_full_name(lead.nome_completo or ""),
+        ref_id=f"lead-{lead.id}",
+        criado_em=getattr(lead, "criado_em", None),
+        source="lead",
+    )
+
+
+def _recipient_from_optin(opt: OptInAlertaPassagem) -> _AlertRecipient:
+    user = opt.user
+    nome = getattr(user, "nome_completo", "") or ""
+    return _AlertRecipient(
+        email=opt.email or user.email,
+        first_name=_first_name_from_full_name(nome),
+        ref_id=f"pu-{user.id}",
+        criado_em=getattr(opt, "criado_em", None),
+        source="portal_user",
+    )
 
 
 def _build_digest_subject(items: list[AlertEmailDigestItem]) -> str:
@@ -306,9 +384,9 @@ def _build_digest_subject(items: list[AlertEmailDigestItem]) -> str:
     return f"NC Fly Alertas: {primeiros} e +{restantes} {sufixo}"
 
 
-def _build_digest_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem], unsubscribe_url: str) -> str:
+def _build_digest_body(recipient: _AlertRecipient, items: list[AlertEmailDigestItem], unsubscribe_url: str) -> str:
     lines = [
-        f"Olá, {lead.nome_completo.split()[0] if lead.nome_completo else 'cliente'}.",
+        f"Olá, {recipient.first_name}.",
         "",
         "Separamos os alertas e atualizações mais recentes da NC Fly para você conferir hoje.",
         "",
@@ -363,8 +441,8 @@ def _build_digest_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem],
     return "\n".join(lines)
 
 
-def _build_digest_html_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem], unsubscribe_url: str) -> str:
-    first_name = lead.nome_completo.split()[0] if lead.nome_completo else "cliente"
+def _build_digest_html_body(recipient: _AlertRecipient, items: list[AlertEmailDigestItem], unsubscribe_url: str) -> str:
+    first_name = recipient.first_name
     item_blocks: list[str] = []
 
     for index, item in enumerate(items, start=1):
@@ -450,7 +528,7 @@ def _build_digest_html_body(lead: LeadAlertaEmail, items: list[AlertEmailDigestI
     """
 
 
-def _send_digest_to_lead(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem]) -> bool:
+def _send_digest_to_recipient(recipient: _AlertRecipient, items: list[AlertEmailDigestItem]) -> bool:
     from_email = str(
         getattr(settings, "PORTAL_ALERTS_FROM_EMAIL", "")
         or getattr(settings, "DEFAULT_FROM_EMAIL", "")
@@ -462,13 +540,13 @@ def _send_digest_to_lead(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem
         getattr(settings, "PORTAL_ALERTS_REPLY_TO", "")
         or getattr(settings, "PORTAL_CONTACT_EMAIL", "")
     ).strip()
-    unsubscribe_token = build_alert_unsubscribe_token(lead.email)
+    unsubscribe_token = build_alert_unsubscribe_token(recipient.email)
     unsubscribe_url = _absolute_unsubscribe_url(unsubscribe_token)
     mailto_unsubscribe = reply_to or from_email
 
     # X-Entity-Ref-ID unico por envio impede o Gmail de agrupar emails
     # consecutivos do dia na mesma thread.
-    thread_ref = f"ncfly-alerts-{lead.id}-{int(timezone.now().timestamp() * 1000)}"
+    thread_ref = f"ncfly-alerts-{recipient.ref_id}-{int(timezone.now().timestamp() * 1000)}"
     headers = {
         "List-Unsubscribe": f"<mailto:{mailto_unsubscribe}?subject=Cancelar%20alertas>, <{unsubscribe_url}>",
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
@@ -478,17 +556,17 @@ def _send_digest_to_lead(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem
 
     message = EmailMultiAlternatives(
         subject=_build_digest_subject(items),
-        body=_build_digest_body(lead, items, unsubscribe_url),
+        body=_build_digest_body(recipient, items, unsubscribe_url),
         from_email=from_email,
-        to=[lead.email],
+        to=[recipient.email],
         reply_to=[reply_to] if reply_to else None,
         headers=headers,
     )
-    message.attach_alternative(_build_digest_html_body(lead, items, unsubscribe_url), "text/html")
+    message.attach_alternative(_build_digest_html_body(recipient, items, unsubscribe_url), "text/html")
     try:
         message.send(fail_silently=False)
     except Exception:
-        logger.exception("Falha ao enviar digest de alertas para %s.", lead.email)
+        logger.exception("Falha ao enviar digest de alertas para %s.", recipient.email)
         return False
     return True
 
@@ -531,11 +609,39 @@ def _resolve_digest_batch_size(total_pending: int, *, max_items: int | None = No
     return min(total_pending, DIGEST_HARD_CAP_PER_BATCH)
 
 
-def _eligible_digest_items_for_lead(lead: LeadAlertaEmail, items: list[AlertEmailDigestItem]) -> list[AlertEmailDigestItem]:
-    lead_created_at = getattr(lead, "criado_em", None)
-    if not lead_created_at:
+def _eligible_digest_items_for_recipient(recipient: _AlertRecipient, items: list[AlertEmailDigestItem]) -> list[AlertEmailDigestItem]:
+    if not recipient.criado_em:
         return list(items)
-    return [item for item in items if item.created_at >= lead_created_at]
+    return [item for item in items if item.created_at >= recipient.criado_em]
+
+
+def _collect_alert_recipients() -> list[_AlertRecipient]:
+    """Junta LeadAlertaEmail ativos + OptInAlertaPassagem ativos em um unico set.
+
+    Dedup por email (lowercase). Quando o mesmo email estah nos dois lados,
+    preferimos o Lead (historico mais antigo costuma estar aqui, e evita
+    perder alertas anteriores ao cadastro do PortalUser).
+    """
+    seen: dict[str, _AlertRecipient] = {}
+
+    for lead in LeadAlertaEmail.objects.filter(status=LeadAlertaEmail.STATUS_ATIVO).order_by("email"):
+        key = (lead.email or "").strip().lower()
+        if not key:
+            continue
+        seen.setdefault(key, _recipient_from_lead(lead))
+
+    opt_qs = (
+        OptInAlertaPassagem.objects.filter(ativo=True, user__ativo=True)
+        .select_related("user")
+        .order_by("email")
+    )
+    for opt in opt_qs:
+        key = (opt.email or getattr(opt.user, "email", "") or "").strip().lower()
+        if not key:
+            continue
+        seen.setdefault(key, _recipient_from_optin(opt))
+
+    return list(seen.values())
 
 
 def send_pending_alert_digest(*, max_items: int | None = None, remaining_slots: int | None = None) -> dict[str, int]:
@@ -558,18 +664,15 @@ def send_pending_alert_digest(*, max_items: int | None = None, remaining_slots: 
     if not items:
         return {"items": 0, "recipients": 0, "emails_sent": 0}
 
-    leads = list(
-        LeadAlertaEmail.objects.filter(status=LeadAlertaEmail.STATUS_ATIVO)
-        .order_by("email")
-    )
+    recipients = _collect_alert_recipients()
     eligible_recipients = 0
     emails_sent = 0
-    for lead in leads:
-        eligible_items = _eligible_digest_items_for_lead(lead, items)
+    for recipient in recipients:
+        eligible_items = _eligible_digest_items_for_recipient(recipient, items)
         if not eligible_items:
             continue
         eligible_recipients += 1
-        if _send_digest_to_lead(lead, eligible_items):
+        if _send_digest_to_recipient(recipient, eligible_items):
             emails_sent += 1
 
     # Marcamos os itens como enviados sempre que a janela foi processada.
