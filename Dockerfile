@@ -26,7 +26,12 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . /app
 
-RUN python manage.py collectstatic --no-input || true
+# collectstatic precisa de SECRET_KEY mesmo que dummy — envs do Railway so
+# existem em runtime, nao em build. A chave real vem do ambiente na execucao.
+RUN DJANGO_SECRET_KEY=build-dummy-key-not-used-at-runtime \
+    DJANGO_DEBUG=0 \
+    DJANGO_ALLOWED_HOSTS=localhost \
+    python manage.py collectstatic --no-input
 
 EXPOSE 8000
 
