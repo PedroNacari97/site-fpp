@@ -30,4 +30,4 @@ RUN python manage.py collectstatic --no-input || true
 
 EXPOSE 8000
 
-CMD gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --log-file -
+CMD ["sh", "-c", "gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --log-file -"]
