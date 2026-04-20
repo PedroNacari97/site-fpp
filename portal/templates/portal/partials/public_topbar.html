@@ -277,8 +277,8 @@
                 </span>
                 <a href="{% url 'portal_logout' %}" class="portal-topbar__auth-link portal-topbar__auth-link--desktop-only">Sair</a>
             {% else %}
-                <a href="{% url 'portal_login' %}" class="portal-topbar__auth-link portal-topbar__auth-link--desktop-only">Entrar</a>
-                <a href="{% url 'portal_register' %}" class="portal-topbar__auth-link portal-topbar__auth-link--primary portal-topbar__auth-link--desktop-only">Criar conta</a>
+                <a href="{% url 'portal_login' %}?next={{ request.get_full_path|urlencode }}" class="portal-topbar__auth-link portal-topbar__auth-link--desktop-only">Entrar</a>
+                <a href="{% url 'portal_register' %}?next={{ request.get_full_path|urlencode }}" class="portal-topbar__auth-link portal-topbar__auth-link--primary portal-topbar__auth-link--desktop-only">Criar conta</a>
             {% endif %}
 
             <div class="portal-topbar__auth portal-topbar__auth--mobile-only" data-auth-menu>
@@ -303,8 +303,8 @@
                         </div>
                         <a href="{% url 'portal_logout' %}" class="portal-topbar__auth-menu-item" role="menuitem">Sair</a>
                     {% else %}
-                        <a href="{% url 'portal_login' %}" class="portal-topbar__auth-menu-item" role="menuitem">Entrar</a>
-                        <a href="{% url 'portal_register' %}" class="portal-topbar__auth-menu-item portal-topbar__auth-menu-item--primary" role="menuitem">Criar conta</a>
+                        <a href="{% url 'portal_login' %}?next={{ request.get_full_path|urlencode }}" class="portal-topbar__auth-menu-item" role="menuitem">Entrar</a>
+                        <a href="{% url 'portal_register' %}?next={{ request.get_full_path|urlencode }}" class="portal-topbar__auth-menu-item portal-topbar__auth-menu-item--primary" role="menuitem">Criar conta</a>
                     {% endif %}
                 </div>
             </div>

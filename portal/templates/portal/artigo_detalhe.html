@@ -39,8 +39,8 @@
             <p>Crie uma conta gratuita para acessar todo o conte&uacute;do e marcar seu progresso.</p>
         </div>
         <div class="artigo-detalhe-amostra__actions">
-            <a href="{% url 'portal_register' %}" class="portal-button portal-button--primary">Criar conta gr&aacute;tis</a>
-            <a href="{% url 'portal_login' %}" class="portal-button portal-button--ghost">J&aacute; tenho conta</a>
+            <a href="{% url 'portal_register' %}?next={{ request.path|urlencode }}" class="portal-button portal-button--primary">Criar conta gr&aacute;tis</a>
+            <a href="{% url 'portal_login' %}?next={{ request.path|urlencode }}" class="portal-button portal-button--ghost">J&aacute; tenho conta</a>
         </div>
     </aside>
     {% endif %}
