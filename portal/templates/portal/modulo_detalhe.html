@@ -6,40 +6,65 @@
 {% block content %}
 <div class="portal-category-page">
 
-    <!-- Hero do modulo -->
-    <section class="artigos-modulo-hero" style="--modulo-cor: {{ modulo.cor|default:'#2563eb' }};">
-        <div class="artigos-modulo-hero__icon" aria-hidden="true">
-            {{ modulo.icone|default:"&#128218;" }}
-        </div>
-        <div class="artigos-modulo-hero__content">
-            <h1>{{ modulo.titulo }}</h1>
-            <p>{{ modulo.descricao }}</p>
-            <span class="artigos-modulo-hero__badge">
-                {{ artigos|length }} artigo{{ artigos|pluralize:"s" }}
+    <!-- Breadcrumb -->
+    <nav class="artigo-detalhe-breadcrumb modulo-breadcrumb" aria-label="Breadcrumb">
+        <ol>
+            <li><a href="{% url 'portal_home' %}">Home</a></li>
+            <li><a href="{% url 'portal_artigos' %}">Artigos</a></li>
+            <li aria-current="page">{{ modulo.titulo|truncatechars:60 }}</li>
+        </ol>
+    </nav>
+
+    <!-- Hero slim horizontal (padrao categoria) -->
+    <section class="artigos-modulo-hero modulo-hero-slim" style="--modulo-cor: {{ modulo.cor|default:'#2563eb' }};">
+        <div class="modulo-hero-slim__row">
+            {% if modulo.icone %}
+            <span class="modulo-hero-slim__icon" aria-hidden="true">
+                <span class="modulo-hero-slim__icon-inner">{{ modulo.icone|safe }}</span>
             </span>
-            {% if portal_user_is_authenticated and progresso_modulo %}
-                {% include "portal/partials/progresso_bar.html" with progresso=progresso_modulo variant="hero" %}
             {% endif %}
+            <div class="modulo-hero-slim__text">
+                <h1>{{ modulo.titulo }}</h1>
+                {% if modulo.descricao %}<p>{{ modulo.descricao }}</p>{% endif %}
+            </div>
+            <div class="modulo-hero-slim__meta">
+                <span class="artigos-modulo-hero__badge">
+                    {{ artigos|length }} aula{{ artigos|pluralize:"s" }}
+                </span>
+                {% if portal_user_is_authenticated and progresso_modulo and progresso_modulo.total_artigos %}
+                <span class="modulo-hero-slim__percent">{{ progresso_modulo.percentual|default:0 }}%</span>
+                {% endif %}
+            </div>
         </div>
+        {% if portal_user_is_authenticated and progresso_modulo and progresso_modulo.total_artigos %}
+        <div class="modulo-hero-slim__progress">
+            <span class="modulo-hero-slim__count">{{ progresso_modulo.lidos|default:0 }} de {{ progresso_modulo.total_artigos }} aulas conclu&iacute;das</span>
+            {% include "portal/partials/progresso_bar.html" with progresso=progresso_modulo variant="hero" show_label=False %}
+        </div>
+        {% endif %}
     </section>
 
     <div class="artigos-modulo-layout">
 
-        <!-- Lista de artigos (capitulos) -->
+        <!-- Lista de aulas numeradas -->
         <main class="artigos-modulo-lista">
             {% if artigos %}
-            <ol class="artigos-modulo-capitulos">
+            <ol class="artigos-modulo-capitulos aulas-lista aulas-lista--dense" data-aulas-lista>
                 {% for artigo in artigos %}
-                <li class="artigos-modulo-capitulo {% if artigo.lido_pelo_user %}is-lido{% endif %}">
-                    <a href="{{ artigo.get_absolute_url }}" class="artigos-modulo-capitulo__link">
-                        <span class="artigos-modulo-capitulo__num" aria-hidden="true">
+                <li class="artigos-modulo-capitulo aula-numerada
+                           {% if artigo.lido_pelo_user %}is-lido aula-numerada--lido{% endif %}
+                           {% if not portal_user_is_authenticated and artigo.pk != artigo_livre_id %}aula-numerada--locked{% endif %}">
+                    <a href="{{ artigo.get_absolute_url }}" class="artigos-modulo-capitulo__link aula-numerada__link">
+                        <span class="artigos-modulo-capitulo__num aula-numerada__num" aria-hidden="true">
                             {% if artigo.lido_pelo_user %}
-                                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
+                                <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
+                            {% elif not portal_user_is_authenticated and artigo.pk != artigo_livre_id %}
+                                <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="7.5" width="9" height="6" rx="1.2"/><path d="M5.5 7.5V5.2a2.5 2.5 0 015 0V7.5"/></svg>
                             {% else %}
                                 {{ forloop.counter }}
                             {% endif %}
                         </span>
-                        <div class="artigos-modulo-capitulo__body">
+                        <div class="artigos-modulo-capitulo__body aula-numerada__body">
                             <h2>
                                 {{ artigo.titulo }}
                                 {% if not portal_user_is_authenticated %}
@@ -55,7 +80,7 @@
                                     {% endif %}
                                 {% endif %}
                             </h2>
-                            <p>{{ artigo.resumo|truncatechars:160 }}</p>
+                            <p>{{ artigo.resumo|truncatechars:140 }}</p>
                             <div class="news-meta">
                                 <span>{{ artigo.autor|default:"Reda&ccedil;&atilde;o NC Fly" }}</span>
                                 {% if artigo.publicado_em %}<span>{{ artigo.publicado_em|date:"d/m/Y" }}</span>{% endif %}
@@ -72,7 +97,7 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <svg class="artigos-modulo-capitulo__arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <svg class="artigos-modulo-capitulo__arrow aula-numerada__arrow" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M9 18l6-6-6-6"/>
                         </svg>
                     </a>
@@ -81,22 +106,32 @@
             </ol>
             {% else %}
             <div class="news-empty__card news-empty__card--small">
-                <h2>Artigos em produ&ccedil;&atilde;o</h2>
-                <p>Os artigos deste m&oacute;dulo ainda est&atilde;o sendo escritos. Volte em breve!</p>
+                <h2>Aulas em produ&ccedil;&atilde;o</h2>
+                <p>As aulas deste m&oacute;dulo ainda est&atilde;o sendo escritas. Volte em breve!</p>
             </div>
+            {% endif %}
+
+            {% if portal_user_is_authenticated and progresso_modulo and progresso_modulo.status == 'concluido' %}
+            <section class="modulo-concluido-cta">
+                <div class="modulo-concluido-cta__copy">
+                    <strong>Terminou o m&oacute;dulo? Veja o pr&oacute;ximo</strong>
+                    <small>Continue sua jornada nos outros m&oacute;dulos disponiveis abaixo.</small>
+                </div>
+                <a href="{% url 'portal_artigos' %}" class="portal-button portal-button--primary">Ver m&oacute;dulos</a>
+            </section>
             {% endif %}
         </main>
 
-        <!-- Sidebar: outros modulos -->
-        <aside class="artigos-modulo-sidebar">
+        <!-- Sidebar: outros modulos (mini-cards tipo artigos-hub-modulo-card) -->
+        <aside class="artigos-modulo-sidebar modulo-sidebar">
             <h3 class="artigos-modulo-sidebar__title">Outros m&oacute;dulos</h3>
-            <nav class="artigos-modulo-sidebar__nav" aria-label="Outros modulos de estudo">
+            <nav class="artigos-modulo-sidebar__nav modulo-sidebar__nav" aria-label="Outros modulos de estudo">
                 {% for outro in outros_modulos %}
-                <a href="{{ outro.get_absolute_url }}" class="artigos-modulo-sidebar__item" style="--modulo-cor: {{ outro.cor|default:'#2563eb' }};">
-                    <span class="artigos-modulo-sidebar__item-icon" aria-hidden="true">{{ outro.icone|default:"&#128218;" }}</span>
-                    <span class="artigos-modulo-sidebar__item-body">
+                <a href="{{ outro.get_absolute_url }}" class="artigos-modulo-sidebar__item modulo-sidebar__card" style="--modulo-cor: {{ outro.cor|default:'#2563eb' }};">
+                    {% if outro.icone %}<span class="modulo-sidebar__card-icon" aria-hidden="true">{{ outro.icone|safe }}</span>{% endif %}
+                    <span class="modulo-sidebar__card-body artigos-modulo-sidebar__item-body">
                         <strong>{{ outro.titulo }}</strong>
-                        <small>{{ outro.total_artigos|default:"0" }} artigo{{ outro.total_artigos|pluralize:"s" }}</small>
+                        <small>{{ outro.total_artigos|default:"0" }} aula{{ outro.total_artigos|pluralize:"s" }}</small>
                         {% if portal_user_is_authenticated %}
                             {% include "portal/partials/progresso_bar.html" with progresso=outro.progresso variant="mini" show_label=False %}
                         {% endif %}
@@ -109,6 +144,29 @@
     </div>
 
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if portal_user_is_authenticated %}
+<script>
+(function () {
+    var lista = document.querySelector('[data-aulas-lista]');
+    if (!lista) return;
+    var itens = lista.querySelectorAll('.aula-numerada');
+    if (!itens.length) return;
+    // Marca o primeiro item nao-lido como "continuar de onde parou"
+    var algumLido = false;
+    var alvo = null;
+    for (var i = 0; i < itens.length; i++) {
+        if (itens[i].classList.contains('aula-numerada--lido')) { algumLido = true; continue; }
+        if (!alvo) { alvo = itens[i]; }
+    }
+    if (alvo && algumLido) {
+        alvo.classList.add('aula-numerada--continuar');
+    }
+})();
+</script>
+{% endif %}
 {% endblock %}
 
 {% block footer %}

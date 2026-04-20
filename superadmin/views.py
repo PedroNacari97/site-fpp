@@ -196,7 +196,7 @@ class ArtigoUploadView(SuperAdminRequiredMixin):
     """
 
     def get(self, request):
-        context = {"menu_ativo": "noticias"}
+        context = {"menu_ativo": "upload"}
         return render(request, "superadmin/artigo_upload.html", context)
 
     def post(self, request):
@@ -225,7 +225,7 @@ class ArtigoUploadView(SuperAdminRequiredMixin):
             for erro in erros:
                 messages.error(request, erro)
             context = {
-                "menu_ativo": "noticias",
+                "menu_ativo": "upload",
                 "form_data": request.POST,
             }
             return render(request, "superadmin/artigo_upload.html", context)
@@ -553,13 +553,50 @@ def _save_artigo(request, artigo=None):
             return ["Formato de imagem não permitido."], None
         artigo.imagem = img
     artigo.save()
+    _persistir_videos_preview(request, artigo)
     return [], artigo
+
+
+def _persistir_videos_preview(request, artigo):
+    payload = (request.POST.get("videos_preview_json") or "").strip()
+    if not payload:
+        return
+    try:
+        videos = json.loads(payload)
+    except (ValueError, TypeError):
+        return
+    if not isinstance(videos, list):
+        return
+    from django.db.models import Max
+    base_ordem = artigo.videos.aggregate(m=Max("ordem")).get("m") or 0
+    for i, v in enumerate(videos[:9]):
+        if not isinstance(v, dict):
+            continue
+        video_id = (v.get("video_id") or "").strip()
+        if not video_id:
+            continue
+        ArtigoVideoYoutube.objects.update_or_create(
+            artigo=artigo, video_id=video_id,
+            defaults={
+                "titulo": (v.get("titulo") or "")[:300],
+                "descricao": v.get("descricao", "") or "",
+                "thumbnail_url": v.get("thumbnail_url", "") or "",
+                "canal": (v.get("canal") or "")[:200],
+                "duracao": v.get("duracao", "") or "",
+                "visualizacoes": v.get("visualizacoes", 0) or 0,
+                "termo_busca": (v.get("termo_busca") or "preview")[:200],
+                "ordem": base_ordem + i + 1,
+                "ativo": True,
+            },
+        )
 
 
 class ArtigoCreateView(SuperAdminRequiredMixin):
     def get(self, request):
         return render(request, "superadmin/artigo_form.html", {
-            "menu_ativo": "artigos", "modulos": ModuloEstudo.objects.filter(ativo=True).order_by("ordem"), "editando": False,
+            "menu_ativo": "artigos",
+            "modulos": ModuloEstudo.objects.filter(ativo=True).order_by("ordem"),
+            "editando": False,
         })
 
     def post(self, request):
@@ -571,7 +608,7 @@ class ArtigoCreateView(SuperAdminRequiredMixin):
                 "menu_ativo": "artigos", "modulos": ModuloEstudo.objects.filter(ativo=True).order_by("ordem"),
                 "editando": False, "form_data": request.POST,
             })
-        messages.success(request, f'Artigo "{artigo.titulo}" criado.')
+        messages.success(request, f'Artigo "{artigo.titulo}" criado. Agora voce pode revisar com IA e buscar videos.')
         return redirect(reverse("superadmin_artigo_edit", kwargs={"pk": artigo.pk}))
 
 
@@ -654,6 +691,80 @@ class ArtigoReviewIAView(SuperAdminRequiredMixin):
             return JsonResponse({"ok": False, "error": str(exc)}, status=500)
 
 
+class ArtigoGerarCompletoIAView(SuperAdminRequiredMixin):
+    """Gera artigo completo via IA a partir de briefing curto (preview — nao salva)."""
+
+    def post(self, request):
+        briefing = (request.POST.get("briefing") or "").strip()
+        if len(briefing) < 30:
+            return JsonResponse(
+                {"ok": False, "error": "Briefing muito curto (mínimo 30 caracteres)."},
+                status=400,
+            )
+        try:
+            from portal.services.prompts.artigo_gerar_completo import gerar_artigo_completo
+            result = gerar_artigo_completo(briefing)
+            return JsonResponse({"ok": True, "result": result})
+        except ValueError as exc:
+            return JsonResponse({"ok": False, "error": str(exc)}, status=400)
+        except Exception as exc:
+            logger.exception("Erro gerar artigo IA (briefing len=%s)", len(briefing))
+            return JsonResponse({"ok": False, "error": str(exc)}, status=500)
+
+
+class ArtigoRevisarIAPreviewView(SuperAdminRequiredMixin):
+    """Revisao IA sobre titulo/conteudo do form (sem PK, sem persistir)."""
+
+    def post(self, request):
+        titulo = (request.POST.get("titulo") or "").strip()
+        conteudo = (request.POST.get("conteudo") or "").strip()
+        if len(titulo) < 5 or len(conteudo) < 50:
+            return JsonResponse(
+                {"ok": False, "error": "Preencha titulo (>=5 chars) e conteudo (>=50 chars) antes de revisar."},
+                status=400,
+            )
+        try:
+            from portal.services.prompts.artigo_estudo_review import review_artigo
+            result = review_artigo(titulo, conteudo)
+            return JsonResponse({"ok": True, "result": result})
+        except Exception as exc:
+            logger.exception("Erro revisao IA preview")
+            return JsonResponse({"ok": False, "error": str(exc)}, status=500)
+
+
+class ArtigoBuscarVideosPreviewView(SuperAdminRequiredMixin):
+    """Busca preview de videos no YouTube (sem PK, sem persistir)."""
+
+    def post(self, request):
+        keyword = (request.POST.get("keyword") or "").strip()
+        if not keyword:
+            return JsonResponse(
+                {"ok": False, "error": "Informe uma palavra-chave para buscar."}, status=400
+            )
+        try:
+            from portal.services.youtube_service import search_youtube_videos
+            videos = search_youtube_videos(keyword, max_results=9) or []
+            seen, unique = set(), []
+            for v in videos:
+                vid = v.get("video_id")
+                if vid and vid not in seen:
+                    seen.add(vid)
+                    unique.append({
+                        "video_id": vid,
+                        "titulo": v.get("titulo", ""),
+                        "descricao": v.get("descricao", ""),
+                        "thumbnail_url": v.get("thumbnail_url", ""),
+                        "canal": v.get("canal", ""),
+                        "duracao": v.get("duracao", ""),
+                        "visualizacoes": v.get("visualizacoes", 0),
+                        "termo_busca": keyword,
+                    })
+            return JsonResponse({"ok": True, "videos": unique[:9]})
+        except Exception as exc:
+            logger.exception("Erro buscar videos preview keyword=%r", keyword)
+            return JsonResponse({"ok": False, "error": str(exc)}, status=500)
+
+
 class ArtigoAdicionarVideoUrlView(SuperAdminRequiredMixin):
     """Adiciona manualmente um video do YouTube ao artigo a partir de URL/ID."""
 
@@ -727,10 +838,16 @@ class ArtigoBuscarVideosView(SuperAdminRequiredMixin):
         artigo = get_object_or_404(ArtigoEstudo, pk=pk)
         try:
             from portal.services.youtube_service import search_youtube_videos
-            terms = artigo.youtube_search_terms_json or [artigo.titulo]
+            keyword = (request.POST.get("keyword") or "").strip()
+            if keyword:
+                # palavra-chave manual tem prioridade; busca mais resultados
+                terms = [keyword]
+            else:
+                terms = artigo.youtube_search_terms_json or [artigo.titulo]
             all_v = []
+            per_term = 9 if keyword else 3
             for t in terms[:3]:
-                all_v.extend(search_youtube_videos(t, max_results=3))
+                all_v.extend(search_youtube_videos(t, max_results=per_term))
             seen, unique = set(), []
             for v in all_v:
                 if v["video_id"] not in seen:

@@ -3,6 +3,17 @@
 {% block page_title %}{% if editando %}Editar Artigo: {{ artigo.titulo|truncatechars:50 }}{% else %}Novo Artigo{% endif %}{% endblock %}
 
 {% block content %}
+{% if not editando %}
+<div class="max-w-3xl mx-auto mb-4 card p-4" style="border-left: 3px solid #2563eb; background: #eff6ff;">
+    <p class="text-sm text-slate-700">
+        <strong>Fluxo:</strong> preencha titulo, modulo e conteudo (mesmo que curto) e clique em
+        <strong>Criar artigo</strong>. Apos salvar o rascunho, voce sera redirecionado para a tela de edicao
+        onde aparecem as ferramentas de <strong>Revisao com IA</strong>, <strong>buscar videos no YouTube</strong>
+        (por termos salvos ou palavra-chave digitada) e <strong>adicionar video por URL</strong>.
+    </p>
+</div>
+{% endif %}
+
 <div class="max-w-3xl mx-auto card p-6">
     <form method="post" enctype="multipart/form-data" class="space-y-5">
         {% csrf_token %}
@@ -30,8 +41,14 @@
         </div>
 
         <div>
-            <label for="resumo">Resumo</label>
-            <textarea id="resumo" name="resumo" rows="2" placeholder="Resumo curto para cards e listagens">{% if editando %}{{ artigo.resumo }}{% elif form_data %}{{ form_data.resumo }}{% endif %}</textarea>
+            <label for="resumo">Resumo{% if not editando %} / Briefing para IA{% endif %}</label>
+            <textarea id="resumo" name="resumo" rows="3" placeholder="{% if editando %}Resumo curto para cards e listagens{% else %}Escreva o briefing (pelo menos 30 caracteres) e clique em Gerar artigo com IA — ou use como resumo final{% endif %}">{% if editando %}{{ artigo.resumo }}{% elif form_data %}{{ form_data.resumo }}{% endif %}</textarea>
+            {% if not editando %}
+            <div class="mt-2 flex items-center gap-2 flex-wrap">
+                <button type="button" id="btn-gerar-ia" class="btn btn-primary text-xs">Gerar artigo completo com IA</button>
+                <span id="gerar-ia-msg" class="text-xs text-slate-500"></span>
+            </div>
+            {% endif %}
         </div>
 
         <div>
@@ -98,12 +115,272 @@
             </div>
         </details>
 
+        {% if not editando %}
+        <input type="hidden" name="videos_preview_json" id="videos_preview_json" value="">
+        {% endif %}
+
         <div class="flex gap-3 justify-end pt-2">
             <a href="{% url 'superadmin_artigos_list' %}" class="btn btn-secondary">Cancelar</a>
             <button type="submit" class="btn btn-primary">{% if editando %}Salvar alteracoes{% else %}Criar artigo{% endif %}</button>
         </div>
     </form>
 </div>
+
+{% if not editando %}
+<!-- Ferramentas IA disponiveis ANTES de salvar -->
+<div class="max-w-3xl mx-auto mt-8 grid grid-cols-2 gap-6">
+    <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-2">Revisar resumo/conteudo com IA</h3>
+        <p class="text-xs text-slate-500 mb-3">Envia titulo + conteudo atuais do form para a IA. Recebe sugestoes de titulo, resumo, SEO, keywords e termos para YouTube. Os campos do form sao pre-preenchidos automaticamente. Nada e salvo no banco.</p>
+        <button type="button" id="btn-review-ia-preview" class="btn btn-primary text-xs">Revisar com IA agora</button>
+        <div id="review-ia-preview-msg" class="mt-3 text-xs text-slate-600 hidden"></div>
+    </div>
+
+    <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-2">Buscar videos no YouTube</h3>
+        <p class="text-xs text-slate-500 mb-3">Digite uma palavra-chave e busque videos. Marque os que quer vincular ao artigo. Eles serao salvos automaticamente quando voce clicar em Criar artigo.</p>
+        <div class="flex gap-2 items-center mb-2">
+            <input type="text" id="video-kw-preview" placeholder="Ex: como acumular milhas Smiles"
+                   class="flex-1 text-sm" style="padding:.5rem; border:1px solid #e2e8f0; border-radius:6px;">
+            <button type="button" id="btn-buscar-videos-preview" class="btn btn-primary text-xs">Buscar</button>
+        </div>
+        <div id="videos-preview-msg" class="mt-2 text-xs text-slate-500"></div>
+        <div id="videos-preview-list" class="mt-3 space-y-2"></div>
+        <p class="mt-3 text-xs text-slate-400">Selecionados para vincular: <span id="videos-preview-count">0</span></p>
+    </div>
+</div>
+{% endif %}
+
+{% if not editando %}
+<script>
+(function(){
+    var fTitulo = document.getElementById('titulo');
+    var fResumo = document.getElementById('resumo');
+    var fConteudo = document.getElementById('conteudo');
+    var fSeoTitle = document.getElementById('seo_title');
+    var fMetaDesc = document.getElementById('meta_description');
+    var fTempo = document.getElementById('tempo_leitura');
+    var detailsSEO = document.querySelector('details > summary');
+
+    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+    function abrirDetailsSEO(){
+        var el = (fSeoTitle && fSeoTitle.closest('details')) || (fMetaDesc && fMetaDesc.closest('details'));
+        if (el && !el.open) el.open = true;
+    }
+    function preencherKwYoutube(termos){
+        var inp = document.getElementById('video-kw-preview');
+        if (!inp || !termos || !termos.length) return;
+        if (!inp.value || !inp.value.trim()) inp.value = termos[0];
+    }
+
+    // ===== Gerar artigo completo com IA (a partir de briefing) =====
+    var btn = document.getElementById('btn-gerar-ia');
+    var msg = document.getElementById('gerar-ia-msg');
+    if (!btn) return;
+    btn.addEventListener('click', function(){
+        var briefing = (fResumo.value || '').trim();
+        if (briefing.length < 30) {
+            msg.style.color = '#991b1b';
+            msg.textContent = 'Escreva pelo menos 30 caracteres no briefing.';
+            return;
+        }
+        if (fConteudo.value && fConteudo.value.trim().length > 0) {
+            if (!confirm('O campo Conteudo ja tem texto. Gerar com IA vai substituir. Continuar?')) return;
+        }
+        btn.disabled = true;
+        var labelOriginal = btn.textContent;
+        btn.textContent = 'Gerando...';
+        msg.style.color = '#475569';
+        msg.textContent = 'IA trabalhando (pode levar 30-60s)...';
+        var fd = new FormData();
+        fd.append('briefing', briefing);
+        fetch("{% url 'superadmin_artigo_gerar_ia' %}", {
+            method:'POST',
+            headers:{'X-CSRFToken':'{{ csrf_token }}'},
+            body: fd,
+        })
+            .then(function(r){ return r.json().then(function(d){ return {status:r.status, data:d}; }); })
+            .then(function(res){
+                var d = res.data;
+                if (!d.ok) {
+                    msg.style.color = '#991b1b';
+                    msg.textContent = 'Erro: ' + (d.error || 'falha desconhecida');
+                    return;
+                }
+                var r = d.result || {};
+                if (r.titulo) fTitulo.value = r.titulo;
+                if (r.resumo) fResumo.value = r.resumo;
+                if (r.conteudo) fConteudo.value = r.conteudo;
+                if (r.seo_title && fSeoTitle) fSeoTitle.value = r.seo_title;
+                if (r.meta_description && fMetaDesc) fMetaDesc.value = r.meta_description;
+                if (r.tempo_leitura && fTempo) fTempo.value = r.tempo_leitura;
+                if (r.seo_title || r.meta_description) abrirDetailsSEO();
+                preencherKwYoutube(r.youtube_search_terms || []);
+                msg.style.color = '#166534';
+                var partes = ['Artigo gerado. SEO e palavra-chave do YouTube preenchidos automaticamente.'];
+                if ((r.keywords || []).length) partes.push('Keywords: ' + r.keywords.join(', '));
+                if ((r.youtube_search_terms || []).length) partes.push('Termos YouTube: ' + r.youtube_search_terms.join(' | '));
+                msg.innerHTML = '<strong>' + partes[0] + '</strong>'
+                    + (partes[1] ? '<br><span style="color:#475569;">' + escapeHtml(partes[1]) + '</span>' : '')
+                    + (partes[2] ? '<br><span style="color:#475569;">' + escapeHtml(partes[2]) + '</span>' : '');
+            })
+            .catch(function(e){
+                msg.style.color = '#991b1b';
+                msg.textContent = 'Erro: ' + e;
+            })
+            .finally(function(){
+                btn.disabled = false;
+                btn.textContent = labelOriginal;
+            });
+    });
+
+    // ===== Revisar com IA preview (sem PK, pre-preenche form) =====
+    var btnRev = document.getElementById('btn-review-ia-preview');
+    var msgRev = document.getElementById('review-ia-preview-msg');
+    if (btnRev) {
+        btnRev.addEventListener('click', function(){
+            var titulo = (fTitulo.value || '').trim();
+            var conteudo = (fConteudo.value || '').trim();
+            if (titulo.length < 5 || conteudo.length < 50) {
+                msgRev.classList.remove('hidden');
+                msgRev.style.color = '#991b1b';
+                msgRev.textContent = 'Preencha titulo (>=5 chars) e conteudo (>=50 chars) antes de revisar.';
+                return;
+            }
+            btnRev.disabled = true;
+            var lbl = btnRev.textContent;
+            btnRev.textContent = 'Revisando...';
+            msgRev.classList.remove('hidden');
+            msgRev.style.color = '#475569';
+            msgRev.textContent = 'IA revisando (pode levar 30-60s)...';
+            var fd = new FormData();
+            fd.append('titulo', titulo);
+            fd.append('conteudo', conteudo);
+            fetch("{% url 'superadmin_artigo_revisar_ia_preview' %}", {
+                method:'POST',
+                headers:{'X-CSRFToken':'{{ csrf_token }}'},
+                body: fd,
+            })
+                .then(function(r){ return r.json(); })
+                .then(function(d){
+                    if (!d.ok) {
+                        msgRev.style.color = '#991b1b';
+                        msgRev.textContent = 'Erro: ' + (d.error || 'falha desconhecida');
+                        return;
+                    }
+                    var r = d.result || {};
+                    if (r.titulo_revisado) fTitulo.value = r.titulo_revisado;
+                    if (r.resumo) fResumo.value = r.resumo;
+                    if (r.conteudo_revisado) fConteudo.value = r.conteudo_revisado;
+                    if (r.seo_title && fSeoTitle) fSeoTitle.value = r.seo_title;
+                    if (r.meta_description && fMetaDesc) fMetaDesc.value = r.meta_description;
+                    if (r.tempo_leitura && fTempo) fTempo.value = r.tempo_leitura;
+                    if (r.seo_title || r.meta_description) abrirDetailsSEO();
+                    preencherKwYoutube(r.youtube_search_terms || []);
+                    msgRev.style.color = '#166534';
+                    var notas = (r.notas_revisao || []).length;
+                    var conf = r.confianca ? Math.round(r.confianca * 100) + '%' : '';
+                    var partes = ['Revisao aplicada' + (conf ? ' (confianca ' + conf + ')' : '') + '. SEO e palavra-chave YouTube preenchidos.'];
+                    if ((r.keywords || []).length) partes.push('Keywords: ' + r.keywords.join(', '));
+                    if ((r.youtube_search_terms || []).length) partes.push('Termos YouTube: ' + r.youtube_search_terms.join(' | '));
+                    msgRev.innerHTML = '<strong>' + partes[0] + '</strong>'
+                        + (partes[1] ? '<br><span style="color:#475569;">' + escapeHtml(partes[1]) + '</span>' : '')
+                        + (partes[2] ? '<br><span style="color:#475569;">' + escapeHtml(partes[2]) + '</span>' : '')
+                        + (notas ? '<br><span style="color:#475569;">' + notas + ' notas de revisao.</span>' : '');
+                })
+                .catch(function(e){
+                    msgRev.style.color = '#991b1b';
+                    msgRev.textContent = 'Erro: ' + e;
+                })
+                .finally(function(){
+                    btnRev.disabled = false;
+                    btnRev.textContent = lbl;
+                });
+        });
+    }
+
+    // ===== Buscar videos preview (sem PK, marca para salvar no submit) =====
+    var btnVid = document.getElementById('btn-buscar-videos-preview');
+    var inputKw = document.getElementById('video-kw-preview');
+    var msgVid = document.getElementById('videos-preview-msg');
+    var listVid = document.getElementById('videos-preview-list');
+    var countVid = document.getElementById('videos-preview-count');
+    var hiddenVideos = document.getElementById('videos_preview_json');
+    var selecionados = {};
+
+    function atualizarHidden(){
+        var arr = Object.keys(selecionados).map(function(k){ return selecionados[k]; });
+        hiddenVideos.value = JSON.stringify(arr);
+        countVid.textContent = arr.length;
+    }
+
+    if (btnVid) {
+        btnVid.addEventListener('click', function(){
+            var kw = (inputKw.value || '').trim();
+            if (!kw) {
+                msgVid.style.color = '#991b1b';
+                msgVid.textContent = 'Digite uma palavra-chave.';
+                return;
+            }
+            btnVid.disabled = true;
+            var lbl = btnVid.textContent;
+            btnVid.textContent = 'Buscando...';
+            msgVid.style.color = '#475569';
+            msgVid.textContent = 'Buscando "' + kw + '"...';
+            var fd = new FormData();
+            fd.append('keyword', kw);
+            fetch("{% url 'superadmin_artigo_buscar_videos_preview' %}", {
+                method:'POST',
+                headers:{'X-CSRFToken':'{{ csrf_token }}'},
+                body: fd,
+            })
+                .then(function(r){ return r.json(); })
+                .then(function(d){
+                    if (!d.ok) {
+                        msgVid.style.color = '#991b1b';
+                        msgVid.textContent = 'Erro: ' + (d.error || 'falha desconhecida');
+                        return;
+                    }
+                    var vids = d.videos || [];
+                    msgVid.style.color = '#166534';
+                    msgVid.textContent = vids.length + ' videos encontrados. Marque os que quiser vincular.';
+                    listVid.innerHTML = '';
+                    vids.forEach(function(v){
+                        var jaSel = !!selecionados[v.video_id];
+                        var row = document.createElement('label');
+                        row.className = 'flex items-center gap-2 p-2 rounded hover:bg-slate-50 text-sm cursor-pointer';
+                        row.innerHTML = '<input type="checkbox" data-vid="'+escapeHtml(v.video_id)+'" '+(jaSel?'checked':'')+'>'
+                            + '<img src="'+escapeHtml(v.thumbnail_url)+'" alt="" width="60" height="34" class="rounded" style="object-fit:cover;">'
+                            + '<div class="flex-1 min-w-0">'
+                            +   '<p class="font-medium truncate">'+escapeHtml(v.titulo)+'</p>'
+                            +   '<p class="text-xs text-slate-400">'+escapeHtml(v.canal)+' &middot; '+escapeHtml(v.duracao || '')+'</p>'
+                            + '</div>';
+                        var chk = row.querySelector('input');
+                        chk.addEventListener('change', function(){
+                            if (chk.checked) selecionados[v.video_id] = v;
+                            else delete selecionados[v.video_id];
+                            atualizarHidden();
+                        });
+                        listVid.appendChild(row);
+                    });
+                })
+                .catch(function(e){
+                    msgVid.style.color = '#991b1b';
+                    msgVid.textContent = 'Erro: ' + e;
+                })
+                .finally(function(){
+                    btnVid.disabled = false;
+                    btnVid.textContent = lbl;
+                });
+        });
+        inputKw.addEventListener('keydown', function(ev){
+            if (ev.key === 'Enter') { ev.preventDefault(); btnVid.click(); }
+        });
+    }
+})();
+</script>
+{% endif %}
 
 {% if editando %}
 <!-- Acoes extras para artigo existente -->
@@ -141,9 +418,13 @@
     <!-- Buscar videos -->
     <div class="card p-5">
         <h3 class="font-semibold text-sm mb-2">Videos do YouTube</h3>
-        <p class="text-xs text-slate-500 mb-3">Busca videos relacionados automaticamente com base no titulo.</p>
-        <button type="button" id="btn-buscar-videos" class="btn btn-primary text-xs">Buscar videos</button>
-        <div id="videos-result" class="mt-3 text-xs text-slate-600 hidden"></div>
+        <p class="text-xs text-slate-500 mb-3">Deixe vazio para usar os termos salvos pela IA (ou o titulo). Ou digite uma palavra-chave especifica.</p>
+        <div class="flex gap-2 items-center mb-2">
+            <input type="text" id="video-keyword" placeholder="Palavra-chave (opcional)"
+                   class="flex-1 text-sm" style="padding:.5rem; border:1px solid #e2e8f0; border-radius:6px;">
+            <button type="button" id="btn-buscar-videos" class="btn btn-primary text-xs">Buscar videos</button>
+        </div>
+        <div id="videos-result" class="mt-2 text-xs text-slate-600 hidden"></div>
     </div>
 </div>
 
@@ -269,11 +550,20 @@
     }
     var btnVid = document.getElementById('btn-buscar-videos');
     var divVid = document.getElementById('videos-result');
+    var inputKw = document.getElementById('video-keyword');
     if (btnVid) {
         btnVid.addEventListener('click', function() {
+            var kw = (inputKw && inputKw.value || '').trim();
             btnVid.disabled = true; btnVid.textContent = 'Buscando...';
-            divVid.classList.remove('hidden'); divVid.textContent = 'Buscando no YouTube...';
-            fetch("{% url 'superadmin_artigo_buscar_videos' pk=artigo.pk %}", {method:'POST', headers:{'X-CSRFToken':'{{ csrf_token }}'}})
+            divVid.classList.remove('hidden');
+            divVid.textContent = kw ? ('Buscando: ' + kw + '...') : 'Buscando no YouTube...';
+            var fd = new FormData();
+            if (kw) fd.append('keyword', kw);
+            fetch("{% url 'superadmin_artigo_buscar_videos' pk=artigo.pk %}", {
+                method:'POST',
+                headers:{'X-CSRFToken':'{{ csrf_token }}'},
+                body: fd,
+            })
                 .then(function(r){return r.json()})
                 .then(function(d){
                     divVid.textContent = d.ok ? d.saved + ' novos videos adicionados (' + d.total + ' total). Recarregue para ver.' : 'Erro: ' + d.error;
@@ -281,6 +571,11 @@
                 })
                 .catch(function(e){ divVid.textContent = 'Erro: ' + e; btnVid.disabled = false; btnVid.textContent = 'Buscar videos'; });
         });
+        if (inputKw) {
+            inputKw.addEventListener('keydown', function(ev){
+                if (ev.key === 'Enter') { ev.preventDefault(); btnVid.click(); }
+            });
+        }
     }
 })();
 </script>

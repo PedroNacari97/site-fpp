@@ -45,42 +45,66 @@
     </aside>
     {% endif %}
 
-    <!-- Header -->
-    <header class="artigo-detalhe-header">
-        {% if portal_user_is_authenticated and progresso_modulo and artigo.modulo %}
-        <div class="artigo-detalhe-header__progresso" style="--modulo-cor: {{ artigo.modulo.cor|default:'#2563eb' }};">
-            <span class="artigo-detalhe-header__progresso-label">
-                Progresso em <a href="{{ artigo.modulo.get_absolute_url }}">{{ artigo.modulo.titulo }}</a>
-            </span>
-            {% include "portal/partials/progresso_bar.html" with progresso=progresso_modulo variant="inline" %}
-        </div>
-        {% endif %}
-        <div class="artigo-detalhe-header__pills">
-            {% if artigo.modulo %}
-            <a href="{{ artigo.modulo.get_absolute_url }}" class="news-pill artigos-hub-pill-modulo" style="--modulo-cor: {{ artigo.modulo.cor|default:'#2563eb' }};">
-                {{ artigo.modulo.titulo }}
-            </a>
+    <!-- Header — Aula hero slim horizontal -->
+    <header class="artigo-detalhe-header aula-hero aula-hero--slim" style="--modulo-cor: {{ artigo.modulo.cor|default:'#2563eb' }};">
+        <div class="aula-hero__inner aula-hero__inner--slim">
+            <div class="aula-hero__eyebrow">
+                {% if portal_user_is_authenticated and progresso_modulo and progresso_modulo.total_artigos %}
+                <span class="aula-hero__posicao" aria-label="Posicao da aula no modulo">
+                    Aula {{ progresso_modulo.lidos|add:1 }} de {{ progresso_modulo.total_artigos }}
+                </span>
+                <span class="aula-hero__eyebrow-sep" aria-hidden="true">&bull;</span>
+                {% endif %}
+                {% if artigo.modulo %}
+                <a href="{{ artigo.modulo.get_absolute_url }}" class="aula-hero__eyebrow-link">{{ artigo.modulo.titulo }}</a>
+                <span class="aula-hero__eyebrow-sep" aria-hidden="true">&bull;</span>
+                {% endif %}
+                <span class="artigo-reading-time">
+                    <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5l2 1.5" stroke-linecap="round"/></svg>
+                    {{ artigo.tempo_leitura|default:"5" }} min
+                </span>
+            </div>
+
+            <h1 class="aula-hero__titulo">{{ artigo.titulo }}</h1>
+
+            {% if artigo.resumo %}
+            <p class="aula-hero__resumo">{{ artigo.resumo|truncatechars:220 }}</p>
             {% endif %}
-            <span class="news-pill news-pill--artigo">Artigo</span>
-            {% if portal_user_is_authenticated and artigo_lido %}
-            <span class="news-pill news-pill--done">
-                <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
-                Lido
-            </span>
+
+            <div class="aula-hero__bottom">
+                <div class="artigo-detalhe-header__pills aula-hero__pills">
+                    {% if artigo.modulo %}
+                    <a href="{{ artigo.modulo.get_absolute_url }}" class="news-pill artigos-hub-pill-modulo" style="--modulo-cor: {{ artigo.modulo.cor|default:'#2563eb' }};">
+                        {{ artigo.modulo.titulo }}
+                    </a>
+                    {% endif %}
+                    <span class="news-pill news-pill--artigo">Artigo</span>
+                    {% if portal_user_is_authenticated and artigo_lido %}
+                    <span class="news-pill news-pill--done">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
+                        Lido
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="artigo-detalhe-header__meta news-meta aula-hero__meta">
+                    <span>{{ artigo.autor|default:"Reda&ccedil;&atilde;o NC Fly" }}</span>
+                    {% if artigo.publicado_em %}<span>{{ artigo.publicado_em|date:"d/m/Y" }}</span>{% endif %}
+                </div>
+            </div>
+
+            {% if portal_user_is_authenticated and progresso_modulo and artigo.modulo %}
+            <div class="artigo-detalhe-header__progresso aula-hero__progresso">
+                <span class="artigo-detalhe-header__progresso-label">
+                    Progresso em <a href="{{ artigo.modulo.get_absolute_url }}">{{ artigo.modulo.titulo }}</a>
+                </span>
+                {% include "portal/partials/progresso_bar.html" with progresso=progresso_modulo variant="inline" %}
+            </div>
             {% endif %}
         </div>
-        <h1>{{ artigo.titulo }}</h1>
-        <div class="artigo-detalhe-header__meta news-meta">
-            <span>{{ artigo.autor|default:"Reda&ccedil;&atilde;o NC Fly" }}</span>
-            {% if artigo.publicado_em %}<span>{{ artigo.publicado_em|date:"d/m/Y" }}</span>{% endif %}
-            <span class="artigo-reading-time">
-                <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5l2 1.5" stroke-linecap="round"/></svg>
-                {{ artigo.tempo_leitura|default:"5" }} min de leitura
-            </span>
-        </div>
+
         {% if artigo.imagem_exibicao %}
-        <div class="artigo-detalhe-header__cover">
-            <img src="{{ artigo.imagem_exibicao }}" alt="{{ artigo.titulo }}" width="1120" height="630" fetchpriority="high" decoding="async">
+        <div class="artigo-detalhe-header__cover aula-hero__cover aula-hero__cover--wide">
+            <img src="{{ artigo.imagem_exibicao }}" alt="{{ artigo.titulo }}" width="1600" height="640" fetchpriority="high" decoding="async">
         </div>
         {% endif %}
     </header>
@@ -111,24 +135,24 @@
 
     <!-- Marcar como lido (CTA de conclusao) -->
     {% if portal_user_is_authenticated %}
-    <section class="artigo-detalhe-concluir" data-artigo-concluir>
+    <section class="artigo-detalhe-concluir aula-concluir" data-artigo-concluir>
         {% if artigo_lido %}
             <div class="artigo-detalhe-concluir__done">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>
                 <span>Voc&ecirc; marcou este artigo como lido. Bom trabalho!</span>
             </div>
         {% else %}
-            <form class="artigo-detalhe-concluir__form"
+            <form class="artigo-detalhe-concluir__form aula-concluir__form"
                   method="post"
                   action="{% url 'portal_artigo_marcar_lido' slug=artigo.slug %}"
                   data-artigo-concluir-form
                   data-modulo-slug="{{ artigo.modulo.slug }}">
                 {% csrf_token %}
-                <div class="artigo-detalhe-concluir__copy">
-                    <strong>Terminou a leitura?</strong>
+                <div class="artigo-detalhe-concluir__copy aula-concluir__copy">
+                    <strong>Concluiu a aula?</strong>
                     <small>Marque como lido para acompanhar seu progresso no m&oacute;dulo.</small>
                 </div>
-                <button type="submit" class="portal-button portal-button--primary">
+                <button type="submit" class="portal-button aula-concluir__btn">
                     <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
                     Marcar como lido
                 </button>
@@ -177,41 +201,55 @@
     </section>
     {% endif %}
 
+    <!-- Nav prev/next (aulas irmas) -->
+    {% if artigo_anterior or artigo_proximo %}
+    <nav class="artigo-detalhe-nav aula-nav" aria-label="Navegacao entre aulas">
+        {% if artigo_anterior %}
+        <a href="{{ artigo_anterior.get_absolute_url }}" class="artigo-detalhe-nav__link artigo-detalhe-nav__link--prev aula-nav__link aula-nav__link--prev">
+            <span class="aula-nav__dir">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+                <small>Aula anterior</small>
+            </span>
+            <strong class="aula-nav__titulo">{{ artigo_anterior.titulo|truncatechars:60 }}</strong>
+        </a>
+        {% else %}<span></span>{% endif %}
+
+        {% if artigo_proximo %}
+        <a href="{{ artigo_proximo.get_absolute_url }}" class="artigo-detalhe-nav__link artigo-detalhe-nav__link--next aula-nav__link aula-nav__link--next">
+            <strong class="aula-nav__titulo">{{ artigo_proximo.titulo|truncatechars:60 }}</strong>
+            <span class="aula-nav__dir">
+                <small>Pr&oacute;xima aula</small>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+            </span>
+        </a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% if artigo.modulo %}
+    <div class="aula-voltar-modulo">
+        <a href="{{ artigo.modulo.get_absolute_url }}" class="aula-continue__voltar">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            Voltar ao m&oacute;dulo
+        </a>
+    </div>
+    {% endif %}
+
     <!-- Lead capture -->
     <section class="artigo-detalhe-lead">
         <div class="artigo-detalhe-lead__card">
             <div class="artigo-detalhe-lead__copy">
                 <h2>Receba alertas de milhas baratas</h2>
-                <p>Cadastre seu e-mail e receba conte&uacute;dos exclusivos sobre milhas, viagens e estrat&eacute;gias para voar mais.</p>
+                <p>Cadastre seu e-mail e receba conte&uacute;dos exclusivos sobre milhas e viagens.</p>
             </div>
             <form class="artigo-detalhe-lead__form" method="post" action="{% url 'portal_artigos' %}">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="lead_capture">
-                <label for="lead-email" class="sr-only">Seu melhor e-mail</label>
-                <input type="email" id="lead-email" name="email" placeholder="Seu melhor e-mail" required>
+                <input type="email" id="lead-email" name="email" placeholder="Seu melhor e-mail" aria-label="Seu melhor e-mail" required>
                 <button type="submit" class="portal-button portal-button--primary">Quero receber</button>
             </form>
         </div>
     </section>
-
-    <!-- Nav prev/next -->
-    {% if artigo_anterior or artigo_proximo %}
-    <nav class="artigo-detalhe-nav" aria-label="Navegacao entre artigos">
-        {% if artigo_anterior %}
-        <a href="{{ artigo_anterior.get_absolute_url }}" class="artigo-detalhe-nav__link artigo-detalhe-nav__link--prev">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-            <span><small>Anterior</small><strong>{{ artigo_anterior.titulo|truncatechars:60 }}</strong></span>
-        </a>
-        {% else %}<span></span>{% endif %}
-
-        {% if artigo_proximo %}
-        <a href="{{ artigo_proximo.get_absolute_url }}" class="artigo-detalhe-nav__link artigo-detalhe-nav__link--next">
-            <span><small>Pr&oacute;ximo</small><strong>{{ artigo_proximo.titulo|truncatechars:60 }}</strong></span>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
-        </a>
-        {% endif %}
-    </nav>
-    {% endif %}
 
     <!-- Artigos Relacionados -->
     {% if artigos_relacionados %}
@@ -268,6 +306,25 @@
     });
     if (tocD) tocD.appendChild(ol.cloneNode(true));
     if (tocM) tocM.appendChild(ol.cloneNode(true));
+
+    // Scroll-spy: marca o item ativo do TOC conforme a secao visivel
+    try {
+        if ('IntersectionObserver' in window) {
+            var links = {};
+            if (tocD) tocD.querySelectorAll('a[href^="#"]').forEach(function(a){ links[a.getAttribute('href').slice(1)] = a; });
+            var obs = new IntersectionObserver(function(entries) {
+                entries.forEach(function(en) {
+                    var a = links[en.target.id];
+                    if (!a) return;
+                    if (en.isIntersecting) {
+                        Object.keys(links).forEach(function(k){ links[k].parentElement && links[k].parentElement.classList.remove('is-active'); });
+                        a.parentElement && a.parentElement.classList.add('is-active');
+                    }
+                });
+            }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
+            hh.forEach(function(h){ obs.observe(h); });
+        }
+    } catch (e) { /* noop */ }
 
     var modal = document.getElementById('video-modal');
     var embed = document.getElementById('video-embed');

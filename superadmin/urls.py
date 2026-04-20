@@ -20,6 +20,9 @@ urlpatterns = [
     # Artigos Educativos
     path("artigos/", views.ArtigosListView.as_view(), name="superadmin_artigos_list"),
     path("artigos/novo/", views.ArtigoCreateView.as_view(), name="superadmin_artigo_create"),
+    path("artigos/gerar-ia/", views.ArtigoGerarCompletoIAView.as_view(), name="superadmin_artigo_gerar_ia"),
+    path("artigos/revisar-ia-preview/", views.ArtigoRevisarIAPreviewView.as_view(), name="superadmin_artigo_revisar_ia_preview"),
+    path("artigos/buscar-videos-preview/", views.ArtigoBuscarVideosPreviewView.as_view(), name="superadmin_artigo_buscar_videos_preview"),
     path("artigos/<int:pk>/editar/", views.ArtigoEditView.as_view(), name="superadmin_artigo_edit"),
     path("artigos/<int:pk>/excluir/", views.ArtigoDeleteView.as_view(), name="superadmin_artigo_delete"),
     path("artigos/<int:pk>/review-ia/", views.ArtigoReviewIAView.as_view(), name="superadmin_artigo_review_ia"),

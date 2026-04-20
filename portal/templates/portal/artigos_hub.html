@@ -6,25 +6,36 @@
 {% block content %}
 <div class="portal-category-page">
 
-    <!-- Hero -->
-    <section class="artigos-hub-hero">
-        <div class="artigos-hub-hero__content">
-            <span class="news-kicker news-kicker--light">Central de Conhecimento</span>
-            <h1>Aprenda sobre Milhas e Viagens</h1>
-            <p>Guias completos, tutoriais e artigos educativos para voc&ecirc; dominar o universo das milhas a&eacute;reas e viajar mais pagando menos.</p>
-        </div>
+    <!-- Hero slim (padrao categoria.html) -->
+    <section class="portal-category-hero portal-category-hero--artigos">
+        <h1>
+            <span class="portal-category-hero__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 4h9l3 3v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                    <path d="M9 11h6M9 15h6M9 7h3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+                </svg>
+            </span>
+            Aprenda sobre milhas e viagens
+        </h1>
     </section>
 
     <!-- Grid de Modulos -->
     {% if modulos %}
     <section class="artigos-hub-modulos">
-        <h2 class="artigos-hub-section-title">M&oacute;dulos de Estudo</h2>
+        <header class="news-section-bar news-section-bar--stacked">
+            <div>
+                <h2>M&oacute;dulos de estudo</h2>
+                <p>Comece pelo m&oacute;dulo que faz mais sentido para voc&ecirc;.</p>
+            </div>
+        </header>
         <div class="artigos-hub-modulos__grid">
             {% for modulo in modulos %}
             <a href="{{ modulo.get_absolute_url }}" class="artigos-hub-modulo-card" style="--modulo-cor: {{ modulo.cor|default:'#2563eb' }};">
+                {% if modulo.icone %}
                 <div class="artigos-hub-modulo-card__icon" aria-hidden="true">
-                    {{ modulo.icone|default:"&#128218;" }}
+                    {{ modulo.icone|safe }}
                 </div>
+                {% endif %}
                 <h3>{{ modulo.titulo }}</h3>
                 <p>{{ modulo.descricao|truncatechars:100 }}</p>
                 <span class="artigos-hub-modulo-card__badge">
@@ -39,9 +50,15 @@
     </section>
     {% endif %}
 
-    <!-- Artigos em Destaque -->
+    <!-- Artigos em Destaque (padrao categoria: featured + sidebar) -->
     {% if artigos_featured or artigos_sidebar %}
-    <section class="portal-category-featured">
+    <header class="news-section-bar news-section-bar--stacked">
+        <div>
+            <h2>Artigos em destaque</h2>
+            <p>Guias selecionados para come&ccedil;ar a estudar agora.</p>
+        </div>
+    </header>
+    <section class="portal-category-featured artigos-hub-featured">
         {% if artigos_featured %}
         <article class="portal-category-featured__main">
             {% if artigos_featured.imagem_exibicao %}
@@ -50,9 +67,9 @@
             </a>
             {% endif %}
             <div class="portal-category-featured__body">
-                <span class="news-pill news-pill--artigo">Artigo</span>
+                <span class="news-pill news-pill--primary">Destaque</span>
                 {% if artigos_featured.modulo %}
-                <span class="news-pill news-pill--muted">{{ artigos_featured.modulo.titulo }}</span>
+                <span class="news-pill artigos-hub-pill-modulo" style="--modulo-cor: {{ artigos_featured.modulo.cor|default:'#2563eb' }};">{{ artigos_featured.modulo.titulo }}</span>
                 {% endif %}
                 {% if not portal_user_is_authenticated %}
                     {% if artigos_featured.pk == artigo_livre_id %}
@@ -90,7 +107,11 @@
                 </a>
                 {% endif %}
                 <div class="news-card__body">
+                    {% if artigo.modulo %}
+                    <span class="news-pill artigos-hub-pill-modulo" style="--modulo-cor: {{ artigo.modulo.cor|default:'#2563eb' }};">{{ artigo.modulo.titulo }}</span>
+                    {% else %}
                     <span class="news-pill news-pill--artigo">Artigo</span>
+                    {% endif %}
                     {% if not portal_user_is_authenticated %}
                         {% if artigo.pk == artigo_livre_id %}
                         <span class="news-pill news-pill--livre" title="Artigo liberado para leitura sem login">
@@ -124,7 +145,12 @@
     <!-- Grid de Artigos Recentes -->
     {% if artigos_grid %}
     <section class="artigos-hub-recentes">
-        <h2 class="artigos-hub-section-title">Artigos Recentes</h2>
+        <header class="news-section-bar news-section-bar--stacked">
+            <div>
+                <h2>Artigos recentes</h2>
+                <p>Atualiza&ccedil;&otilde;es e novos materiais publicados nos m&oacute;dulos.</p>
+            </div>
+        </header>
         <div class="portal-category-grid">
             {% for artigo in artigos_grid %}
             <article class="news-card">

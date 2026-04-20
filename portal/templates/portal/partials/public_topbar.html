@@ -230,6 +230,7 @@
                     class="portal-icon-button portal-search-form__toggle"
                     aria-label="Abrir busca"
                     aria-expanded="{% if search_query %}true{% else %}false{% endif %}"
+                    aria-controls="portal-public-search-panel"
                     data-search-toggle
                 >
                     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -237,7 +238,7 @@
                         <path d="M20 20l-4.35-4.35" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
                     </svg>
                 </button>
-                <div class="portal-search-form__panel" data-search-panel>
+                <div class="portal-search-form__panel" id="portal-public-search-panel" data-search-panel>
                     <input
                         id="portal-public-search"
                         type="search"
@@ -258,19 +259,158 @@
                     >
                         Buscar
                     </button>
+                    <button
+                        type="button"
+                        class="portal-search-form__close"
+                        aria-label="Fechar busca"
+                        data-search-close
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                    </button>
                 </div>
             </form>
             {% if portal_user_authenticated %}
                 {# Portal B2C — usuario leitor autenticado (isolado do SaaS) #}
-                <span class="portal-topbar__auth-user" title="{{ portal_user.email }}">
+                <span class="portal-topbar__auth-user portal-topbar__auth-user--desktop-only" title="{{ portal_user.email }}">
                     <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-8 2-8 6v1h16v-1c0-4-4-6-8-6Z" fill="currentColor"/></svg>
                     {{ portal_user.nome|default:portal_user.email }}
                 </span>
-                <a href="{% url 'portal_logout' %}" class="portal-topbar__auth-link">Sair</a>
+                <a href="{% url 'portal_logout' %}" class="portal-topbar__auth-link portal-topbar__auth-link--desktop-only">Sair</a>
             {% else %}
-                <a href="{% url 'portal_login' %}" class="portal-topbar__auth-link">Entrar</a>
-                <a href="{% url 'portal_register' %}" class="portal-topbar__auth-link portal-topbar__auth-link--primary">Criar conta</a>
+                <a href="{% url 'portal_login' %}" class="portal-topbar__auth-link portal-topbar__auth-link--desktop-only">Entrar</a>
+                <a href="{% url 'portal_register' %}" class="portal-topbar__auth-link portal-topbar__auth-link--primary portal-topbar__auth-link--desktop-only">Criar conta</a>
             {% endif %}
+
+            <div class="portal-topbar__auth portal-topbar__auth--mobile-only" data-auth-menu>
+                <button
+                    type="button"
+                    class="portal-icon-button portal-topbar__auth-toggle"
+                    aria-label="{% if portal_user_authenticated %}Menu da conta{% else %}Entrar ou criar conta{% endif %}"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    aria-controls="portal-public-auth-menu"
+                    data-auth-toggle
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-8 2-8 6v1h16v-1c0-4-4-6-8-6Z" fill="currentColor"/></svg>
+                </button>
+                <div class="portal-topbar__auth-menu" id="portal-public-auth-menu" role="menu" data-auth-panel>
+                    {% if portal_user_authenticated %}
+                        <div class="portal-topbar__auth-menu-header" role="presentation">
+                            <span class="portal-topbar__auth-menu-name">{{ portal_user.nome|default:portal_user.email }}</span>
+                            {% if portal_user.nome and portal_user.email %}
+                            <span class="portal-topbar__auth-menu-email">{{ portal_user.email }}</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'portal_logout' %}" class="portal-topbar__auth-menu-item" role="menuitem">Sair</a>
+                    {% else %}
+                        <a href="{% url 'portal_login' %}" class="portal-topbar__auth-menu-item" role="menuitem">Entrar</a>
+                        <a href="{% url 'portal_register' %}" class="portal-topbar__auth-menu-item portal-topbar__auth-menu-item--primary" role="menuitem">Criar conta</a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
+    <script>
+    (function(){
+        var MQ = window.matchMedia('(max-width: 767px)');
+
+        // --- Busca mobile (overlay full-width) ---
+        var searchForm = document.querySelector('[data-topbar-search]');
+        var searchToggle = searchForm ? searchForm.querySelector('[data-search-toggle]') : null;
+        var searchPanel = searchForm ? searchForm.querySelector('[data-search-panel]') : null;
+        var searchInput = searchForm ? searchForm.querySelector('[data-search-input]') : null;
+        var searchClose = searchForm ? searchForm.querySelector('[data-search-close]') : null;
+
+        function openSearch(){
+            if (!searchForm) return;
+            searchForm.classList.add('is-open');
+            if (searchToggle) searchToggle.setAttribute('aria-expanded', 'true');
+            if (MQ.matches) { document.body.classList.add('portal-search-overlay-open'); }
+            setTimeout(function(){ if (searchInput) searchInput.focus(); }, 30);
+        }
+        function closeSearch(focusToggle){
+            if (!searchForm) return;
+            searchForm.classList.remove('is-open');
+            if (searchToggle) searchToggle.setAttribute('aria-expanded', 'false');
+            document.body.classList.remove('portal-search-overlay-open');
+            if (focusToggle && searchToggle) searchToggle.focus();
+        }
+        if (searchToggle){
+            searchToggle.addEventListener('click', function(e){
+                e.preventDefault();
+                if (searchForm.classList.contains('is-open')) closeSearch(true);
+                else openSearch();
+            });
+        }
+        if (searchClose){
+            searchClose.addEventListener('click', function(e){
+                e.preventDefault();
+                closeSearch(true);
+            });
+        }
+        if (searchPanel){
+            // focus trap simples no overlay mobile
+            searchPanel.addEventListener('keydown', function(e){
+                if (!MQ.matches) return;
+                if (e.key !== 'Tab') return;
+                var focusables = searchPanel.querySelectorAll('input, button');
+                if (!focusables.length) return;
+                var first = focusables[0];
+                var last = focusables[focusables.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault(); last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault(); first.focus();
+                }
+            });
+        }
+        document.addEventListener('click', function(e){
+            if (!searchForm || !searchForm.classList.contains('is-open')) return;
+            if (searchForm.contains(e.target)) return;
+            closeSearch(false);
+        });
+
+        // --- Dropdown auth mobile ---
+        var authWrap = document.querySelector('[data-auth-menu]');
+        var authToggle = authWrap ? authWrap.querySelector('[data-auth-toggle]') : null;
+        var authPanel = authWrap ? authWrap.querySelector('[data-auth-panel]') : null;
+
+        function openAuth(){
+            if (!authWrap) return;
+            authWrap.classList.add('is-open');
+            if (authToggle) authToggle.setAttribute('aria-expanded', 'true');
+        }
+        function closeAuth(focusToggle){
+            if (!authWrap) return;
+            authWrap.classList.remove('is-open');
+            if (authToggle) authToggle.setAttribute('aria-expanded', 'false');
+            if (focusToggle && authToggle) authToggle.focus();
+        }
+        if (authToggle){
+            authToggle.addEventListener('click', function(e){
+                e.preventDefault();
+                if (authWrap.classList.contains('is-open')) closeAuth(true);
+                else openAuth();
+            });
+        }
+        document.addEventListener('click', function(e){
+            if (!authWrap || !authWrap.classList.contains('is-open')) return;
+            if (authWrap.contains(e.target)) return;
+            closeAuth(false);
+        });
+
+        // Esc fecha tudo
+        document.addEventListener('keydown', function(e){
+            if (e.key !== 'Escape' && e.key !== 'Esc') return;
+            if (searchForm && searchForm.classList.contains('is-open')) closeSearch(true);
+            if (authWrap && authWrap.classList.contains('is-open')) closeAuth(true);
+        });
+
+        // Ao sair do mobile limpa estado de overlay
+        MQ.addEventListener && MQ.addEventListener('change', function(){
+            document.body.classList.remove('portal-search-overlay-open');
+            if (authWrap) closeAuth(false);
+        });
+    })();
+    </script>
 </header>
