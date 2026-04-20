@@ -1,0 +1,181 @@
+/* Status de monitoramento na tabela de emissoes + toast de progresso */
+
+.monit-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 180px;
+}
+
+.monit-cell__status {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.monit-cell__badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  background: #eef2ff;
+  color: #3730a3;
+  width: fit-content;
+}
+
+.monit-cell__badge--emitido,
+.monit-cell__badge--ticketado,
+.monit-cell__badge--embarcado,
+.monit-cell__badge--concluido {
+  background: #dcfce7;
+  color: #166534;
+}
+.monit-cell__badge--alterado,
+.monit-cell__badge--inconsistente,
+.monit-cell__badge--aguardando_consulta {
+  background: #fef3c7;
+  color: #92400e;
+}
+.monit-cell__badge--cancelado {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.monit-cell__badge--nao_iniciado,
+.monit-cell__badge--reservado {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.monit-cell__voo {
+  font-size: 11px;
+  color: #4b5563;
+  line-height: 1.2;
+}
+.monit-cell__quando {
+  font-size: 10px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.monit-cell__refresh {
+  background: transparent;
+  border: 1px solid #d1d5db;
+  color: #4b5563;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.15s ease;
+}
+.monit-cell__refresh:hover {
+  background: #eef2ff;
+  border-color: #6366f1;
+  color: #3730a3;
+}
+.monit-cell__refresh:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.monit-cell__refresh.is-loading span[aria-hidden] {
+  display: inline-block;
+  animation: monit-spin 0.8s linear infinite;
+}
+
+.monit-cell.is-changed .monit-cell__badge {
+  box-shadow: 0 0 0 2px #fde68a;
+}
+
+@keyframes monit-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Toast / painel de progresso (canto inferior direito) */
+.monit-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 320px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  font-family: inherit;
+}
+.monit-toast__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.monit-toast__title {
+  font-size: 14px;
+  color: #111827;
+}
+.monit-toast__close {
+  background: transparent;
+  border: 0;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0 4px;
+}
+.monit-toast__progress {
+  margin-bottom: 10px;
+}
+.monit-toast__bar {
+  width: 100%;
+  height: 8px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.monit-toast__bar-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  transition: width 0.4s ease;
+}
+.monit-toast__counts {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #4b5563;
+}
+.monit-toast__msg {
+  font-size: 12px;
+  color: #4b5563;
+  margin: 0;
+}
+.monit-toast--ok {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+.monit-toast--erro {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

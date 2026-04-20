@@ -1,5 +1,36 @@
+import uuid
+
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
+
+
+class AcompanhamentoPassagemQuerySet(models.QuerySet):
+    """QuerySet com filtros padronizados para isolamento tenant + janela de voo.
+
+    Tenant isolation é PRIMORDIAL: nenhum método retorna queryset sem filtro
+    por empresa quando ``da_empresa`` é chamado. Para uso superadmin, chame
+    diretamente ``AcompanhamentoPassagem.objects.all()`` (raro).
+    """
+
+    def da_empresa(self, empresa):
+        if not empresa:
+            return self.none()
+        return self.filter(
+            Q(emissao__cliente__empresa=empresa)
+            | Q(emissao__conta_administrada__empresa=empresa)
+            | Q(emissao__emissor_parceiro__empresa=empresa)
+        ).distinct()
+
+    def ativas(self):
+        return self.filter(ativo=True)
+
+    def com_voo_futuro(self, agora=None):
+        agora = agora or timezone.now()
+        return self.filter(
+            Q(emissao__data_volta__gte=agora)
+            | (Q(emissao__data_volta__isnull=True) & Q(emissao__data_ida__gte=agora))
+        )
 
 
 class AcompanhamentoPassagem(models.Model):
@@ -18,6 +49,7 @@ class AcompanhamentoPassagem(models.Model):
     STATUS_RESERVA_AGUARDANDO = "aguardando_consulta"
     STATUS_RESERVA_RESERVADO = "reservado"
     STATUS_RESERVA_EMITIDO = "emitido"
+    STATUS_RESERVA_PROGRAMADO = "programado"
     STATUS_RESERVA_TICKETADO = "ticketado"
     STATUS_RESERVA_ALTERADO = "alterado"
     STATUS_RESERVA_CANCELADO = "cancelado"
@@ -29,6 +61,7 @@ class AcompanhamentoPassagem(models.Model):
         (STATUS_RESERVA_AGUARDANDO, "Aguardando consulta"),
         (STATUS_RESERVA_RESERVADO, "Reservado"),
         (STATUS_RESERVA_EMITIDO, "Emitido"),
+        (STATUS_RESERVA_PROGRAMADO, "Programado"),
         (STATUS_RESERVA_TICKETADO, "Ticketado"),
         (STATUS_RESERVA_ALTERADO, "Alterado"),
         (STATUS_RESERVA_CANCELADO, "Cancelado"),
@@ -69,6 +102,15 @@ class AcompanhamentoPassagem(models.Model):
     sistema_origem = models.CharField(max_length=120, blank=True)
     referencia_externa = models.CharField(max_length=120, blank=True)
     localizador_consulta = models.CharField(max_length=100, blank=True)
+    codigo_reserva_portal = models.CharField(
+        max_length=24,
+        blank=True,
+        help_text=(
+            "Código de reserva (PNR de 6 dígitos) devolvido pelo portal da "
+            "companhia. Para LATAM, o ``localizador_consulta`` guarda o Nº "
+            "da Ordem (LA…IWSR) e este campo guarda o reloc."
+        ),
+    )
     sobrenome_consulta = models.CharField(max_length=120, blank=True)
     email_consulta = models.EmailField(blank=True)
     status_reserva = models.CharField(
@@ -88,8 +130,15 @@ class AcompanhamentoPassagem(models.Model):
     proxima_verificacao_em = models.DateTimeField(null=True, blank=True)
     ultimo_erro = models.TextField(blank=True)
     ativo = models.BooleanField(default=True)
+    notificar_passageiro = models.BooleanField(
+        default=True,
+        help_text="Se desmarcado, mudanças de status não disparam email para o passageiro.",
+    )
+    opt_out_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     criado_em = models.DateTimeField(default=timezone.now)
     atualizado_em = models.DateTimeField(auto_now=True)
+
+    objects = AcompanhamentoPassagemQuerySet.as_manager()
 
     class Meta:
         verbose_name = "Acompanhamento de passagem"

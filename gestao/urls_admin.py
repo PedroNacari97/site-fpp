@@ -92,6 +92,12 @@ from gestao.views.financeiro import (
     financeiro_empresa_pagamentos,
     financeiro_empresa_contrato,
 )
+from gestao.views.monitoramento import (
+    atualizar_status_empresa,
+    atualizar_status_passagem,
+    status_atualizacao_em_massa,
+    ultimo_job_empresa,
+)
 
 urlpatterns = [
     path('painel/', admin_home, name='admin_dashboard'),
@@ -170,6 +176,10 @@ urlpatterns = [
     path('emissoes/<int:emissao_id>/pdf/', emissao_pdf, name='admin_emissao_pdf'),
     path('emissoes/<int:emissao_id>/detalhe/', emissao_detalhe, name='admin_emissao_detalhe'),
     path('emissoes/<int:emissao_id>/acompanhamento/', emissao_acompanhamento, name='admin_emissao_acompanhamento'),
+    path('emissoes/<int:emissao_id>/atualizar-status/', atualizar_status_passagem, name='admin_emissao_atualizar_status'),
+    path('monitoramento/atualizar-empresa/', atualizar_status_empresa, name='admin_monitoramento_atualizar_empresa'),
+    path('monitoramento/jobs/<int:job_id>/', status_atualizacao_em_massa, name='admin_monitoramento_job_status'),
+    path('monitoramento/jobs/atual/', ultimo_job_empresa, name='admin_monitoramento_job_atual'),
     path('hoteis/', admin_hoteis, name='admin_hoteis'),
     path('hoteis/nova/', nova_emissao_hotel, name='admin_nova_emissao_hotel'),
     path('hoteis/<int:emissao_id>/editar/', editar_emissao_hotel, name='admin_editar_emissao_hotel'),

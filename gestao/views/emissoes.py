@@ -554,6 +554,7 @@ def admin_emissoes(request):
             "conta_administrada",
             "emissor_parceiro",
             "companhia_aerea",
+            "acompanhamento",
         ),
         request,
         "cliente__empresa",

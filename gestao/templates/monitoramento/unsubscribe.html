@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Cancelar alertas de viagem</title>
+  <meta name="robots" content="noindex,nofollow">
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; background:#f5f5f5; margin:0; padding:40px 16px; }
+    .card { max-width:520px; margin:0 auto; background:#fff; padding:32px; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+    h1 { font-size:20px; margin:0 0 12px; }
+    p { line-height:1.5; color:#333; }
+    button { background:#0a4ea2; color:#fff; border:none; padding:12px 20px; font-size:15px; border-radius:8px; cursor:pointer; }
+    button:hover { background:#083a7c; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Cancelar avisos de mudança de status</h1>
+    <p>
+      Você está prestes a parar de receber emails sobre mudanças de status da reserva
+      <strong>{{ acompanhamento.emissao.localizador|default:"sem localizador" }}</strong>
+      ({{ acompanhamento.emissao.companhia_aerea.nome|default:"companhia não informada" }}).
+    </p>
+    <p>
+      Esses avisos são enviados pela
+      <strong>{{ acompanhamento.emissao.cliente.empresa.nome|default:"sua agência" }}</strong>
+      através da plataforma operacional NCfly.
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit">Confirmar cancelamento</button>
+    </form>
+  </div>
+</body>
+</html>

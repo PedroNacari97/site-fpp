@@ -1,8 +1,14 @@
+import logging
 from dataclasses import dataclass
 
 from django.utils import timezone
 
-from gestao.models import AcompanhamentoPassagem
+from gestao.models import AcompanhamentoPassagem, HistoricoVerificacao
+from gestao.services.monitoring import comparar_resultado, criar_notificacao_mudanca
+from gestao.services.scrapers import get_scraper
+from gestao.services.scrapers.base import ScraperError
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -83,6 +89,15 @@ def _reservation_tone(status):
 def build_acompanhamento_summary(acompanhamento):
     if not acompanhamento:
         return None
+    emissao = getattr(acompanhamento, "emissao", None)
+    companhia = getattr(emissao, "companhia_aerea", None)
+    codigo_companhia = (
+        companhia.codigo_normalizado() if companhia and hasattr(companhia, "codigo_normalizado") else ""
+    )
+    rotulo_codigo_reserva = (
+        getattr(companhia, "rotulo_codigo_reserva", "") or "Localizador / Código da Reserva"
+    )
+    eh_latam = codigo_companhia == "LATAM"
     return {
         "modo_label": acompanhamento.get_modo_consulta_display(),
         "status_reserva_label": acompanhamento.get_status_reserva_display(),
@@ -101,6 +116,13 @@ def build_acompanhamento_summary(acompanhamento):
         "resumo": acompanhamento.ultimo_resumo or "Sem retorno consolidado ainda.",
         "erro": acompanhamento.ultimo_erro or "",
         "ativo": acompanhamento.ativo,
+        # Identificadores: para LATAM separamos Nº da Ordem (orderId) e
+        # Código da Reserva (reloc / PNR). Para outras companhias mantemos
+        # um único campo "Localizador / Código da Reserva".
+        "eh_latam": eh_latam,
+        "rotulo_codigo_reserva": rotulo_codigo_reserva,
+        "codigo_reserva_portal": acompanhamento.codigo_reserva_portal or "",
+        "numero_ordem": acompanhamento.localizador_consulta or (getattr(emissao, "localizador", "") or ""),
     }
 
 
@@ -179,10 +201,150 @@ class PlaceholderAcompanhamentoProvider(BaseAcompanhamentoProvider):
         )
 
 
+class PortalCompanhiaScraperProvider(BaseAcompanhamentoProvider):
+    """Roda o scraper específico da companhia, grava histórico e dispara alerta."""
+
+    provider_key = AcompanhamentoPassagem.MODO_PORTAL_COMPANHIA
+
+    def sync(self, acompanhamento):
+        emissao = acompanhamento.emissao
+        companhia = getattr(emissao, "companhia_aerea", None)
+        codigo = companhia.codigo_normalizado() if companhia else ""
+        scraper = get_scraper(codigo) if codigo else None
+
+        if not scraper:
+            return PlaceholderAcompanhamentoProvider().sync(acompanhamento)
+
+        if not acompanhamento.localizador_consulta:
+            acompanhamento.ultimo_erro = (
+                "Informe o localizador antes de tentar consultar o status automaticamente."
+            )
+            acompanhamento.ultima_sincronizacao_em = timezone.now()
+            acompanhamento.save(
+                update_fields=[
+                    "ultimo_erro",
+                    "ultima_sincronizacao_em",
+                    "atualizado_em",
+                ]
+            )
+            return AcompanhamentoSyncResult(
+                success=False,
+                message="Falta o localizador para iniciar a consulta automatica.",
+            )
+        if not acompanhamento.sobrenome_consulta:
+            acompanhamento.ultimo_erro = (
+                "Informe o sobrenome do passageiro antes de consultar o portal da companhia."
+            )
+            acompanhamento.ultima_sincronizacao_em = timezone.now()
+            acompanhamento.save(
+                update_fields=[
+                    "ultimo_erro",
+                    "ultima_sincronizacao_em",
+                    "atualizado_em",
+                ]
+            )
+            return AcompanhamentoSyncResult(
+                success=False,
+                message="Falta o sobrenome do passageiro para a consulta.",
+            )
+
+        historico = HistoricoVerificacao(
+            acompanhamento=acompanhamento,
+            scraper_nome=codigo,
+            status_reserva_anterior=acompanhamento.status_reserva or "",
+            status_voo_anterior=acompanhamento.status_voo or "",
+        )
+
+        try:
+            resultado = scraper.consultar(
+                acompanhamento.localizador_consulta,
+                acompanhamento.sobrenome_consulta,
+                url=getattr(companhia, "site_url", "") or "",
+            )
+        except ScraperError as exc:
+            mensagem = str(exc)
+            historico.sucesso = False
+            historico.erro_mensagem = mensagem
+            historico.save()
+            acompanhamento.ultimo_erro = mensagem
+            acompanhamento.ultima_sincronizacao_em = timezone.now()
+            acompanhamento.save(
+                update_fields=[
+                    "ultimo_erro",
+                    "ultima_sincronizacao_em",
+                    "atualizado_em",
+                ]
+            )
+            return AcompanhamentoSyncResult(success=False, message=mensagem)
+
+        mudanca = comparar_resultado(acompanhamento, resultado)
+
+        historico.sucesso = True
+        historico.duracao_ms = resultado.duracao_ms
+        historico.payload_sanitizado = resultado.payload_sanitizado
+        historico.status_reserva_novo = resultado.status_reserva
+        historico.status_voo_novo = resultado.status_voo
+        historico.mudou_desde_anterior = mudanca.mudou
+
+        notificacao_enviada = False
+        if mudanca.mudou and mudanca.relevante_para_passageiro:
+            try:
+                notificacao_enviada = criar_notificacao_mudanca(acompanhamento, mudanca)
+            except Exception:
+                logger.exception(
+                    "Falha inesperada ao criar notificacao no portal para emissao %s",
+                    emissao.id,
+                )
+        historico.notificacao_disparada = notificacao_enviada
+        historico.save()
+
+        acompanhamento.status_reserva = resultado.status_reserva
+        acompanhamento.status_voo = resultado.status_voo
+        acompanhamento.payload_bruto_json = resultado.payload_sanitizado or {}
+        acompanhamento.ultimo_resumo = resultado.resumo or acompanhamento.ultimo_resumo
+        acompanhamento.ultimo_erro = ""
+        acompanhamento.ultima_sincronizacao_em = timezone.now()
+
+        update_fields = [
+            "status_reserva",
+            "status_voo",
+            "payload_bruto_json",
+            "ultimo_resumo",
+            "ultimo_erro",
+            "ultima_sincronizacao_em",
+            "atualizado_em",
+        ]
+        # Reloc devolvido pelo scraper (ex.: LATAM expõe `_reloc` = PNR de 6
+        # dígitos enquanto `localizador_consulta` guarda o orderId LA…IWSR).
+        reloc = (resultado.payload_sanitizado or {}).get("_reloc") or ""
+        if reloc and reloc != acompanhamento.codigo_reserva_portal:
+            acompanhamento.codigo_reserva_portal = reloc[:24]
+            update_fields.append("codigo_reserva_portal")
+
+        acompanhamento.save(update_fields=update_fields)
+
+        if mudanca.mudou:
+            base = f"Status atualizado ({mudanca.resumo_humano()})."
+            if mudanca.relevante_para_passageiro:
+                if notificacao_enviada:
+                    return AcompanhamentoSyncResult(
+                        success=True,
+                        message=f"{base} Alerta criado no painel do operador.",
+                    )
+                return AcompanhamentoSyncResult(
+                    success=True,
+                    message=f"{base} Não foi possível registrar alerta no painel.",
+                )
+            return AcompanhamentoSyncResult(success=True, message=base)
+        return AcompanhamentoSyncResult(
+            success=True, message="Consulta concluida. Nenhuma mudanca detectada."
+        )
+
+
 PROVIDERS = {
     AcompanhamentoPassagem.MODO_MANUAL: ManualAcompanhamentoProvider(),
     AcompanhamentoPassagem.MODO_SISTEMA_ORIGEM: PlaceholderAcompanhamentoProvider(),
-    AcompanhamentoPassagem.MODO_PORTAL_COMPANHIA: PlaceholderAcompanhamentoProvider(),
+    AcompanhamentoPassagem.MODO_PORTAL_COMPANHIA: PortalCompanhiaScraperProvider(),
     AcompanhamentoPassagem.MODO_API_VOO: PlaceholderAcompanhamentoProvider(),
 }
 

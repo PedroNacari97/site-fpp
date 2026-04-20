@@ -6,9 +6,16 @@ dump.json
 .env.local
 staticfiles/
 .tmp/
+.tmp-*/
+.tmp_*/
+tmp_*/
 tmp_*.html
 tmp_*.pdf
 media/portal/noticias/generated/
+
+# Claude Code workspace (config local + worktrees criados pelos sub-agentes)
+.claude/worktrees/
+.claude/settings.local.json
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*

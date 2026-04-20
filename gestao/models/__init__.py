@@ -22,12 +22,14 @@ from .telegram_alerta_evento import TelegramAlertaEvento
 from .telegram_noticia_evento import TelegramNoticiaEvento
 from .notificacao_sistema import NotificacaoSistema
 from .acompanhamento_passagem import AcompanhamentoPassagem
+from .historico_verificacao import HistoricoVerificacao
 from .interesse_viagem_cliente import InteresseViagemCliente, InteresseViagemMatch
 from .documento_plataforma import DocumentoPlataforma, AceiteDocumentoPlataforma
 from .instagram_noticia_evento import InstagramNoticiaEvento
 from .marca_catalogo import MarcaCatalogo
 from .stage_transition import StageTransition
 from .cartao_cliente import CartaoCliente, ProgramaSalaVip
+from .atualizacao_em_massa import AtualizacaoEmMassa
 
 __all__ = [
     'Cliente',
@@ -54,6 +56,7 @@ __all__ = [
     'TelegramNoticiaEvento',
     'NotificacaoSistema',
     'AcompanhamentoPassagem',
+    'HistoricoVerificacao',
     'InteresseViagemCliente',
     'InteresseViagemMatch',
     'DocumentoPlataforma',
@@ -63,4 +66,5 @@ __all__ = [
     'StageTransition',
     'CartaoCliente',
     'ProgramaSalaVip',
+    'AtualizacaoEmMassa',
 ]

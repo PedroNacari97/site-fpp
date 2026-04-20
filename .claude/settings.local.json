@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python manage.py shell -c ':*)",
-      "Bash(python manage.py test gestao -v 2 -k contas_administradas)"
-    ]
-  }
-}

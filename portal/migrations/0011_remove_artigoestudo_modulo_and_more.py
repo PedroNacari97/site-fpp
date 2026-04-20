@@ -10,6 +10,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # SQLite refaz a tabela inteira em qualquer alter; precisa soltar o
+        # UniqueConstraint antes de remover o campo que ele referencia.
+        # Postgres (prod) ignora porque a migration ja esta marcada como aplicada.
+        migrations.RemoveConstraint(
+            model_name='artigovideoyoutube',
+            name='unique_artigo_video',
+        ),
         migrations.RemoveField(
             model_name='artigoestudo',
             name='modulo',

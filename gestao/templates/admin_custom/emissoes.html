@@ -4,6 +4,10 @@
 {% block header_title %}Emissoes Detalhadas{% endblock %}
 {% block header_subtitle %}<span>Padrao global com filtros, indicadores e tabela operacional.</span>{% endblock %}
 {% block header_actions %}
+<button type="button" class="btn btn-secondary" id="btn-atualizar-todas-passagens" data-url="{% url 'admin_monitoramento_atualizar_empresa' %}" data-status-url-template="{% url 'admin_monitoramento_job_status' 0 %}" data-job-atual-url="{% url 'admin_monitoramento_job_atual' %}">
+  <span class="btn__icon" aria-hidden="true">↻</span>
+  <span class="btn__label">Atualizar status de todas</span>
+</button>
 <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}export=excel" class="btn btn-secondary">Exportar Excel</a>
 <a href="{% url 'admin_nova_emissao' %}" class="btn btn-primary">Nova Emissão</a>
 {% endblock %}
@@ -11,6 +15,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'gestao/css/home_figma.css' %}">
 <link rel="stylesheet" href="{% static 'gestao/css/emissoes_figma.css' %}">
+<link rel="stylesheet" href="{% static 'gestao/css/monitoramento_emissoes.css' %}">
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -63,6 +68,7 @@
             <th scope="col">Data de ida</th>
             <th scope="col">Companhia</th>
             <th scope="col">Status</th>
+            <th scope="col">Monitoramento</th>
             <th scope="col">Lucro</th>
             <th scope="col">Ações</th>
           </tr>
@@ -93,6 +99,27 @@
               <td data-label="Data ida">{{ e.data_ida|date:"d/m/Y H:i" }}</td>
               <td data-label="Companhia">{{ e.companhia_aerea|default:"-" }}</td>
               <td data-label="Status">{{ e.localizador|yesno:"Emitido,Pendente" }}</td>
+              <td data-label="Monitoramento">
+                {% with acomp=e.acompanhamento %}
+                <div class="monit-cell" data-emissao-id="{{ e.id }}">
+                  <div class="monit-cell__status">
+                    {% if acomp and acomp.ultima_sincronizacao_em %}
+                      <span class="monit-cell__badge monit-cell__badge--{{ acomp.status_reserva }}" data-monit-reserva>{{ acomp.get_status_reserva_display }}</span>
+                      <small class="monit-cell__voo" data-monit-voo>{{ acomp.get_status_voo_display }}</small>
+                      <small class="monit-cell__quando" data-monit-quando>{{ acomp.ultima_sincronizacao_em|date:"d/m/Y H:i" }}</small>
+                    {% else %}
+                      <span class="monit-cell__badge monit-cell__badge--nao_iniciado" data-monit-reserva>Sem leitura</span>
+                      <small class="monit-cell__voo" data-monit-voo></small>
+                      <small class="monit-cell__quando" data-monit-quando>Nunca consultado</small>
+                    {% endif %}
+                  </div>
+                  <button type="button" class="monit-cell__refresh" data-atualizar-passagem data-url="{% url 'admin_emissao_atualizar_status' e.id %}" title="Atualizar agora">
+                    <span aria-hidden="true">↻</span>
+                    <span class="sr-only">Atualizar status desta passagem</span>
+                  </button>
+                </div>
+                {% endwith %}
+              </td>
               <td data-label="Lucro">R$ {{ e.lucro|default:0|floatformat:2 }}</td>
               <td data-label="Ações">
                 <div class="emissions-page__row-actions">
@@ -103,7 +130,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="9" class="emissions-page__empty empty-row">
+              <td colspan="10" class="emissions-page__empty empty-row">
                 Nenhuma emissão encontrada.
                 <a href="{% url 'admin_nova_emissao' %}" class="emissions-page__empty-cta">Nova emissão</a>
               </td>
@@ -113,5 +140,21 @@
       </table>
     </div>
   </section>
+
+  <div id="monit-toast" class="monit-toast" hidden role="status" aria-live="polite">
+    <div class="monit-toast__head">
+      <strong class="monit-toast__title">Atualização em andamento</strong>
+      <button type="button" class="monit-toast__close" data-monit-toast-close aria-label="Fechar">×</button>
+    </div>
+    <div class="monit-toast__progress">
+      <div class="monit-toast__bar"><span class="monit-toast__bar-fill" data-monit-bar style="width:0%"></span></div>
+      <small class="monit-toast__counts" data-monit-counts>0 de 0 processados</small>
+    </div>
+    <p class="monit-toast__msg" data-monit-msg></p>
+  </div>
 </div>
+<script>
+  window.MONIT_CSRF_TOKEN = "{{ csrf_token }}";
+</script>
+<script src="{% static 'gestao/js/monitoramento_emissoes.js' %}" defer></script>
 {% endblock %}

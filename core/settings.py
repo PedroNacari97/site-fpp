@@ -418,12 +418,24 @@ PORTAL_ALERTS_REPLY_TO = (
     os.environ.get("PORTAL_ALERTS_REPLY_TO", PORTAL_CONTACT_EMAIL).strip()
 )
 
+# Monitoramento de passagens (SaaS B2B): envelope-from usado nos emails de alerta
+# disparados pelo modulo gestao.services.monitoring. O nome exibido no remetente
+# eh sempre o da agencia (Empresa); este endereco eh apenas o envelope tecnico.
+# Reply-To aponta para empresa.email_contato em runtime.
+MONITORAMENTO_ALERTAS_FROM_EMAIL = (
+    os.environ.get("MONITORAMENTO_ALERTAS_FROM_EMAIL", "").strip()
+    or PORTAL_ALERTS_FROM_EMAIL
+)
+
 TELEGRAM_ALERTS_BOT_TOKEN = os.environ.get("TELEGRAM_ALERTS_BOT_TOKEN", "")
 TELEGRAM_ALERTS_WEBHOOK_SECRET = os.environ.get("TELEGRAM_ALERTS_WEBHOOK_SECRET", "")
 TELEGRAM_ALERTS_ALLOWED_CHAT_IDS = _env_list("TELEGRAM_ALERTS_ALLOWED_CHAT_IDS", [])
 TELEGRAM_NEWS_BOT_TOKEN = os.environ.get("TELEGRAM_NEWS_BOT_TOKEN", "")
 TELEGRAM_NEWS_WEBHOOK_SECRET = os.environ.get("TELEGRAM_NEWS_WEBHOOK_SECRET", "")
 TELEGRAM_NEWS_ALLOWED_CHAT_IDS = _env_list("TELEGRAM_NEWS_ALLOWED_CHAT_IDS", [])
+
+# Bot publico de consulta de status de voo (passageiro digita PNR + sobrenome)
+TELEGRAM_STATUS_VOO_BOT_TOKEN = os.environ.get("TELEGRAM_STATUS_VOO_BOT_TOKEN", "")
 
 # Instagram — Meta Graph API
 # PAGE_ID e IG_USER_ID já conhecidos; ACCESS_TOKEN deve ser configurado no Railway.

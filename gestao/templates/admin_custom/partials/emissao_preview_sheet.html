@@ -37,14 +37,21 @@
             <span>Data de Emissao</span>
             <strong>{{ preview.created_display }}</strong>
         </div>
+        {% if preview.acompanhamento.eh_latam %}
         <div class="quote-preview-meta__item emission-preview-meta__item">
-            <span>Localizador</span>
+            <span>N&ordm; da Ordem</span>
+            <strong>{{ preview.acompanhamento.numero_ordem|default:preview.localizador_display }}</strong>
+        </div>
+        <div class="quote-preview-meta__item emission-preview-meta__item">
+            <span>C&oacute;digo da Reserva</span>
+            <strong>{{ preview.acompanhamento.codigo_reserva_portal|default:"--" }}</strong>
+        </div>
+        {% else %}
+        <div class="quote-preview-meta__item emission-preview-meta__item">
+            <span>Localizador / C&oacute;digo da Reserva</span>
             <strong>{{ preview.localizador_display }}</strong>
         </div>
-        <div class="quote-preview-meta__item emission-preview-meta__item">
-            <span>PNR</span>
-            <strong>{{ preview.pnr_display }}</strong>
-        </div>
+        {% endif %}
     </section>
 
     <section class="quote-preview-section">

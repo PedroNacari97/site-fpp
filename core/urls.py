@@ -23,6 +23,7 @@ from django.views.static import serve as serve_static
 from core.views import healthcheck
 from accounts.views import custom_login, superadmin_login
 from gestao.views.alertas import telegram_alertas_webhook, telegram_artigos_webhook, telegram_noticias_webhook
+from gestao.views.monitoramento import monitoramento_unsubscribe
 from onboarding.views_assinatura import assinatura_bloqueada
 from portal import views as portal_views
 from portal.sitemaps import (
@@ -57,6 +58,7 @@ urlpatterns = [
     path("integracoes/telegram/alertas/webhook/", telegram_alertas_webhook, name="telegram_alertas_webhook"),
     path("integracoes/telegram/noticias/webhook/", telegram_noticias_webhook, name="telegram_noticias_webhook"),
     path("integracoes/telegram/artigos/webhook/", telegram_artigos_webhook, name="telegram_artigos_webhook"),
+    path("monitoramento/unsubscribe/<uuid:token>/", monitoramento_unsubscribe, name="monitoramento_unsubscribe"),
     path("painel/", include("painel_cliente.urls")),
     path("django/admin/", admin.site.urls),
     path("contratar/", include("onboarding.urls")),
