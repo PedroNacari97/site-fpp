@@ -177,15 +177,19 @@ def emissao_cliente_contexto(request, cliente_id):
     passageiros = PassageiroFrequente.objects.filter(cliente=cliente).order_by("nome")
     cliente_nome = cliente.usuario.get_full_name() or cliente.usuario.username
     cliente_cpf = cliente.cpf or ""
+    cliente_email = getattr(cliente.usuario, "email", "") or ""
+    cliente_telefone = getattr(cliente, "telefone", "") or ""
     titular_entry = {
         "id": f"titular_{cliente.id}",
         "nome": cliente_nome,
         "cpf": cliente_cpf,
         "cpf_masked": _mask_cpf(cliente_cpf),
-        "rg": "",
-        "passaporte": "",
-        "passaporte_validade": "",
+        "rg": getattr(cliente, "rg", "") or "",
+        "passaporte": getattr(cliente, "passaporte", "") or "",
+        "passaporte_validade": cliente.passaporte_validade.isoformat() if getattr(cliente, "passaporte_validade", None) else "",
         "data_nascimento": cliente.data_nascimento.isoformat() if getattr(cliente, "data_nascimento", None) else "",
+        "email": cliente_email,
+        "telefone": cliente_telefone,
         "is_titular": True,
     }
     passageiros_list = [titular_entry] + [
@@ -203,6 +207,8 @@ def emissao_cliente_contexto(request, cliente_id):
                 "id": cliente.id,
                 "nome": cliente_nome,
                 "cpf": cliente_cpf,
+                "email": cliente_email,
+                "telefone": cliente_telefone,
                 "tipo_cliente": getattr(cliente, "tipo_cliente", "") or "",
             },
             "passageiros_frequentes": passageiros_list,

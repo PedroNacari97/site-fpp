@@ -185,7 +185,10 @@
                     <span>{{ titular_card.tipo_label }}</span>
                   </div>
                 </div>
-                <span class="detail-client__titular-badge">Titular</span>
+                <div class="detail-client__passenger-actions">
+                  <span class="detail-client__titular-badge">Titular</span>
+                  <a href="{% url 'admin_editar_cliente' cliente_obj.id %}" class="detail-client__edit-button">Editar</a>
+                </div>
               </div>
               <div class="detail-client__passenger-meta">
                 <div><span>CPF:</span><strong>{{ titular_card.cpf }}</strong></div>
