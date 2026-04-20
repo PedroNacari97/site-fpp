@@ -1081,15 +1081,15 @@ def _build_category_page_context(categoria_slug, selected_topic_slug=""):
                 break
 
     active_pool = selected_topic["items"] if selected_topic else matching
-    ordered = active_pool[:8] if selected_topic else _pick_articles(matching, fallback, 8)
+    ordered = active_pool[:10] if selected_topic else _pick_articles(matching, fallback, 10)
     active_total = len(active_pool) if selected_topic else len(matching)
     featured = ordered[0] if ordered else None
     sidebar_cards = ordered[1:2]
-    grid_cards = ordered[2:8]
+    grid_cards = ordered[2:10]
     visible_count = (1 if featured else 0) + len(sidebar_cards) + len(grid_cards)
     hidden_cards = active_pool[visible_count:] if selected_topic else matching[visible_count:]
     remaining_count = max(active_total - visible_count, 0)
-    outras_noticias = fallback[:4]
+    outras_noticias = fallback[:8]
     return {
         "categoria_slug": categoria_slug,
         "categoria_config": config,
@@ -1654,7 +1654,7 @@ def noticias_todas(request):
         return alert_email_lead_redirect
 
     noticias = _get_published_news()
-    GRID_INITIAL = 8
+    GRID_INITIAL = 10
     featured = noticias[0] if noticias else None
     sidebar_cards = noticias[1:2]
     grid_cards = noticias[2:GRID_INITIAL]
