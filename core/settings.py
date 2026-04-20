@@ -327,6 +327,10 @@ PORTAL_GOOGLE_OAUTH_REDIRECT_URI = os.environ.get(
     "PORTAL_GOOGLE_OAUTH_REDIRECT_URI", ""
 ).strip()
 
+# Google OAuth credentials (usadas pelo portal B2C e tambem pelo allauth do superadmin).
+GOOGLE_OAUTH_CLIENT_ID = os.environ.get("GOOGLE_OAUTH_CLIENT_ID", "").strip()
+GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", "").strip()
+
 SECURITY_LOGIN_FAILURE_LIMIT = int(os.environ.get("SECURITY_LOGIN_FAILURE_LIMIT", "5"))
 SECURITY_LOGIN_LOCKOUT_MINUTES = int(os.environ.get("SECURITY_LOGIN_LOCKOUT_MINUTES", "15"))
 SECURITY_PASSWORD_RESET_LIMIT = int(os.environ.get("SECURITY_PASSWORD_RESET_LIMIT", "3"))
