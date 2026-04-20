@@ -482,8 +482,8 @@ def _build_home_context(*, user, empresa=None, request=None):
 
     tipo_operacao_faixas = [
         ("venda_direta", "Venda direta", "blue"),
-        ("intermediario", "Intermediário", "gold"),
-        ("concierge", "Concierge", "purple"),
+        ("intermediario", "Intermediário", "fucsia"),
+        ("concierge", "Concierge", "green"),
         ("emissor_parceiro", "Emissor parceiro", "green"),
     ]
     home_operacao_kpis = []
@@ -516,7 +516,7 @@ def _build_home_context(*, user, empresa=None, request=None):
             "value": tipo_cliente_map.get("intermediario", 0),
             "hint": "Agências revendedoras parceiras",
             "url": f"{reverse('admin_clientes')}?tipo_cliente=intermediario",
-            "tone": "gold",
+            "tone": "fucsia",
         },
     ]
 

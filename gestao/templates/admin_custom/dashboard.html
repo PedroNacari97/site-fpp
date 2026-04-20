@@ -46,7 +46,7 @@
         </p>
         <a href="#tabela-voos" class="admin-dashboard__hero-cta">Ver tabela de emissões &darr;</a>
       </article>
-      <div class="admin-dashboard__hero-kpis">
+      <div class="admin-dashboard__hero-kpis admin-dashboard__hero-kpis--grid-4">
         <a href="{% url 'admin_emissoes' %}" class="admin-dashboard__kpi admin-dashboard__kpi--blue">
           <p class="admin-dashboard__kpi-label">Passagens emitidas</p>
           <p class="admin-dashboard__kpi-value">{{ management_dashboard.summary.total_emissoes }}</p>
@@ -67,6 +67,58 @@
           <p class="admin-dashboard__kpi-value">{{ home_counts.viagens|default:"0" }}</p>
           <p class="admin-dashboard__kpi-hint">Embarques vinculados</p>
         </a>
+      </div>
+    </section>
+
+    {# ───────── Indicadores financeiros (margem, ticket, economia) ───────── #}
+    <section class="admin-dashboard__hero" aria-label="Indicadores financeiros">
+      <div class="admin-dashboard__hero-kpis admin-dashboard__hero-kpis--grid-4">
+        <div class="admin-dashboard__kpi admin-dashboard__kpi--compact admin-dashboard__kpi--blue">
+          <p class="admin-dashboard__kpi-label">Ticket médio</p>
+          <p class="admin-dashboard__kpi-value">{{ management_dashboard.summary.ticket_medio }}</p>
+          <p class="admin-dashboard__kpi-hint">Receita / emissões</p>
+        </div>
+        <div class="admin-dashboard__kpi admin-dashboard__kpi--compact admin-dashboard__kpi--green">
+          <p class="admin-dashboard__kpi-label">Lucro médio / emissão</p>
+          <p class="admin-dashboard__kpi-value">{{ management_dashboard.summary.lucro_medio_emissao }}</p>
+          <p class="admin-dashboard__kpi-hint">Lucro / emissões</p>
+        </div>
+        <div class="admin-dashboard__kpi admin-dashboard__kpi--compact admin-dashboard__kpi--purple">
+          <p class="admin-dashboard__kpi-label">Margem líquida</p>
+          <p class="admin-dashboard__kpi-value">{{ management_dashboard.summary.margem_liquida_pct }}</p>
+          <p class="admin-dashboard__kpi-hint">Lucro sobre receita</p>
+        </div>
+        <div class="admin-dashboard__kpi admin-dashboard__kpi--compact admin-dashboard__kpi--fucsia">
+          <p class="admin-dashboard__kpi-label">Economia entregue</p>
+          <p class="admin-dashboard__kpi-value">{{ management_dashboard.summary.economia_entregue }}</p>
+          <p class="admin-dashboard__kpi-hint">Valor poupado pro cliente</p>
+        </div>
+      </div>
+    </section>
+
+    {# ───────── Indicadores operacionais secundários ───────── #}
+    <section class="admin-dashboard__hero" aria-label="Indicadores operacionais">
+      <div class="admin-dashboard__hero-kpis admin-dashboard__hero-kpis--grid-4">
+        <div class="admin-dashboard__kpi admin-dashboard__kpi--compact admin-dashboard__kpi--orange">
+          <p class="admin-dashboard__kpi-label">Custo médio do milheiro</p>
+          <p class="admin-dashboard__kpi-value">{{ management_dashboard.summary.preco_medio_milha }}</p>
+          <p class="admin-dashboard__kpi-hint">R$ por 1.000 milhas</p>
+        </div>
+        <div class="admin-dashboard__kpi admin-dashboard__kpi--compact admin-dashboard__kpi--yellow">
+          <p class="admin-dashboard__kpi-label">Taxas sobre receita</p>
+          <p class="admin-dashboard__kpi-value">{{ management_dashboard.summary.taxas_sobre_receita_pct }}</p>
+          <p class="admin-dashboard__kpi-hint">Pressão sobre margem</p>
+        </div>
+        <div class="admin-dashboard__kpi admin-dashboard__kpi--compact admin-dashboard__kpi--blue">
+          <p class="admin-dashboard__kpi-label">Total de taxas</p>
+          <p class="admin-dashboard__kpi-value">{{ management_dashboard.summary.total_taxas }}</p>
+          <p class="admin-dashboard__kpi-hint">Acumulado no período</p>
+        </div>
+        <div class="admin-dashboard__kpi admin-dashboard__kpi--compact admin-dashboard__kpi--fucsia">
+          <p class="admin-dashboard__kpi-label">Lucro líquido</p>
+          <p class="admin-dashboard__kpi-value">{{ management_dashboard.summary.lucro_total }}</p>
+          <p class="admin-dashboard__kpi-hint">Resultado após custos</p>
+        </div>
       </div>
     </section>
 

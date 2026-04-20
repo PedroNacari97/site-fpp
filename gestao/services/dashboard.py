@@ -872,6 +872,11 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
     fees = total_of(filtered_emissoes, "valor_taxas")
     emissions_count = len(filtered_emissoes)
     avg_mile_price = ((total_of(filtered_emissoes, "custo_total") / miles) if miles else 0)
+    savings_delivered = total_of(filtered_emissoes, "economia_obtida")
+    avg_ticket = revenue / emissions_count if emissions_count else 0
+    avg_profit_per_ticket = profit / emissions_count if emissions_count else 0
+    net_margin_pct = (profit / revenue * 100) if revenue else 0
+    fees_over_revenue_pct = (fees / revenue * 100) if revenue else 0
 
     previous_revenue = float(sum(
         Decimal(item.valor_total_final if item.valor_total_final not in (None, "") else (item.valor_venda_final or 0))
@@ -1190,6 +1195,11 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
             "milhas_utilizadas": _format_number(miles),
             "preco_medio_milha": f"R$ {avg_mile_price:,.4f}",
             "total_taxas": _format_money(fees),
+            "ticket_medio": _format_money(avg_ticket),
+            "lucro_medio_emissao": _format_money(avg_profit_per_ticket),
+            "margem_liquida_pct": f"{net_margin_pct:,.1f}%".replace(",", "."),
+            "economia_entregue": _format_money(savings_delivered),
+            "taxas_sobre_receita_pct": f"{fees_over_revenue_pct:,.1f}%".replace(",", "."),
         },
         "timeline_series": timeline_series,
         "timeline_chart": {

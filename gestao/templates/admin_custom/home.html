@@ -56,16 +56,23 @@
     </section>
     {% endif %}
 
-    {% if home_operacao_kpis or home_clientes_kpis %}
+    {% if home_operacao_kpis %}
     <section class="admin-dashboard__hero" aria-label="Operação por modelo">
-      <div class="admin-dashboard__hero-kpis admin-dashboard__hero-kpis--grid-6">
+      <div class="admin-dashboard__hero-kpis admin-dashboard__hero-kpis--grid-4">
         {% for kpi in home_operacao_kpis %}
-          <a href="{{ kpi.url }}" class="admin-dashboard__kpi admin-dashboard__kpi--{{ kpi.tone }}" aria-label="{{ kpi.label }}: {{ kpi.value }}. {{ kpi.hint }}">
+          <a href="{{ kpi.url }}" class="admin-dashboard__kpi admin-dashboard__kpi--compact admin-dashboard__kpi--{{ kpi.tone }}" aria-label="{{ kpi.label }}: {{ kpi.value }}. {{ kpi.hint }}">
             <p class="admin-dashboard__kpi-label">{{ kpi.label }}</p>
             <p class="admin-dashboard__kpi-value">{{ kpi.value }}</p>
             <p class="admin-dashboard__kpi-hint">{{ kpi.hint }}</p>
           </a>
         {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if home_clientes_kpis %}
+    <section class="admin-dashboard__hero" aria-label="Base de clientes">
+      <div class="admin-dashboard__hero-kpis admin-dashboard__hero-kpis--grid-2">
         {% for kpi in home_clientes_kpis %}
           <a href="{{ kpi.url }}" class="admin-dashboard__kpi admin-dashboard__kpi--{{ kpi.tone }}" aria-label="{{ kpi.label }}: {{ kpi.value }}. {{ kpi.hint }}">
             <p class="admin-dashboard__kpi-label">{{ kpi.label }}</p>
