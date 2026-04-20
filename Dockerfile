@@ -35,4 +35,4 @@ RUN DJANGO_SECRET_KEY=build-dummy-key-not-used-at-runtime \
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --log-file -"]
+CMD ["sh", "-c", "gunicorn core.wsgi:application --bind 0.0.0.0:${PORT:-8000} --timeout 180 --graceful-timeout 30 --log-file -"]
