@@ -31,8 +31,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--timeout",
             type=int,
-            default=10,
-            help="Long polling em segundos (10 dá resposta mais rápida).",
+            default=25,
+            help="Long polling em segundos (25 é o sweet spot do Telegram).",
         )
         parser.add_argument(
             "--loop",

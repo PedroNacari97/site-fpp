@@ -28,7 +28,10 @@ from django.core.cache import cache
 
 from gestao.models import CompanhiaAerea
 from gestao.services.scrapers import get_scraper
-from gestao.services.scrapers.base import ScraperError
+from gestao.services.scrapers.base import (
+    ScraperError,
+    validar_localizador,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +52,11 @@ COMPANHIAS_HABILITADAS = (
         "codigo": CompanhiaAerea.CODIGO_LATAM,
         "rotulo": "LATAM",
         "label_localizador": "Nº da Ordem (ex.: LA1234567IWSR)",
+    },
+    {
+        "codigo": CompanhiaAerea.CODIGO_AZUL,
+        "rotulo": "Azul",
+        "label_localizador": "Código da reserva (PNR, ex.: AB12CD)",
     },
 )
 
@@ -73,11 +81,26 @@ def _api_url(method: str) -> str:
     return f"https://api.telegram.org/bot{_token()}/{method}"
 
 
-def get_updates(limit: int = 20, timeout: int = 0) -> list[dict]:
-    import requests
+# Sessao module-level: reutiliza conexao TLS com api.telegram.org entre calls.
+# Evita novo TCP+TLS handshake por send_message (~200-400ms economizados por
+# request).
+_SESSION = None
 
+
+def _http() -> Any:
+    global _SESSION
+    if _SESSION is None:
+        import requests
+
+        sess = requests.Session()
+        sess.headers.update({"User-Agent": "ncfly-status-voo/1.0"})
+        _SESSION = sess
+    return _SESSION
+
+
+def get_updates(limit: int = 20, timeout: int = 0) -> list[dict]:
     offset = (cache.get(OFFSET_CACHE_KEY) or 0)
-    response = requests.get(
+    response = _http().get(
         _api_url("getUpdates"),
         params={
             "offset": offset,
@@ -94,17 +117,22 @@ def get_updates(limit: int = 20, timeout: int = 0) -> list[dict]:
     return payload.get("result") or []
 
 
-def _avancar_offset(updates: list[dict]) -> None:
-    if not updates:
+def _avancar_offset_update(update_id: int | None) -> None:
+    """Avanca offset imediatamente apos processar um update.
+
+    Antes o offset so avancava ao fim do lote; se qualquer send_message no meio
+    falhasse, Telegram reentregava os mesmos updates no proximo poll. Avancar
+    por update evita essa reentrega.
+    """
+    if not update_id:
         return
-    maior = max(int(u.get("update_id") or 0) for u in updates)
-    if maior:
-        cache.set(OFFSET_CACHE_KEY, maior + 1, timeout=None)
+    atual = int(cache.get(OFFSET_CACHE_KEY) or 0)
+    alvo = int(update_id) + 1
+    if alvo > atual:
+        cache.set(OFFSET_CACHE_KEY, alvo, timeout=None)
 
 
 def send_message(chat_id: int | str, text: str, *, reply_markup: dict | None = None) -> dict:
-    import requests
-
     body: dict[str, Any] = {
         "chat_id": chat_id,
         "text": text,
@@ -113,27 +141,23 @@ def send_message(chat_id: int | str, text: str, *, reply_markup: dict | None = N
     }
     if reply_markup:
         body["reply_markup"] = reply_markup
-    response = requests.post(_api_url("sendMessage"), json=body, timeout=15)
+    response = _http().post(_api_url("sendMessage"), json=body, timeout=15)
     response.raise_for_status()
     return response.json()
 
 
 def answer_callback_query(callback_id: str, text: str = "") -> None:
-    import requests
-
     body: dict[str, Any] = {"callback_query_id": callback_id}
     if text:
         body["text"] = text[:200]
     try:
-        requests.post(_api_url("answerCallbackQuery"), json=body, timeout=10)
+        _http().post(_api_url("answerCallbackQuery"), json=body, timeout=10)
     except Exception:
         logger.warning("Falha ao responder callback %s", callback_id, exc_info=True)
 
 
 def delete_webhook() -> dict:
-    import requests
-
-    response = requests.post(
+    response = _http().post(
         _api_url("deleteWebhook"),
         data={"drop_pending_updates": False},
         timeout=15,
@@ -358,6 +382,76 @@ def formatar_resposta_latam(payload: dict) -> str:
     return "\n".join(linhas).strip()
 
 
+def formatar_resposta_azul(payload: dict) -> str:
+    """Formata o payload do scraper Azul em mensagem amigavel."""
+    if not payload.get("encontrada"):
+        return "❌ " + _escape_html(
+            payload.get("erro") or "Reserva não localizada na Azul."
+        )
+
+    reloc = payload.get("recordLocator") or payload.get("_reloc") or ""
+    info_status = (payload.get("info") or {}).get("status") or ""
+
+    linhas: list[str] = ["✈️ <b>Reserva localizada na Azul</b>", ""]
+    if reloc:
+        linhas.append(f"<b>Código da Reserva:</b> {_escape_html(str(reloc))}")
+    if info_status:
+        linhas.append(f"<b>Status da reserva:</b> {_escape_html(info_status)}")
+    linhas.append("")
+
+    segmentos: list[dict] = []
+    for j in payload.get("journeys") or []:
+        if not isinstance(j, dict):
+            continue
+        for seg in j.get("segments") or []:
+            if isinstance(seg, dict):
+                segmentos.append(seg)
+
+    if segmentos:
+        linhas.append("<b>Trechos</b>")
+        for seg in segmentos:
+            ident = seg.get("identifier") or {}
+            carrier = ident.get("carrierCode") or "AD"
+            voo = ident.get("identifierKey") or ""
+            origem = ident.get("departureCode") or ""
+            destino = ident.get("arrivalCode") or ""
+            partida = _formatar_data_hora(ident.get("std") or "")
+            chegada = _formatar_data_hora(ident.get("sta") or "")
+            status_op = _status_humano(
+                seg.get("status") or seg.get("operationalStatus") or ""
+            )
+            linhas.append(
+                f"• <b>{_escape_html(str(carrier))}{_escape_html(str(voo))}</b> "
+                f"{_escape_html(origem)} → {_escape_html(destino)}"
+            )
+            if partida:
+                linhas.append(f"   Partida: {_escape_html(partida)}")
+            if chegada:
+                linhas.append(f"   Chegada: {_escape_html(chegada)}")
+            linhas.append(f"   Status: {_escape_html(status_op)}")
+            linhas.append("")
+
+    passageiros = payload.get("passengers") or []
+    if passageiros:
+        linhas.append("<b>Passageiros</b>")
+        for p in passageiros:
+            if not isinstance(p, dict):
+                continue
+            nome = p.get("name") or {}
+            first = (nome.get("firstName") or "").strip()
+            last = (nome.get("lastName") or "").strip()
+            nome_completo = " ".join(part for part in (first, last) if part)
+            if nome_completo:
+                linhas.append(f"• {_escape_html(nome_completo)}")
+        linhas.append("")
+
+    linhas.append(
+        "ℹ️ Status fornecido pelo portal da companhia. Para mudanças oficiais, "
+        "consulte sempre o aplicativo da Azul."
+    )
+    return "\n".join(linhas).strip()
+
+
 # ---------------------------------------------------------------------------
 # Roteador principal
 # ---------------------------------------------------------------------------
@@ -427,7 +521,14 @@ def processar_update(update: dict) -> dict:
     estado = carregar_estado(chat_id)
 
     if estado.etapa == ETAPA_AGUARDANDO_LOCALIZADOR:
-        estado.localizador = texto.upper()
+        # Validacao antecipada: se o PNR/codigo nao bate no formato, avisa agora
+        # em vez de seguir pedindo sobrenome e so falhar no scraper.
+        try:
+            localizador = validar_localizador(texto)
+        except ScraperError as exc:
+            send_message(chat_id, f"⚠️ {_escape_html(str(exc))}")
+            return {"acao": "localizador_invalido"}
+        estado.localizador = localizador
         estado.etapa = ETAPA_AGUARDANDO_SOBRENOME
         salvar_estado(chat_id, estado)
         send_message(
@@ -478,10 +579,11 @@ def processar_update(update: dict) -> dict:
             )
             return {"acao": "erro_inesperado", "msg": str(exc)}
 
-        # Por enquanto so LATAM — formatamos o payload retornado.
         payload = resultado.payload_sanitizado or {}
         if estado.cia_codigo == CompanhiaAerea.CODIGO_LATAM:
             mensagem = formatar_resposta_latam(payload)
+        elif estado.cia_codigo == CompanhiaAerea.CODIGO_AZUL:
+            mensagem = formatar_resposta_azul(payload)
         else:
             mensagem = _escape_html(resultado.resumo or "Consulta concluida.")
         send_message(chat_id, mensagem)
@@ -501,15 +603,22 @@ def processar_update(update: dict) -> dict:
 
 
 def processar_lote(updates: list[dict]) -> dict:
-    """Processa um lote de updates e avanca o offset."""
+    """Processa cada update e avanca o offset imediatamente apos cada um.
+
+    Avancar update-a-update (em vez de so no fim do lote) evita que o Telegram
+    reentregue mensagens ja processadas se algum send_message do meio do lote
+    falhar.
+    """
     contadores: dict[str, int] = {}
     for update in updates:
+        update_id = update.get("update_id")
         try:
             meta = processar_update(update)
         except Exception:
-            logger.exception("Falha ao processar update %s", update.get("update_id"))
+            logger.exception("Falha ao processar update %s", update_id)
             meta = {"acao": "erro_processamento"}
+        finally:
+            _avancar_offset_update(update_id)
         chave = meta.get("acao") or "ignorado"
         contadores[chave] = contadores.get(chave, 0) + 1
-    _avancar_offset(updates)
     return contadores

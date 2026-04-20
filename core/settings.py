@@ -469,12 +469,24 @@ MEDIA_ROOT = Path(os.environ.get("DJANGO_MEDIA_ROOT", BASE_DIR / "media"))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "ncfly-portal",
+_CACHE_URL = os.environ.get("DJANGO_CACHE_URL", "").strip()
+if _CACHE_URL.startswith("redis://") or _CACHE_URL.startswith("rediss://"):
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": _CACHE_URL,
+        }
     }
-}
+else:
+    # DatabaseCache: compartilhado entre processos/workers sem custo extra
+    # (usa o Postgres do Railway). Requer rodar `python manage.py
+    # createcachetable` uma vez para criar a tabela `django_cache`.
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+            "LOCATION": "django_cache",
+        }
+    }
 
 LOGGING = {
     "version": 1,
