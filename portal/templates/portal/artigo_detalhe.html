@@ -293,14 +293,14 @@
     var tocD = document.getElementById('toc-desktop');
     var tocM = document.getElementById('toc-mobile');
     if (!corpo) return;
-    var hh = corpo.querySelectorAll('h2, h3');
+    var hh = corpo.querySelectorAll('h2');
     if (hh.length === 0) return;
     var ol = document.createElement('ol');
     ol.className = 'artigo-detalhe-toc__list';
     hh.forEach(function(h, i) {
         var id = 'sec-' + i; h.id = id;
         var li = document.createElement('li');
-        li.className = h.tagName === 'H3' ? 'artigo-detalhe-toc__item artigo-detalhe-toc__item--sub' : 'artigo-detalhe-toc__item';
+        li.className = 'artigo-detalhe-toc__item';
         var a = document.createElement('a'); a.href = '#' + id; a.textContent = h.textContent;
         li.appendChild(a); ol.appendChild(li);
     });
