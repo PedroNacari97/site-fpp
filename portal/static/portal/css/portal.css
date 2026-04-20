@@ -7284,6 +7284,76 @@ img {
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 18px;
 }
+
+/* ---------- Hub — Módulos scroller horizontal ---------- */
+.modulos-scroller {
+  position: relative;
+  display: block;
+}
+.modulos-scroller__track {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 2px 2px 6px;
+}
+.modulos-scroller__track::-webkit-scrollbar { display: none; }
+.modulos-scroller__track > .artigos-hub-modulo-card,
+.modulos-scroller__track > .modulos-scroller__item {
+  flex: 0 0 calc((100% - 36px) / 3);
+  min-width: 220px;
+  scroll-snap-align: start;
+}
+.modulos-scroller__control {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border, #e2e8f0);
+  background: #fff;
+  color: #0f172a;
+  font-size: 1.6rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  z-index: 3;
+  transition: opacity .2s, transform .15s, box-shadow .2s;
+}
+.modulos-scroller__control:hover:not(:disabled) {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  transform: translateY(-50%) scale(1.05);
+}
+.modulos-scroller__control:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+.modulos-scroller__control--prev { left: -14px; }
+.modulos-scroller__control--next { right: -14px; }
+
+@media (max-width: 1080px) {
+  .modulos-scroller__track > .artigos-hub-modulo-card,
+  .modulos-scroller__track > .modulos-scroller__item {
+    flex: 0 0 calc((100% - 18px) / 2);
+  }
+}
+@media (max-width: 700px) {
+  .modulos-scroller__track > .artigos-hub-modulo-card,
+  .modulos-scroller__track > .modulos-scroller__item {
+    flex: 0 0 calc(100% - 40px);
+    min-width: 0;
+  }
+  .modulos-scroller__control--prev { left: 4px; }
+  .modulos-scroller__control--next { right: 4px; }
+  .modulos-scroller__control { width: 36px; height: 36px; }
+}
 .artigos-hub-modulo-card {
   display: flex;
   flex-direction: column;
