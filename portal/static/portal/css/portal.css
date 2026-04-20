@@ -2917,8 +2917,12 @@ img {
 
 .portal-category-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+}
+
+.portal-category-grid--4col {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .is-hidden {
@@ -2950,7 +2954,7 @@ img {
 }
 
 .portal-category-grid--outras {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .portal-category-cta {
@@ -3440,7 +3444,6 @@ img {
 
 .news-alerts-home__grid--listing {
   gap: 16px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .news-alert-card {

@@ -106,7 +106,7 @@
     {% endif %}
 
     {% if noticias_grid or noticias_hidden %}
-    <section class="portal-category-grid" id="portal-noticias-grid" data-load-more-grid>
+    <section class="portal-category-grid portal-category-grid--4col" id="portal-noticias-grid" data-load-more-grid>
         {% for noticia in noticias_grid %}
         <article class="news-card">
             {% if noticia.imagem_exibicao %}

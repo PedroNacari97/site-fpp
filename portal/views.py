@@ -116,7 +116,7 @@ CATEGORY_CONFIGS = {
 SEO_MAX_DESCRIPTION_LENGTH = 160
 PLATFORM_LEAD_CONSENT_VERSION = "2026-04-interesse-plataforma"
 ALERT_EMAIL_LEAD_CONSENT_VERSION = "2026-04-alertas-email"
-ALERTS_PUBLIC_PAGE_BATCH_SIZE = 8
+ALERTS_PUBLIC_PAGE_BATCH_SIZE = 6
 
 
 def _estimate_read_minutes(text):
@@ -1089,7 +1089,7 @@ def _build_category_page_context(categoria_slug, selected_topic_slug=""):
     visible_count = (1 if featured else 0) + len(sidebar_cards) + len(grid_cards)
     hidden_cards = active_pool[visible_count:] if selected_topic else matching[visible_count:]
     remaining_count = max(active_total - visible_count, 0)
-    outras_noticias = fallback[:3]
+    outras_noticias = fallback[:4]
     return {
         "categoria_slug": categoria_slug,
         "categoria_config": config,
