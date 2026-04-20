@@ -241,7 +241,7 @@ def gerar_artigo_completo(briefing: str) -> dict:
     )
 
     try:
-        with urlopen(request, timeout=120) as response:
+        with urlopen(request, timeout=290) as response:
             resp_json = json.loads(response.read().decode("utf-8"))
     except HTTPError as exc:
         body = ""

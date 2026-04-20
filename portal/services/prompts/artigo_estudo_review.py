@@ -296,7 +296,7 @@ def review_artigo(titulo: str, conteudo: str) -> dict:
         method="POST",
     )
 
-    with urlopen(request, timeout=120) as response:
+    with urlopen(request, timeout=290) as response:
         resp_json = json.loads(response.read().decode("utf-8"))
 
     # Extrair texto da resposta
