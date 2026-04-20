@@ -22,6 +22,8 @@ from .models import NoticiaPublicada
 from .models import LeadAlertaEmail, LeadPlataforma
 from .services.alert_email_broadcasts import (
     get_alert_email_lead_by_unsubscribe_token,
+    get_email_from_unsubscribe_token,
+    has_active_alert_subscription_for_token,
     unsubscribe_alert_email_by_token,
 )
 from .services.lead_notifications import notify_alert_email_lead, notify_platform_lead
@@ -114,7 +116,7 @@ CATEGORY_CONFIGS = {
 SEO_MAX_DESCRIPTION_LENGTH = 160
 PLATFORM_LEAD_CONSENT_VERSION = "2026-04-interesse-plataforma"
 ALERT_EMAIL_LEAD_CONSENT_VERSION = "2026-04-alertas-email"
-ALERTS_PUBLIC_PAGE_BATCH_SIZE = 6
+ALERTS_PUBLIC_PAGE_BATCH_SIZE = 8
 
 
 def _estimate_read_minutes(text):
@@ -1116,8 +1118,8 @@ def home_publica(request):
     search_query = (request.GET.get("q") or "").strip()
     noticias = _filter_news_by_query(_get_published_news(), search_query)
     is_searching = bool(search_query)
-    HOME_INITIAL = 6
-    HOME_BATCH = 6
+    HOME_INITIAL = 8
+    HOME_BATCH = 8
     HOME_MOBILE_INITIAL = 3
     visible = noticias[:HOME_INITIAL]
     hidden = noticias[HOME_INITIAL:]
@@ -2168,20 +2170,23 @@ def termos_alertas_email(request):
 
 def alertas_email_unsubscribe(request):
     token = (request.POST.get("token") or request.GET.get("token") or "").strip()
+    token_email = get_email_from_unsubscribe_token(token) if token else None
     lead = get_alert_email_lead_by_unsubscribe_token(token) if token else None
+    token_has_active_subscription = (
+        has_active_alert_subscription_for_token(token) if token else False
+    )
     form = AlertEmailUnsubscribeForm(request.POST or None)
     context = {
         "lead": lead,
         "token": token,
+        "token_email": token_email,
         "form": form,
         "unsubscribe_success": False,
         "unsubscribe_cancelled": False,
-        "already_unsubscribed": bool(
-            lead and lead.status == LeadAlertaEmail.STATUS_DESCADASTRADO
-        ),
+        "already_unsubscribed": bool(token_email and not token_has_active_subscription),
     }
 
-    if not lead:
+    if not token_email:
         return render(
             request,
             "portal/alertas_unsubscribe_result.html",
@@ -2200,7 +2205,7 @@ def alertas_email_unsubscribe(request):
             context.update(
                 {
                     "lead": lead,
-                    "unsubscribe_success": bool(lead),
+                    "unsubscribe_success": True,
                     "already_unsubscribed": False,
                     "motivo_label": lead.get_motivo_cancelamento_display() if lead else "",
                 }
