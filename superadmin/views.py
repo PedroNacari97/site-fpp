@@ -25,6 +25,7 @@ from portal.models import (
     NoticiaPublicada, JobExecucao, LeadPlataforma, LeadAlertaEmail,
     ModuloEstudo, ArtigoEstudo, ArtigoVideoYoutube, PortalUser,
 )
+from portal.views import invalidate_news_cache
 
 from .mixins import SuperAdminRequiredMixin
 
@@ -176,6 +177,7 @@ class NoticiaDeleteView(SuperAdminRequiredMixin):
         noticia = get_object_or_404(NoticiaPublicada, pk=pk)
         titulo = noticia.titulo
         noticia.delete()
+        invalidate_news_cache()
         logger.info(
             "Superadmin excluiu noticia pk=%s titulo=%r user=%s",
             pk,
