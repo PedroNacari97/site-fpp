@@ -125,6 +125,9 @@
                 <div class="emissions-page__row-actions">
                   <a href="{% url 'admin_emissao_detalhe' e.id %}" class="emissions-page__row-button">Visualizar emissão</a>
                   <a href="{% url 'admin_editar_emissao' e.id %}" class="emissions-page__row-button">Editar</a>
+                  {% if perfil == 'admin' %}
+                  <button type="button" class="emissions-page__row-button emissions-page__row-button--danger" data-confirm-delete data-url="{% url 'admin_deletar_emissao' e.id %}" data-label="{{ e.cliente|default:e.emissor_parceiro|default:'emissão' }} — {{ e.data_ida|date:'d/m/Y' }}">Excluir</button>
+                  {% endif %}
                 </div>
               </td>
             </tr>

@@ -119,6 +119,9 @@ def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=
         if len(filtros) > 1:
             conta = ContaFidelidade.objects.filter(**filtros).select_related('programa', 'cliente__usuario', 'conta_administrada').first()
     controle = get_cpf_control_data(conta)
+    controle_json_safe = None
+    if controle:
+        controle_json_safe = {k: v for k, v in controle.items() if k != 'usos'}
     clientes_ids = set(cliente_programas.keys())
     if cliente_sel:
         try:
@@ -141,7 +144,7 @@ def _build_emissao_template_context(*, form, empresa, cliente_id=None, emissoes=
         'clientes_tipo_json': safe_json_dumps(clientes_tipo),
         'contas_adm_programas_json': safe_json_dumps(contas_adm_programas),
         'empresa_programas_json': safe_json_dumps(empresa_programas),
-        'cpf_controle_json': safe_json_dumps(controle or {}),
+        'cpf_controle_json': safe_json_dumps(controle_json_safe or {}),
         'cliente_context_url_template': cliente_context_url_template,
         'passageiro_frequente_url_template': passageiro_frequente_url_template,
         'cotacao_conversion': cotacao_conversion,
@@ -625,6 +628,7 @@ def admin_emissoes(request):
     total_receita = sum(float(item.valor_total_final or item.valor_venda_final or 0) for item in emissoes)
     total_custo = sum(float(item.custo_total or 0) for item in emissoes)
     total_lucro = sum(float(item.lucro or 0) for item in emissoes)
+    perfil = getattr(getattr(request.user, "cliente_gestao", None), "perfil", "")
     return render(
         request,
         "admin_custom/emissoes.html",
@@ -637,6 +641,7 @@ def admin_emissoes(request):
                 "custo": f"R$ {total_custo:,.2f}",
                 "lucro": f"R$ {total_lucro:,.2f}",
             },
+            "perfil": perfil,
             "menu_ativo": "emissoes",
         },
     )
