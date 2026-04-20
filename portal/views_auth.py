@@ -19,6 +19,7 @@ from django.views.decorators.http import require_http_methods
 from accounts.security import (
     format_lockout_message,
     get_client_ip,
+    get_request_url,
     get_user_agent,
     log_security_event,
 )
@@ -48,6 +49,7 @@ from .models import (
     _documento_hash,
     criar_opt_ins_no_cadastro,
 )
+from .services.preuser import link_pre_user_to
 
 
 PORTAL_B2C_TERMOS_VERSAO = getattr(settings, "PORTAL_B2C_TERMOS_VERSAO", "2026-04")
@@ -131,6 +133,7 @@ def portal_login(request):
         return _render_auth(request, "portal/auth/login.html", {"entered_email": email})
 
     login_portal_user(request, user)
+    link_pre_user_to(user, request)
     log_security_event(
         "portal_b2c_login_success",
         request=request,
@@ -248,6 +251,7 @@ def portal_register(request):
         user_agent=get_user_agent(request),
         versao_termos=PORTAL_B2C_TERMOS_VERSAO,
         hash_termos=hash_consentimento,
+        url_origem=get_request_url(request),
     )
 
     # 6. confirma email (infra existente — best-effort, nao bloqueia)
@@ -255,6 +259,7 @@ def portal_register(request):
 
     # 7. loga
     login_portal_user(request, user)
+    link_pre_user_to(user, request)
     messages.success(
         request,
         "Cadastro concluido! Enviamos um email de confirmacao com os termos aceitos.",
@@ -349,10 +354,12 @@ def portal_google_callback(request):
             user_agent=get_user_agent(request),
             versao_termos=PORTAL_B2C_TERMOS_VERSAO,
             hash_termos=hash_consentimento,
+            url_origem=get_request_url(request),
         )
         _send_confirmation_email(user, request)
 
     login_portal_user(request, user)
+    link_pre_user_to(user, request)
 
     stored_next = request.session.pop(PORTAL_SESSION_NEXT_KEY, "")
     destination = stored_next if is_safe_next(stored_next) else reverse("portal_home")

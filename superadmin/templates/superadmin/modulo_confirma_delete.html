@@ -1,0 +1,53 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Excluir Módulo — Painel NCfly{% endblock %}
+{% block page_title %}Excluir Módulo{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto card p-6 space-y-4">
+
+    <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+            <svg class="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 9v4M12 17h.01M10.29 3.86l-7.5 13A1 1 0 003.65 18h16.7a1 1 0 00.86-1.5l-7.5-13a1 1 0 00-1.72 0Z"/>
+            </svg>
+        </div>
+        <div>
+            <h2 class="text-base font-semibold text-slate-800">Excluir módulo permanentemente?</h2>
+            <p class="text-sm text-slate-500 mt-1">Esta ação não pode ser desfeita.</p>
+        </div>
+    </div>
+
+    <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+        <div class="flex items-center gap-2 mb-1">
+            <span>{{ modulo.icone|default:"&#128218;" }}</span>
+            <p class="text-sm font-medium text-slate-800">{{ modulo.titulo }}</p>
+        </div>
+        <p class="text-xs text-slate-500">{{ modulo.descricao|truncatechars:160 }}</p>
+        <p class="text-xs text-slate-400 mt-2">ID: {{ modulo.pk }} &middot; Slug: {{ modulo.slug }} &middot; Ordem: {{ modulo.ordem }}</p>
+    </div>
+
+    {% if modulo.total_artigos %}
+    <div class="rounded-lg p-4 border border-red-200 bg-red-50">
+        <p class="text-sm font-semibold text-red-700">
+            Atenção: {{ modulo.total_artigos }} artigo{{ modulo.total_artigos|pluralize:"s" }} será{{ modulo.total_artigos|pluralize:",ão" }} excluído{{ modulo.total_artigos|pluralize:"s" }} em cascata.
+        </p>
+        <p class="text-xs text-red-600 mt-1">
+            Todos os artigos vinculados a este módulo serão removidos permanentemente.
+        </p>
+    </div>
+    {% else %}
+    <div class="rounded-lg p-3 border border-slate-200 bg-white">
+        <p class="text-xs text-slate-500">Este módulo não possui artigos vinculados.</p>
+    </div>
+    {% endif %}
+
+    <div class="flex gap-3 justify-end">
+        <a href="{% url 'superadmin_modulos_list' %}" class="btn btn-secondary">Cancelar</a>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Sim, excluir módulo</button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

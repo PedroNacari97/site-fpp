@@ -27,6 +27,23 @@ def get_user_agent(request):
     return (request.META.get("HTTP_USER_AGENT") or "").strip()[:255]
 
 
+def get_request_url(request, *, max_length=500):
+    """URL absoluta da requisicao (com esquema + host + path + query).
+
+    Fallback para `request.path` quando o request nao expoe `build_absolute_uri`.
+    Limitada a `max_length` caracteres — suficiente para armazenar em
+    CharField/URLField sem estourar. Usada como evidencia forense do ponto de
+    origem de aceites/consentimentos (LGPD art. 8).
+    """
+    if request is None:
+        return ""
+    try:
+        url = request.build_absolute_uri()
+    except Exception:
+        url = getattr(request, "path", "") or ""
+    return (url or "")[:max_length]
+
+
 def normalize_login_identifier(identifier, scope="default"):
     raw_identifier = (identifier or "").strip()
     if scope == "superadmin":

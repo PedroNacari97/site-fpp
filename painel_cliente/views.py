@@ -53,11 +53,12 @@ def sair(request):
     return redirect("/login/")
 
 
-def build_dashboard_context(user, *, selected_continente=None, selected_pais=None, selected_cidade=None):
+def build_dashboard_context(user, *, request, selected_continente=None, selected_pais=None, selected_cidade=None):
     """Build context data for the dashboard page."""
     cliente = Cliente.objects.filter(usuario=user).first()
     base_context = build_operational_dashboard_context(
         user=user,
+        request=request,
         cliente=cliente,
         selected_continente=selected_continente,
         selected_pais=selected_pais,
@@ -84,6 +85,7 @@ def dashboard(request):
         return render(request, "painel_cliente/inativo.html")
     context = build_dashboard_context(
         request.user,
+        request=request,
         selected_continente=request.GET.get("continente"),
         selected_pais=request.GET.get("pais"),
         selected_cidade=request.GET.get("cidade"),

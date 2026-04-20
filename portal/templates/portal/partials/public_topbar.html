@@ -32,8 +32,7 @@
                     </span>
                     <span>Not&iacute;cias</span>
                 </a>
-                {% comment %}Artigos oculto temporariamente ate subirmos conteudo (ver home.html tambem)
-                <a href="{% url 'portal_artigos' %}" class="portal-topbar__nav-link portal-topbar__nav-link--desktop-only {% if request.resolver_match.url_name == 'portal_artigos' %}is-active{% endif %}">
+                <a href="{% url 'portal_artigos' %}" class="portal-topbar__nav-link portal-topbar__nav-link--desktop-only {% if request.resolver_match.url_name == 'portal_artigos' or request.resolver_match.url_name == 'portal_modulo_detalhe' or request.resolver_match.url_name == 'portal_artigo_detalhe' %}is-active{% endif %}">
                     <span class="portal-topbar__nav-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24">
                             <path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
@@ -41,7 +40,6 @@
                     </span>
                     <span>Artigos</span>
                 </a>
-                {% endcomment %}
                 {% for category in public_nav_categories %}
                 <a
                     href="{{ category.url }}"
@@ -83,14 +81,12 @@
                             </span>
                             Not&iacute;cias
                         </a>
-                        {% comment %}Artigos oculto temporariamente
-                        <a href="{% url 'portal_artigos' %}" class="portal-topbar__dropdown-item{% if request.resolver_match.url_name == 'portal_artigos' %} is-active{% endif %}">
+                        <a href="{% url 'portal_artigos' %}" class="portal-topbar__dropdown-item{% if request.resolver_match.url_name == 'portal_artigos' or request.resolver_match.url_name == 'portal_modulo_detalhe' or request.resolver_match.url_name == 'portal_artigo_detalhe' %} is-active{% endif %}">
                             <span class="portal-topbar__nav-icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24"><path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
                             </span>
                             Artigos &amp; Guias
                         </a>
-                        {% endcomment %}
                         {% for category in public_nav_categories %}
                         <a href="{{ category.url }}" class="portal-topbar__dropdown-item{% if request.resolver_match.url_name == 'portal_categoria' and request.resolver_match.kwargs.categoria_slug == category.slug %} is-active{% endif %}">
                             <span class="portal-topbar__nav-icon" aria-hidden="true">
@@ -125,6 +121,107 @@
                 </a>
             </nav>
         </div>
+        <script>
+        (function(){
+            var nav = document.querySelector('.portal-topbar__nav');
+            if (!nav) return;
+            var SPEED_PX_PER_SEC = 40;
+            var RESUME_AFTER_MS = 1800;
+            var setup = false;
+            var viewport = null;
+            var track = null;
+            var halfWidth = 0;
+            var lastTime = 0;
+            var rafId = 0;
+            var paused = false;
+            var resumeTimer = 0;
+            var position = 0;
+
+            function pause(){
+                paused = true;
+                if (resumeTimer) { clearTimeout(resumeTimer); resumeTimer = 0; }
+                if (viewport) position = viewport.scrollLeft;
+            }
+            function scheduleResume(){
+                if (resumeTimer) clearTimeout(resumeTimer);
+                resumeTimer = setTimeout(function(){
+                    if (viewport) position = viewport.scrollLeft;
+                    paused = false;
+                    lastTime = 0;
+                }, RESUME_AFTER_MS);
+            }
+            function tick(now){
+                rafId = requestAnimationFrame(tick);
+                if (paused || !viewport || halfWidth <= 0) { lastTime = now; return; }
+                if (!lastTime) { lastTime = now; return; }
+                var dt = (now - lastTime) / 1000;
+                if (dt > 0.1) dt = 0.1;
+                lastTime = now;
+                position += SPEED_PX_PER_SEC * dt;
+                if (position >= halfWidth) position -= halfWidth;
+                viewport.scrollLeft = position;
+            }
+            function setupMarquee(){
+                if (setup) return;
+                if (window.matchMedia('(max-width: 767px)').matches) return;
+                var children = Array.from(nav.children).filter(function(el){
+                    return !el.classList.contains('portal-topbar__dropdown--mobile-only');
+                });
+                if (children.length < 3) return;
+                var pinned = children.shift();
+                if (pinned) pinned.classList.add('portal-topbar__nav-link--pinned');
+                if (children.length < 2) return;
+
+                viewport = document.createElement('div');
+                viewport.className = 'portal-topbar__nav-marquee-viewport';
+                track = document.createElement('div');
+                track.className = 'portal-topbar__nav-track';
+                children.forEach(function(el){ track.appendChild(el); });
+                children.forEach(function(el){
+                    var clone = el.cloneNode(true);
+                    clone.setAttribute('aria-hidden', 'true');
+                    var focusables = clone.querySelectorAll('a, button');
+                    focusables.forEach(function(f){ f.setAttribute('tabindex', '-1'); });
+                    track.appendChild(clone);
+                });
+                viewport.appendChild(track);
+                nav.appendChild(viewport);
+                nav.classList.add('is-marquee');
+
+                requestAnimationFrame(function(){
+                    halfWidth = track.scrollWidth / 2;
+                });
+
+                viewport.addEventListener('mouseenter', pause);
+                viewport.addEventListener('mouseleave', scheduleResume);
+                viewport.addEventListener('focusin', pause);
+                viewport.addEventListener('focusout', scheduleResume);
+                viewport.addEventListener('touchstart', pause, { passive: true });
+                viewport.addEventListener('touchend', scheduleResume, { passive: true });
+                viewport.addEventListener('wheel', function(){ pause(); scheduleResume(); }, { passive: true });
+                viewport.addEventListener('scroll', function(){
+                    if (!paused) return;
+                    if (viewport.scrollLeft >= halfWidth) {
+                        viewport.scrollLeft -= halfWidth;
+                    } else if (viewport.scrollLeft < 0) {
+                        viewport.scrollLeft += halfWidth;
+                    }
+                }, { passive: true });
+
+                if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                    rafId = requestAnimationFrame(tick);
+                }
+                setup = true;
+            }
+            setupMarquee();
+            window.addEventListener('resize', function(){
+                setupMarquee();
+                if (track) {
+                    requestAnimationFrame(function(){ halfWidth = track.scrollWidth / 2; });
+                }
+            }, { passive: true });
+        })();
+        </script>
 
         <div class="portal-topbar__tools">
             <form action="{% url 'portal_home' %}" method="get" class="portal-search-form{% if search_query %} is-open{% endif %}" role="search" data-topbar-search>
@@ -170,26 +267,6 @@
                     {{ portal_user.nome|default:portal_user.email }}
                 </span>
                 <a href="{% url 'portal_logout' %}" class="portal-topbar__auth-link">Sair</a>
-            {% elif request.user.is_authenticated %}
-                {% if request.user.is_staff or request.user.is_superuser %}
-                <a
-                    href="{% url 'admin_dashboard' %}"
-                    class="portal-button portal-button--primary portal-button--sm"
-                    data-analytics-event="click_area_logada"
-                    data-analytics-label="topbar_admin"
-                >
-                    Gest&atilde;o
-                </a>
-                {% else %}
-                <a
-                    href="{% url 'painel_dashboard' %}"
-                    class="portal-button portal-button--primary portal-button--sm"
-                    data-analytics-event="click_area_logada"
-                    data-analytics-label="topbar_painel"
-                >
-                    Painel
-                </a>
-                {% endif %}
             {% else %}
                 <a href="{% url 'portal_login' %}" class="portal-topbar__auth-link">Entrar</a>
                 <a href="{% url 'portal_register' %}" class="portal-topbar__auth-link portal-topbar__auth-link--primary">Criar conta</a>

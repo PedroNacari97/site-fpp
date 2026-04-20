@@ -147,12 +147,23 @@
     </div>
 </div>
 
-{% if videos %}
+<!-- Adicionar video manualmente via URL -->
 <div class="max-w-3xl mx-auto mt-6 card p-5">
-    <h3 class="font-semibold text-sm mb-3">Videos vinculados ({{ videos|length }})</h3>
-    <div class="space-y-2">
+    <h3 class="font-semibold text-sm mb-2">Adicionar video por URL</h3>
+    <p class="text-xs text-slate-500 mb-3">Cole a URL completa do YouTube (ou apenas o ID de 11 caracteres). Metadados sao obtidos automaticamente.</p>
+    <div class="flex gap-2 items-start">
+        <input type="text" id="video-url-input" placeholder="Cole URL do YouTube"
+               class="flex-1 text-sm" style="padding:.5rem; border:1px solid #e2e8f0; border-radius:6px;">
+        <button type="button" id="btn-add-video-url" class="btn btn-primary text-xs">Adicionar</button>
+    </div>
+    <div id="add-video-url-msg" class="mt-2 text-xs text-slate-600 hidden"></div>
+</div>
+
+<div class="max-w-3xl mx-auto mt-6 card p-5">
+    <h3 class="font-semibold text-sm mb-3">Videos vinculados (<span id="videos-count">{{ videos|length }}</span>)</h3>
+    <div id="videos-lista" class="space-y-2">
         {% for v in videos %}
-        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 text-sm">
+        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 text-sm" data-video-id="{{ v.video_id }}">
             <img src="{{ v.thumbnail_url }}" alt="" width="80" height="45" class="rounded" style="object-fit:cover;">
             <div class="flex-1 min-w-0">
                 <p class="font-medium truncate">{{ v.titulo }}</p>
@@ -162,8 +173,8 @@
         </div>
         {% endfor %}
     </div>
+    <p id="videos-vazio" class="text-xs text-slate-400 {% if videos %}hidden{% endif %}">Nenhum video vinculado ainda.</p>
 </div>
-{% endif %}
 
 <script>
 (function() {
@@ -196,6 +207,64 @@
                     }
                 })
                 .catch(function(e){ divIA.textContent = 'Erro: ' + e; btnIA.disabled = false; btnIA.textContent = 'Revisar e otimizar com IA'; });
+        });
+    }
+    var btnAddUrl = document.getElementById('btn-add-video-url');
+    var inputUrl = document.getElementById('video-url-input');
+    var msgAdd = document.getElementById('add-video-url-msg');
+    var lista = document.getElementById('videos-lista');
+    var countEl = document.getElementById('videos-count');
+    var vazioEl = document.getElementById('videos-vazio');
+    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+    if (btnAddUrl) {
+        btnAddUrl.addEventListener('click', function() {
+            var url = (inputUrl.value || '').trim();
+            if (!url) { msgAdd.classList.remove('hidden'); msgAdd.textContent = 'Informe uma URL.'; return; }
+            btnAddUrl.disabled = true; btnAddUrl.textContent = 'Adicionando...';
+            msgAdd.classList.remove('hidden'); msgAdd.textContent = 'Buscando metadados no YouTube...';
+            var fd = new FormData();
+            fd.append('url', url);
+            fetch("{% url 'superadmin_artigo_adicionar_video_url' pk=artigo.pk %}", {
+                method:'POST',
+                headers:{'X-CSRFToken':'{{ csrf_token }}'},
+                body: fd,
+            })
+                .then(function(r){return r.json().then(function(d){ return {status:r.status, data:d}; })})
+                .then(function(res){
+                    var d = res.data;
+                    if (d.ok) {
+                        var v = d.video;
+                        // remove placeholder vazio
+                        if (vazioEl) vazioEl.classList.add('hidden');
+                        // evita duplicar no DOM
+                        var existing = lista.querySelector('[data-video-id="'+v.video_id+'"]');
+                        var itemHtml = '<img src="'+escapeHtml(v.thumbnail_url)+'" alt="" width="80" height="45" class="rounded" style="object-fit:cover;">'
+                            + '<div class="flex-1 min-w-0">'
+                            + '<p class="font-medium truncate">'+escapeHtml(v.titulo)+'</p>'
+                            + '<p class="text-xs text-slate-400">'+escapeHtml(v.canal)+' &middot; '+escapeHtml(v.duracao)+'</p>'
+                            + '</div>'
+                            + '<span class="badge '+(v.ativo?'badge-green':'badge-gray')+'">'+(v.ativo?'Ativo':'Oculto')+'</span>';
+                        if (existing) {
+                            existing.innerHTML = itemHtml;
+                        } else {
+                            var div = document.createElement('div');
+                            div.className = 'flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 text-sm';
+                            div.setAttribute('data-video-id', v.video_id);
+                            div.innerHTML = itemHtml;
+                            lista.appendChild(div);
+                            if (countEl) countEl.textContent = parseInt(countEl.textContent||'0', 10) + 1;
+                        }
+                        msgAdd.innerHTML = '<span style="color:#166534;">' + (d.created ? 'Video adicionado.' : 'Video atualizado.') + '</span>';
+                        inputUrl.value = '';
+                    } else {
+                        msgAdd.innerHTML = '<span style="color:#991b1b;">Erro: '+escapeHtml(d.error||'falha desconhecida')+'</span>';
+                    }
+                })
+                .catch(function(e){ msgAdd.innerHTML = '<span style="color:#991b1b;">Erro: '+escapeHtml(String(e))+'</span>'; })
+                .finally(function(){ btnAddUrl.disabled = false; btnAddUrl.textContent = 'Adicionar'; });
+        });
+        inputUrl.addEventListener('keydown', function(ev){
+            if (ev.key === 'Enter') { ev.preventDefault(); btnAddUrl.click(); }
         });
     }
     var btnVid = document.getElementById('btn-buscar-videos');

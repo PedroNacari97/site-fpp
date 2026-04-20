@@ -34,6 +34,19 @@
       {% endfor %}
     </section>
 
+    {# ───────── Filtros (logo abaixo do acesso rápido) ───────── #}
+    <details class="admin-dashboard__filters-wrap">
+      <summary class="admin-dashboard__filters-toggle" aria-label="Filtrar período e operação">
+        <span>Filtrar período, cliente, programa…</span>
+        <span class="admin-dashboard__filters-caret" aria-hidden="true">
+          <svg viewBox="0 0 16 16" width="12" height="12"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+        </span>
+      </summary>
+      <div class="home-ops__filters">
+        {% include "admin_custom/partials/home_management_filters.html" %}
+      </div>
+    </details>
+
     {# ───────── Hero metric + KPIs secundários (hierarquia clara) ───────── #}
     <section class="admin-dashboard__hero" aria-label="Resumo do período">
       <article class="admin-dashboard__hero-card">
@@ -71,7 +84,7 @@
     </section>
 
     {# ───────── Indicadores financeiros (margem, ticket, economia) ───────── #}
-    <section class="admin-dashboard__hero" aria-label="Indicadores financeiros">
+    <section class="admin-dashboard__kpi-row" aria-label="Indicadores financeiros">
       <div class="admin-dashboard__hero-kpis admin-dashboard__hero-kpis--grid-4">
         <div class="admin-dashboard__kpi admin-dashboard__kpi--compact admin-dashboard__kpi--blue">
           <p class="admin-dashboard__kpi-label">Ticket médio</p>
@@ -97,7 +110,7 @@
     </section>
 
     {# ───────── Indicadores operacionais secundários ───────── #}
-    <section class="admin-dashboard__hero" aria-label="Indicadores operacionais">
+    <section class="admin-dashboard__kpi-row" aria-label="Indicadores operacionais">
       <div class="admin-dashboard__hero-kpis admin-dashboard__hero-kpis--grid-4">
         <div class="admin-dashboard__kpi admin-dashboard__kpi--compact admin-dashboard__kpi--orange">
           <p class="admin-dashboard__kpi-label">Custo médio do milheiro</p>
@@ -122,19 +135,6 @@
       </div>
     </section>
 
-    {# ───────── Filtros (colapsados: só abrem quando precisar) ───────── #}
-    <details class="admin-dashboard__filters-wrap">
-      <summary class="admin-dashboard__filters-toggle" aria-label="Filtrar período e operação">
-        <span>Filtrar período, cliente, programa…</span>
-        <span class="admin-dashboard__filters-caret" aria-hidden="true">
-          <svg viewBox="0 0 16 16" width="12" height="12"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
-        </span>
-      </summary>
-      <div class="home-ops__filters">
-        {% include "admin_custom/partials/home_management_filters.html" %}
-      </div>
-    </details>
-
     <section class="miles-dashboard__grid-2">
       <article class="miles-dashboard__card miles-dashboard__line-card">
         <div class="miles-dashboard__card-heading">
@@ -156,12 +156,13 @@
               <polyline points="{{ management_dashboard.timeline_chart.receita.points }}" class="miles-dashboard__line-path--receita"></polyline>
               <polyline points="{{ management_dashboard.timeline_chart.lucro.points }}" class="miles-dashboard__line-path--lucro"></polyline>
               {% for marker in management_dashboard.timeline_chart.receita.markers %}
-                <circle cx="{{ marker.x }}" cy="{{ marker.y }}" r="1.6" class="miles-dashboard__line-dot--receita"></circle>
+                <circle cx="{{ marker.x }}" cy="{{ marker.y }}" r="2.2" class="miles-dashboard__line-dot miles-dashboard__line-dot--receita" data-label="{{ marker.label }}" data-serie="Receita" data-valor="{{ marker.valor }}"><title>{{ marker.label }} — Receita: {{ marker.valor }}</title></circle>
               {% endfor %}
               {% for marker in management_dashboard.timeline_chart.lucro.markers %}
-                <circle cx="{{ marker.x }}" cy="{{ marker.y }}" r="1.6" class="miles-dashboard__line-dot--lucro"></circle>
+                <circle cx="{{ marker.x }}" cy="{{ marker.y }}" r="2.2" class="miles-dashboard__line-dot miles-dashboard__line-dot--lucro" data-label="{{ marker.label }}" data-serie="Lucro" data-valor="{{ marker.valor }}"><title>{{ marker.label }} — Lucro: {{ marker.valor }}</title></circle>
               {% endfor %}
             </svg>
+            <div class="miles-dashboard__line-tooltip" role="tooltip" hidden></div>
           </div>
           <div class="miles-dashboard__line-labels">
             {% for point in management_dashboard.timeline_series %}
@@ -279,7 +280,7 @@
           </div>
           <div class="miles-dashboard__donut-legend">
             {% for item in management_dashboard.round_trip_mix.items %}
-              <div class="miles-dashboard__legend-item">
+              <div class="miles-dashboard__legend-item" title="{{ item.label }}: {{ item.count }} ({{ item.percent }})">
                 <span class="miles-dashboard__legend-label"><i class="miles-dashboard__legend-dot" style="background: {{ item.color }};"></i>{{ item.label }}</span>
                 <span>{{ item.count }} • {{ item.percent }}</span>
               </div>
@@ -304,7 +305,7 @@
           </div>
           <div class="miles-dashboard__donut-legend">
             {% for item in management_dashboard.emission_channel_mix.items %}
-              <div class="miles-dashboard__legend-item">
+              <div class="miles-dashboard__legend-item" title="{{ item.label }}: {{ item.count }} ({{ item.percent }})">
                 <span class="miles-dashboard__legend-label"><i class="miles-dashboard__legend-dot" style="background: {{ item.color }};"></i>{{ item.label }}</span>
                 <span>{{ item.count }} • {{ item.percent }}</span>
               </div>
@@ -356,4 +357,35 @@
     </section>
   </div>
 </div>
+<script>
+(function() {
+  var charts = document.querySelectorAll('.miles-dashboard__line-chart');
+  charts.forEach(function(chart) {
+    var tooltip = chart.querySelector('.miles-dashboard__line-tooltip');
+    var dots = chart.querySelectorAll('.miles-dashboard__line-dot');
+    if (!tooltip || !dots.length) return;
+    function show(e) {
+      var target = e.currentTarget;
+      var label = target.getAttribute('data-label') || '';
+      var serie = target.getAttribute('data-serie') || '';
+      var valor = target.getAttribute('data-valor') || '';
+      tooltip.textContent = label + ' — ' + serie + ': ' + valor;
+      tooltip.hidden = false;
+      var rect = chart.getBoundingClientRect();
+      var dotRect = target.getBoundingClientRect();
+      var left = dotRect.left - rect.left + dotRect.width / 2;
+      var top = dotRect.top - rect.top;
+      tooltip.style.left = left + 'px';
+      tooltip.style.top = top + 'px';
+    }
+    function hide() { tooltip.hidden = true; }
+    dots.forEach(function(dot) {
+      dot.addEventListener('mouseenter', show);
+      dot.addEventListener('focus', show);
+      dot.addEventListener('mouseleave', hide);
+      dot.addEventListener('blur', hide);
+    });
+  });
+})();
+</script>
 {% endblock %}

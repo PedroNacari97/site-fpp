@@ -54,6 +54,19 @@
                 {% if artigos_featured.modulo %}
                 <span class="news-pill news-pill--muted">{{ artigos_featured.modulo.titulo }}</span>
                 {% endif %}
+                {% if not portal_user_is_authenticated %}
+                    {% if artigos_featured.pk == artigo_livre_id %}
+                    <span class="news-pill news-pill--livre" title="Artigo liberado para leitura sem login">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
+                        Livre para leitura
+                    </span>
+                    {% else %}
+                    <span class="news-pill news-pill--locked" title="Fa&ccedil;a login ou crie uma conta gr&aacute;tis para ler">
+                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="7.5" width="9" height="6" rx="1.2"/><path d="M5.5 7.5V5.2a2.5 2.5 0 015 0V7.5"/></svg>
+                        Login necess&aacute;rio
+                    </span>
+                    {% endif %}
+                {% endif %}
                 <h2><a href="{{ artigos_featured.get_absolute_url }}">{{ artigos_featured.titulo }}</a></h2>
                 <p>{{ artigos_featured.resumo }}</p>
                 <div class="news-meta">
@@ -78,6 +91,19 @@
                 {% endif %}
                 <div class="news-card__body">
                     <span class="news-pill news-pill--artigo">Artigo</span>
+                    {% if not portal_user_is_authenticated %}
+                        {% if artigo.pk == artigo_livre_id %}
+                        <span class="news-pill news-pill--livre" title="Artigo liberado para leitura sem login">
+                            <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5"/></svg>
+                            Livre
+                        </span>
+                        {% else %}
+                        <span class="news-pill news-pill--locked" title="Fa&ccedil;a login ou crie uma conta gr&aacute;tis para ler">
+                            <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="7.5" width="9" height="6" rx="1.2"/><path d="M5.5 7.5V5.2a2.5 2.5 0 015 0V7.5"/></svg>
+                            Login
+                        </span>
+                        {% endif %}
+                    {% endif %}
                     <h3><a href="{{ artigo.get_absolute_url }}">{{ artigo.titulo }}</a></h3>
                     <p>{{ artigo.resumo|truncatechars:88 }}</p>
                     <div class="news-meta">

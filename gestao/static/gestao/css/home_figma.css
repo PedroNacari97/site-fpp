@@ -378,3 +378,98 @@
     font-size: 28px;
   }
 }
+
+/* ───────── Linhas compactas (Alertas / Embarques / Movs) ───────── */
+.home-ops__count-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  margin-left: 6px;
+  border-radius: 999px;
+  background: var(--home-border);
+  color: var(--home-text-soft);
+  font-size: 11px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.home-ops__section-title {
+  font-size: 16px;
+  line-height: 22px;
+}
+
+.home-ops__row--compact,
+.home-ops__alert.home-ops__row--compact,
+.home-ops__boarding.home-ops__row--compact,
+.home-ops__movement.home-ops__row--compact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.home-ops__alert.home-ops__row--compact {
+  padding-left: 16px;
+}
+
+.home-ops__row-title {
+  font-weight: 600;
+  color: var(--home-text);
+  font-size: 13px;
+}
+
+.home-ops__row-sub {
+  font-size: 12px;
+  color: var(--home-text-muted);
+  line-height: 16px;
+}
+
+.home-ops__list--dense {
+  gap: 4px;
+}
+
+.home-ops__list--dense .home-ops__row--compact {
+  border-radius: 8px;
+}
+
+/* Detalhes colapsável de movimentações */
+.home-ops__movements-wrap {
+  background: var(--home-surface);
+  border: 1px solid var(--home-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.home-ops__movements-toggle {
+  list-style: none;
+  cursor: pointer;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--home-text-soft);
+}
+
+.home-ops__movements-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.home-ops__movements-wrap[open] .home-ops__movements-toggle {
+  border-bottom: 1px solid var(--home-border);
+}
+
+.home-ops__movements-wrap[open] .admin-dashboard__filters-caret {
+  transform: rotate(180deg);
+}
+
+.home-ops__movements-wrap > .home-ops__list {
+  padding: 10px 12px;
+}

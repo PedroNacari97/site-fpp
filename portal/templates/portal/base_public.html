@@ -189,6 +189,47 @@
     </div>
 
     <script defer src="{% static 'portal/js/portal.js' %}"></script>
+    <script>
+    (function(){
+        function isHScrollable(el){
+            if (!el || el.nodeType !== 1) return false;
+            var s = getComputedStyle(el);
+            var ox = s.overflowX;
+            return (ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 1;
+        }
+        function inHScrollAncestor(target){
+            var el = target;
+            while (el && el !== document.body && el !== document.documentElement) {
+                if (isHScrollable(el)) return true;
+                el = el.parentElement;
+            }
+            return false;
+        }
+        window.addEventListener('wheel', function(e){
+            if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+            if (inHScrollAncestor(e.target)) return;
+            if (e.cancelable) e.preventDefault();
+        }, { passive: false, capture: true });
+        var touchStartX = 0;
+        var touchStartY = 0;
+        var touchInScroll = false;
+        window.addEventListener('touchstart', function(e){
+            if (!e.touches || !e.touches.length) return;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            touchInScroll = inHScrollAncestor(e.target);
+        }, { passive: true, capture: true });
+        window.addEventListener('touchmove', function(e){
+            if (touchInScroll) return;
+            if (!e.touches || !e.touches.length) return;
+            var dx = e.touches[0].clientX - touchStartX;
+            var dy = e.touches[0].clientY - touchStartY;
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 6) {
+                if (e.cancelable) e.preventDefault();
+            }
+        }, { passive: false, capture: true });
+    })();
+    </script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

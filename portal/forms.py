@@ -173,7 +173,7 @@ class PlataformaQuickLeadForm(forms.Form):
     def clean_telefone(self):
         return _format_br_phone(self.cleaned_data.get("telefone", ""))
 
-    def save(self, *, consent_version="", ip="", user_agent="", source_environment="local", source_host=""):
+    def save(self, *, consent_version="", ip="", user_agent="", url_origem="", source_environment="local", source_host=""):
         return LeadPlataforma.objects.create(
             nome_completo=self.cleaned_data["nome"],
             empresa="",
@@ -186,6 +186,7 @@ class PlataformaQuickLeadForm(forms.Form):
             aceito_em=timezone.now(),
             aceito_ip=ip,
             aceito_user_agent=user_agent[:255],
+            aceito_url_origem=(url_origem or "")[:500],
             source_environment=(source_environment or "local")[:20],
             source_host=(source_host or "")[:120],
             status=LeadPlataforma.STATUS_CHOICES[0][0],
@@ -253,6 +254,7 @@ class AlertEmailLeadForm(forms.Form):
         consent_version="",
         ip="",
         user_agent="",
+        url_origem="",
         source_environment="local",
         source_host="",
         source_page=LeadAlertaEmail.ORIGEM_ALERTAS,
@@ -267,6 +269,7 @@ class AlertEmailLeadForm(forms.Form):
                 "aceito_em": timezone.now(),
                 "aceito_ip": ip,
                 "aceito_user_agent": (user_agent or "")[:255],
+                "aceito_url_origem": (url_origem or "")[:500],
                 "source_environment": (source_environment or "local")[:20],
                 "source_host": (source_host or "")[:120],
                 "status": LeadAlertaEmail.STATUS_ATIVO,

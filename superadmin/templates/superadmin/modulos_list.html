@@ -40,7 +40,10 @@
                     {% else %}<span class="badge badge-gray">Inativo</span>{% endif %}
                 </td>
                 <td class="px-4 py-3 text-right">
-                    <a href="{% url 'superadmin_modulo_edit' pk=modulo.pk %}" class="btn btn-secondary text-xs">Editar</a>
+                    <div class="inline-flex gap-2">
+                        <a href="{% url 'superadmin_modulo_edit' pk=modulo.pk %}" class="btn btn-secondary text-xs">Editar</a>
+                        <a href="{% url 'superadmin_modulo_delete' pk=modulo.pk %}" class="btn btn-danger text-xs">Excluir</a>
+                    </div>
                 </td>
             </tr>
             {% empty %}

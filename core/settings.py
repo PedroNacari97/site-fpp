@@ -129,6 +129,10 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    # Tracking de visitantes anonimos do portal (cookie `pu_uid`).
+    # Depende de CommonMiddleware para `request.build_absolute_uri` e precisa
+    # rodar antes dos middlewares que podem retornar early (auth/paywall).
+    "portal.middleware.PreUserTrackingMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "allauth.account.middleware.AccountMiddleware",  # obrigatorio django-allauth >= 0.56

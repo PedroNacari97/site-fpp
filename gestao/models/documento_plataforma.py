@@ -59,6 +59,12 @@ class AceiteDocumentoPlataforma(models.Model):
     aceito_em = models.DateTimeField(auto_now_add=True)
     ip_aceite = models.CharField(max_length=45, blank=True)
     user_agent_aceite = models.CharField(max_length=255, blank=True)
+    url_origem = models.CharField(
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="URL absoluta onde o aceite foi registrado (evidencia forense LGPD)",
+    )
     device_type = models.CharField(max_length=20, blank=True)
     browser_name = models.CharField(max_length=60, blank=True)
     browser_version = models.CharField(max_length=60, blank=True)

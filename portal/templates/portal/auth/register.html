@@ -63,20 +63,23 @@
                        minlength="8" placeholder="Repita a senha">
             </label>
 
+            <p class="portal-auth-consent__links">
+                <a href="{{ portal_terms_url }}" target="_blank" rel="noopener">Termos de Uso</a>
+                &middot;
+                <a href="{{ portal_privacy_url }}" target="_blank" rel="noopener">Politica de Privacidade</a>
+            </p>
+
             <label class="portal-auth-consent">
-                <input type="checkbox" name="aceite_termos" required>
+                <input type="checkbox" name="aceite_termos" id="id_aceite_termos" required>
                 <span>
                     Li e aceito os
                     <a href="{{ portal_terms_url }}" target="_blank" rel="noopener">Termos de Uso</a>
                     e a
-                    <a href="{{ portal_privacy_url }}" target="_blank" rel="noopener">Politica de Privacidade</a>
-                    (versao {{ portal_terms_version }}). Autorizo o NC Fly a me enviar
-                    <strong>alertas de passagens</strong> e <strong>notificacoes de novos artigos</strong>.
-                    Posso cancelar cada canal separadamente a qualquer momento.
+                    <a href="{{ portal_privacy_url }}" target="_blank" rel="noopener">Politica de Privacidade</a>.
                 </span>
             </label>
 
-            <button type="submit" class="portal-auth-submit">Criar conta</button>
+            <button type="submit" class="portal-auth-submit" id="portal-auth-submit" disabled>Criar conta</button>
         </form>
 
         <footer class="portal-auth-card__footer">
@@ -84,4 +87,14 @@
         </footer>
     </div>
 </section>
+<script>
+(function(){
+    var cb = document.getElementById('id_aceite_termos');
+    var btn = document.getElementById('portal-auth-submit');
+    if (!cb || !btn) { return; }
+    function sync(){ btn.disabled = !cb.checked; }
+    cb.addEventListener('change', sync);
+    sync();
+})();
+</script>
 {% endblock %}

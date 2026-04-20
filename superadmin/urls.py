@@ -24,11 +24,13 @@ urlpatterns = [
     path("artigos/<int:pk>/excluir/", views.ArtigoDeleteView.as_view(), name="superadmin_artigo_delete"),
     path("artigos/<int:pk>/review-ia/", views.ArtigoReviewIAView.as_view(), name="superadmin_artigo_review_ia"),
     path("artigos/<int:pk>/buscar-videos/", views.ArtigoBuscarVideosView.as_view(), name="superadmin_artigo_buscar_videos"),
+    path("artigos/<int:pk>/adicionar-video-url/", views.ArtigoAdicionarVideoUrlView.as_view(), name="superadmin_artigo_adicionar_video_url"),
 
     # Modulos de Estudo
     path("artigos/modulos/", views.ModulosListView.as_view(), name="superadmin_modulos_list"),
     path("artigos/modulos/novo/", views.ModuloCreateView.as_view(), name="superadmin_modulo_create"),
     path("artigos/modulos/<int:pk>/editar/", views.ModuloEditView.as_view(), name="superadmin_modulo_edit"),
+    path("artigos/modulos/<int:pk>/excluir/", views.ModuloDeleteView.as_view(), name="superadmin_modulo_delete"),
 
     # Empresas
     path("empresas/", views.EmpresasListView.as_view(), name="superadmin_empresas_list"),

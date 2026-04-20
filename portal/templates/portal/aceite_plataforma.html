@@ -66,16 +66,25 @@
             <div class="portal-static-page__card">
                 <label class="portal-cookie-option">
                     <span>
-                        <strong>Confirmacao obrigatoria</strong>
-                        <small>Li e aceito os documentos vigentes da plataforma em nome da empresa vinculada ao meu acesso.</small>
+                        <strong>Li e aceito os documentos listados acima.</strong>
                     </span>
-                    <input type="checkbox" name="platform_accept" value="1">
+                    <input type="checkbox" name="platform_accept" id="platform_accept" value="1">
                 </label>
             </div>
             <div class="portal-static-page__cta-row" style="margin-top: 24px;">
-                <button type="submit" class="portal-button portal-button--primary">Confirmar aceite e continuar</button>
+                <button type="submit" class="portal-button portal-button--primary" id="platform_accept_submit" disabled>Confirmar aceite e continuar</button>
             </div>
         </form>
+        <script>
+        (function(){
+            var cb = document.getElementById('platform_accept');
+            var btn = document.getElementById('platform_accept_submit');
+            if (!cb || !btn) { return; }
+            function sync(){ btn.disabled = !cb.checked; }
+            cb.addEventListener('change', sync);
+            sync();
+        })();
+        </script>
     </section>
 </div>
 {% endblock %}

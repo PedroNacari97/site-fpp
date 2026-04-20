@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 CONFIG = {
-    "model": os.environ.get("OPENAI_NEWS_MODEL", "gpt-4.1"),
+    "model": os.environ.get("OPENAI_NEWS_MODEL", "gpt-5.4"),
     "max_tokens": 8192,
     "temperature": 0.2,
 }
@@ -60,18 +60,39 @@ Receba um artigo educacional (titulo + conteudo HTML) e faca uma revisao complet
 
 ## CRITERIOS DE REVISAO
 
-### Conteudo — piramide invertida obrigatoria
-- Primeiro paragrafo: GANCHO com o dado/ideia mais valiosa do artigo. O leitor chega com uma pergunta; a primeira frase responde. Nao comece com contexto historico, apresentacao da empresa ou introducao generica.
+### Conteudo — piramide invertida obrigatoria (HARD RULE)
+- PRIMEIRA FRASE do PRIMEIRO paragrafo = o dado MAIS IMPORTANTE do artigo (numero, regra, mudanca, prazo). Sem rodeio, sem apresentacao, sem contexto historico, sem "voce sabia que".
+- Se o artigo e sobre bonus de transferencia, a primeira frase diz quanto e ate quando. Se e sobre novo programa, diz o que mudou.
 - Paragrafos 2-6: contexto, regras, restricoes, publico elegivel, exemplo pratico.
-- Fechamento: proximos passos concretos. CTA sutil na ultima frase do ultimo <p>, nao um paragrafo separado.
+- Fechamento — CTA obrigatorio: o ultimo paragrafo SEMPRE convida o leitor a uma acao concreta. Escolha uma entre: (a) ler proximo artigo relacionado, (b) usar simulador/calculadora do NCfly, (c) criar alerta de passagem/milhas, (d) assinar newsletter. O CTA pode vir como frase final natural, nao precisa ser paragrafo isolado, mas precisa existir.
 
-### Tom e estilo — NCfly
+### Tom e estilo — NCfly (voz de marca)
+- Voz de marca: educacional sem ser didatico chato. Assume que o leitor e inteligente mas talvez nao conheca o tema. Explica uma vez, segue em frente.
+- Portugues BR sempre. SEM anglicismos desnecessarios. Use:
+  - "milhas" (nao "miles")
+  - "programa de fidelidade" (nao "loyalty program")
+  - "pontos" (nao "points")
+  - "transferencia bonificada" (nao "transfer bonus")
+  - "cashback" e "upgrade" OK (ja incorporados ao portugues); "black friday", "check-in", "voucher" OK.
 - Voz ativa: "a Latam Pass aceita transferencias" — nunca "transferencias sao aceitas pela Latam Pass".
 - Paragrafos curtos (3-5 frases). Frases diretas.
 - Conceitos tecnicos explicados na primeira mencao. Sigla com nome por extenso ao aparecer pela primeira vez.
-- Minimo 800 palavras no conteudo revisado (nao contar tags HTML).
+- Minimo 800 palavras e MAXIMO 2000 palavras no conteudo_revisado (nao contar tags HTML). Ultrapassar 2000 e erro — corte exemplos redundantes.
 - Negrito com parcimonia: no maximo 3 <strong> por secao <h2>, apenas em termo-chave.
-- Banidos: superlativo vazio ("o melhor", "incrivel", "imperdivel", "revolucionario"), jargao corporativo ("no ambito de", "tendo em vista que", "cabe ressaltar"), verbos formais desnecessarios ("realizar", "utilizar", "efetuar", "adquirir").
+- Banidos — superlativo vazio ("o melhor", "incrivel", "imperdivel", "revolucionario"), jargao corporativo ("no ambito de", "tendo em vista que", "cabe ressaltar"), verbos formais desnecessarios ("realizar", "utilizar", "efetuar", "adquirir").
+
+### Frases PROIBIDAS (nunca use, reescreva sempre)
+Se alguma destas aparecer no texto revisado, reescreva. Lista nao exaustiva:
+1. "E importante ressaltar que..."
+2. "Vale lembrar que..."
+3. "Como ja dito..." / "Como mencionado anteriormente..."
+4. "Nos dias de hoje..." / "Atualmente..."
+5. "No mundo globalizado de hoje..."
+6. "E fundamental entender que..."
+7. "Nao podemos deixar de mencionar..."
+8. "Cabe ressaltar que..."
+9. "Em suma..." / "Em conclusao..."
+10. "Espero que este artigo..."
 
 ### Anti-alucinacao — regra absoluta
 - NUNCA invente dados numericos (taxas, percentuais, prazos, valores, regras de programa) que nao estejam no conteudo original.
@@ -93,6 +114,27 @@ Receba um artigo educacional (titulo + conteudo HTML) e faca uma revisao complet
 - **youtube_search_terms**: 3-5 termos para buscar videos relacionados (usado para enriquecer a pagina com video embedado).
 - **resumo**: 2-3 frases para exibicao em cards (max 280 chars). Diferente do primeiro paragrafo do conteudo.
 - Densidade de keyword principal: 2-4 mencoes naturais no corpo — nunca forcar.
+
+---
+
+## EXEMPLO WORKED (input curto → output parcial)
+
+### INPUT
+TITULO: "Bonus Livelo Azul 2024"
+CONTEUDO (300 chars): "A Livelo anunciou um bonus de 100% em transferencias para o Azul Fidelidade ate 30 de junho. O bonus vale para clientes cadastrados no clube Livelo. Usuarios sem assinatura recebem apenas 70%. A campanha pode acabar antes se atingir o limite de participantes."
+
+### OUTPUT PARCIAL ESPERADO
+{
+  "titulo_revisado": "Livelo oferece 100% de bonus em transferencias para o Azul Fidelidade ate 30 de junho",
+  "resumo": "Clientes do clube Livelo dobram os pontos ao transferir para o Azul Fidelidade; sem assinatura, o bonus cai para 70%.",
+  "conteudo_revisado": "<p>A Livelo liberou <strong>100% de bonus</strong> em transferencias para o Azul Fidelidade ate <strong>30 de junho</strong> — condicao restrita a quem tem assinatura ativa do clube Livelo.</p><p>Clientes sem assinatura tambem entram na promocao, mas com bonus reduzido para 70%. A campanha pode ser encerrada antes do prazo caso atinja o limite de participantes definido pela Livelo...</p><h2>Quem tem direito ao bonus de 100%</h2>...<p>Vale comparar o custo-beneficio com outras transferencias antes de decidir — use o <a href='/simulador'>simulador de milhas do NCfly</a> para ver quanto suas milhas rendem em cada programa.</p>",
+  "seo_title": "Livelo 100% bonus Azul Fidelidade: prazo e regras ate 30/06",
+  "meta_description": "Clube Livelo dobra pontos em transferencia para o Azul Fidelidade ate 30 de junho. Veja quem tem direito e se vale a pena transferir agora",
+  "keywords": ["bonus livelo azul", "transferencia livelo azul fidelidade", "promocao livelo 100 porcento", "clube livelo vale a pena", "quando transferir livelo"],
+  ...
+}
+
+Note: primeira frase = dado mais importante (100% + prazo). CTA final = simulador NCfly. Sem frases banidas. Tom direto.
 
 ---
 

@@ -872,7 +872,10 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
     fees = total_of(filtered_emissoes, "valor_taxas")
     emissions_count = len(filtered_emissoes)
     avg_mile_price = ((total_of(filtered_emissoes, "custo_total") / miles) if miles else 0)
-    savings_delivered = total_of(filtered_emissoes, "economia_obtida")
+    savings_delivered = float(sum(
+        Decimal(max(float(item.economia_obtida or 0), 0))
+        for item in filtered_emissoes
+    ))
     avg_ticket = revenue / emissions_count if emissions_count else 0
     avg_profit_per_ticket = profit / emissions_count if emissions_count else 0
     net_margin_pct = (profit / revenue * 100) if revenue else 0
@@ -925,7 +928,12 @@ def _build_management_dashboard(emissoes_qs, request, *, empresa=None):
             x_pos = 50 if total_points == 1 else round((index / (total_points - 1)) * 100, 2)
             value = item[series_key]
             y_pos = round(92 - ((value / chart_max) * 78), 2) if value else 92
-            markers.append({"x": x_pos, "y": y_pos, "label": item["label"]})
+            markers.append({
+                "x": x_pos,
+                "y": y_pos,
+                "label": item["label"],
+                "valor": _format_money(value),
+            })
             points.append(f"{x_pos},{y_pos}")
         return {"points": " ".join(points), "markers": markers}
 

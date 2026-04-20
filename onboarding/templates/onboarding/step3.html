@@ -66,7 +66,7 @@
 
     <div class="onboarding-form__actions">
       <a href="{% url 'onboarding_step2' %}" class="onboarding-btn onboarding-btn--ghost">Voltar</a>
-      <button type="submit" class="onboarding-btn onboarding-btn--primary">Aceitar e continuar</button>
+      <button type="submit" class="onboarding-btn onboarding-btn--primary" id="step3-submit" disabled>Aceitar e continuar</button>
     </div>
   </form>
 {% endblock %}
@@ -104,6 +104,22 @@
   // Timezone & screen
   try { document.getElementById('id_device_timezone').value = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e){}
   document.getElementById('id_screen_resolution').value = screen.width + 'x' + screen.height;
+
+  // Gate do botao: so habilita com os 3 checkboxes marcados
+  var form = document.getElementById('step3-form');
+  var btn = document.getElementById('step3-submit');
+  if (form && btn) {
+    var boxes = [
+      document.getElementById('id_aceite_termos'),
+      document.getElementById('id_aceite_privacidade'),
+      document.getElementById('id_aceite_dpa')
+    ].filter(Boolean);
+    function syncStep3(){
+      btn.disabled = !boxes.every(function(b){ return b.checked; });
+    }
+    boxes.forEach(function(b){ b.addEventListener('change', syncStep3); });
+    syncStep3();
+  }
 })();
 </script>
 {% endblock %}

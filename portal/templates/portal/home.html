@@ -5,18 +5,21 @@
 <div class="news-home-frame">
     <section class="news-home-shell">
         {% if not is_searching %}
-        <section class="news-home-hero">
+        <section class="news-home-hero news-home-hero--slim">
             <div class="news-home-hero__copy">
-                <h1>Encontre passagens com milhas antes que a rota feche</h1>
-                <p>Monitoramos alertas de rotas, programas de milhas e janelas de emiss&atilde;o para voc&ecirc; viajar mais gastando menos.</p>
+                <h1>Alertas de passagens, not&iacute;cias e guias de milhas num s&oacute; lugar</h1>
                 <div class="news-home-hero__actions">
-                    <a href="{% url 'portal_alertas' %}" class="portal-button portal-button--primary"
+                    <a href="{% url 'portal_alertas' %}" class="portal-button portal-button--sm news-home-hero__cta"
                         data-analytics-event="click_hero_alertas" data-analytics-category="conversion" data-analytics-section="home_hero">
-                        Ver alertas de passagens
+                        Ver alertas
                     </a>
-                    <a href="{% url 'portal_plataforma_saas' %}" class="portal-button portal-button--ghost"
+                    <a href="{% url 'portal_artigos' %}" class="portal-button portal-button--sm news-home-hero__cta"
+                        data-analytics-event="click_hero_artigos" data-analytics-category="conversion" data-analytics-section="home_hero">
+                        Aprender sobre milhas
+                    </a>
+                    <a href="{% url 'portal_plataforma_saas' %}" class="portal-button portal-button--sm news-home-hero__cta"
                         data-analytics-event="click_hero_plataforma" data-analytics-category="conversion" data-analytics-section="home_hero">
-                        Sou ag&ecirc;ncia de viagens
+                        Sou ag&ecirc;ncia
                     </a>
                 </div>
             </div>
@@ -50,8 +53,24 @@
                     <h2>O que voc&ecirc; encontra aqui</h2>
                 </div>
             </header>
-            <div class="scroll-hint-wrap">
-            <div class="portal-home-pillars__track">
+            <div class="scroll-hint-wrap" data-pillars-scroll>
+            <button
+                type="button"
+                class="portal-home-pillars__nav portal-home-pillars__nav--prev"
+                aria-label="Ver cat&eacute;gorias anteriores"
+                data-pillars-nav="prev"
+            >
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            </button>
+            <button
+                type="button"
+                class="portal-home-pillars__nav portal-home-pillars__nav--next"
+                aria-label="Ver mais cat&eacute;gorias"
+                data-pillars-nav="next"
+            >
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+            </button>
+            <div class="portal-home-pillars__track" data-pillars-track>
                 <a href="{% url 'portal_alertas' %}" class="news-category-card portal-home-pillar-card"
                     data-analytics-event="click_pillar" data-analytics-category="navigation"
                     data-analytics-label="Alertas" data-analytics-section="home_pillars">
@@ -63,6 +82,30 @@
                     </div>
                     <p class="news-category-card__desc">Monitoramos rotas e programas de fidelidade. Quando aparece uma janela para emitir com milhas, voc&ecirc; sabe antes que ela feche.</p>
                     <span class="news-category-card__cta">Ver alertas <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a href="{% url 'portal_artigos' %}" class="news-category-card portal-home-pillar-card"
+                    data-analytics-event="click_pillar" data-analytics-category="navigation"
+                    data-analytics-label="Artigos" data-analytics-section="home_pillars">
+                    <div class="portal-home-pillar-card__header">
+                        <div class="news-category-card__icon news-category-card--artigos">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                        </div>
+                        <strong>Artigos &amp; Guias</strong>
+                    </div>
+                    <p class="news-category-card__desc">Guias aprofundados, tutoriais e an&aacute;lises para voc&ecirc; dominar milhas, cart&otilde;es e viagens com estrat&eacute;gia.</p>
+                    <span class="news-category-card__cta">Ler guias <span aria-hidden="true">&rarr;</span></span>
+                </a>
+                <a href="{% url 'portal_noticias_todas' %}" class="news-category-card portal-home-pillar-card"
+                    data-analytics-event="click_pillar" data-analytics-category="navigation"
+                    data-analytics-label="Notícias" data-analytics-section="home_pillars">
+                    <div class="portal-home-pillar-card__header">
+                        <div class="news-category-card__icon news-category-card--blue">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 10h16M4 14h10M4 18h8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                        </div>
+                        <strong>Not&iacute;cias</strong>
+                    </div>
+                    <p class="news-category-card__desc">An&aacute;lises, estrat&eacute;gias e o que est&aacute; mudando no mundo das milhas, cart&otilde;es e hospedagem. Direto ao ponto.</p>
+                    <span class="news-category-card__cta">Ver not&iacute;cias <span aria-hidden="true">&rarr;</span></span>
                 </a>
                 <a href="{% url 'portal_categoria' 'milhas-e-pontos' %}" class="news-category-card portal-home-pillar-card"
                     data-analytics-event="click_pillar" data-analytics-category="navigation"
@@ -124,36 +167,36 @@
                     <p class="news-category-card__desc">Destinos, roteiros, dicas de viagem e tudo que voc&ecirc; precisa saber para planejar sua pr&oacute;xima aventura.</p>
                     <span class="news-category-card__cta">Explorar <span aria-hidden="true">&rarr;</span></span>
                 </a>
-                <a href="{% url 'portal_noticias_todas' %}" class="news-category-card portal-home-pillar-card"
-                    data-analytics-event="click_pillar" data-analytics-category="navigation"
-                    data-analytics-label="Notícias" data-analytics-section="home_pillars">
-                    <div class="portal-home-pillar-card__header">
-                        <div class="news-category-card__icon news-category-card--blue">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 10h16M4 14h10M4 18h8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
-                        </div>
-                        <strong>Not&iacute;cias</strong>
-                    </div>
-                    <p class="news-category-card__desc">An&aacute;lises, estrat&eacute;gias e o que est&aacute; mudando no mundo das milhas, cart&otilde;es e hospedagem. Direto ao ponto.</p>
-                    <span class="news-category-card__cta">Ver not&iacute;cias <span aria-hidden="true">&rarr;</span></span>
-                </a>
-                {% comment %}Card de Artigos oculto temporariamente (reativar quando tivermos conteudo)
-                <a href="{% url 'portal_artigos' %}" class="news-category-card portal-home-pillar-card"
-                    data-analytics-event="click_pillar" data-analytics-category="navigation"
-                    data-analytics-label="Artigos" data-analytics-section="home_pillars">
-                    <div class="portal-home-pillar-card__header">
-                        <div class="news-category-card__icon news-category-card--artigos">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
-                        </div>
-                        <strong>Artigos &amp; Guias</strong>
-                    </div>
-                    <p class="news-category-card__desc">Guias aprofundados, tutoriais e an&aacute;lises para voc&ecirc; dominar milhas, cart&otilde;es e viagens com estrat&eacute;gia.</p>
-                    <span class="news-category-card__cta">Ler guias <span aria-hidden="true">&rarr;</span></span>
-                </a>
-                {% endcomment %}
             </div>
             </div>
             <p class="portal-home-pillars__scroll-hint" aria-hidden="true">Deslize para ver mais &rarr;</p>
         </section>
+        <script>
+        (function(){
+            var wrap = document.querySelector('[data-pillars-scroll]');
+            if (!wrap) return;
+            var track = wrap.querySelector('[data-pillars-track]');
+            var btnPrev = wrap.querySelector('[data-pillars-nav="prev"]');
+            var btnNext = wrap.querySelector('[data-pillars-nav="next"]');
+            if (!track || !btnPrev || !btnNext) return;
+            function step(dir){
+                var card = track.querySelector('.portal-home-pillar-card');
+                var w = card ? card.getBoundingClientRect().width + 16 : 200;
+                track.scrollBy({ left: dir * w * 2, behavior: 'smooth' });
+            }
+            function update(){
+                var max = track.scrollWidth - track.clientWidth - 2;
+                wrap.classList.toggle('is-start', track.scrollLeft <= 2);
+                wrap.classList.toggle('is-end', track.scrollLeft >= max);
+                wrap.classList.toggle('is-scrollable', track.scrollWidth > track.clientWidth + 4);
+            }
+            btnPrev.addEventListener('click', function(){ step(-1); });
+            btnNext.addEventListener('click', function(){ step(1); });
+            track.addEventListener('scroll', update, { passive: true });
+            window.addEventListener('resize', update);
+            update();
+        })();
+        </script>
         {% endif %}
 
         {% if alertas_home and not is_searching %}
@@ -497,9 +540,7 @@
             </div>
         </section>
 
-        {# ================================================================
-           Modulos de estudo — 1 amostra aberta + demais com gating por login
-           ================================================================ #}
+        {% comment %}Modulos de estudo — 1 amostra aberta + demais com gating por login{% endcomment %}
         {% if modulo_amostra or modulos_bloqueados or modulos_liberados %}
         <section class="portal-modulos-gated" aria-labelledby="modulos-title">
             <header class="portal-modulos-gated__header">
@@ -533,7 +574,7 @@
             {% endif %}
 
             {% if modulos_bloqueados %}
-            <div class="portal-modulos-gated__grid" style="margin-top: 20px;">
+            <div class="portal-modulos-gated__grid" style="margin-top: 10px;">
                 {% for modulo in modulos_bloqueados %}
                 <div class="portal-modulo-locked" aria-label="M&oacute;dulo bloqueado — requer login">
                     <div class="portal-modulo-locked__content" aria-hidden="true">
@@ -557,7 +598,7 @@
             {% endif %}
 
             {% if modulos_liberados %}
-            <div class="portal-modulos-gated__grid" style="margin-top: 20px;">
+            <div class="portal-modulos-gated__grid" style="margin-top: 10px;">
                 {% for modulo in modulos_liberados %}
                 <a href="{{ modulo.get_absolute_url }}" class="portal-modulo-amostra" style="text-decoration:none; --modulo-cor: {{ modulo.cor|default:'#2563eb' }};">
                     <h3 class="portal-modulo-amostra__title">{{ modulo.titulo }}</h3>

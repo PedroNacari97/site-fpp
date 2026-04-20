@@ -48,7 +48,7 @@ COMPANHIAS_HABILITADAS = (
     {
         "codigo": CompanhiaAerea.CODIGO_LATAM,
         "rotulo": "LATAM",
-        "label_localizador": "Nº da Ordem (ex.: LA9574062IWSR ou PNR de 6 dígitos)",
+        "label_localizador": "Nº da Ordem (ex.: LA1234567IWSR)",
     },
 )
 
@@ -244,13 +244,19 @@ def _cia_config(codigo: str) -> dict | None:
 
 
 def _site_url_da_cia(codigo: str) -> str:
+    cache_key = f"telegram_status_voo:site_url:{codigo}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
     cia = (
         CompanhiaAerea.objects.filter(codigo=codigo)
         .exclude(site_url__isnull=True)
         .exclude(site_url="")
         .first()
     )
-    return getattr(cia, "site_url", "") or ""
+    url = getattr(cia, "site_url", "") or ""
+    cache.set(cache_key, url, timeout=300)
+    return url
 
 
 # ---------------------------------------------------------------------------

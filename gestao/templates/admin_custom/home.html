@@ -35,6 +35,19 @@
       {% endfor %}
     </section>
 
+    {# ───────── Filtros (logo abaixo do acesso rápido) ───────── #}
+    <details class="admin-dashboard__filters-wrap">
+      <summary class="admin-dashboard__filters-toggle" aria-label="Filtrar período e operação">
+        <span>Filtrar período, cliente, programa…</span>
+        <span class="admin-dashboard__filters-caret" aria-hidden="true">
+          <svg viewBox="0 0 16 16" width="12" height="12"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+        </span>
+      </summary>
+      <div class="home-ops__filters">
+        {% include "admin_custom/partials/home_management_filters.html" %}
+      </div>
+    </details>
+
     {# ───────── 2. Hero (lucro do período) + 4 KPIs secundários clicáveis ───────── #}
     {% if home_hero %}
     <section class="admin-dashboard__hero" aria-label="Resumo do período">
@@ -57,7 +70,7 @@
     {% endif %}
 
     {% if home_operacao_kpis %}
-    <section class="admin-dashboard__hero" aria-label="Operação por modelo">
+    <section class="admin-dashboard__kpi-row" aria-label="Operação por modelo">
       <div class="admin-dashboard__hero-kpis admin-dashboard__hero-kpis--grid-4">
         {% for kpi in home_operacao_kpis %}
           <a href="{{ kpi.url }}" class="admin-dashboard__kpi admin-dashboard__kpi--compact admin-dashboard__kpi--{{ kpi.tone }}" aria-label="{{ kpi.label }}: {{ kpi.value }}. {{ kpi.hint }}">
@@ -71,7 +84,7 @@
     {% endif %}
 
     {% if home_clientes_kpis %}
-    <section class="admin-dashboard__hero" aria-label="Base de clientes">
+    <section class="admin-dashboard__kpi-row" aria-label="Base de clientes">
       <div class="admin-dashboard__hero-kpis admin-dashboard__hero-kpis--grid-2">
         {% for kpi in home_clientes_kpis %}
           <a href="{{ kpi.url }}" class="admin-dashboard__kpi admin-dashboard__kpi--{{ kpi.tone }}" aria-label="{{ kpi.label }}: {{ kpi.value }}. {{ kpi.hint }}">
@@ -84,84 +97,64 @@
     </section>
     {% endif %}
 
-    {# ───────── 3. Filtros (colapsados por padrão; abrem só quando preciso) ───────── #}
-    <details class="admin-dashboard__filters-wrap">
-      <summary class="admin-dashboard__filters-toggle" aria-label="Filtrar período e operação">
-        <span>Filtrar período, cliente, programa…</span>
-        <span class="admin-dashboard__filters-caret" aria-hidden="true">
-          <svg viewBox="0 0 16 16" width="12" height="12"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
-        </span>
-      </summary>
-      <div class="home-ops__filters">
-        {% include "admin_custom/partials/home_management_filters.html" %}
-      </div>
-    </details>
-
-    {# ───────── 4. Últimas movimentações + alertas (conteúdo contextual) ───────── #}
+    {# ───────── 4. Alertas + Próximos embarques em colunas ───────── #}
     <div class="home-ops__columns">
-      <section class="home-ops__stack" aria-label="Últimas movimentações">
-        <div class="admin-dashboard__section-header">
-          <h3 class="home-ops__section-title">Últimas movimentações</h3>
-          <a href="{% url 'admin_emissoes' %}" class="admin-dashboard__section-link">Ver todas &rarr;</a>
-        </div>
-        <div class="home-ops__list{% if home_latest_movements|length > 5 %} home-ops__list--scrollable{% endif %}">
-          {% for item in home_latest_movements %}
-            <article class="home-ops__movement">
-              <div class="home-ops__row-head">
-                <span class="home-ops__tag">{{ item.tipo }}</span>
-                <span class="home-ops__meta">{{ item.meta }}</span>
-              </div>
-              <div class="home-ops__row-body">{{ item.titulo }}</div>
-            </article>
-          {% empty %}
-            <div class="home-ops__movement home-ops__empty">Sem movimentações recentes.</div>
-          {% endfor %}
-        </div>
-      </section>
-
       <section class="home-ops__stack" aria-label="Alertas operacionais">
         <div class="admin-dashboard__section-header">
-          <h3 class="home-ops__section-title">Alertas</h3>
+          <h3 class="home-ops__section-title">Alertas <span class="home-ops__count-chip">{{ home_alerts|length }}</span></h3>
           <a href="{% url 'admin_notificacoes' %}" class="admin-dashboard__section-link">Ver todos &rarr;</a>
         </div>
         <div class="home-ops__list{% if home_alerts|length > 5 %} home-ops__list--scrollable{% endif %}">
           {% for item in home_alerts %}
-            <a href="{{ item.url|default:'#' }}" class="home-ops__alert home-ops__alert--{{ item.tone }}">
-              <div class="home-ops__row-head">
-                <span class="home-ops__alert-title"><i class="home-ops__alert-dot"></i>{{ item.titulo }}</span>
-                <span class="home-ops__meta"></span>
-              </div>
-              <div class="home-ops__row-body">{{ item.descricao }}</div>
+            <a href="{{ item.url|default:'#' }}" class="home-ops__alert home-ops__alert--{{ item.tone }} home-ops__row--compact">
+              <span class="home-ops__alert-title"><i class="home-ops__alert-dot"></i>{{ item.titulo }}</span>
+              <span class="home-ops__row-sub">{{ item.descricao }}</span>
             </a>
           {% empty %}
             <div class="home-ops__alert home-ops__empty">Sem alertas no momento.</div>
           {% endfor %}
         </div>
       </section>
+
+      <section class="home-ops__stack" aria-label="Próximos embarques">
+        <div class="admin-dashboard__section-header">
+          <h3 class="home-ops__section-title">Próximos embarques <span class="home-ops__count-chip">{{ home_upcoming_boardings|length }}</span></h3>
+          <a href="{% url 'admin_emissoes' %}" class="admin-dashboard__section-link">Ver agenda &rarr;</a>
+        </div>
+        {% if home_upcoming_boardings %}
+          <div class="home-ops__list{% if home_upcoming_boardings|length > 5 %} home-ops__list--scrollable{% endif %}">
+            {% for item in home_upcoming_boardings %}
+              <a href="{{ item.url|default:'#' }}" class="home-ops__boarding home-ops__row--compact">
+                <span class="home-ops__row-title">{{ item.cliente }} <span class="home-ops__meta">· {{ item.data }}</span></span>
+                <span class="home-ops__row-sub">{{ item.rota }} · {{ item.companhia }} · {{ item.localizador }}</span>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="home-ops__boarding home-ops__empty home-ops__empty--wide">Sem embarques próximos.</div>
+        {% endif %}
+      </section>
     </div>
 
-    {# ───────── 5. Próximos embarques ───────── #}
-    <section class="home-ops__embark-section" aria-label="Próximos embarques">
-      <div class="admin-dashboard__section-header">
-        <h3 class="home-ops__section-title">Próximos embarques</h3>
-        <a href="{% url 'admin_emissoes' %}" class="admin-dashboard__section-link">Ver agenda &rarr;</a>
+    {# ───────── 5. Movimentações recentes (histórico, colapsado por padrão) ───────── #}
+    <details class="home-ops__movements-wrap">
+      <summary class="home-ops__movements-toggle">
+        <span>Movimentações recentes <span class="home-ops__count-chip">{{ home_latest_movements|length }}</span></span>
+        <span class="admin-dashboard__filters-caret" aria-hidden="true">
+          <svg viewBox="0 0 16 16" width="12" height="12"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/></svg>
+        </span>
+      </summary>
+      <div class="home-ops__list home-ops__list--dense">
+        {% for item in home_latest_movements %}
+          <article class="home-ops__movement home-ops__row--compact">
+            <span class="home-ops__row-title"><span class="home-ops__tag">{{ item.tipo }}</span> {{ item.titulo }}</span>
+            <span class="home-ops__meta">{{ item.meta }}</span>
+          </article>
+        {% empty %}
+          <div class="home-ops__movement home-ops__empty">Sem movimentações recentes.</div>
+        {% endfor %}
       </div>
-      {% if home_upcoming_boardings %}
-        <div class="home-ops__list{% if home_upcoming_boardings|length > 5 %} home-ops__list--scrollable{% endif %}">
-          {% for item in home_upcoming_boardings %}
-            <a href="{{ item.url|default:'#' }}" class="home-ops__boarding">
-              <div class="home-ops__row-head">
-                <span class="home-ops__tag">{{ item.cliente }}</span>
-                <span class="home-ops__meta">{{ item.status }}</span>
-              </div>
-              <div class="home-ops__row-body">{{ item.rota }} &bull; {{ item.data }} &bull; {{ item.companhia }} &bull; {{ item.localizador }}</div>
-            </a>
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="home-ops__boarding home-ops__empty home-ops__empty--wide">Sem embarques próximos.</div>
-      {% endif %}
-    </section>
+    </details>
   </div>
 </div>
 {% endblock %}

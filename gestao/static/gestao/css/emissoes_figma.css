@@ -142,29 +142,30 @@
 }
 
 .emissions-page__stat-card {
-  padding: 14px 16px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   justify-content: center;
+  border-radius: 8px;
 }
 
 .emissions-page__stat-label {
   margin: 0;
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 9px;
+  line-height: 1.1;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #99a1af;
+  color: #64748b;
   font-weight: 600;
 }
 
 .emissions-page__stat-value {
   margin: 0;
-  font-size: 26px;
-  line-height: 1.1;
+  font-size: 24px;
+  line-height: 1.15;
   font-weight: 700;
-  color: #fff;
+  color: #334155;
 }
 
 .emissions-page__table-panel {

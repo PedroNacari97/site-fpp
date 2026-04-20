@@ -310,6 +310,7 @@
 }
 
 .miles-dashboard__line-chart {
+  position: relative;
   height: 180px;
   border-radius: 14px;
   border: 1px solid var(--dashboard-border);
@@ -340,12 +341,55 @@
   stroke-width: 2.6;
 }
 
+.miles-dashboard__line-dot {
+  cursor: pointer;
+  transition: r 0.12s ease, stroke-width 0.12s ease;
+}
+
+.miles-dashboard__line-dot:hover,
+.miles-dashboard__line-dot:focus {
+  r: 3.2;
+  stroke: #ffffff;
+  stroke-width: 1.2;
+  outline: none;
+}
+
 .miles-dashboard__line-dot--receita {
   fill: var(--dashboard-blue);
 }
 
 .miles-dashboard__line-dot--lucro {
   fill: var(--dashboard-cyan);
+}
+
+.miles-dashboard__line-tooltip {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 10px));
+  background: #0f1b2d;
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 6px 14px rgba(15, 27, 45, 0.18);
+  z-index: 5;
+}
+
+.miles-dashboard__line-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  transform: translateX(-50%);
+  border-width: 5px 5px 0 5px;
+  border-style: solid;
+  border-color: #0f1b2d transparent transparent transparent;
+}
+
+.miles-dashboard__line-tooltip[hidden] {
+  display: none;
 }
 
 .miles-dashboard__line-labels {

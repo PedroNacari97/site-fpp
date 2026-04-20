@@ -3,7 +3,6 @@
     <div class="portal-alert-signup__hero">
         <div class="portal-alert-signup__content">
             <div class="portal-alert-signup__copy">
-                <span class="news-kicker">Alertas por e-mail</span>
                 <h2>
                     <span class="portal-alert-signup__title-full">{{ alert_email_lead_title|default:"Rotas fecham sem aviso receba o alerta primeiro" }}</span>
                     <span class="portal-alert-signup__title-mobile">
@@ -18,11 +17,6 @@
                 </h2>
                 {% if not alert_email_lead_compact_copy %}
                 <p>Promoções surgem e somem em horas. Cadastre seu e-mail e receba no momento certo.</p>
-                <ul class="portal-alert-signup__list">
-                    <li>Cadastro r&aacute;pido com nome, e-mail e telefone.</li>
-                    <li>Termo espec&iacute;fico para alertas, separado do interesse na plataforma.</li>
-                    <li>Sem criar conta ou acesso automaticamente.</li>
-                </ul>
                 {% endif %}
             </div>
 
@@ -164,11 +158,6 @@
                 <span class="portal-alert-signup__success-badge">Cadastro confirmado</span>
                 <h2>Seu contato entrou na lista.</h2>
                 <p>Quando novos alertas fizerem sentido para a vitrine p&uacute;blica, a NC Fly poder&aacute; usar esse cadastro para avisar voc&ecirc; por e-mail nas pr&oacute;ximas janelas autom&aacute;ticas de envio.</p>
-                <ul class="portal-alert-signup__list portal-alert-signup__list--success">
-                    <li>O termo de alertas &eacute; independente do interesse na plataforma.</li>
-                    <li>Voc&ecirc; pode atualizar esse cadastro enviando o formul&aacute;rio novamente.</li>
-                    <li>O cancelamento pode ser solicitado pelos canais informados pela NC Fly.</li>
-                </ul>
             </div>
             {% else %}
             <span class="news-kicker">Receber alertas</span>
@@ -183,7 +172,7 @@
             </div>
             {% endif %}
 
-            <form method="post" class="portal-lead-form portal-lead-form--compact" novalidate>
+            <form method="post" class="portal-lead-form portal-lead-form--compact">
                 {% csrf_token %}
                 <input type="hidden" name="form_kind" value="alert_email_lead">
 

@@ -95,6 +95,14 @@
   align-items: stretch;
 }
 
+.admin-dashboard__kpi-row {
+  display: block;
+}
+
+.admin-dashboard__kpi-row > .admin-dashboard__hero-kpis {
+  width: 100%;
+}
+
 .admin-dashboard__hero-card {
   padding: 10px 12px;
   background: var(--home-surface, #ffffff);

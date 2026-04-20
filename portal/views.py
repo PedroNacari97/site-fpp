@@ -16,7 +16,7 @@ from django.utils.text import Truncator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from accounts.security import get_client_ip, get_user_agent
+from accounts.security import get_client_ip, get_request_url, get_user_agent
 from .forms import AlertEmailLeadForm, AlertEmailUnsubscribeForm, PlataformaLeadForm, PlataformaQuickLeadForm
 from .models import NoticiaPublicada
 from .models import LeadAlertaEmail, LeadPlataforma
@@ -150,6 +150,7 @@ def _handle_alert_email_lead_form(request, *, source_page: str, success_anchor: 
             consent_version=ALERT_EMAIL_LEAD_CONSENT_VERSION,
             ip=get_client_ip(request),
             user_agent=get_user_agent(request),
+            url_origem=get_request_url(request),
             source_environment=source_environment,
             source_host=source_host,
             source_page=source_page,
@@ -1374,6 +1375,7 @@ def plataforma_saas(request):
             consent_version=PLATFORM_LEAD_CONSENT_VERSION,
             ip=get_client_ip(request),
             user_agent=get_user_agent(request),
+            url_origem=get_request_url(request),
             source_environment=source_environment,
             source_host=source_host,
         )
@@ -1534,6 +1536,7 @@ def plataforma_contato(request):
         lead.aceito_em = timezone.now()
         lead.aceito_ip = get_client_ip(request)
         lead.aceito_user_agent = get_user_agent(request)
+        lead.aceito_url_origem = get_request_url(request)
         lead.source_environment = source_environment
         lead.source_host = source_host
         lead.status = LeadPlataforma.STATUS_CHOICES[0][0]
@@ -1678,8 +1681,42 @@ def noticias_todas(request):
     return render(request, "portal/noticias.html", context)
 
 
+def _first_free_artigo_id() -> int | None:
+    """ID do primeiro artigo publicado do primeiro modulo ativo (preview publica)."""
+    from .models import ModuloEstudo
+    modulo = ModuloEstudo.objects.filter(ativo=True).order_by("ordem", "id").first()
+    if not modulo:
+        return None
+    artigo = modulo.artigos.filter(status="published").order_by("ordem", "id").first()
+    return artigo.pk if artigo else None
+
+
+def _artigo_destaque_categoria():
+    """Retorna o artigo destaque (primeiro livre) para exibir como card em categorias."""
+    from .models import ModuloEstudo
+    modulo = (
+        ModuloEstudo.objects.filter(ativo=True)
+        .order_by("ordem", "id")
+        .prefetch_related("artigos")
+        .first()
+    )
+    if not modulo:
+        return None
+    artigo = modulo.artigos.filter(status="published").order_by("ordem", "id").first()
+    if not artigo:
+        return None
+    return {
+        "artigo": artigo,
+        "modulo": modulo,
+    }
+
+
 def artigos_lista(request):
-    """Hub principal de artigos educativos — exige login do portal B2C."""
+    """Hub publico dos artigos educativos.
+
+    Lista modulos e artigos sem exigir login — o gate e feito por artigo
+    (primeiro do modulo 1 e livre; demais exigem login do portal B2C).
+    """
     from .auth import get_portal_user
     from .models import ModuloEstudo, ArtigoEstudo
     from .services.progresso import (
@@ -1688,9 +1725,6 @@ def artigos_lista(request):
     )
 
     portal_user = get_portal_user(request)
-    if portal_user is None:
-        login_url = reverse("portal_login")
-        return redirect(f"{login_url}?next={request.get_full_path()}")
     modulos = list(
         ModuloEstudo.objects.filter(ativo=True).order_by("ordem", "titulo")
     )
@@ -1715,13 +1749,18 @@ def artigos_lista(request):
         "artigos_sidebar": sidebar,
         "artigos_grid": grid,
         "portal_user_is_authenticated": portal_user is not None,
+        "artigo_livre_id": _first_free_artigo_id(),
     }
     ctx.update(_build_artigos_hub_seo(request))
     return render(request, "portal/artigos_hub.html", ctx)
 
 
 def modulo_detalhe(request, slug):
-    """Página de um módulo com lista de artigos — exige login do portal B2C."""
+    """Pagina publica do modulo com lista de artigos.
+
+    Lista sem exigir login — ao entrar em cada artigo o gate individual decide
+    (primeiro do modulo 1 e livre; demais exigem login).
+    """
     from .auth import get_portal_user
     from .models import ModuloEstudo
     from .services.progresso import (
@@ -1731,9 +1770,6 @@ def modulo_detalhe(request, slug):
     )
 
     portal_user = get_portal_user(request)
-    if portal_user is None:
-        login_url = reverse("portal_login")
-        return redirect(f"{login_url}?next={request.get_full_path()}")
     modulo = get_object_or_404(ModuloEstudo, slug=slug, ativo=True)
     artigos = list(
         modulo.artigos.filter(status="published").order_by("ordem", "titulo")
@@ -1756,24 +1792,31 @@ def modulo_detalhe(request, slug):
         "outros_modulos": outros,
         "progresso_modulo": progresso,
         "portal_user_is_authenticated": portal_user is not None,
+        "artigo_livre_id": _first_free_artigo_id(),
     }
     ctx.update(_build_modulo_seo(request, modulo))
     return render(request, "portal/modulo_detalhe.html", ctx)
 
 
 def artigo_detalhe(request, modulo_slug, slug):
-    """Página completa de um artigo educativo — exige login do portal B2C."""
+    """Pagina completa de um artigo educativo.
+
+    Gate parcial: o primeiro artigo do primeiro modulo e livre; demais exigem
+    login no portal B2C.
+    """
     from .auth import get_portal_user
     from .models import ArtigoEstudo, ProgressoArtigo
     from .services.progresso import calcular_progresso_modulo
 
     portal_user = get_portal_user(request)
-    if portal_user is None:
-        login_url = reverse("portal_login")
-        return redirect(f"{login_url}?next={request.get_full_path()}")
     artigo = get_object_or_404(ArtigoEstudo.objects.select_related("modulo"), slug=slug, status="published")
     if artigo.modulo.slug != modulo_slug:
         return redirect(artigo.get_absolute_url(), permanent=True)
+
+    artigo_livre = artigo.pk == _first_free_artigo_id()
+    if not artigo_livre and portal_user is None:
+        login_url = reverse("portal_login")
+        return redirect(f"{login_url}?next={request.get_full_path()}")
 
     # --- Registra visita do usuario logado (nao marca como lido automaticamente) ---
     # Decisao de produto: marcacao de "lido" e MANUAL via botao ao fim do artigo.
@@ -1812,6 +1855,7 @@ def artigo_detalhe(request, modulo_slug, slug):
         "artigos_relacionados": relacionados,
         "progresso_modulo": progresso_modulo,
         "artigo_lido": artigo_lido,
+        "artigo_livre": artigo_livre,
         "portal_user_is_authenticated": portal_user is not None,
     }
     ctx.update(_build_artigo_seo(request, artigo))
@@ -1920,6 +1964,7 @@ def categoria_lista(request, categoria_slug):
             "alert_email_lead_consent_version": ALERT_EMAIL_LEAD_CONSENT_VERSION,
             "alert_email_lead_section_id": f"categoria-{categoria_slug}-alertas-email",
             "alert_email_lead_compact_copy": True,
+            "artigo_destaque_categoria": _artigo_destaque_categoria(),
         }
     )
     context.update(
@@ -2339,10 +2384,22 @@ def robots_txt(request):
     response = "\n".join(
         [
             "User-agent: *",
-            "Allow: /",
             "Disallow: /adm/",
             "Disallow: /ncadm/",
+            "Disallow: /login/",
+            "Disallow: /painel/",
+            "Disallow: /contratar/",
             "Disallow: /django/admin/",
+            "Disallow: /accounts/",
+            "Disallow: /webhooks/",
+            "Disallow: /auth/",
+            "Disallow: /assinatura/",
+            "Disallow: /integracoes/",
+            "Disallow: /monitoramento/",
+            "Allow: /home/",
+            "Allow: /sitemap.xml",
+            "Allow: /ads.txt",
+            "Allow: /llms.txt",
             f"Sitemap: {sitemap_url}",
         ]
     )

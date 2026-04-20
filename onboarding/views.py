@@ -11,6 +11,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from datetime import timedelta
 
+from accounts.security import get_request_url
 from gestao.models import Cliente, Empresa, DocumentoPlataforma, AceiteDocumentoPlataforma
 from gestao.utils import generate_unique_username, hash_cpf, normalize_cpf
 
@@ -117,6 +118,7 @@ def step3(request):
                 "aceite_dpa": True,
                 "ip": request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR", "")),
                 "user_agent": request.META.get("HTTP_USER_AGENT", "")[:255],
+                "url_origem": get_request_url(request),
                 "device_language": request.META.get("HTTP_ACCEPT_LANGUAGE", "")[:40],
                 "device_type": request.POST.get("device_type", "")[:20],
                 "browser_name": request.POST.get("browser_name", "")[:60],
@@ -294,6 +296,7 @@ def _finalize_onboarding(request, data, plano, ref_vendedor):
                 aceito_por=user,
                 ip_aceite=s3.get("ip", ""),
                 user_agent_aceite=s3.get("user_agent", ""),
+                url_origem=s3.get("url_origem", ""),
                 device_type=s3.get("device_type", ""),
                 browser_name=s3.get("browser_name", ""),
                 browser_version=s3.get("browser_version", ""),

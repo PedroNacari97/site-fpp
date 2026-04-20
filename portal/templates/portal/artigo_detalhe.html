@@ -28,6 +28,23 @@
         </ol>
     </nav>
 
+    <!-- Banner de amostra (usuario deslogado acessando artigo livre) -->
+    {% if not portal_user_is_authenticated and artigo_livre %}
+    <aside class="artigo-detalhe-amostra" role="note" aria-label="Artigo de amostra">
+        <div class="artigo-detalhe-amostra__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
+        </div>
+        <div class="artigo-detalhe-amostra__copy">
+            <strong>Este &eacute; um artigo de amostra.</strong>
+            <p>Crie uma conta gratuita para acessar todo o conte&uacute;do e marcar seu progresso.</p>
+        </div>
+        <div class="artigo-detalhe-amostra__actions">
+            <a href="{% url 'portal_register' %}" class="portal-button portal-button--primary">Criar conta gr&aacute;tis</a>
+            <a href="{% url 'portal_login' %}" class="portal-button portal-button--ghost">J&aacute; tenho conta</a>
+        </div>
+    </aside>
+    {% endif %}
+
     <!-- Header -->
     <header class="artigo-detalhe-header">
         {% if portal_user_is_authenticated and progresso_modulo and artigo.modulo %}

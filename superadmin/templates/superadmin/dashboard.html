@@ -50,6 +50,33 @@
         </div>
     </section>
 
+    <!-- Metricas Portal B2C -->
+    <section>
+        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Portal B2C</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Usuários totais</p>
+                <p class="text-2xl font-bold text-slate-800">{{ total_portal_users }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">Cadastros no portal</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Ativos</p>
+                <p class="text-2xl font-bold text-green-600">{{ portal_users_ativos }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">Contas ativas</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Novos 7d</p>
+                <p class="text-2xl font-bold text-blue-600">{{ portal_users_7d }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">Últimos 7 dias</p>
+            </div>
+            <div class="card p-4">
+                <p class="text-xs text-slate-500 mb-1">Via Google</p>
+                <p class="text-2xl font-bold text-slate-800">{{ portal_users_google }}</p>
+                <p class="text-xs text-slate-400 mt-0.5">Login Google OAuth</p>
+            </div>
+        </div>
+    </section>
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <!-- Ultimas noticias -->

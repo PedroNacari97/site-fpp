@@ -12,7 +12,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -23,7 +23,7 @@ from gestao.models import Empresa
 from django.http import JsonResponse
 from portal.models import (
     NoticiaPublicada, JobExecucao, LeadPlataforma, LeadAlertaEmail,
-    ModuloEstudo, ArtigoEstudo, ArtigoVideoYoutube,
+    ModuloEstudo, ArtigoEstudo, ArtigoVideoYoutube, PortalUser,
 )
 
 from .mixins import SuperAdminRequiredMixin
@@ -56,6 +56,18 @@ class DashboardView(SuperAdminRequiredMixin):
         total_leads_alertas = LeadAlertaEmail.objects.count()
         alertas_ativos = LeadAlertaEmail.objects.filter(status="ativo").count()
 
+        # Portal B2C — usuarios cadastrados
+        portal_users_agg = PortalUser.objects.aggregate(
+            total=Count("id"),
+            ativos=Count("id", filter=Q(ativo=True)),
+            recentes_7d=Count("id", filter=Q(criado_em__gte=ultimos_7d)),
+            com_google=Count("id", filter=Q(google_sub__gt="")),
+        )
+        total_portal_users = portal_users_agg["total"] or 0
+        portal_users_ativos = portal_users_agg["ativos"] or 0
+        portal_users_7d = portal_users_agg["recentes_7d"] or 0
+        portal_users_google = portal_users_agg["com_google"] or 0
+
         ultimas_noticias = (
             NoticiaPublicada.objects
             .select_related("fonte")
@@ -85,6 +97,10 @@ class DashboardView(SuperAdminRequiredMixin):
             "leads_7d": leads_7d,
             "total_leads_alertas": total_leads_alertas,
             "alertas_ativos": alertas_ativos,
+            "total_portal_users": total_portal_users,
+            "portal_users_ativos": portal_users_ativos,
+            "portal_users_7d": portal_users_7d,
+            "portal_users_google": portal_users_google,
             "ultimas_noticias": ultimas_noticias,
             "ultimos_jobs": ultimos_jobs,
             "noticias_por_categoria": noticias_por_categoria,
@@ -638,6 +654,74 @@ class ArtigoReviewIAView(SuperAdminRequiredMixin):
             return JsonResponse({"ok": False, "error": str(exc)}, status=500)
 
 
+class ArtigoAdicionarVideoUrlView(SuperAdminRequiredMixin):
+    """Adiciona manualmente um video do YouTube ao artigo a partir de URL/ID."""
+
+    def post(self, request, pk):
+        artigo = get_object_or_404(ArtigoEstudo, pk=pk)
+        url_raw = (request.POST.get("url") or "").strip()
+        if not url_raw:
+            return JsonResponse(
+                {"ok": False, "error": "Informe a URL ou ID do vídeo."}, status=400
+            )
+
+        try:
+            from portal.services.youtube_service import extract_video_id, fetch_videos_by_ids
+
+            video_id = extract_video_id(url_raw)
+            if not video_id:
+                return JsonResponse(
+                    {"ok": False, "error": "URL inválida — não foi possível extrair o ID do vídeo."},
+                    status=400,
+                )
+
+            videos = fetch_videos_by_ids([video_id])
+            if not videos:
+                return JsonResponse(
+                    {"ok": False, "error": "Não foi possível obter metadados do vídeo no YouTube."},
+                    status=502,
+                )
+            v = videos[0]
+
+            from django.db.models import Max
+
+            max_ordem = artigo.videos.aggregate(m=Max("ordem")).get("m") or 0
+            obj, created = ArtigoVideoYoutube.objects.update_or_create(
+                artigo=artigo,
+                video_id=v["video_id"],
+                defaults={
+                    "titulo": (v.get("titulo") or "")[:300],
+                    "descricao": v.get("descricao", "") or "",
+                    "thumbnail_url": v.get("thumbnail_url", "") or "",
+                    "canal": (v.get("canal") or "")[:200],
+                    "duracao": v.get("duracao", "") or "",
+                    "visualizacoes": v.get("visualizacoes", 0) or 0,
+                    "termo_busca": (v.get("termo_busca") or "manual")[:200],
+                    "ordem": max_ordem + 1,
+                    "ativo": True,
+                },
+            )
+            return JsonResponse({
+                "ok": True,
+                "created": created,
+                "video": {
+                    "id": obj.id,
+                    "video_id": obj.video_id,
+                    "titulo": obj.titulo,
+                    "canal": obj.canal,
+                    "duracao": obj.duracao,
+                    "thumbnail_url": obj.thumbnail_url,
+                    "visualizacoes": obj.visualizacoes,
+                    "ativo": obj.ativo,
+                    "ordem": obj.ordem,
+                    "url": obj.youtube_url,
+                },
+            })
+        except Exception as exc:
+            logger.exception("Erro adicionando vídeo por URL artigo pk=%s", pk)
+            return JsonResponse({"ok": False, "error": str(exc)}, status=500)
+
+
 class ArtigoBuscarVideosView(SuperAdminRequiredMixin):
     def post(self, request, pk):
         artigo = get_object_or_404(ArtigoEstudo, pk=pk)
@@ -732,4 +816,43 @@ class ModuloEditView(SuperAdminRequiredMixin):
                 messages.error(request, e)
             return render(request, "superadmin/modulo_form.html", {"menu_ativo": "modulos", "modulo": modulo, "editando": True, "form_data": request.POST})
         messages.success(request, f'Módulo "{modulo.titulo}" atualizado.')
+        return redirect(reverse("superadmin_modulos_list"))
+
+
+class ModuloDeleteView(SuperAdminRequiredMixin):
+    """
+    GET  -> pagina de confirmacao (mostra quantos artigos serao cascateados)
+    POST -> hard delete do modulo
+    """
+
+    def get(self, request, pk):
+        modulo = get_object_or_404(
+            ModuloEstudo.objects.annotate(total_artigos=Count("artigos")),
+            pk=pk,
+        )
+        return render(
+            request,
+            "superadmin/modulo_confirma_delete.html",
+            {"menu_ativo": "modulos", "modulo": modulo},
+        )
+
+    def post(self, request, pk):
+        modulo = get_object_or_404(ModuloEstudo, pk=pk)
+        titulo = modulo.titulo
+        total_artigos = modulo.artigos.count()
+        modulo.delete()
+        logger.info(
+            "Superadmin excluiu modulo pk=%s titulo=%r artigos_cascateados=%s user=%s",
+            pk,
+            titulo,
+            total_artigos,
+            request.user.email,
+        )
+        if total_artigos:
+            messages.success(
+                request,
+                f'Módulo "{titulo}" excluído ({total_artigos} artigo(s) removido(s) em cascata).',
+            )
+        else:
+            messages.success(request, f'Módulo "{titulo}" excluído.')
         return redirect(reverse("superadmin_modulos_list"))

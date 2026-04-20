@@ -1,6 +1,7 @@
 import hashlib
 import secrets
 import unicodedata
+import uuid
 
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import models
@@ -269,6 +270,12 @@ class LeadPlataforma(models.Model):
     aceito_em = models.DateTimeField(null=True, blank=True)
     aceito_ip = models.CharField(max_length=45, blank=True)
     aceito_user_agent = models.CharField(max_length=255, blank=True)
+    aceito_url_origem = models.CharField(
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="URL absoluta onde o aceite foi registrado (evidencia forense LGPD)",
+    )
     source_environment = models.CharField(max_length=20, default="local", db_index=True)
     source_host = models.CharField(max_length=120, blank=True, db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="novo")
@@ -324,6 +331,12 @@ class LeadAlertaEmail(models.Model):
     aceito_em = models.DateTimeField(null=True, blank=True)
     aceito_ip = models.CharField(max_length=45, blank=True)
     aceito_user_agent = models.CharField(max_length=255, blank=True)
+    aceito_url_origem = models.CharField(
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="URL absoluta onde o aceite foi registrado (evidencia forense LGPD)",
+    )
     source_environment = models.CharField(max_length=20, default="local", db_index=True)
     source_host = models.CharField(max_length=120, blank=True, db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_ATIVO)
@@ -610,6 +623,12 @@ class _OptInBase(models.Model):
     aceito_em = models.DateTimeField(null=True, blank=True)
     aceito_ip = models.CharField(max_length=45, blank=True, default="")
     aceito_user_agent = models.CharField(max_length=255, blank=True, default="")
+    aceito_url_origem = models.CharField(
+        max_length=500,
+        blank=True,
+        default="",
+        help_text="URL absoluta onde o opt-in foi registrado (evidencia forense LGPD)",
+    )
 
     cancelado_em = models.DateTimeField(null=True, blank=True)
     cancelado_ip = models.CharField(max_length=45, blank=True, default="")
@@ -746,13 +765,14 @@ def criar_opt_ins_no_cadastro(
     user_agent: str,
     versao_termos: str = "",
     hash_termos: str = "",
+    url_origem: str = "",
 ):
     """Cria (ou reativa) os 2 opt-ins obrigatorios no cadastro.
 
     Retorna tupla (opt_alerta, opt_artigo) — ambos `ativo=True` quando o
     cadastro foi bem-sucedido. Evidencia de consentimento (IP/UA/timestamp/
-    versao+hash dos termos) e gravada no proprio opt-in, em linha com o
-    modelo `AceiteDocumentoPlataforma` do SaaS.
+    URL de origem/versao+hash dos termos) e gravada no proprio opt-in, em
+    linha com o modelo `AceiteDocumentoPlataforma` do SaaS.
     """
 
     now = timezone.now()
@@ -763,6 +783,7 @@ def criar_opt_ins_no_cadastro(
         "aceito_em": now,
         "aceito_ip": (ip or "")[:45],
         "aceito_user_agent": (user_agent or "")[:255],
+        "aceito_url_origem": (url_origem or "")[:500],
         "ativo": True,
     }
 
@@ -775,3 +796,72 @@ def criar_opt_ins_no_cadastro(
         defaults={**base, "cancelado_em": None, "cancelado_ip": "", "motivo_cancelamento": ""},
     )
     return opt_alerta, opt_artigo
+
+
+# ---------------------------------------------------------------------------
+# PreUser — tracking de visitantes anonimos (conversao)
+# ---------------------------------------------------------------------------
+#
+# Registra todo visitante do portal publico via cookie `pu_uid` (UUID v4).
+# Linkado ao `PortalUser` no login/cadastro — permite medir taxa de conversao,
+# tempo ate converter, UTMs que converteram melhor, etc.
+#
+# LGPD: cookie tecnico de legitimo interesse (funcional, nao rastreia entre
+# dominios). Nao precisa consent banner, mas precisa estar descrito na
+# politica de privacidade. Em pedidos de exclusao (art. 18), excluir tambem
+# os PreUsers linkados ao PortalUser.
+#
+# Metrica sugerida para dashboard do ncadm:
+#   - total de pre_users (criados, ativos ultimos 7/30 dias)
+#   - convertidos no periodo / total -> taxa de conversao
+#   - breakdown por utm_source / utm_campaign
+class PreUser(models.Model):
+    """Visitante anonimo do portal — identificado por cookie `pu_uid`.
+
+    Criado na primeira visita, atualizado a cada hit (throttled para evitar
+    N UPDATEs/segundo) e linkado ao `PortalUser` quando o visitante faz
+    login ou se cadastra.
+    """
+
+    uid = models.UUIDField(default=uuid.uuid4, unique=True, db_index=True)
+
+    # --- primeiro acesso (nao muda depois) ---
+    primeiro_ip = models.GenericIPAddressField(null=True, blank=True)
+    primeiro_ua = models.TextField(blank=True)
+    primeira_url = models.URLField(max_length=500, blank=True)
+    primeiro_referrer = models.URLField(max_length=500, blank=True)
+    utm_source = models.CharField(max_length=120, blank=True)
+    utm_medium = models.CharField(max_length=120, blank=True)
+    utm_campaign = models.CharField(max_length=120, blank=True)
+
+    # --- ultimo acesso (atualizado, com throttle) ---
+    ultimo_ip = models.GenericIPAddressField(null=True, blank=True)
+    ultima_url = models.URLField(max_length=500, blank=True)
+    ultima_visita_em = models.DateTimeField(auto_now=True)
+
+    total_visitas = models.PositiveIntegerField(default=1)
+
+    # --- conversao ---
+    convertido_em = models.DateTimeField(null=True, blank=True)
+    portal_user = models.ForeignKey(
+        "PortalUser",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="pre_users",
+    )
+
+    criado_em = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Pre-user (visitante anonimo)"
+        verbose_name_plural = "Pre-users (visitantes anonimos)"
+        indexes = [
+            models.Index(fields=["portal_user", "convertido_em"]),
+            models.Index(fields=["-criado_em"]),
+        ]
+
+    def __str__(self):
+        if self.portal_user_id:
+            return f"PreUser {self.uid} -> {self.portal_user_id}"
+        return f"PreUser {self.uid} (anon)"

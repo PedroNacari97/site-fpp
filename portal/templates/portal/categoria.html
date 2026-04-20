@@ -167,6 +167,33 @@
     </section>
     {% endif %}
 
+    {% if artigo_destaque_categoria %}
+    <section class="portal-category-artigo-destaque">
+        <a
+            href="{% url 'portal_artigo_detalhe' modulo_slug=artigo_destaque_categoria.modulo.slug slug=artigo_destaque_categoria.artigo.slug %}"
+            class="portal-category-artigo-destaque__card"
+            data-analytics-event="click_artigo_destaque_categoria"
+            data-analytics-category="content"
+            data-analytics-label="{{ artigo_destaque_categoria.artigo.titulo|portal_text }}"
+            data-analytics-slug="{{ artigo_destaque_categoria.artigo.slug }}"
+            data-analytics-section="category_artigo_destaque"
+        >
+            <div class="portal-category-artigo-destaque__body">
+                <span class="news-pill news-pill--livre">Livre</span>
+                <span class="portal-category-artigo-destaque__eyebrow">Aprenda sobre milhas</span>
+                <h2>{{ artigo_destaque_categoria.artigo.titulo|portal_text }}</h2>
+                {% if artigo_destaque_categoria.artigo.resumo %}
+                <p>{{ artigo_destaque_categoria.artigo.resumo|portal_text|truncatechars:180 }}</p>
+                {% endif %}
+                <span class="portal-category-artigo-destaque__cta">
+                    Ler artigo gratuito
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+                </span>
+            </div>
+        </a>
+    </section>
+    {% endif %}
+
     {% if grid_cards or hidden_cards %}
     <section class="portal-category-grid" id="portal-category-grid" data-load-more-grid>
         {% for noticia in grid_cards %}

@@ -31,8 +31,8 @@ class Command(BaseCommand):
         parser.add_argument(
             "--timeout",
             type=int,
-            default=25,
-            help="Long polling em segundos (max 25 recomendado).",
+            default=10,
+            help="Long polling em segundos (10 dá resposta mais rápida).",
         )
         parser.add_argument(
             "--loop",

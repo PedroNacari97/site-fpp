@@ -2,7 +2,7 @@ from decimal import Decimal, InvalidOperation
 
 from django.urls import reverse
 
-from accounts.security import get_client_ip, get_user_agent
+from accounts.security import get_client_ip, get_request_url, get_user_agent
 
 from ..models import AceiteDocumentoPlataforma, DocumentoPlataforma
 
@@ -91,6 +91,7 @@ def registrar_aceites_empresa(request, user, documentos):
 
     ip = get_client_ip(request)
     user_agent = get_user_agent(request)
+    url_origem = get_request_url(request)
     device_metadata = {
         "device_type": _clean_accept_metadata_value(request.POST.get("device_type"), 20),
         "browser_name": _clean_accept_metadata_value(request.POST.get("browser_name"), 60),
@@ -114,6 +115,7 @@ def registrar_aceites_empresa(request, user, documentos):
                 "aceito_por": user,
                 "ip_aceite": ip,
                 "user_agent_aceite": user_agent,
+                "url_origem": url_origem,
                 **device_metadata,
             },
         )
