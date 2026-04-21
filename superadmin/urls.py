@@ -7,6 +7,7 @@ from django.urls import path
 
 from . import views
 from . import views_financeiro
+from . import views_comentarios
 
 urlpatterns = [
     # Dashboard
@@ -66,5 +67,27 @@ urlpatterns = [
         "financeiro/pagamentos/",
         views_financeiro.PagamentosListView.as_view(),
         name="superadmin_pagamentos_list",
+    ),
+
+    # Comentarios (moderacao B2C)
+    path(
+        "comentarios/",
+        views_comentarios.ComentariosListView.as_view(),
+        name="superadmin_comentarios_list",
+    ),
+    path(
+        "comentarios/<int:pk>/ocultar/",
+        views_comentarios.ComentarioOcultarView.as_view(),
+        name="superadmin_comentario_ocultar",
+    ),
+    path(
+        "comentarios/<int:pk>/restaurar/",
+        views_comentarios.ComentarioRestaurarView.as_view(),
+        name="superadmin_comentario_restaurar",
+    ),
+    path(
+        "comentarios/<int:pk>/responder/",
+        views_comentarios.ComentarioResponderView.as_view(),
+        name="superadmin_comentario_responder",
     ),
 ]

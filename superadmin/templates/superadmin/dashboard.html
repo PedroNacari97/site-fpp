@@ -189,5 +189,43 @@
     </section>
     {% endif %}
 
+    {# Widget: Comentarios recentes #}
+    <section class="mb-6">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Comentarios recentes</h2>
+            <a href="{% url 'superadmin_comentarios_list' %}" class="text-xs text-brand-600 hover:underline">Ver todos</a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+            <div class="card p-3"><div class="text-xs text-slate-500 uppercase">Total</div><div class="text-xl font-bold">{{ total_comentarios }}</div></div>
+            <div class="card p-3"><div class="text-xs text-green-600 uppercase">Publicados</div><div class="text-xl font-bold text-green-700">{{ comentarios_publicados }}</div></div>
+            <div class="card p-3"><div class="text-xs text-red-600 uppercase">Ocultos</div><div class="text-xl font-bold text-red-700">{{ comentarios_ocultos }}</div></div>
+            <div class="card p-3"><div class="text-xs text-blue-600 uppercase">Ultimas 24h</div><div class="text-xl font-bold text-blue-700">{{ comentarios_24h }}</div></div>
+        </div>
+        <div class="card overflow-hidden">
+            <table class="w-full text-sm">
+                <thead class="table-header text-xs text-slate-500 uppercase">
+                    <tr>
+                        <th class="px-4 py-2 text-left">Autor</th>
+                        <th class="px-4 py-2 text-left">Artigo</th>
+                        <th class="px-4 py-2 text-left">Comentario</th>
+                        <th class="px-4 py-2 text-left">Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for c in comentarios_recentes %}
+                <tr class="border-t border-slate-50">
+                    <td class="px-4 py-2 text-slate-700">{{ c.autor_nome_snapshot|default:c.autor_email_snapshot|truncatechars:25 }}</td>
+                    <td class="px-4 py-2"><a class="text-brand-600 hover:underline" target="_blank" href="{{ c.artigo.get_absolute_url }}#comentario-{{ c.pk }}">{{ c.artigo.titulo|truncatechars:35 }}</a></td>
+                    <td class="px-4 py-2 text-slate-600">{{ c.corpo|truncatechars:60 }}</td>
+                    <td class="px-4 py-2 text-xs text-slate-500 whitespace-nowrap">{{ c.criado_em|date:"d/m H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="px-4 py-6 text-center text-sm text-slate-500">Nenhum comentario ainda.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
 </div>
 {% endblock %}

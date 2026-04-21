@@ -874,3 +874,179 @@ class PreUser(models.Model):
         if self.portal_user_id:
             return f"PreUser {self.uid} -> {self.portal_user_id}"
         return f"PreUser {self.uid} (anon)"
+
+
+# ---------------------------------------------------------------------------
+# ComentarioArtigo — sistema de comentarios com moderacao e evidencia legal
+# ---------------------------------------------------------------------------
+#
+# Regras de negocio:
+#   - So usuario logado (PortalUser) comenta
+#   - Janela de 15min pra autor editar OU excluir
+#   - Apos 15min: soft delete so via superadmin (oculto_admin)
+#   - Superadmin nao edita corpo, so oculta/restaura
+#   - Resposta a resposta vira resposta ao comentario raiz (max 1 nivel)
+#
+# Evidencia legal (Marco Civil + LGPD):
+#   - Snapshot de email/nome sobrevive a exclusao de conta (defesa juridica)
+#   - SHA-256 do corpo prova imutabilidade apos moderacao
+#   - IP + user-agent gravados (Marco Civil art. 13 — 6 meses minimo)
+#   - Historico de edicoes preservado pra auditoria
+#   - Retencao: soft delete permanente (storage barato vs risco juridico)
+EDIT_JANELA_MINUTOS = 15
+
+
+class ComentarioArtigo(models.Model):
+    """Comentario publico em ArtigoEstudo — B2C logado."""
+
+    STATUS_PUBLICADO = "publicado"
+    STATUS_OCULTO_ADMIN = "oculto_admin"
+    STATUS_EXCLUIDO_AUTOR = "excluido_autor"
+    STATUS_CHOICES = [
+        (STATUS_PUBLICADO, "Publicado"),
+        (STATUS_OCULTO_ADMIN, "Oculto pelo admin"),
+        (STATUS_EXCLUIDO_AUTOR, "Excluido pelo autor"),
+    ]
+
+    # --- Relacoes ---
+    artigo = models.ForeignKey(
+        ArtigoEstudo,
+        on_delete=models.PROTECT,
+        related_name="comentarios",
+        db_index=True,
+    )
+    autor = models.ForeignKey(
+        PortalUser,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="comentarios",
+    )
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True, blank=True,
+        related_name="respostas",
+    )
+
+    # --- Snapshot do autor (sobrevive a exclusao de conta — evidencia legal) ---
+    autor_email_snapshot = models.EmailField(max_length=254)
+    autor_nome_snapshot = models.CharField(max_length=180, blank=True)
+    exibir_nome_completo = models.BooleanField(
+        default=False,
+        help_text=(
+            "False = email mascarado (ped***@gmail.com). True = nome. "
+            "Default False por privacidade."
+        ),
+    )
+
+    # --- Conteudo ---
+    corpo = models.TextField(max_length=2000)
+    corpo_hash = models.CharField(
+        max_length=64,
+        help_text="SHA-256 do corpo publicado — prova de imutabilidade.",
+    )
+
+    # --- Moderacao / status ---
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_PUBLICADO,
+        db_index=True,
+    )
+    ocultado_por = models.ForeignKey(
+        "auth.User",
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="comentarios_ocultados",
+    )
+    ocultado_em = models.DateTimeField(null=True, blank=True)
+    motivo_ocultacao = models.CharField(
+        max_length=200, blank=True, default="",
+        help_text="Motivo do admin ao ocultar — defesa juridica.",
+    )
+
+    # --- Edicao (autor, janela 15min) ---
+    editado = models.BooleanField(default=False)
+    editado_em = models.DateTimeField(null=True, blank=True)
+    historico_edicoes = models.JSONField(
+        default=list, blank=True,
+        help_text=(
+            "Lista de versoes anteriores: "
+            "[{corpo, corpo_hash, editado_em_iso}, ...]. Defesa legal."
+        ),
+    )
+
+    # --- Exclusao pelo autor (janela 15min) ---
+    excluido_em = models.DateTimeField(null=True, blank=True)
+
+    # --- Evidencia legal ---
+    ip_cadastro = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True, default="")
+
+    # --- Timestamps ---
+    criado_em = models.DateTimeField(auto_now_add=True, db_index=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Comentario de artigo"
+        verbose_name_plural = "Comentarios de artigos"
+        ordering = ["-criado_em"]
+        indexes = [
+            models.Index(fields=["artigo", "status", "-criado_em"]),
+            models.Index(fields=["parent", "-criado_em"]),
+            models.Index(fields=["autor_email_snapshot", "-criado_em"]),
+        ]
+
+    def __str__(self):
+        return f"Comentario #{self.pk} em {self.artigo_id} ({self.status})"
+
+    # ---- helpers ----
+    @staticmethod
+    def calcular_hash(corpo: str) -> str:
+        return hashlib.sha256((corpo or "").encode("utf-8")).hexdigest()
+
+    @property
+    def dentro_janela_edicao(self) -> bool:
+        """Autor pode editar/excluir nos primeiros 15 minutos."""
+        if not self.criado_em:
+            return False
+        limite = self.criado_em + timezone.timedelta(minutes=EDIT_JANELA_MINUTOS)
+        return timezone.now() <= limite
+
+    @property
+    def nome_exibicao(self) -> str:
+        """Nome completo (se optou) ou email mascarado."""
+        if self.exibir_nome_completo and self.autor_nome_snapshot:
+            return self.autor_nome_snapshot
+        return self._mascarar_email(self.autor_email_snapshot)
+
+    @staticmethod
+    def _mascarar_email(email: str) -> str:
+        """`pedrinho@gmail.com` -> `ped***@gmail.com`."""
+        if not email or "@" not in email:
+            return "anonimo"
+        local, domain = email.split("@", 1)
+        if len(local) <= 3:
+            mascara = local[:1] + "***"
+        else:
+            mascara = local[:3] + "***"
+        return f"{mascara}@{domain}"
+
+    @property
+    def inicial_avatar(self) -> str:
+        """Primeira letra do nome ou do email."""
+        fonte = self.autor_nome_snapshot or self.autor_email_snapshot or "?"
+        fonte = fonte.strip()
+        return fonte[0].upper() if fonte else "?"
+
+    @property
+    def is_publicado(self) -> bool:
+        return self.status == self.STATUS_PUBLICADO
+
+    def aplicar_snapshot_autor(self) -> None:
+        """Copia email/nome do autor pra campos snapshot (antes de salvar)."""
+        if self.autor:
+            if not self.autor_email_snapshot:
+                self.autor_email_snapshot = self.autor.email
+            if not self.autor_nome_snapshot:
+                self.autor_nome_snapshot = (self.autor.nome or "").strip()

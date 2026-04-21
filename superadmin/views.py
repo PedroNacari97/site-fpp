@@ -24,6 +24,7 @@ from django.http import JsonResponse
 from portal.models import (
     NoticiaPublicada, JobExecucao, LeadPlataforma, LeadAlertaEmail,
     ModuloEstudo, ArtigoEstudo, ArtigoVideoYoutube, PortalUser,
+    ComentarioArtigo,
 )
 from portal.views import invalidate_news_cache
 
@@ -85,6 +86,20 @@ class DashboardView(SuperAdminRequiredMixin):
             .order_by("-total")[:8]
         )
 
+        # Comentarios (Portal B2C) — KPIs + 5 mais recentes
+        coment_agg = ComentarioArtigo.objects.aggregate(
+            total=Count("id"),
+            publicados=Count("id", filter=Q(status=ComentarioArtigo.STATUS_PUBLICADO)),
+            ocultos=Count("id", filter=Q(status=ComentarioArtigo.STATUS_OCULTO_ADMIN)),
+            recentes_24h=Count("id", filter=Q(criado_em__gte=ultimas_24h)),
+        )
+        comentarios_recentes = (
+            ComentarioArtigo.objects
+            .filter(status=ComentarioArtigo.STATUS_PUBLICADO)
+            .select_related("artigo", "artigo__modulo")
+            .order_by("-criado_em")[:5]
+        )
+
         context = {
             "menu_ativo": "dashboard",
             "total_noticias": total_noticias,
@@ -105,6 +120,11 @@ class DashboardView(SuperAdminRequiredMixin):
             "ultimas_noticias": ultimas_noticias,
             "ultimos_jobs": ultimos_jobs,
             "noticias_por_categoria": noticias_por_categoria,
+            "total_comentarios": coment_agg["total"] or 0,
+            "comentarios_publicados": coment_agg["publicados"] or 0,
+            "comentarios_ocultos": coment_agg["ocultos"] or 0,
+            "comentarios_24h": coment_agg["recentes_24h"] or 0,
+            "comentarios_recentes": comentarios_recentes,
         }
         return render(request, "superadmin/dashboard.html", context)
 

@@ -1,0 +1,55 @@
+{% load portal_extras %}
+<li class="comentarios__item" data-comentario-id="{{ c.id }}" id="comentario-{{ c.id }}">
+  <article class="comentarios__card">
+    <span class="comentarios-avatar" data-letra="{{ c.inicial|upper }}">{{ c.inicial|upper }}</span>
+    <div class="comentarios__card-body">
+      <header class="comentarios__card-header">
+        <strong class="comentarios__autor">{{ c.nome_exibicao }}</strong>
+        <time class="comentarios__data" datetime="{{ c.criado_em|date:'c' }}">
+          {{ c.criado_em|timesince }} atr&aacute;s
+        </time>
+        {% if c.editado %}<span class="comentarios__editado">(editado)</span>{% endif %}
+      </header>
+      <div class="comentarios__corpo">{{ c.corpo|safe|linebreaksbr }}</div>
+      <footer class="comentarios__actions">
+        <button type="button" class="comentarios__action" data-acao="responder" data-parent-id="{{ c.id }}">Responder</button>
+        {% if c.pode_editar %}
+        <button type="button" class="comentarios__action" data-acao="editar" data-comentario-id="{{ c.id }}">Editar</button>
+        {% endif %}
+        {% if c.pode_excluir %}
+        <button type="button" class="comentarios__action comentarios__action--danger" data-acao="excluir" data-comentario-id="{{ c.id }}">Excluir</button>
+        {% endif %}
+      </footer>
+      {% if c.respostas %}
+      <div class="comentarios__respostas">
+        {% for r in c.respostas %}
+        <article class="comentarios__resposta" data-comentario-id="{{ r.id }}" id="comentario-{{ r.id }}">
+          <span class="comentarios-avatar comentarios-avatar--sm" data-letra="{{ r.inicial|upper }}">{{ r.inicial|upper }}</span>
+          <div class="comentarios__card-body">
+            <header class="comentarios__card-header">
+              <strong class="comentarios__autor">{{ r.nome_exibicao }}</strong>
+              <time class="comentarios__data" datetime="{{ r.criado_em|date:'c' }}">
+                {{ r.criado_em|timesince }} atr&aacute;s
+              </time>
+              {% if r.editado %}<span class="comentarios__editado">(editado)</span>{% endif %}
+            </header>
+            <div class="comentarios__corpo">{{ r.corpo|safe|linebreaksbr }}</div>
+            {% if r.pode_editar or r.pode_excluir %}
+            <footer class="comentarios__actions">
+              {% if r.pode_editar %}
+              <button type="button" class="comentarios__action" data-acao="editar" data-comentario-id="{{ r.id }}">Editar</button>
+              {% endif %}
+              {% if r.pode_excluir %}
+              <button type="button" class="comentarios__action comentarios__action--danger" data-acao="excluir" data-comentario-id="{{ r.id }}">Excluir</button>
+              {% endif %}
+            </footer>
+            {% endif %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="comentarios__reply-box" hidden></div>
+    </div>
+  </article>
+</li>

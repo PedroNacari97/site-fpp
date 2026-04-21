@@ -1848,6 +1848,46 @@ def artigo_detalhe(request, modulo_slug, slug):
     progresso_modulo = calcular_progresso_modulo(portal_user, artigo.modulo)
     artigo_lido = bool(progresso_artigo and progresso_artigo.lido_em)
 
+    # --- Comentarios (pagina inicial embutida; mais via AJAX) ---
+    from .services import comentarios as comentarios_service
+    from .models import ComentarioArtigo
+
+    COMENT_POR_PAGINA = 10
+    comentarios_items, comentarios_total = comentarios_service.listar_publicados_para_artigo(
+        artigo, limit=COMENT_POR_PAGINA, offset=0,
+    )
+    viewer_pk = portal_user.pk if portal_user else None
+
+    def _serializa(c):
+        pode = (
+            viewer_pk is not None
+            and c.autor_id == viewer_pk
+            and c.dentro_janela_edicao
+            and c.is_publicado
+        )
+        return {
+            "id": c.pk,
+            "parent_id": c.parent_id,
+            "corpo": c.corpo,
+            "nome_exibicao": c.nome_exibicao,
+            "inicial": c.inicial_avatar,
+            "criado_em": c.criado_em,
+            "editado": c.editado,
+            "pode_editar": pode,
+            "pode_excluir": pode,
+        }
+
+    comentarios_render = []
+    for c in comentarios_items:
+        item = _serializa(c)
+        respostas = [
+            _serializa(r)
+            for r in c.respostas.all()
+            if r.status == ComentarioArtigo.STATUS_PUBLICADO
+        ]
+        item["respostas"] = respostas
+        comentarios_render.append(item)
+
     track_page_view(request.path, request=request, section="artigo_detalhe")
     ctx = {
         "artigo": artigo,
@@ -1859,6 +1899,11 @@ def artigo_detalhe(request, modulo_slug, slug):
         "artigo_lido": artigo_lido,
         "artigo_livre": artigo_livre,
         "portal_user_is_authenticated": portal_user is not None,
+        "portal_user_nome": (portal_user.nome or portal_user.email) if portal_user else "",
+        "comentarios": comentarios_render,
+        "comentarios_total": comentarios_total,
+        "comentarios_tem_mais": comentarios_total > len(comentarios_render),
+        "comentarios_por_pagina": COMENT_POR_PAGINA,
     }
     ctx.update(_build_artigo_seo(request, artigo))
     return render(request, "portal/artigo_detalhe.html", ctx)

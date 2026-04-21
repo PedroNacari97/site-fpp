@@ -235,6 +235,9 @@
     </div>
     {% endif %}
 
+    <!-- Comentarios -->
+    {% include "portal/partials/comentarios.html" %}
+
     <!-- Lead capture -->
     <section class="artigo-detalhe-lead">
         <div class="artigo-detalhe-lead__card">
@@ -393,6 +396,320 @@
             });
         });
     }
+})();
+</script>
+
+<!-- Comentarios (criar/responder/editar/excluir/paginar) -->
+<script>
+(function () {
+  var root = document.querySelector('[data-comentarios]');
+  if (!root) return;
+
+  var lista = root.querySelector('[data-comentarios-lista]');
+  var contador = root.querySelector('[data-comentarios-count]');
+  var btnMais = root.querySelector('[data-comentarios-mais]');
+  var formRoot = root.querySelector('[data-comentario-form="root"]');
+  var charCounter = root.querySelector('[data-comentarios-chars]');
+  var errorBox = root.querySelector('[data-comentarios-error]');
+  var tpl = document.getElementById('tpl-comentario-item');
+  var csrfInput = root.querySelector('[name=csrfmiddlewaretoken]');
+  var csrf = csrfInput ? csrfInput.value : '';
+  var autenticado = root.getAttribute('data-authenticated') === '1';
+  var loginUrl = root.getAttribute('data-login-url') || '#';
+  var registerUrl = root.getAttribute('data-register-url') || '#';
+
+  function escHtml(s) {
+    return (s || '').replace(/[&<>"']/g, function (m) {
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
+    });
+  }
+  function nl2br(s) { return escHtml(s).replace(/\n/g, '<br>'); }
+
+  function mostrarErro(msg) {
+    if (!errorBox) return;
+    errorBox.textContent = msg || 'Erro ao enviar.';
+    errorBox.hidden = false;
+    setTimeout(function(){ errorBox.hidden = true; }, 6000);
+  }
+
+  function dataIso(d) {
+    try { return new Date(d).toISOString(); } catch (e) { return ''; }
+  }
+  function relTime(iso) {
+    if (!iso) return '';
+    var t = new Date(iso).getTime();
+    var diff = Math.max(0, Date.now() - t);
+    var s = Math.floor(diff / 1000);
+    if (s < 60) return 'agora';
+    var m = Math.floor(s / 60);
+    if (m < 60) return 'h' + ' ' + m + ' min';
+    var h = Math.floor(m / 60);
+    if (h < 24) return 'h' + ' ' + h + ' h';
+    var d = Math.floor(h / 24);
+    return 'h' + ' ' + d + ' d';
+  }
+
+  function montarItem(c, esResposta) {
+    var raiz = document.createElement(esResposta ? 'article' : 'li');
+    raiz.className = esResposta ? 'comentarios__resposta' : 'comentarios__item';
+    raiz.setAttribute('data-comentario-id', c.id);
+    raiz.id = 'comentario-' + c.id;
+
+    var inicial = (c.inicial || '').toUpperCase();
+    var avatarCls = esResposta ? 'comentarios-avatar comentarios-avatar--sm' : 'comentarios-avatar';
+
+    var autores = '';
+    if (c.pode_editar) {
+      autores += '<button type="button" class="comentarios__action" data-acao="editar" data-comentario-id="'+c.id+'">Editar</button>';
+    }
+    if (c.pode_excluir) {
+      autores += '<button type="button" class="comentarios__action comentarios__action--danger" data-acao="excluir" data-comentario-id="'+c.id+'">Excluir</button>';
+    }
+    var responderBtn = esResposta ? '' : '<button type="button" class="comentarios__action" data-acao="responder" data-parent-id="'+c.id+'">Responder</button>';
+
+    var inner = ''
+      + (esResposta
+          ? ''
+          : '<article class="comentarios__card">')
+      + '<span class="'+avatarCls+'" data-letra="'+escHtml(inicial)+'">'+escHtml(inicial)+'</span>'
+      + '<div class="comentarios__card-body">'
+      +   '<header class="comentarios__card-header">'
+      +     '<strong class="comentarios__autor">'+escHtml(c.nome_exibicao)+'</strong>'
+      +     '<time class="comentarios__data" datetime="'+escHtml(c.criado_em_iso||'')+'">agora</time>'
+      +     (c.editado ? '<span class="comentarios__editado">(editado)</span>' : '')
+      +   '</header>'
+      +   '<div class="comentarios__corpo">'+nl2br(c.corpo)+'</div>'
+      +   '<footer class="comentarios__actions">'+responderBtn+autores+'</footer>'
+      +   (esResposta ? '' : '<div class="comentarios__respostas"></div><div class="comentarios__reply-box" hidden></div>')
+      + '</div>'
+      + (esResposta ? '' : '</article>');
+    raiz.innerHTML = inner;
+    return raiz;
+  }
+
+  function atualizarContador(delta) {
+    if (!contador) return;
+    var n = parseInt(contador.textContent, 10) || 0;
+    contador.textContent = String(Math.max(0, n + delta));
+  }
+
+  function removerVazio() {
+    var vazio = lista.querySelector('[data-comentarios-vazio]');
+    if (vazio) vazio.remove();
+  }
+
+  function enviarComentario(formEl, parentId, onOk, onFail) {
+    var textarea = formEl.querySelector('textarea');
+    var corpo = (textarea.value || '').trim();
+    if (corpo.length < 2) { mostrarErro('Coment\u00e1rio muito curto.'); return; }
+
+    var fd = new FormData();
+    fd.append('corpo', corpo);
+    if (parentId) fd.append('parent_id', parentId);
+    fd.append('csrfmiddlewaretoken', csrf);
+
+    var btn = formEl.querySelector('button[type="submit"]');
+    if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); }
+
+    fetch(root.getAttribute('data-criar-url'), {
+      method: 'POST',
+      body: fd,
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+    })
+    .then(function (r) { return r.json().then(function(j){ return {ok:r.ok, status:r.status, data:j}; }); })
+    .then(function (res) {
+      if (!res.ok) {
+        if (res.status === 401) {
+          mostrarErro('Voc\u00ea precisa estar logado.');
+        } else {
+          mostrarErro(res.data && res.data.error ? res.data.error : 'Erro ao publicar.');
+        }
+        return onFail && onFail();
+      }
+      textarea.value = '';
+      if (charCounter) charCounter.textContent = '0';
+      onOk && onOk(res.data.comentario);
+    })
+    .catch(function () { mostrarErro('Falha de rede.'); onFail && onFail(); })
+    .finally(function () {
+      if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); }
+    });
+  }
+
+  // --- Form raiz ---
+  if (formRoot) {
+    var ta = formRoot.querySelector('textarea');
+    if (ta && charCounter) {
+      ta.addEventListener('input', function () { charCounter.textContent = String(ta.value.length); });
+    }
+    formRoot.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      enviarComentario(formRoot, null, function (c) {
+        removerVazio();
+        var node = montarItem(c, false);
+        lista.insertBefore(node, lista.firstChild);
+        atualizarContador(1);
+      });
+    });
+  }
+
+  // --- Delegacao de clique (responder / editar / excluir) ---
+  root.addEventListener('click', function (ev) {
+    var btn = ev.target.closest('[data-acao]');
+    if (!btn) return;
+    var acao = btn.getAttribute('data-acao');
+    var item = btn.closest('[data-comentario-id]');
+    if (!item) return;
+    var id = item.getAttribute('data-comentario-id');
+
+    if (acao === 'responder') {
+      var parentId = btn.getAttribute('data-parent-id') || id;
+      var holder = item.querySelector('.comentarios__reply-box');
+      if (!holder) return;
+      if (!holder.hidden && holder.dataset.open === '1') {
+        holder.hidden = true; holder.dataset.open = '0'; holder.innerHTML = '';
+        return;
+      }
+      if (!autenticado) {
+        holder.innerHTML = ''
+          + '<div class="comentarios__login comentarios__login--inline" role="note">'
+          +   '<div class="comentarios__login-copy">'
+          +     '<strong>Entre para responder.</strong>'
+          +     '<span>Apenas leitores logados podem comentar e responder.</span>'
+          +   '</div>'
+          +   '<div class="comentarios__login-actions">'
+          +     '<a class="portal-button portal-button--primary" href="' + escHtml(loginUrl) + '">Entrar</a>'
+          +     '<a class="portal-button portal-button--ghost" href="' + escHtml(registerUrl) + '">Criar conta</a>'
+          +   '</div>'
+          + '</div>';
+        holder.hidden = false; holder.dataset.open = '1';
+        return;
+      }
+      holder.innerHTML = ''
+        + '<form class="comentarios__form comentarios__form--reply" data-reply>'
+        +   '<textarea class="comentarios__textarea" rows="2" maxlength="2000" placeholder="Escreva sua resposta\u2026" required></textarea>'
+        +   '<div class="comentarios__form-actions">'
+        +     '<button type="button" class="portal-button portal-button--ghost" data-reply-cancel>Cancelar</button>'
+        +     '<button type="submit" class="portal-button portal-button--primary">Responder</button>'
+        +   '</div>'
+        + '</form>';
+      holder.hidden = false; holder.dataset.open = '1';
+      var replyForm = holder.querySelector('[data-reply]');
+      replyForm.querySelector('textarea').focus();
+      replyForm.querySelector('[data-reply-cancel]').addEventListener('click', function () {
+        holder.hidden = true; holder.dataset.open = '0'; holder.innerHTML = '';
+      });
+      replyForm.addEventListener('submit', function (ev2) {
+        ev2.preventDefault();
+        enviarComentario(replyForm, parentId, function (c) {
+          var destino = item.querySelector('.comentarios__respostas');
+          if (!destino) { destino = document.createElement('div'); destino.className = 'comentarios__respostas'; item.querySelector('.comentarios__card-body').insertBefore(destino, holder); }
+          destino.appendChild(montarItem(c, true));
+          atualizarContador(1);
+          holder.hidden = true; holder.dataset.open = '0'; holder.innerHTML = '';
+        });
+      });
+      return;
+    }
+
+    if (acao === 'editar') {
+      var corpoEl = item.querySelector('.comentarios__corpo');
+      if (!corpoEl || corpoEl.dataset.editando === '1') return;
+      var textoAtual = corpoEl.innerText;
+      corpoEl.dataset.editando = '1';
+      corpoEl.dataset.original = corpoEl.innerHTML;
+      corpoEl.innerHTML = ''
+        + '<form class="comentarios__form comentarios__form--edit" data-edit>'
+        +   '<textarea class="comentarios__textarea" rows="3" maxlength="2000" required></textarea>'
+        +   '<div class="comentarios__form-actions">'
+        +     '<button type="button" class="portal-button portal-button--ghost" data-edit-cancel>Cancelar</button>'
+        +     '<button type="submit" class="portal-button portal-button--primary">Salvar</button>'
+        +   '</div>'
+        + '</form>';
+      var editForm = corpoEl.querySelector('[data-edit]');
+      var editTa = editForm.querySelector('textarea');
+      editTa.value = textoAtual.trim();
+      editTa.focus();
+      editForm.querySelector('[data-edit-cancel]').addEventListener('click', function () {
+        corpoEl.innerHTML = corpoEl.dataset.original || nl2br(textoAtual);
+        corpoEl.dataset.editando = '0';
+      });
+      editForm.addEventListener('submit', function (ev2) {
+        ev2.preventDefault();
+        var novo = (editTa.value || '').trim();
+        if (novo.length < 2) { mostrarErro('Muito curto.'); return; }
+        var fd = new FormData();
+        fd.append('corpo', novo);
+        fd.append('csrfmiddlewaretoken', csrf);
+        fetch('/home/comentarios/' + id + '/editar/', {
+          method: 'POST', body: fd, credentials: 'same-origin',
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+        })
+        .then(function (r) { return r.json().then(function(j){ return {ok:r.ok, data:j}; }); })
+        .then(function (res) {
+          if (!res.ok) { mostrarErro(res.data.error || 'Erro'); return; }
+          corpoEl.innerHTML = nl2br(res.data.comentario.corpo);
+          corpoEl.dataset.editando = '0';
+          var header = item.querySelector('.comentarios__card-header');
+          if (header && !header.querySelector('.comentarios__editado')) {
+            var span = document.createElement('span');
+            span.className = 'comentarios__editado';
+            span.textContent = '(editado)';
+            header.appendChild(span);
+          }
+        })
+        .catch(function () { mostrarErro('Falha de rede.'); });
+      });
+      return;
+    }
+
+    if (acao === 'excluir') {
+      if (!confirm('Excluir este coment\u00e1rio? Esta a\u00e7\u00e3o s\u00f3 \u00e9 permitida nos primeiros 15 minutos.')) return;
+      var fd = new FormData();
+      fd.append('csrfmiddlewaretoken', csrf);
+      fetch('/home/comentarios/' + id + '/excluir/', {
+        method: 'POST', body: fd, credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+      })
+      .then(function (r) { return r.json().then(function(j){ return {ok:r.ok, data:j}; }); })
+      .then(function (res) {
+        if (!res.ok) { mostrarErro(res.data.error || 'Erro'); return; }
+        item.remove();
+        atualizarContador(-1);
+      })
+      .catch(function () { mostrarErro('Falha de rede.'); });
+      return;
+    }
+  });
+
+  // --- Carregar mais ---
+  if (btnMais) {
+    btnMais.addEventListener('click', function () {
+      var offset = parseInt(btnMais.getAttribute('data-offset'), 10) || 0;
+      btnMais.disabled = true;
+      fetch(root.getAttribute('data-listar-url') + '?offset=' + offset + '&limit=10', {
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        (data.items || []).forEach(function (c) {
+          var node = montarItem(c, false);
+          // respostas vindas do server
+          if (c.respostas && c.respostas.length) {
+            var destino = node.querySelector('.comentarios__respostas');
+            c.respostas.forEach(function (r) { destino.appendChild(montarItem(r, true)); });
+          }
+          lista.appendChild(node);
+        });
+        btnMais.setAttribute('data-offset', String(offset + (data.limit || 10)));
+        if (!data.tem_mais) { btnMais.remove(); }
+      })
+      .catch(function () { mostrarErro('Falha ao carregar mais.'); })
+      .finally(function () { btnMais.disabled = false; });
+    });
+  }
 })();
 </script>
 {% endblock %}

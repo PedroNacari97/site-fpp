@@ -1,0 +1,39 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Ocultar comentario — Painel NCfly{% endblock %}
+{% block page_title %}Ocultar comentario{% endblock %}
+
+{% block content %}
+<div class="card p-5 max-w-2xl">
+  <div class="mb-4">
+    <div class="text-xs text-slate-500 uppercase">Artigo</div>
+    <a class="text-brand-600 hover:underline" target="_blank" href="{{ comentario.artigo.get_absolute_url }}#comentario-{{ comentario.pk }}">
+      {{ comentario.artigo.titulo }}
+    </a>
+  </div>
+  <div class="mb-4">
+    <div class="text-xs text-slate-500 uppercase">Autor</div>
+    <div>{{ comentario.autor_nome_snapshot|default:comentario.autor_email_snapshot }} &middot; <span class="text-xs text-slate-500">{{ comentario.autor_email_snapshot }}</span></div>
+  </div>
+  <div class="mb-4">
+    <div class="text-xs text-slate-500 uppercase">Comentario</div>
+    <div class="bg-slate-50 border border-slate-200 rounded-md p-3 text-sm" style="white-space:pre-wrap;">{{ comentario.corpo|safe }}</div>
+  </div>
+
+  {% if comentario.status == "publicado" %}
+  <form method="post" action="{% url 'superadmin_comentario_ocultar' pk=comentario.pk %}">
+    {% csrf_token %}
+    <label class="block text-xs text-slate-500 uppercase mb-1">Motivo (obrigatorio)</label>
+    <textarea name="motivo" required rows="3" maxlength="200"
+              class="w-full border border-slate-300 rounded-md p-2 text-sm"
+              placeholder="Ex: conteudo ofensivo, spam, dado pessoal de terceiros..."></textarea>
+    <div class="mt-3 flex gap-2">
+      <a href="{% url 'superadmin_comentarios_list' %}" class="btn btn-secondary text-xs">Cancelar</a>
+      <button type="submit" class="btn btn-danger text-xs">Ocultar comentario</button>
+    </div>
+  </form>
+  {% else %}
+  <div class="text-sm text-slate-600">Status atual: <strong>{{ comentario.get_status_display }}</strong></div>
+  <a href="{% url 'superadmin_comentarios_list' %}" class="btn btn-secondary text-xs mt-3">Voltar</a>
+  {% endif %}
+</div>
+{% endblock %}

@@ -347,6 +347,10 @@ USER_SESSION_IDLE_TIMEOUT_SECONDS = int(
 # Variavel de ambiente: SUPERADMIN_EMAIL
 SUPERADMIN_EMAIL = os.environ.get("SUPERADMIN_EMAIL", "pedro@ncfly.com.br").strip().lower()
 
+# Email que recebe notificacoes de cadastro/comentario no portal B2C.
+# Fallback em SUPERADMIN_EMAIL se nao for definido.
+ADMIN_COMMENT_EMAIL = os.environ.get("ADMIN_COMMENT_EMAIL", SUPERADMIN_EMAIL).strip().lower()
+
 SUPERADMIN_MFA_ENABLED = _env_bool("SUPERADMIN_MFA_ENABLED", True)
 SUPERADMIN_MFA_CODE_TTL_MINUTES = int(
     os.environ.get("SUPERADMIN_MFA_CODE_TTL_MINUTES", "10")

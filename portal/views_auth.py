@@ -353,6 +353,13 @@ def portal_register(request):
     # 6. confirma email (infra existente — best-effort, nao bloqueia)
     _send_confirmation_email(user, request)
 
+    # 6.1 notifica admin sobre novo cadastro (best-effort)
+    try:
+        from portal.services.admin_notifications import enviar_email_admin_novo_cadastro
+        enviar_email_admin_novo_cadastro(user, via="email")
+    except Exception:  # noqa: BLE001
+        pass
+
     # 7. loga
     login_portal_user(request, user)
     link_pre_user_to(user, request)
@@ -453,6 +460,11 @@ def portal_google_callback(request):
             url_origem=get_request_url(request),
         )
         _send_confirmation_email(user, request)
+        try:
+            from portal.services.admin_notifications import enviar_email_admin_novo_cadastro
+            enviar_email_admin_novo_cadastro(user, via="google")
+        except Exception:  # noqa: BLE001
+            pass
 
     login_portal_user(request, user)
     link_pre_user_to(user, request)

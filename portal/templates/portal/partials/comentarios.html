@@ -1,0 +1,105 @@
+{% load portal_extras %}
+{# ===== Seção de comentários do artigo ===== #}
+<section class="comentarios" id="comentarios"
+         data-comentarios
+         data-artigo-id="{{ artigo.pk }}"
+         data-authenticated="{% if portal_user_is_authenticated %}1{% else %}0{% endif %}"
+         data-login-url="{% url 'portal_login' %}?next={{ request.path|urlencode }}#comentarios"
+         data-register-url="{% url 'portal_register' %}?next={{ request.path|urlencode }}#comentarios"
+         data-criar-url="{% url 'portal_comentario_criar' modulo_slug=artigo.modulo.slug slug=artigo.slug %}"
+         data-listar-url="{% url 'portal_comentario_listar' modulo_slug=artigo.modulo.slug slug=artigo.slug %}"
+         aria-labelledby="comentarios-titulo">
+  <header class="comentarios__header">
+    <h2 class="comentarios__title" id="comentarios-titulo">
+      Coment&aacute;rios
+      <span class="comentarios__count" data-comentarios-count>{{ comentarios_total }}</span>
+    </h2>
+    <p class="comentarios__hint">Tire suas d&uacute;vidas. O Pedro responde no pr&oacute;prio coment&aacute;rio.</p>
+  </header>
+
+  {% if portal_user_is_authenticated %}
+    <form class="comentarios__form" method="post"
+          action="{% url 'portal_comentario_criar' modulo_slug=artigo.modulo.slug slug=artigo.slug %}"
+          data-comentario-form="root">
+      {% csrf_token %}
+      <div class="comentarios__form-avatar" aria-hidden="true">
+        <span class="comentarios-avatar" data-letra="{{ portal_user_nome|slice:':1'|upper }}">
+          {{ portal_user_nome|slice:":1"|upper }}
+        </span>
+      </div>
+      <div class="comentarios__form-body">
+        <label for="comentario-corpo" class="sr-only">Seu coment&aacute;rio</label>
+        <textarea name="corpo" id="comentario-corpo"
+                  class="comentarios__textarea"
+                  rows="3"
+                  maxlength="2000"
+                  placeholder="Escreva sua d&uacute;vida ou observa&ccedil;&atilde;o&hellip;"
+                  required></textarea>
+        <div class="comentarios__form-actions">
+          <small class="comentarios__contador"><span data-comentarios-chars>0</span>/2000</small>
+          <button type="submit" class="portal-button portal-button--primary comentarios__submit">
+            Publicar
+          </button>
+        </div>
+        <p class="comentarios__form-error" role="alert" data-comentarios-error hidden></p>
+      </div>
+    </form>
+  {% else %}
+    <aside class="comentarios__login" role="note">
+      <div class="comentarios__login-copy">
+        <strong>Entre para comentar.</strong>
+        <span>Apenas leitores logados podem publicar d&uacute;vidas e respostas.</span>
+      </div>
+      <div class="comentarios__login-actions">
+        <a class="portal-button portal-button--primary"
+           href="{% url 'portal_login' %}?next={{ request.path|urlencode }}#comentarios">Entrar</a>
+        <a class="portal-button portal-button--ghost"
+           href="{% url 'portal_register' %}?next={{ request.path|urlencode }}#comentarios">Criar conta</a>
+      </div>
+    </aside>
+  {% endif %}
+
+  <ol class="comentarios__lista" data-comentarios-lista>
+    {% for c in comentarios %}
+      {% include "portal/partials/comentario_item.html" with c=c %}
+    {% empty %}
+      <li class="comentarios__vazio" data-comentarios-vazio>
+        Nenhum coment&aacute;rio ainda. Seja o primeiro.
+      </li>
+    {% endfor %}
+  </ol>
+
+  {% if comentarios_tem_mais %}
+  <div class="comentarios__mais">
+    <button type="button" class="portal-button portal-button--ghost"
+            data-comentarios-mais
+            data-offset="{{ comentarios_por_pagina }}">
+      Carregar mais coment&aacute;rios
+    </button>
+  </div>
+  {% endif %}
+
+  {# Template (cloneNode) para inserir comentarios recem-criados via JS #}
+  <template id="tpl-comentario-item">
+    <li class="comentarios__item" data-comentario-id="" id="">
+      <article class="comentarios__card">
+        <span class="comentarios-avatar" data-letra=""></span>
+        <div class="comentarios__card-body">
+          <header class="comentarios__card-header">
+            <strong class="comentarios__autor"></strong>
+            <time class="comentarios__data" datetime=""></time>
+            <span class="comentarios__editado" hidden>(editado)</span>
+          </header>
+          <div class="comentarios__corpo"></div>
+          <footer class="comentarios__actions">
+            <button type="button" class="comentarios__action" data-acao="responder" hidden>Responder</button>
+            <button type="button" class="comentarios__action" data-acao="editar" hidden>Editar</button>
+            <button type="button" class="comentarios__action comentarios__action--danger" data-acao="excluir" hidden>Excluir</button>
+          </footer>
+          <div class="comentarios__respostas"></div>
+          <div class="comentarios__reply-box" hidden></div>
+        </div>
+      </article>
+    </li>
+  </template>
+</section>

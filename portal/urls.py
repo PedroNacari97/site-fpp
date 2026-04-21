@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views, views_auth
+from . import views, views_auth, views_comentarios
 
 
 urlpatterns = [
@@ -47,6 +47,26 @@ urlpatterns = [
     ),
     path("artigos/<slug:slug>/", views.modulo_detalhe, name="portal_modulo_detalhe"),
     path("artigos/<slug:modulo_slug>/<slug:slug>/", views.artigo_detalhe, name="portal_artigo_detalhe"),
+    path(
+        "artigos/<slug:modulo_slug>/<slug:slug>/comentarios/",
+        views_comentarios.criar,
+        name="portal_comentario_criar",
+    ),
+    path(
+        "artigos/<slug:modulo_slug>/<slug:slug>/comentarios/lista/",
+        views_comentarios.listar,
+        name="portal_comentario_listar",
+    ),
+    path(
+        "comentarios/<int:comentario_id>/editar/",
+        views_comentarios.editar,
+        name="portal_comentario_editar",
+    ),
+    path(
+        "comentarios/<int:comentario_id>/excluir/",
+        views_comentarios.excluir,
+        name="portal_comentario_excluir",
+    ),
     path("noticias/", views.noticias_todas, name="portal_noticias_todas"),
     path("noticias/<slug:slug>/", views.noticia_redirect, name="portal_noticia_redirect"),
 ]

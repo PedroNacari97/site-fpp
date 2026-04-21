@@ -1,0 +1,146 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Comentarios — Painel NCfly{% endblock %}
+{% block page_title %}Comentarios do portal B2C{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+<div class="mb-4 space-y-2">
+  {% for m in messages %}
+  <div class="rounded-lg px-4 py-2 text-sm {% if m.tags == 'success' %}bg-green-50 text-green-700 border border-green-200{% elif m.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-slate-50 text-slate-700 border border-slate-200{% endif %}">
+    {{ m }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+  <div class="card p-4"><div class="text-xs text-slate-500 uppercase">Total</div><div class="text-2xl font-bold text-slate-800">{{ kpis.total }}</div></div>
+  <div class="card p-4"><div class="text-xs text-green-600 uppercase">Publicados</div><div class="text-2xl font-bold text-green-700">{{ kpis.publicados }}</div></div>
+  <div class="card p-4"><div class="text-xs text-red-600 uppercase">Ocultos (admin)</div><div class="text-2xl font-bold text-red-700">{{ kpis.ocultos }}</div></div>
+  <div class="card p-4"><div class="text-xs text-slate-500 uppercase">Excluidos (autor)</div><div class="text-2xl font-bold text-slate-800">{{ kpis.excluidos }}</div></div>
+</div>
+
+<div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+  <form method="get" class="flex gap-2 items-center flex-wrap">
+    <input type="search" name="q" value="{{ busca }}" placeholder="Buscar no corpo, email ou nome"
+           class="px-3 py-2 border border-slate-300 rounded-md text-sm" style="min-width:280px;">
+    <select name="status" onchange="this.form.submit()" style="width:auto;">
+      <option value="">Todos os status</option>
+      <option value="publicado" {% if status_filter == "publicado" %}selected{% endif %}>Publicado</option>
+      <option value="oculto_admin" {% if status_filter == "oculto_admin" %}selected{% endif %}>Oculto (admin)</option>
+      <option value="excluido_autor" {% if status_filter == "excluido_autor" %}selected{% endif %}>Excluido (autor)</option>
+    </select>
+    <button type="submit" class="btn btn-secondary text-xs">Filtrar</button>
+    {% if busca or status_filter or artigo_filter %}
+    <a href="{% url 'superadmin_comentarios_list' %}" class="btn btn-secondary text-xs">Limpar</a>
+    {% endif %}
+  </form>
+  <span class="text-xs text-slate-500">{{ total }} resultado(s)</span>
+</div>
+
+<div class="card overflow-hidden">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="table-header text-left text-xs text-slate-500 uppercase tracking-wider">
+        <th class="px-4 py-3">Autor</th>
+        <th class="px-4 py-3">Artigo</th>
+        <th class="px-4 py-3">Comentario</th>
+        <th class="px-4 py-3">Status</th>
+        <th class="px-4 py-3">Data</th>
+        <th class="px-4 py-3 text-right">Acoes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in comentarios %}
+      <tr class="border-t border-slate-100 hover:bg-slate-50 align-top">
+        <td class="px-4 py-3">
+          <div class="font-medium text-slate-800">{{ c.autor_nome_snapshot|default:c.autor_email_snapshot|truncatechars:30 }}</div>
+          <div class="text-xs text-slate-500">{{ c.autor_email_snapshot|truncatechars:40 }}</div>
+          {% if c.ip_cadastro %}<div class="text-xs text-slate-400">IP: {{ c.ip_cadastro }}</div>{% endif %}
+        </td>
+        <td class="px-4 py-3">
+          <a href="{{ c.artigo.get_absolute_url }}#comentario-{{ c.pk }}" target="_blank" class="text-brand-600 hover:underline text-xs">
+            {{ c.artigo.titulo|truncatechars:40 }}
+          </a>
+          {% if c.parent_id %}<div class="text-xs text-amber-600">Resposta ao #{{ c.parent_id }}</div>{% endif %}
+        </td>
+        <td class="px-4 py-3 max-w-md">
+          <div class="text-slate-800 text-sm" style="white-space:pre-wrap;word-wrap:break-word;max-height:100px;overflow:auto;">{{ c.corpo|safe|truncatechars:300 }}</div>
+          {% if c.editado %}<div class="text-xs text-slate-400 italic">editado</div>{% endif %}
+          {% if c.motivo_ocultacao %}<div class="text-xs text-red-600 mt-1">Motivo: {{ c.motivo_ocultacao }}</div>{% endif %}
+        </td>
+        <td class="px-4 py-3">
+          {% if c.status == "publicado" %}<span class="badge badge-green">Publicado</span>
+          {% elif c.status == "oculto_admin" %}<span class="badge badge-red">Oculto</span>
+          {% else %}<span class="badge badge-gray">Excluido</span>{% endif %}
+        </td>
+        <td class="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">{{ c.criado_em|date:"d/m/Y H:i" }}</td>
+        <td class="px-4 py-3 text-right whitespace-nowrap">
+          {% if c.status == "publicado" %}
+          <button type="button" class="btn btn-danger text-xs"
+                  onclick="document.getElementById('ocultar-{{ c.pk }}').showModal()">Ocultar</button>
+          <button type="button" class="btn btn-secondary text-xs ml-1"
+                  onclick="document.getElementById('responder-{{ c.pk }}').showModal()">Responder</button>
+          {% elif c.status == "oculto_admin" %}
+          <form method="post" action="{% url 'superadmin_comentario_restaurar' pk=c.pk %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary text-xs">Restaurar</button>
+          </form>
+          {% endif %}
+
+          <dialog id="ocultar-{{ c.pk }}" class="rounded-xl p-0 border-0 max-w-md">
+            <form method="post" action="{% url 'superadmin_comentario_ocultar' pk=c.pk %}" class="p-5">
+              {% csrf_token %}
+              <h3 class="text-base font-bold mb-2">Ocultar comentario #{{ c.pk }}</h3>
+              <p class="text-sm text-slate-600 mb-3">Informe o motivo (visivel apenas no painel — defesa juridica).</p>
+              <textarea name="motivo" required rows="3" maxlength="200"
+                        class="w-full border border-slate-300 rounded-md p-2 text-sm"
+                        placeholder="Ex: conteudo ofensivo, spam, dado pessoal de terceiros..."></textarea>
+              <div class="mt-3 flex justify-end gap-2">
+                <button type="button" class="btn btn-secondary text-xs" onclick="this.closest('dialog').close()">Cancelar</button>
+                <button type="submit" class="btn btn-danger text-xs">Ocultar</button>
+              </div>
+            </form>
+          </dialog>
+
+          <dialog id="responder-{{ c.pk }}" class="rounded-xl p-0 border-0 max-w-md">
+            <form method="post" action="{% url 'superadmin_comentario_responder' pk=c.pk %}" class="p-5">
+              {% csrf_token %}
+              <h3 class="text-base font-bold mb-2">Responder comentario #{{ c.pk }}</h3>
+              <p class="text-sm text-slate-600 mb-3">A resposta sera publicada em seu nome no artigo.</p>
+              <textarea name="corpo" required rows="4" maxlength="2000"
+                        class="w-full border border-slate-300 rounded-md p-2 text-sm"
+                        placeholder="Sua resposta..."></textarea>
+              <div class="mt-3 flex justify-end gap-2">
+                <button type="button" class="btn btn-secondary text-xs" onclick="this.closest('dialog').close()">Cancelar</button>
+                <button type="submit" class="btn btn-primary text-xs">Publicar resposta</button>
+              </div>
+            </form>
+          </dialog>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="px-4 py-10 text-center text-sm text-slate-500">
+          Nenhum comentario encontrado.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center gap-2 mt-6">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}&q={{ busca }}&status={{ status_filter }}" class="btn btn-secondary text-xs">&laquo; Anterior</a>
+  {% endif %}
+  <span class="btn btn-secondary text-xs" style="cursor:default;">Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}&q={{ busca }}&status={{ status_filter }}" class="btn btn-secondary text-xs">Proxima &raquo;</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}
