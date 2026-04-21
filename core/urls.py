@@ -28,12 +28,13 @@ from onboarding.views_assinatura import assinatura_bloqueada
 from portal import views as portal_views
 from portal.sitemaps import (
     AlertSitemap, ArtigoEstudoSitemap, CategorySitemap, HomeSitemap,
-    ModuloEstudoSitemap, NewsSitemap, StaticPageSitemap,
+    HubSitemap, ModuloEstudoSitemap, NewsSitemap, StaticPageSitemap,
 )
 
 
 portal_sitemaps = {
     "home": HomeSitemap,
+    "hubs": HubSitemap,
     "static": StaticPageSitemap,
     "categories": CategorySitemap,
     "news": NewsSitemap,
@@ -48,6 +49,7 @@ urlpatterns = [
     path("robots.txt", portal_views.robots_txt, name="portal_robots"),
     path("llms.txt", portal_views.llms_txt, name="portal_llms"),
     path("sitemap.xml", sitemap, {"sitemaps": portal_sitemaps}, name="portal_sitemap"),
+    path("sitemap-news.xml", portal_views.sitemap_news_xml, name="portal_sitemap_news"),
     path("plataforma/privacidade/", portal_views.privacidade_plataforma, name="portal_privacidade_plataforma"),
     path("plataforma/termos-de-uso/", portal_views.termos_plataforma, name="portal_termos_plataforma"),
     path("plataforma/dpa/", portal_views.dpa_plataforma, name="portal_dpa_plataforma"),

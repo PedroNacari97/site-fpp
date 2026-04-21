@@ -1,5 +1,7 @@
 import json
 import unicodedata
+from functools import lru_cache
+from pathlib import Path
 from urllib.parse import quote, urlparse
 
 from django.contrib import messages
@@ -233,6 +235,45 @@ def _request_is_same_origin(request):
     return True
 
 
+@lru_cache(maxsize=8)
+def _local_image_dimensions(static_path: str) -> tuple[int, int] | None:
+    """Lê width/height de um arquivo estático local. Usa lru_cache: lê uma vez por processo."""
+    if not static_path or not static_path.startswith("/static/"):
+        return None
+    try:
+        from django.contrib.staticfiles import finders
+        relative = static_path.removeprefix("/static/")
+        resolved = finders.find(relative)
+        if not resolved:
+            return None
+        from PIL import Image
+        with Image.open(Path(resolved)) as im:
+            return int(im.width), int(im.height)
+    except Exception:
+        return None
+
+
+_VALID_SOCIAL_URL_SCHEMES = ("http://", "https://")
+
+
+def _valid_social_urls(urls):
+    out = []
+    for raw in urls or []:
+        url = (raw or "").strip()
+        if not url:
+            continue
+        if not url.startswith(_VALID_SOCIAL_URL_SCHEMES):
+            continue
+        try:
+            parsed = urlparse(url)
+            if not parsed.netloc:
+                continue
+        except Exception:
+            continue
+        out.append(url)
+    return out
+
+
 def _build_organization_schema(request):
     base_url = _public_base_url(request)
     schema = {
@@ -241,19 +282,22 @@ def _build_organization_schema(request):
         "name": settings.PORTAL_SITE_NAME,
         "url": base_url,
     }
-    logo_url = _absolute_image_url(
-        request,
-        getattr(settings, "PORTAL_SITE_FAVICON_URL", "") or settings.PORTAL_SITE_LOGO_URL,
-    )
+    logo_raw = settings.PORTAL_SITE_LOGO_URL or getattr(settings, "PORTAL_SITE_FAVICON_URL", "")
+    logo_url = _absolute_image_url(request, logo_raw)
     if logo_url:
-        schema["logo"] = {
+        logo_node = {
             "@type": "ImageObject",
             "url": logo_url,
             "contentUrl": logo_url,
-            "width": 512,
-            "height": 512,
         }
+        dims = _local_image_dimensions(logo_raw)
+        if dims:
+            logo_node["width"], logo_node["height"] = dims
+        schema["logo"] = logo_node
         schema["image"] = logo_url
+    same_as = _valid_social_urls(getattr(settings, "PORTAL_SOCIAL_PROFILES", []))
+    if same_as:
+        schema["sameAs"] = same_as
     contact_points = []
     if settings.PORTAL_CONTACT_EMAIL:
         contact_points.append(
@@ -1969,24 +2013,141 @@ def artigo_marcar_lido(request, slug):
 
 # -- SEO helpers artigos --
 def _build_artigos_hub_seo(request):
-    t = "Aprenda sobre Milhas e Viagens | NC Fly"
-    d = "Guias completos e artigos educativos para dominar o universo das milhas aéreas."
-    return {"seo_title": t, "meta_description": d, "og_title": t, "og_description": d, "canonical_url": request.build_absolute_uri(reverse("portal_artigos"))}
+    canonical_url = _absolute_public_url(request, reverse("portal_artigos"))
+    base_url = _public_base_url(request)
+    title = "Aprenda sobre Milhas e Viagens | NC Fly"
+    description = (
+        "Guias completos e artigos educativos para dominar o universo das milhas aéreas."
+    )
+    breadcrumb_items = [
+        {"name": "Início", "url": _absolute_public_url(request, reverse("portal_home"))},
+        {"name": "Artigos", "url": canonical_url},
+    ]
+    collection_schema = {
+        "@type": "CollectionPage",
+        "@id": f"{canonical_url}#collection",
+        "url": canonical_url,
+        "name": "Artigos educativos de milhas",
+        "description": _seo_description(description),
+        "isPartOf": {"@id": f"{base_url}#website"},
+        "inLanguage": "pt-BR",
+    }
+    schema_json = _build_schema_graph(
+        _build_organization_schema(request),
+        _build_website_schema(request),
+        collection_schema,
+        _build_breadcrumb_schema(breadcrumb_items),
+    )
+    return _build_seo_context(
+        request,
+        title=title,
+        description=description,
+        canonical_url=canonical_url,
+        schema_json=schema_json,
+    )
 
 
 def _build_modulo_seo(request, modulo):
-    t = f"{modulo.titulo} — Artigos | NC Fly"
-    d = Truncator(modulo.descricao).chars(155)
-    return {"seo_title": t, "meta_description": d, "og_title": t, "og_description": d, "canonical_url": request.build_absolute_uri(modulo.get_absolute_url())}
+    canonical_url = _absolute_public_url(request, modulo.get_absolute_url())
+    base_url = _public_base_url(request)
+    title = f"{modulo.titulo} — Artigos | NC Fly"
+    description = Truncator(modulo.descricao or modulo.titulo).chars(155)
+    breadcrumb_items = [
+        {"name": "Início", "url": _absolute_public_url(request, reverse("portal_home"))},
+        {"name": "Artigos", "url": _absolute_public_url(request, reverse("portal_artigos"))},
+        {"name": modulo.titulo, "url": canonical_url},
+    ]
+    collection_schema = {
+        "@type": "CollectionPage",
+        "@id": f"{canonical_url}#collection",
+        "url": canonical_url,
+        "name": modulo.titulo,
+        "description": _seo_description(description),
+        "isPartOf": {"@id": f"{base_url}#website"},
+        "inLanguage": "pt-BR",
+    }
+    schema_json = _build_schema_graph(
+        _build_organization_schema(request),
+        _build_website_schema(request),
+        collection_schema,
+        _build_breadcrumb_schema(breadcrumb_items),
+    )
+    return _build_seo_context(
+        request,
+        title=title,
+        description=description,
+        canonical_url=canonical_url,
+        schema_json=schema_json,
+    )
 
 
 def _build_artigo_seo(request, artigo):
-    t = artigo.seo_title or artigo.titulo
-    d = artigo.meta_description or Truncator(artigo.resumo).chars(155)
-    img = artigo.imagem_exibicao or ""
-    canon = request.build_absolute_uri(artigo.get_absolute_url())
-    ld = json.dumps({"@context": "https://schema.org", "@type": "Article", "headline": artigo.titulo, "description": d, "author": {"@type": "Organization", "name": artigo.autor or "NC Fly"}, "publisher": {"@type": "Organization", "name": "NC Fly"}, "mainEntityOfPage": {"@type": "WebPage", "@id": canon}, **({"datePublished": artigo.publicado_em.isoformat()} if artigo.publicado_em else {}), **({"image": img} if img else {})}, ensure_ascii=False)
-    return {"seo_title": f"{t} | NC Fly", "meta_description": d, "og_title": t, "og_description": d, "og_image": img, "canonical_url": canon, "json_ld": ld}
+    canonical_url = _absolute_public_url(request, artigo.get_absolute_url())
+    base_url = _public_base_url(request)
+    headline = artigo.seo_title or artigo.titulo
+    description = artigo.meta_description or Truncator(artigo.resumo or artigo.titulo).chars(155)
+    image_raw = artigo.imagem_exibicao or ""
+    image_url = _absolute_image_url(request, image_raw)
+    body_text = strip_tags(artigo.conteudo or "")
+    word_count = len(body_text.split())
+    modulo = artigo.modulo
+    article_schema = {
+        "@type": "Article",
+        "@id": f"{canonical_url}#article",
+        "mainEntityOfPage": {"@type": "WebPage", "@id": canonical_url},
+        "headline": _seo_text(headline),
+        "description": _seo_description(description),
+        "author": {"@type": "Organization", "name": artigo.autor or "NC Fly"},
+        "publisher": {"@id": f"{base_url}#organization"},
+        "url": canonical_url,
+        "inLanguage": "pt-BR",
+        "wordCount": word_count,
+        "isPartOf": {"@id": f"{base_url}#website"},
+    }
+    if artigo.publicado_em:
+        article_schema["datePublished"] = timezone.localtime(artigo.publicado_em).isoformat()
+    if artigo.atualizado_em:
+        article_schema["dateModified"] = timezone.localtime(artigo.atualizado_em).isoformat()
+    if image_url:
+        article_schema["image"] = [image_url]
+        article_schema["thumbnailUrl"] = image_url
+    if modulo:
+        article_schema["articleSection"] = _seo_text(modulo.titulo)
+    keywords = []
+    if isinstance(artigo.keywords_json, list):
+        keywords = [str(kw).strip() for kw in artigo.keywords_json if str(kw).strip()]
+    if keywords:
+        article_schema["keywords"] = [_seo_text(kw) for kw in keywords]
+
+    breadcrumb_items = [
+        {"name": "Início", "url": _absolute_public_url(request, reverse("portal_home"))},
+        {"name": "Artigos", "url": _absolute_public_url(request, reverse("portal_artigos"))},
+    ]
+    if modulo:
+        breadcrumb_items.append(
+            {"name": modulo.titulo, "url": _absolute_public_url(request, modulo.get_absolute_url())}
+        )
+    breadcrumb_items.append({"name": artigo.titulo, "url": canonical_url})
+
+    schema_json = _build_schema_graph(
+        _build_organization_schema(request),
+        _build_website_schema(request),
+        article_schema,
+        _build_breadcrumb_schema(breadcrumb_items),
+    )
+    return _build_seo_context(
+        request,
+        title=f"{headline} | NC Fly",
+        description=description,
+        canonical_url=canonical_url,
+        image_url=image_raw,
+        og_type="article",
+        schema_json=schema_json,
+        published_time=artigo.publicado_em,
+        modified_time=artigo.atualizado_em,
+        section=modulo.titulo if modulo else "",
+        keywords=keywords,
+    )
 
 
 def categoria_lista(request, categoria_slug):
@@ -2429,31 +2590,75 @@ def ads_txt(request):
     )
 
 
+def sitemap_news_xml(request):
+    """Google News sitemap (namespace news:).
+
+    Inclui apenas noticias publicadas nos ultimos 2 dias (janela recomendada
+    pelo Google). Aparece no Top Stories apenas apos aprovacao no Publisher
+    Center; sem isso funciona como hint opcional para o crawler.
+    """
+    from datetime import timedelta
+
+    cutoff = timezone.now() - timedelta(days=2)
+    recent = (
+        NoticiaPublicada.objects.filter(status="published", publicada_em__gte=cutoff)
+        .only("slug", "titulo", "categoria", "publicada_em")
+        .order_by("-publicada_em")[:1000]
+    )
+    base_url = _public_base_url(request)
+    items = []
+    for noticia in recent:
+        items.append(
+            {
+                "loc": f"{base_url}{noticia.get_absolute_url()}",
+                "title": noticia.titulo,
+                "publication_date": timezone.localtime(noticia.publicada_em).isoformat(),
+            }
+        )
+    return render(
+        request,
+        "sitemap_news.xml",
+        {"items": items, "publication_name": settings.PORTAL_SITE_NAME},
+        content_type="application/xml",
+    )
+
+
 def robots_txt(request):
     sitemap_url = _absolute_public_url(request, reverse("portal_sitemap"))
-    response = "\n".join(
-        [
-            "User-agent: *",
-            "Disallow: /adm/",
-            "Disallow: /ncadm/",
-            "Disallow: /login/",
-            "Disallow: /painel/",
-            "Disallow: /contratar/",
-            "Disallow: /django/admin/",
-            "Disallow: /accounts/",
-            "Disallow: /webhooks/",
-            "Disallow: /auth/",
-            "Disallow: /assinatura/",
-            "Disallow: /integracoes/",
-            "Disallow: /monitoramento/",
-            "Allow: /home/",
-            "Allow: /sitemap.xml",
-            "Allow: /ads.txt",
-            "Allow: /llms.txt",
-            f"Sitemap: {sitemap_url}",
-        ]
-    )
-    return HttpResponse(response, content_type="text/plain; charset=utf-8")
+    private_disallow = [
+        "Disallow: /adm/",
+        "Disallow: /ncadm/",
+        "Disallow: /login/",
+        "Disallow: /painel/",
+        "Disallow: /contratar/",
+        "Disallow: /django/admin/",
+        "Disallow: /accounts/",
+        "Disallow: /webhooks/",
+        "Disallow: /auth/",
+        "Disallow: /assinatura/",
+        "Disallow: /integracoes/",
+        "Disallow: /monitoramento/",
+    ]
+    lines = [
+        "User-agent: *",
+        *private_disallow,
+        "Allow: /home/",
+        "Allow: /sitemap.xml",
+        "Allow: /ads.txt",
+        "Allow: /llms.txt",
+    ]
+    # AI crawlers — liberados em /home/ para ingestão do conteúdo público
+    # (artigos, notícias, alertas), privados bloqueados igual ao User-agent: *.
+    for ua in ("GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Google-Extended", "CCBot", "PerplexityBot"):
+        lines.append("")
+        lines.append(f"User-agent: {ua}")
+        lines.extend(private_disallow)
+        lines.append("Allow: /home/")
+    news_sitemap_url = _absolute_public_url(request, reverse("portal_sitemap_news"))
+    lines.append("")
+    lines.append(f"Sitemap: {sitemap_url}")
+    lines.append(f"Sitemap: {news_sitemap_url}")
+    return HttpResponse("\n".join(lines), content_type="text/plain; charset=utf-8")
 
 
 def llms_txt(request):

@@ -1,9 +1,13 @@
 from django.contrib.sitemaps import Sitemap
+from django.core.cache import cache
 from django.urls import reverse
 
 from gestao.models import AlertaViagem
 from .models import NoticiaPublicada
 from .services.public_alerts import PUBLIC_HOME_ALERT_MAX_AGE_DAYS
+
+
+HUB_LASTMOD_CACHE_TTL = 600  # 10 min
 
 
 CATEGORY_SLUGS = (
@@ -22,6 +26,11 @@ STATIC_ROUTE_NAMES = (
     "portal_privacidade",
     "portal_termos",
     "portal_plataforma_saas",
+)
+
+HUB_ROUTE_NAMES = (
+    "portal_artigos",
+    "portal_noticias_todas",
 )
 
 
@@ -70,6 +79,43 @@ class StaticPageSitemap(Sitemap):
         return reverse(item)
 
 
+class HubSitemap(Sitemap):
+    """Hubs de conteudo que captam lead (newsletter, opt-in artigos)."""
+    changefreq = "daily"
+    priority = 0.9
+
+    def items(self):
+        return HUB_ROUTE_NAMES
+
+    def location(self, item):
+        return reverse(item)
+
+    def lastmod(self, item):
+        cache_key = f"portal:sitemap:hub_lastmod:{item}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached or None
+        from .models import ArtigoEstudo
+        if item == "portal_artigos":
+            latest = (
+                ArtigoEstudo.objects.filter(status="published")
+                .only("atualizado_em")
+                .order_by("-atualizado_em")
+                .first()
+            )
+            value = latest.atualizado_em if latest else None
+        else:
+            latest_news = (
+                NoticiaPublicada.objects.filter(status="published")
+                .only("atualizada_em")
+                .order_by("-atualizada_em")
+                .first()
+            )
+            value = latest_news.atualizada_em if latest_news else None
+        cache.set(cache_key, value or "", HUB_LASTMOD_CACHE_TTL)
+        return value
+
+
 class NewsSitemap(Sitemap):
     changefreq = "daily"
     priority = 0.9
@@ -100,24 +146,33 @@ class AlertSitemap(Sitemap):
 
 
 class ArtigoEstudoSitemap(Sitemap):
-    changefreq = "monthly"
-    priority = 0.7
+    changefreq = "weekly"
+    priority = 0.9
 
     def items(self):
         from .models import ArtigoEstudo
-        return ArtigoEstudo.objects.filter(status="published").order_by("-publicado_em")
+        return (
+            ArtigoEstudo.objects.filter(status="published")
+            .select_related("modulo")
+            .only("slug", "atualizado_em", "publicado_em", "modulo__slug")
+            .order_by("-publicado_em")
+        )
 
     def lastmod(self, item):
         return item.atualizado_em
 
 
 class ModuloEstudoSitemap(Sitemap):
-    changefreq = "monthly"
-    priority = 0.6
+    changefreq = "weekly"
+    priority = 0.8
 
     def items(self):
         from .models import ModuloEstudo
-        return ModuloEstudo.objects.filter(ativo=True).order_by("ordem")
+        return (
+            ModuloEstudo.objects.filter(ativo=True)
+            .only("slug", "atualizado_em", "ordem")
+            .order_by("ordem")
+        )
 
     def lastmod(self, item):
         return item.atualizado_em

@@ -247,6 +247,7 @@ PORTAL_SITE_LOGO_LIGHT_URL = os.environ.get(
 PORTAL_SITE_FAVICON_URL = os.environ.get(
     "PORTAL_SITE_FAVICON_URL", "/static/portal/img/nacari-fly-favicon.png"
 ).strip()
+PORTAL_SOCIAL_PROFILES = _env_list("PORTAL_SOCIAL_PROFILES", [])
 PORTAL_DEFAULT_META_DESCRIPTION = (
     os.environ.get(
         "PORTAL_DEFAULT_META_DESCRIPTION",
