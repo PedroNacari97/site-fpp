@@ -1,0 +1,149 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Receitas e DAS — Painel NCfly{% endblock %}
+{% block page_title %}Receitas e DAS do mes{% endblock %}
+
+{% block content %}
+<div style="display:grid; gap:1rem;">
+
+    {% if perfil.regime_atual != "me_simples" and perfil.regime_atual != "epp_simples" %}
+    <div class="card" style="padding:.8rem 1rem; background:var(--yellow-50, #fef9c3); border-left:3px solid var(--warn-600, #ca8a04);">
+        <strong>Atencao:</strong> seu regime atual e <em>{{ perfil.get_regime_atual_display }}</em>. O calculo abaixo assume Simples Nacional Anexo III (SaaS/servicos). Se voce ainda esta em Inova Simples, use os valores como <strong>projecao</strong> para quando virar ME.
+    </div>
+    {% endif %}
+
+    <div class="section-row">
+        <h2 class="section-title" style="margin:0;">Painel do mes {{ mes_filtro|date:"m/Y" }}</h2>
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+            <form method="get" style="display:flex; gap:.4rem; align-items:flex-end;">
+                <div>
+                    <label for="mes" style="font-size:.72rem;">Mes</label>
+                    <input type="month" id="mes" name="mes" value="{{ mes_filtro_iso }}">
+                </div>
+                <button type="submit" class="btn btn-secondary btn-sm">Ver</button>
+            </form>
+            <a class="btn btn-primary btn-sm" href="{% url 'superadmin_receita_create' %}">+ Novo recebimento</a>
+        </div>
+    </div>
+
+    {# KPIs de DAS #}
+    <div class="grid-kpi-4">
+        <div class="kpi">
+            <span class="kpi__label">Faturamento do mes</span>
+            <span class="kpi__value">R$ {{ resultado.faturamento_mes|floatformat:2 }}</span>
+            <span class="kpi__foot">Taxa adquirente: R$ {{ totais.taxa|default:0|floatformat:2 }}</span>
+        </div>
+        <div class="kpi">
+            <span class="kpi__label">RBT12 {% if rbt12_proporcional %}(proporcional){% endif %}</span>
+            <span class="kpi__value">R$ {{ resultado.rbt12|floatformat:2 }}</span>
+            <span class="kpi__foot">Faixa {{ resultado.faixa }} / Anexo III</span>
+        </div>
+        <div class="kpi">
+            <span class="kpi__label">Aliquota efetiva</span>
+            <span class="kpi__value">{{ resultado.aliquota_efetiva|floatformat:4 }}</span>
+            <span class="kpi__foot">Nominal {{ resultado.aliquota_nominal|floatformat:4 }} − ded R$ {{ resultado.parcela_deduzir|floatformat:2 }}</span>
+        </div>
+        <div class="kpi" {% if resultado.das_mes > 0 %}style="border-left:3px solid var(--brand-600);"{% endif %}>
+            <span class="kpi__label">DAS do mes (projetado)</span>
+            <span class="kpi__value" style="color:var(--brand-700);">R$ {{ resultado.das_mes|floatformat:2 }}</span>
+            <span class="kpi__foot">
+                {% if resultado.desenquadrado %}<span style="color:var(--danger-600);">Fora do Simples</span>
+                {% elif resultado.faturamento_mes == 0 %}Sem faturamento → DAS zero
+                {% else %}Guia vence no dia 20 do mes seguinte{% endif %}
+            </span>
+        </div>
+    </div>
+
+    {% if resultado.aviso %}
+    <div class="card" style="padding:.8rem 1rem; background:#fee2e2; border-left:3px solid var(--danger-600);">
+        {{ resultado.aviso }}
+    </div>
+    {% endif %}
+
+    {# Serie historica 6 meses #}
+    <div class="card" style="padding:1rem;">
+        <div class="section-row" style="margin-bottom:.5rem;">
+            <h3 class="section-title" style="margin:0;">Ultimos 6 meses</h3>
+            <span style="font-size:.82rem; color:var(--slate-500);">Total DAS 6m: <strong>R$ {{ total_das_6m|floatformat:2 }}</strong></span>
+        </div>
+        <div class="table-wrap">
+            <table class="table-stack">
+                <thead class="table-header">
+                    <tr>
+                        <th style="padding:.5rem .6rem; text-align:left; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Mes</th>
+                        <th style="padding:.5rem .6rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Faturamento</th>
+                        <th style="padding:.5rem .6rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">RBT12</th>
+                        <th style="padding:.5rem .6rem; text-align:center; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Faixa</th>
+                        <th style="padding:.5rem .6rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Al. efetiva</th>
+                        <th style="padding:.5rem .6rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">DAS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in serie %}
+                    <tr style="border-top:1px solid var(--slate-100);">
+                        <td data-label="Mes" style="padding:.5rem .6rem; font-size:.82rem;">{{ item.mes|date:"m/Y" }}</td>
+                        <td data-label="Faturamento" style="padding:.5rem .6rem; font-size:.82rem; text-align:right;">R$ {{ item.faturamento|floatformat:2 }}</td>
+                        <td data-label="RBT12" style="padding:.5rem .6rem; font-size:.82rem; text-align:right; color:var(--slate-500);">
+                            R$ {{ item.rbt12|floatformat:2 }}{% if item.rbt12_proporcional %} <span style="font-size:.68rem;">(prop)</span>{% endif %}
+                        </td>
+                        <td data-label="Faixa" style="padding:.5rem .6rem; text-align:center; font-size:.82rem;">{{ item.faixa }}</td>
+                        <td data-label="Al. efetiva" style="padding:.5rem .6rem; text-align:right; font-size:.82rem;">{{ item.aliquota_efetiva|floatformat:4 }}</td>
+                        <td data-label="DAS" style="padding:.5rem .6rem; text-align:right; font-size:.82rem; font-weight:600;">R$ {{ item.das|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {# Lista de recebimentos do mes #}
+    <div class="card table-wrap">
+        <div style="padding:.75rem 1rem; border-bottom:1px solid var(--slate-100); display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:.9rem;">Recebimentos em {{ mes_filtro|date:"m/Y" }}</strong>
+            <span style="font-size:.82rem; color:var(--slate-500);">Total bruto: <strong>R$ {{ totais.bruto|default:0|floatformat:2 }}</strong></span>
+        </div>
+        <table class="table-stack">
+            <thead class="table-header">
+                <tr>
+                    <th style="padding:.55rem .75rem; text-align:left; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Data</th>
+                    <th style="padding:.55rem .75rem; text-align:left; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Cliente</th>
+                    <th style="padding:.55rem .75rem; text-align:left; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Origem</th>
+                    <th style="padding:.55rem .75rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Bruto</th>
+                    <th style="padding:.55rem .75rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Taxa</th>
+                    <th style="padding:.55rem .75rem; text-align:center; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">NFS-e</th>
+                    <th style="padding:.55rem .75rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in recebimentos %}
+                <tr style="border-top:1px solid var(--slate-100);">
+                    <td data-label="Data" style="padding:.55rem .75rem; font-size:.82rem;">{{ r.data|date:"d/m/Y" }}</td>
+                    <td data-label="Cliente" style="padding:.55rem .75rem; font-size:.82rem; font-weight:500;">
+                        {{ r.cliente|default:"—" }}
+                        {% if r.descricao %}<div style="font-size:.7rem; color:var(--slate-400);">{{ r.descricao|truncatechars:60 }}</div>{% endif %}
+                    </td>
+                    <td data-label="Origem" style="padding:.55rem .75rem; font-size:.82rem; color:var(--slate-500);">{{ r.get_origem_display }}</td>
+                    <td data-label="Bruto" style="padding:.55rem .75rem; font-size:.82rem; text-align:right; font-weight:600;">R$ {{ r.valor_bruto|floatformat:2 }}</td>
+                    <td data-label="Taxa" style="padding:.55rem .75rem; font-size:.82rem; text-align:right; color:var(--slate-500);">R$ {{ r.taxa_adquirente|floatformat:2 }}</td>
+                    <td data-label="NFS-e" style="padding:.55rem .75rem; text-align:center;">
+                        {% if r.nfse_emitida %}<span class="badge badge-green">{{ r.nfse_numero|default:"sim" }}</span>
+                        {% else %}<span class="badge badge-yellow">pendente</span>{% endif %}
+                    </td>
+                    <td class="table-stack__actions" style="padding:.55rem .75rem; text-align:right; white-space:nowrap;">
+                        <a class="btn btn-secondary btn-sm" href="{% url 'superadmin_receita_edit' r.pk %}">Editar</a>
+                        <form method="post" action="{% url 'superadmin_receita_delete' r.pk %}" style="display:inline;" onsubmit="return confirm('Excluir este recebimento?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" style="padding:1.5rem; text-align:center; color:var(--slate-500); font-size:.875rem;">
+                    Sem recebimentos em {{ mes_filtro|date:"m/Y" }}. <a class="section-row__link" href="{% url 'superadmin_receita_create' %}">Registrar o primeiro →</a>
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

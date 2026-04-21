@@ -1,0 +1,96 @@
+{% extends "superadmin/base.html" %}
+{% block title %}{% if editando %}Editar{% else %}Novo{% endif %} custo — Painel NCfly{% endblock %}
+{% block page_title %}{% if editando %}Editar custo{% else %}Novo custo operacional{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card" style="padding:1rem; max-width:720px;">
+    <form method="post" enctype="multipart/form-data" style="display:grid; gap:.9rem;">
+        {% csrf_token %}
+        <div class="grid-form-2">
+            <div>
+                <label for="mes_referencia">Mes de referencia *</label>
+                <input type="month" id="mes_referencia" name="mes_referencia" required
+                    value="{% if custo %}{{ custo.mes_referencia|date:'Y-m' }}{% else %}{{ form_data.mes_referencia|default:mes_default }}{% endif %}">
+            </div>
+            <div>
+                <label for="categoria">Categoria *</label>
+                <select id="categoria" name="categoria" required>
+                    {% for val, label in categorias %}
+                        <option value="{{ val }}" {% if custo and custo.categoria == val %}selected{% elif form_data.categoria == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <label for="fornecedor">Fornecedor *</label>
+            <input type="text" id="fornecedor" name="fornecedor" required maxlength="120"
+                value="{% if custo %}{{ custo.fornecedor }}{% else %}{{ form_data.fornecedor|default:'' }}{% endif %}"
+                placeholder="Ex.: Railway, OpenAI, Registro.br">
+        </div>
+        <div>
+            <label for="descricao">Descricao (opcional)</label>
+            <input type="text" id="descricao" name="descricao" maxlength="240"
+                value="{% if custo %}{{ custo.descricao }}{% else %}{{ form_data.descricao|default:'' }}{% endif %}">
+        </div>
+
+        <div class="grid-form-3">
+            <div>
+                <label for="moeda">Moeda *</label>
+                <select id="moeda" name="moeda">
+                    {% for val, label in moedas %}
+                        <option value="{{ val }}" {% if custo and custo.moeda == val %}selected{% elif form_data.moeda == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="valor_original">Valor original *</label>
+                <input type="text" inputmode="decimal" id="valor_original" name="valor_original" required
+                    value="{% if custo %}{{ custo.valor_original }}{% else %}{{ form_data.valor_original|default:'' }}{% endif %}"
+                    placeholder="Ex.: 120,50">
+            </div>
+            <div>
+                <label for="cambio_ptax">Cambio PTAX (USD)</label>
+                <input type="text" inputmode="decimal" id="cambio_ptax" name="cambio_ptax"
+                    value="{% if custo %}{{ custo.cambio_ptax }}{% else %}{{ form_data.cambio_ptax|default:'' }}{% endif %}"
+                    placeholder="Ex.: 5,1234">
+            </div>
+        </div>
+
+        <div class="grid-form-2">
+            <div>
+                <label for="iof">IOF (USD apenas)</label>
+                <input type="text" inputmode="decimal" id="iof" name="iof"
+                    value="{% if custo %}{{ custo.iof }}{% else %}{{ form_data.iof|default:'' }}{% endif %}"
+                    placeholder="Ex.: 3,50">
+                <small style="font-size:.72rem; color:var(--slate-400);">3,5% sobre cartao internacional.</small>
+            </div>
+            <div>
+                <label for="tem_invoice">Tem invoice/recibo?</label>
+                <select id="tem_invoice" name="tem_invoice">
+                    <option value="0" {% if custo and not custo.tem_invoice %}selected{% endif %}>Nao</option>
+                    <option value="1" {% if custo and custo.tem_invoice %}selected{% endif %}>Sim</option>
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <label for="anexo">Anexo PDF (opcional)</label>
+            <input type="file" id="anexo" name="anexo" accept="application/pdf,image/*">
+            {% if custo and custo.anexo %}
+                <small style="font-size:.72rem; color:var(--slate-500);">Ja anexado: <a href="{{ custo.anexo.url }}" target="_blank" style="color:var(--brand-600);">baixar</a></small>
+            {% endif %}
+        </div>
+
+        <div>
+            <label for="observacoes">Observacoes</label>
+            <textarea id="observacoes" name="observacoes" rows="3">{% if custo %}{{ custo.observacoes }}{% else %}{{ form_data.observacoes|default:'' }}{% endif %}</textarea>
+        </div>
+
+        <div style="display:flex; gap:.5rem; justify-content:flex-end; flex-wrap:wrap;">
+            <a href="{% url 'superadmin_custos_list' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">{% if editando %}Salvar{% else %}Cadastrar{% endif %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

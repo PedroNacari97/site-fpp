@@ -8,6 +8,7 @@ from django.urls import path
 from . import views
 from . import views_financeiro
 from . import views_comentarios
+from . import views_ncadm
 
 urlpatterns = [
     # Dashboard
@@ -68,6 +69,29 @@ urlpatterns = [
         views_financeiro.PagamentosListView.as_view(),
         name="superadmin_pagamentos_list",
     ),
+
+    # Custos operacionais (Railway, OpenAI, dominio)
+    path("custos/", views_ncadm.CustosListView.as_view(), name="superadmin_custos_list"),
+    path("custos/novo/", views_ncadm.CustoCreateView.as_view(), name="superadmin_custo_create"),
+    path("custos/<int:pk>/editar/", views_ncadm.CustoEditView.as_view(), name="superadmin_custo_edit"),
+    path("custos/<int:pk>/excluir/", views_ncadm.CustoDeleteView.as_view(), name="superadmin_custo_delete"),
+    path("custos/fechamento-csv/", views_ncadm.FechamentoMensalCSVView.as_view(), name="superadmin_fechamento_csv"),
+
+    # Perfil fiscal (CNPJ, regime, CNAEs, contador, conversao)
+    path("fiscal/perfil/", views_ncadm.PerfilFiscalView.as_view(), name="superadmin_perfil_fiscal"),
+
+    # Receitas e calculo do DAS
+    path("fiscal/receitas/", views_ncadm.ReceitasListView.as_view(), name="superadmin_receitas_list"),
+    path("fiscal/receitas/novo/", views_ncadm.ReceitaCreateView.as_view(), name="superadmin_receita_create"),
+    path("fiscal/receitas/<int:pk>/editar/", views_ncadm.ReceitaEditView.as_view(), name="superadmin_receita_edit"),
+    path("fiscal/receitas/<int:pk>/excluir/", views_ncadm.ReceitaDeleteView.as_view(), name="superadmin_receita_delete"),
+
+    # Obrigacoes fiscais
+    path("fiscal/", views_ncadm.ObrigacoesListView.as_view(), name="superadmin_obrigacoes_list"),
+    path("fiscal/nova/", views_ncadm.ObrigacaoCreateView.as_view(), name="superadmin_obrigacao_create"),
+    path("fiscal/<int:pk>/editar/", views_ncadm.ObrigacaoEditView.as_view(), name="superadmin_obrigacao_edit"),
+    path("fiscal/<int:pk>/pagar/", views_ncadm.ObrigacaoMarcarPagaView.as_view(), name="superadmin_obrigacao_pagar"),
+    path("fiscal/<int:pk>/excluir/", views_ncadm.ObrigacaoDeleteView.as_view(), name="superadmin_obrigacao_delete"),
 
     # Comentarios (moderacao B2C)
     path(

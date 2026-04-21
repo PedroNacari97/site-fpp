@@ -1,0 +1,91 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Obrigacoes fiscais — Painel NCfly{% endblock %}
+{% block page_title %}Obrigacoes fiscais{% endblock %}
+
+{% block content %}
+<div style="display:grid; gap:1rem;">
+
+    <div class="section-row">
+        <h2 class="section-title" style="margin:0;">Obrigacoes</h2>
+        <a class="btn btn-primary btn-sm" href="{% url 'superadmin_obrigacao_create' %}">+ Nova obrigacao</a>
+    </div>
+
+    <form method="get" class="card grid-form-2" style="padding:1rem;">
+        <div>
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="">Todos</option>
+                {% for val, label in status_choices %}
+                    <option value="{{ val }}" {% if status_filtro == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </form>
+
+    <div class="card table-wrap">
+        <table class="table-stack">
+            <thead class="table-header">
+                <tr>
+                    <th style="padding:.6rem .75rem; text-align:left; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Tipo</th>
+                    <th style="padding:.6rem .75rem; text-align:left; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Competencia</th>
+                    <th style="padding:.6rem .75rem; text-align:left; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Vencimento</th>
+                    <th style="padding:.6rem .75rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Valor</th>
+                    <th style="padding:.6rem .75rem; text-align:center; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Status</th>
+                    <th style="padding:.6rem .75rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for o in obrigacoes %}
+            <tr style="border-top:1px solid var(--slate-100);">
+                <td data-label="Tipo" style="padding:.55rem .75rem; font-size:.82rem; color:var(--slate-800); font-weight:500;">
+                    <div style="text-align:right;">
+                        {{ o.get_tipo_display }}
+                        {% if o.descricao %}<div style="font-size:.72rem; color:var(--slate-400); font-weight:400;">{{ o.descricao|truncatechars:60 }}</div>{% endif %}
+                    </div>
+                </td>
+                <td data-label="Competencia" style="padding:.55rem .75rem; font-size:.82rem; color:var(--slate-500);">{{ o.competencia|date:"Y-m" }}</td>
+                <td data-label="Vencimento" style="padding:.55rem .75rem; font-size:.82rem; color:var(--slate-700);">
+                    <div style="text-align:right;">
+                        {{ o.vencimento|date:"d/m/Y" }}
+                        {% if o.status != 'paga' %}
+                            <div style="font-size:.7rem; color:{% if o.esta_atrasada %}var(--danger-600){% else %}var(--slate-400){% endif %};">
+                                {% if o.esta_atrasada %}Atrasada ha {{ o.dias_para_vencer|stringformat:'d'|cut:'-' }}d{% else %}Em {{ o.dias_para_vencer }}d{% endif %}
+                            </div>
+                        {% elif o.pago_em %}
+                            <div style="font-size:.7rem; color:var(--ok-600);">Paga em {{ o.pago_em|date:"d/m/Y" }}</div>
+                        {% endif %}
+                    </div>
+                </td>
+                <td data-label="Valor" style="padding:.55rem .75rem; font-size:.82rem; color:var(--slate-800); font-weight:600; text-align:right;">
+                    {% if o.valor_estimado %}R$ {{ o.valor_estimado|floatformat:2 }}{% else %}—{% endif %}
+                </td>
+                <td data-label="Status" style="padding:.55rem .75rem; text-align:center;">
+                    {% if o.status == "paga" %}<span class="badge badge-green">Paga</span>
+                    {% elif o.status == "atrasada" %}<span class="badge badge-red">Atrasada</span>
+                    {% else %}<span class="badge badge-yellow">Pendente</span>{% endif %}
+                </td>
+                <td class="table-stack__actions" style="padding:.55rem .75rem; text-align:right; white-space:nowrap;">
+                    {% if o.status != "paga" %}
+                    <form method="post" action="{% url 'superadmin_obrigacao_pagar' o.pk %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-sm">Pagar</button>
+                    </form>
+                    {% endif %}
+                    <a class="btn btn-secondary btn-sm" href="{% url 'superadmin_obrigacao_edit' o.pk %}">Editar</a>
+                    <form method="post" action="{% url 'superadmin_obrigacao_delete' o.pk %}" style="display:inline;" onsubmit="return confirm('Excluir esta obrigacao?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="padding:1.5rem; text-align:center; color:var(--slate-500); font-size:.875rem;">Nenhuma obrigacao cadastrada. <a class="section-row__link" href="{% url 'superadmin_obrigacao_create' %}">Cadastrar a primeira →</a></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

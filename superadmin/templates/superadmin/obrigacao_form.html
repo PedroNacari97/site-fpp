@@ -1,0 +1,57 @@
+{% extends "superadmin/base.html" %}
+{% block title %}{% if editando %}Editar{% else %}Nova{% endif %} obrigacao — Painel NCfly{% endblock %}
+{% block page_title %}{% if editando %}Editar obrigacao{% else %}Nova obrigacao fiscal{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card" style="padding:1rem; max-width:640px;">
+    <form method="post" style="display:grid; gap:.9rem;">
+        {% csrf_token %}
+
+        <div>
+            <label for="tipo">Tipo *</label>
+            <select id="tipo" name="tipo" required>
+                {% for val, label in tipos %}
+                    <option value="{{ val }}" {% if obrigacao and obrigacao.tipo == val %}selected{% elif form_data.tipo == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="descricao">Descricao *</label>
+            <input type="text" id="descricao" name="descricao" required maxlength="180"
+                value="{% if obrigacao %}{{ obrigacao.descricao }}{% else %}{{ form_data.descricao|default:'' }}{% endif %}"
+                placeholder="Ex.: DAS Simples Nacional 03/2026">
+        </div>
+
+        <div class="grid-form-2">
+            <div>
+                <label for="competencia">Competencia * (YYYY-MM)</label>
+                <input type="month" id="competencia" name="competencia" required
+                    value="{% if obrigacao %}{{ obrigacao.competencia|date:'Y-m' }}{% else %}{{ form_data.competencia|default:'' }}{% endif %}">
+            </div>
+            <div>
+                <label for="vencimento">Vencimento *</label>
+                <input type="date" id="vencimento" name="vencimento" required
+                    value="{% if obrigacao %}{{ obrigacao.vencimento|date:'Y-m-d' }}{% else %}{{ form_data.vencimento|default:'' }}{% endif %}">
+            </div>
+        </div>
+
+        <div>
+            <label for="valor_estimado">Valor estimado (R$)</label>
+            <input type="text" inputmode="decimal" id="valor_estimado" name="valor_estimado"
+                value="{% if obrigacao %}{{ obrigacao.valor_estimado }}{% else %}{{ form_data.valor_estimado|default:'' }}{% endif %}"
+                placeholder="Ex.: 53,00">
+        </div>
+
+        <div>
+            <label for="observacoes">Observacoes</label>
+            <textarea id="observacoes" name="observacoes" rows="3">{% if obrigacao %}{{ obrigacao.observacoes }}{% else %}{{ form_data.observacoes|default:'' }}{% endif %}</textarea>
+        </div>
+
+        <div style="display:flex; gap:.5rem; justify-content:flex-end; flex-wrap:wrap;">
+            <a href="{% url 'superadmin_obrigacoes_list' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">{% if editando %}Salvar{% else %}Cadastrar{% endif %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

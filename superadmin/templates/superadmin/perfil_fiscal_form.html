@@ -1,0 +1,262 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Perfil fiscal — Painel NCfly{% endblock %}
+{% block page_title %}Perfil fiscal da empresa{% endblock %}
+
+{% block content %}
+{% with fd=form_data %}
+<div style="display:grid; gap:1rem;">
+
+    {# Resumo visual do regime atual + conversao #}
+    <div class="grid-kpi-4">
+        <div class="kpi">
+            <span class="kpi__label">Regime atual</span>
+            <span class="kpi__value" style="font-size:1.05rem;">{{ perfil.get_regime_atual_display }}</span>
+            <span class="kpi__foot">{% if perfil.anexo_simples %}Anexo {{ perfil.anexo_simples }}{% else %}—{% endif %}</span>
+        </div>
+        <div class="kpi">
+            <span class="kpi__label">CNPJ</span>
+            <span class="kpi__value" style="font-size:1.05rem;">{{ perfil.cnpj|default:"—" }}</span>
+            <span class="kpi__foot">{{ perfil.municipio|default:"" }}{% if perfil.uf %}/{{ perfil.uf }}{% endif %}</span>
+        </div>
+        <div class="kpi">
+            <span class="kpi__label">CNAE principal</span>
+            <span class="kpi__value" style="font-size:1.05rem;">{{ perfil.cnae_principal|default:"—" }}</span>
+            <span class="kpi__foot">ISS {{ perfil.iss_aliquota|default:0|floatformat:2 }}%</span>
+        </div>
+        <div class="kpi">
+            <span class="kpi__label">Conversao de regime</span>
+            <span class="kpi__value" style="font-size:1.05rem;">
+                {% if perfil.conversao_status == "concluida" %}<span class="badge badge-green">Concluida</span>
+                {% elif perfil.conversao_status == "em_andamento" %}<span class="badge badge-yellow">Em andamento</span>
+                {% else %}<span class="badge badge-gray">Nao iniciada</span>{% endif %}
+            </span>
+            <span class="kpi__foot">
+                {% if perfil.regime_alvo %}Alvo: {{ perfil.get_regime_alvo_display }}{% else %}Sem regime alvo{% endif %}
+            </span>
+        </div>
+    </div>
+
+    {# Checklist da conversao #}
+    {% if perfil.checklist_itens %}
+    <div class="card" style="padding:1rem;">
+        <h2 class="section-title" style="margin:0 0 .6rem;">Checklist da conversao</h2>
+        <ul style="list-style:none; padding:0; margin:0; display:grid; gap:.25rem;">
+            {% for item in perfil.checklist_itens %}
+            <li style="display:flex; gap:.5rem; font-size:.85rem; color:{% if item.feito %}var(--slate-400){% else %}var(--slate-800){% endif %}; {% if item.feito %}text-decoration:line-through;{% endif %}">
+                <span>{% if item.feito %}[✓]{% else %}[ ]{% endif %}</span>
+                <span>{{ item.texto }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" class="card" style="padding:1rem; display:grid; gap:1.1rem;">
+        {% csrf_token %}
+
+        {# Identificacao #}
+        <div>
+            <h2 class="section-title" style="margin:0 0 .6rem;">Identificacao</h2>
+            <div style="display:grid; gap:.8rem;">
+                <div class="grid-form-2">
+                    <div>
+                        <label for="razao_social">Razao social</label>
+                        <input type="text" id="razao_social" name="razao_social" maxlength="180"
+                            value="{{ fd.razao_social|default:perfil.razao_social }}">
+                    </div>
+                    <div>
+                        <label for="nome_fantasia">Nome fantasia</label>
+                        <input type="text" id="nome_fantasia" name="nome_fantasia" maxlength="120"
+                            value="{{ fd.nome_fantasia|default:perfil.nome_fantasia }}">
+                    </div>
+                </div>
+                <div class="grid-form-2">
+                    <div>
+                        <label for="cnpj">CNPJ</label>
+                        <input type="text" id="cnpj" name="cnpj" maxlength="18" placeholder="00.000.000/0000-00"
+                            value="{{ fd.cnpj|default:perfil.cnpj }}">
+                    </div>
+                    <div>
+                        <label for="data_abertura">Data de abertura</label>
+                        <input type="date" id="data_abertura" name="data_abertura"
+                            value="{% if perfil.data_abertura %}{{ perfil.data_abertura|date:'Y-m-d' }}{% else %}{{ fd.data_abertura|default:'' }}{% endif %}">
+                    </div>
+                </div>
+                <div>
+                    <label for="endereco">Endereco da sede</label>
+                    <input type="text" id="endereco" name="endereco" maxlength="240"
+                        value="{{ fd.endereco|default:perfil.endereco }}">
+                </div>
+                <div class="grid-form-2">
+                    <div>
+                        <label for="municipio">Municipio</label>
+                        <input type="text" id="municipio" name="municipio" maxlength="80"
+                            value="{{ fd.municipio|default:perfil.municipio }}">
+                    </div>
+                    <div>
+                        <label for="uf">UF</label>
+                        <input type="text" id="uf" name="uf" maxlength="2" style="text-transform:uppercase;"
+                            value="{{ fd.uf|default:perfil.uf }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Regime tributario #}
+        <div>
+            <h2 class="section-title" style="margin:0 0 .6rem;">Regime tributario</h2>
+            <div style="display:grid; gap:.8rem;">
+                <div class="grid-form-2">
+                    <div>
+                        <label for="regime_atual">Regime atual</label>
+                        <select id="regime_atual" name="regime_atual">
+                            {% for val, label in regimes %}
+                                <option value="{{ val }}" {% if perfil.regime_atual == val %}selected{% elif fd.regime_atual == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="anexo_simples">Anexo do Simples</label>
+                        <input type="text" id="anexo_simples" name="anexo_simples" maxlength="5" placeholder="III"
+                            value="{{ fd.anexo_simples|default:perfil.anexo_simples }}">
+                        <small style="font-size:.72rem; color:var(--slate-400);">SaaS geralmente Anexo III; Anexo V quando fator R &lt; 28%.</small>
+                    </div>
+                </div>
+                <div>
+                    <label for="cnae_principal">CNAE principal</label>
+                    <input type="text" id="cnae_principal" name="cnae_principal" maxlength="20" placeholder="6202-3/00"
+                        value="{{ fd.cnae_principal|default:perfil.cnae_principal }}">
+                </div>
+                <div>
+                    <label for="cnaes_secundarios">CNAEs secundarios (um por linha)</label>
+                    <textarea id="cnaes_secundarios" name="cnaes_secundarios" rows="3"
+                        placeholder="6201-5/01&#10;6311-9/00">{{ fd.cnaes_secundarios|default:perfil.cnaes_secundarios }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        {# Fiscal municipal #}
+        <div>
+            <h2 class="section-title" style="margin:0 0 .6rem;">Inscricoes e ISS</h2>
+            <div class="grid-form-3">
+                <div>
+                    <label for="inscricao_municipal">Inscricao Municipal</label>
+                    <input type="text" id="inscricao_municipal" name="inscricao_municipal" maxlength="40"
+                        value="{{ fd.inscricao_municipal|default:perfil.inscricao_municipal }}">
+                </div>
+                <div>
+                    <label for="inscricao_estadual">Inscricao Estadual</label>
+                    <input type="text" id="inscricao_estadual" name="inscricao_estadual" maxlength="40"
+                        value="{{ fd.inscricao_estadual|default:perfil.inscricao_estadual }}">
+                </div>
+                <div>
+                    <label for="iss_aliquota">ISS (%)</label>
+                    <input type="text" inputmode="decimal" id="iss_aliquota" name="iss_aliquota" placeholder="5.00"
+                        value="{{ fd.iss_aliquota|default:perfil.iss_aliquota }}">
+                </div>
+            </div>
+            <div style="margin-top:.8rem;">
+                <label for="nfse_portal_url">Portal NFS-e (URL da prefeitura)</label>
+                <input type="url" id="nfse_portal_url" name="nfse_portal_url"
+                    placeholder="https://nfe.sjc.sp.gov.br/..."
+                    value="{{ fd.nfse_portal_url|default:perfil.nfse_portal_url }}">
+            </div>
+        </div>
+
+        {# Contador #}
+        <div>
+            <h2 class="section-title" style="margin:0 0 .6rem;">Contador</h2>
+            <div style="display:grid; gap:.8rem;">
+                <div class="grid-form-2">
+                    <div>
+                        <label for="contador_nome">Nome</label>
+                        <input type="text" id="contador_nome" name="contador_nome" maxlength="120"
+                            value="{{ fd.contador_nome|default:perfil.contador_nome }}">
+                    </div>
+                    <div>
+                        <label for="contador_crc">CRC</label>
+                        <input type="text" id="contador_crc" name="contador_crc" maxlength="30" placeholder="1SP-000000/O-0"
+                            value="{{ fd.contador_crc|default:perfil.contador_crc }}">
+                    </div>
+                </div>
+                <div class="grid-form-2">
+                    <div>
+                        <label for="contador_email">E-mail</label>
+                        <input type="email" id="contador_email" name="contador_email"
+                            value="{{ fd.contador_email|default:perfil.contador_email }}">
+                    </div>
+                    <div>
+                        <label for="contador_telefone">Telefone</label>
+                        <input type="text" id="contador_telefone" name="contador_telefone" maxlength="30"
+                            value="{{ fd.contador_telefone|default:perfil.contador_telefone }}">
+                    </div>
+                </div>
+                <div>
+                    <label for="contador_escritorio">Escritorio</label>
+                    <input type="text" id="contador_escritorio" name="contador_escritorio" maxlength="120"
+                        value="{{ fd.contador_escritorio|default:perfil.contador_escritorio }}">
+                </div>
+            </div>
+        </div>
+
+        {# Conversao de regime #}
+        <div>
+            <h2 class="section-title" style="margin:0 0 .6rem;">Conversao de regime</h2>
+            <div style="display:grid; gap:.8rem;">
+                <div class="grid-form-2">
+                    <div>
+                        <label for="regime_alvo">Regime alvo</label>
+                        <select id="regime_alvo" name="regime_alvo">
+                            <option value="">— sem conversao em curso —</option>
+                            {% for val, label in regimes %}
+                                <option value="{{ val }}" {% if perfil.regime_alvo == val %}selected{% elif fd.regime_alvo == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="conversao_status">Status</label>
+                        <select id="conversao_status" name="conversao_status">
+                            {% for val, label in conversoes %}
+                                <option value="{{ val }}" {% if perfil.conversao_status == val %}selected{% elif fd.conversao_status == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="grid-form-3">
+                    <div>
+                        <label for="conversao_iniciada_em">Iniciada em</label>
+                        <input type="date" id="conversao_iniciada_em" name="conversao_iniciada_em"
+                            value="{% if perfil.conversao_iniciada_em %}{{ perfil.conversao_iniciada_em|date:'Y-m-d' }}{% endif %}">
+                    </div>
+                    <div>
+                        <label for="conversao_prevista_para">Prevista para</label>
+                        <input type="date" id="conversao_prevista_para" name="conversao_prevista_para"
+                            value="{% if perfil.conversao_prevista_para %}{{ perfil.conversao_prevista_para|date:'Y-m-d' }}{% endif %}">
+                    </div>
+                    <div>
+                        <label for="conversao_concluida_em">Concluida em</label>
+                        <input type="date" id="conversao_concluida_em" name="conversao_concluida_em"
+                            value="{% if perfil.conversao_concluida_em %}{{ perfil.conversao_concluida_em|date:'Y-m-d' }}{% endif %}">
+                    </div>
+                </div>
+                <div>
+                    <label for="conversao_checklist">Checklist (um item por linha; prefixe com [x] para concluidos)</label>
+                    <textarea id="conversao_checklist" name="conversao_checklist" rows="7"
+                        placeholder="[ ] Contratar contador&#10;[ ] Alterar CNAE principal para 6202-3/00&#10;[ ] Retirar CNAE 7911-2/00 (agencia de viagens)&#10;[ ] Emitir inscricao municipal em SJC&#10;[ ] Abrir DAS mensal&#10;[ ] Emitir primeira NFS-e teste">{{ fd.conversao_checklist|default:perfil.conversao_checklist }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <label for="observacoes">Observacoes gerais</label>
+            <textarea id="observacoes" name="observacoes" rows="3">{{ fd.observacoes|default:perfil.observacoes }}</textarea>
+        </div>
+
+        <div style="display:flex; gap:.5rem; justify-content:flex-end; flex-wrap:wrap;">
+            <a href="{% url 'superadmin_obrigacoes_list' %}" class="btn btn-secondary">Ir para obrigacoes</a>
+            <button type="submit" class="btn btn-primary">Salvar perfil fiscal</button>
+        </div>
+    </form>
+</div>
+{% endwith %}
+{% endblock %}

@@ -3,229 +3,317 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
+<div style="display:grid; gap:1.25rem;">
 
-    <!-- Cadastros consolidados -->
+    {# ========== HEALTH STRIP (so aparece se tiver alerta) ========== #}
+    {% if tem_alerta_operacional %}
+    <div class="health-strip" role="status" aria-live="polite">
+        <strong style="color:#7f1d1d; font-size:.82rem; letter-spacing:.02em;">ATENCAO</strong>
+        {% if health.jobs_falhas_24h %}
+            <a class="health-strip__pill" href="#jobs">{{ health.jobs_falhas_24h }} job(s) falharam (24h)</a>
+        {% endif %}
+        {% if not health.monitor_passagens_ok %}
+            <span class="health-strip__pill">Monitor de passagens sem heartbeat (2h)</span>
+        {% endif %}
+        {% if health.comentarios_ocultos %}
+            <a class="health-strip__pill health-strip__pill--warn" href="{% url 'superadmin_comentarios_list' %}">{{ health.comentarios_ocultos }} comentario(s) ocultos pendentes</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# ========== FINANCEIRO — prioridade maxima do Pedro ========== #}
     <section>
-        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Cadastros</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Cadastros no site (Portal B2C)</p>
-                <p class="text-3xl font-bold text-slate-800">{{ total_portal_users }}</p>
-                <p class="text-xs text-slate-400 mt-0.5">{{ portal_users_ativos }} ativos · recebem alertas + novos módulos</p>
+        <div class="section-row">
+            <h2 class="section-title" style="margin:0;">Financeiro — SaaS B2B</h2>
+            <a class="section-row__link" href="{% url 'superadmin_financeiro_dashboard' %}">Ver dashboard completo →</a>
+        </div>
+        {% if financeiro.disponivel %}
+        <div class="grid-kpi-4">
+            <div class="kpi">
+                <span class="kpi__label">MRR contratado</span>
+                <span class="kpi__value">R$ {{ financeiro.mrr|floatformat:2|default:"0,00" }}</span>
+                <span class="kpi__foot">{{ financeiro.assinaturas_ativas }} ativa(s) · {{ financeiro.assinaturas_trial }} trial</span>
             </div>
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Leads de Alertas (email)</p>
-                <p class="text-3xl font-bold text-slate-800">{{ total_leads_alertas }}</p>
-                <p class="text-xs text-slate-400 mt-0.5">{{ alertas_ativos }} ativos · só alertas</p>
+            <div class="kpi">
+                <span class="kpi__label">Receita no mes</span>
+                <span class="kpi__value">R$ {{ financeiro.pagamentos_mes_atual|floatformat:2|default:"0,00" }}</span>
+                <span class="kpi__foot">Pagamentos confirmados</span>
             </div>
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Leads da Plataforma (SaaS)</p>
-                <p class="text-3xl font-bold text-slate-800">{{ total_leads_plataforma }}</p>
-                <p class="text-xs text-slate-400 mt-0.5">{{ leads_novos }} novos · {{ leads_7d }} nos últimos 7d</p>
+            <div class="kpi">
+                <span class="kpi__label">Inadimplencia</span>
+                <span class="kpi__value" style="color: {% if financeiro.inadimplencia_valor %}var(--danger-600){% else %}var(--slate-900){% endif %};">R$ {{ financeiro.inadimplencia_valor|floatformat:2|default:"0,00" }}</span>
+                <span class="kpi__foot">Pendentes ha +7d</span>
+            </div>
+            <div class="kpi">
+                <span class="kpi__label">Custos no mes</span>
+                <span class="kpi__value">R$ {{ custos.mes_atual|floatformat:2|default:"0,00" }}</span>
+                <span class="kpi__foot">
+                    {% if custos.delta > 0 %}
+                        <span class="kpi__delta--down">+R$ {{ custos.delta|floatformat:2 }} vs mes anterior</span>
+                    {% elif custos.delta < 0 %}
+                        <span class="kpi__delta--up">R$ {{ custos.delta|floatformat:2 }} vs mes anterior</span>
+                    {% else %}
+                        Estavel vs mes anterior
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        {% else %}
+        <div class="card" style="padding:1rem;">
+            <p style="color:var(--slate-500); font-size:.875rem; margin:0;">Modulo financeiro indisponivel no momento.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    {# ========== CUSTOS DETALHADO ========== #}
+    <section>
+        <div class="section-row">
+            <h2 class="section-title" style="margin:0;">Custos operacionais</h2>
+            <a class="section-row__link" href="{% url 'superadmin_custos_list' %}">Gerenciar →</a>
+        </div>
+        <div class="grid-kpi-4">
+            <div class="kpi">
+                <span class="kpi__label">Infra (Railway)</span>
+                <span class="kpi__value">R$ {{ custos.infra_mes|floatformat:2|default:"0,00" }}</span>
+                <span class="kpi__foot">Mes atual</span>
+            </div>
+            <div class="kpi">
+                <span class="kpi__label">IA (OpenAI/Claude)</span>
+                <span class="kpi__value">R$ {{ custos.ia_mes|floatformat:2|default:"0,00" }}</span>
+                <span class="kpi__foot">Mes atual</span>
+            </div>
+            <div class="kpi">
+                <span class="kpi__label">IOF (USD)</span>
+                <span class="kpi__value">R$ {{ custos.iof_mes|floatformat:2|default:"0,00" }}</span>
+                <span class="kpi__foot">Mes atual</span>
+            </div>
+            <div class="kpi">
+                <span class="kpi__label">Acumulado no ano</span>
+                <span class="kpi__value">R$ {{ custos.acumulado_ano|floatformat:2|default:"0,00" }}</span>
+                <span class="kpi__foot">Jan/01 ate hoje</span>
             </div>
         </div>
     </section>
 
-    <!-- Metricas noticias -->
+    {# ========== FISCAL — proximos vencimentos ========== #}
     <section>
-        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Noticias</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Total</p>
-                <p class="text-2xl font-bold text-slate-800">{{ total_noticias }}</p>
-            </div>
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Publicadas</p>
-                <p class="text-2xl font-bold text-green-600">{{ noticias_publicadas }}</p>
-            </div>
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Rascunhos</p>
-                <p class="text-2xl font-bold text-yellow-600">{{ noticias_draft }}</p>
-            </div>
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Ultimas 24h</p>
-                <p class="text-2xl font-bold text-blue-600">{{ noticias_24h }}</p>
-            </div>
+        <div class="section-row">
+            <h2 class="section-title" style="margin:0;">Obrigacoes fiscais (30d)</h2>
+            <a class="section-row__link" href="{% url 'superadmin_obrigacoes_list' %}">Ver todas →</a>
         </div>
-    </section>
-
-    <!-- Metricas empresas + leads -->
-    <section>
-        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">SaaS</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Empresas</p>
-                <p class="text-2xl font-bold text-slate-800">{{ total_empresas }}</p>
-                <p class="text-xs text-slate-400 mt-0.5">{{ empresas_ativas }} ativas</p>
-            </div>
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Leads Plataforma</p>
-                <p class="text-2xl font-bold text-slate-800">{{ total_leads_plataforma }}</p>
-                <p class="text-xs text-slate-400 mt-0.5">{{ leads_novos }} novos · {{ leads_7d }} nos ultimos 7d</p>
-            </div>
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Leads Alertas</p>
-                <p class="text-2xl font-bold text-slate-800">{{ total_leads_alertas }}</p>
-                <p class="text-xs text-slate-400 mt-0.5">{{ alertas_ativos }} ativos</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Metricas Portal B2C -->
-    <section>
-        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Portal B2C</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Usuários totais</p>
-                <p class="text-2xl font-bold text-slate-800">{{ total_portal_users }}</p>
-                <p class="text-xs text-slate-400 mt-0.5">Cadastros no portal</p>
-            </div>
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Ativos</p>
-                <p class="text-2xl font-bold text-green-600">{{ portal_users_ativos }}</p>
-                <p class="text-xs text-slate-400 mt-0.5">Contas ativas</p>
-            </div>
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Novos 7d</p>
-                <p class="text-2xl font-bold text-blue-600">{{ portal_users_7d }}</p>
-                <p class="text-xs text-slate-400 mt-0.5">Últimos 7 dias</p>
-            </div>
-            <div class="card p-4">
-                <p class="text-xs text-slate-500 mb-1">Via Google</p>
-                <p class="text-2xl font-bold text-slate-800">{{ portal_users_google }}</p>
-                <p class="text-xs text-slate-400 mt-0.5">Login Google OAuth</p>
-            </div>
-        </div>
-    </section>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-        <!-- Ultimas noticias -->
-        <div class="card md:col-span-2 overflow-hidden">
-            <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-                <h3 class="text-sm font-semibold text-slate-700">Ultimas Noticias</h3>
-                <a href="{% url 'superadmin_noticias_list' %}" class="text-xs text-blue-600 hover:underline">Ver todas</a>
-            </div>
-            <table class="w-full text-sm">
+        {% if fiscal.proximas %}
+        <div class="card table-wrap">
+            <table class="table-stack">
+                <thead class="table-header">
+                    <tr>
+                        <th style="padding:.6rem .75rem; text-align:left; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Obrigacao</th>
+                        <th style="padding:.6rem .75rem; text-align:left; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Competencia</th>
+                        <th style="padding:.6rem .75rem; text-align:left; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Vencimento</th>
+                        <th style="padding:.6rem .75rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Valor</th>
+                        <th style="padding:.6rem .75rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Status</th>
+                    </tr>
+                </thead>
                 <tbody>
-                {% for n in ultimas_noticias %}
-                <tr class="border-b border-slate-50 hover:bg-slate-50">
-                    <td class="px-4 py-2 max-w-xs">
-                        <span class="block truncate font-medium text-slate-800" title="{{ n.titulo }}">{{ n.titulo|truncatechars:60 }}</span>
-                        <span class="text-xs text-slate-400">{{ n.criada_em|date:"d/m/Y H:i" }}</span>
+                {% for o in fiscal.proximas %}
+                <tr style="border-top:1px solid var(--slate-100);">
+                    <td data-label="Obrigacao" style="padding:.6rem .75rem; font-size:.875rem; color:var(--slate-700); font-weight:500;">
+                        <div style="text-align:right;">
+                            {{ o.get_tipo_display }}
+                            <div style="font-size:.75rem; color:var(--slate-400); font-weight:400;">{{ o.descricao|truncatechars:50 }}</div>
+                        </div>
                     </td>
-                    <td class="px-4 py-2 text-right whitespace-nowrap">
-                        {% if n.status == "published" %}
-                            <span class="badge badge-green">Publicada</span>
-                        {% elif n.status == "draft" %}
-                            <span class="badge badge-yellow">Rascunho</span>
+                    <td data-label="Competencia" style="padding:.6rem .75rem; font-size:.875rem; color:var(--slate-500);">{{ o.competencia|date:"Y-m"|default:"—" }}</td>
+                    <td data-label="Vencimento" style="padding:.6rem .75rem; font-size:.875rem; color:var(--slate-700);">{{ o.vencimento|date:"d/m/Y" }}</td>
+                    <td data-label="Valor" style="padding:.6rem .75rem; font-size:.875rem; color:var(--slate-700); text-align:right;">{% if o.valor_estimado %}R$ {{ o.valor_estimado|floatformat:2 }}{% else %}—{% endif %}</td>
+                    <td data-label="Status" style="padding:.6rem .75rem; text-align:right;">
+                        {% if o.esta_atrasada %}
+                            <span class="badge badge-red">Atrasada</span>
+                        {% elif o.dias_para_vencer <= 7 %}
+                            <span class="badge badge-yellow">Vence em {{ o.dias_para_vencer }}d</span>
                         {% else %}
-                            <span class="badge badge-gray">Arquivada</span>
+                            <span class="badge badge-blue">Em {{ o.dias_para_vencer }}d</span>
                         {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td class="px-4 py-6 text-center" colspan="2">
-                        <p class="text-sm text-slate-500">Nenhuma notícia ainda.</p>
-                        <a href="{% url 'superadmin_artigo_upload' %}" class="text-xs text-brand-600 hover:underline mt-1 inline-block">Publicar a primeira</a>
                     </td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% if fiscal.total_atrasadas %}
+        <p style="margin:.5rem 0 0; font-size:.8rem; color:var(--danger-600);"><strong>{{ fiscal.total_atrasadas }}</strong> obrigacao(oes) atrasada(s) — quite antes de novas multas.</p>
+        {% endif %}
+        {% else %}
+        <div class="card" style="padding:1rem;">
+            <p style="color:var(--slate-500); font-size:.875rem; margin:0;">Nenhuma obrigacao fiscal aberta nos proximos 30 dias.</p>
+            <a class="btn btn-secondary btn-sm" style="margin-top:.5rem;" href="{% url 'superadmin_obrigacao_create' %}">+ Cadastrar obrigacao</a>
+        </div>
+        {% endif %}
+    </section>
 
-        <!-- Ultimos jobs -->
-        <div class="card overflow-hidden">
-            <div class="px-4 py-3 border-b border-slate-100">
-                <h3 class="text-sm font-semibold text-slate-700">Ultimos Jobs</h3>
+    {# ========== CRESCIMENTO B2C ========== #}
+    <section>
+        <h2 class="section-title">Portal B2C — crescimento</h2>
+        <div class="grid-kpi-4">
+            <div class="kpi">
+                <span class="kpi__label">Cadastros no portal</span>
+                <span class="kpi__value">{{ crescimento.portal_users.total|default:0 }}</span>
+                <span class="kpi__foot">{{ crescimento.portal_users.ativos|default:0 }} ativos · +{{ crescimento.portal_users.novos_7d|default:0 }} em 7d</span>
             </div>
-            <ul class="divide-y divide-slate-50">
-            {% for job in ultimos_jobs %}
-            <li class="px-4 py-2">
-                <p class="text-xs font-medium text-slate-700 truncate">{{ job.job_name }}</p>
-                <p class="text-xs text-slate-400">{{ job.horario|date:"d/m H:i" }} —
-                    {% if job.status == "success" %}<span class="text-green-600">sucesso</span>
-                    {% elif job.status == "failed" %}<span class="text-red-600">falhou</span>
-                    {% elif job.status == "partial" %}<span class="text-yellow-600">parcial</span>
-                    {% else %}<span class="text-blue-600">rodando</span>{% endif %}
-                </p>
+            <div class="kpi">
+                <span class="kpi__label">Alertas de email</span>
+                <span class="kpi__value">{{ crescimento.alertas_email.ativos|default:0 }}</span>
+                <span class="kpi__foot">+{{ crescimento.alertas_email.novos_7d|default:0 }} em 7d</span>
+            </div>
+            <div class="kpi">
+                <span class="kpi__label">Comentarios</span>
+                <span class="kpi__value">{{ crescimento.comentarios.publicados|default:0 }}</span>
+                <span class="kpi__foot">+{{ crescimento.comentarios.novos_24h|default:0 }} em 24h</span>
+            </div>
+            <div class="kpi">
+                <span class="kpi__label">Noticias publicadas</span>
+                <span class="kpi__value">{{ crescimento.noticias.publicadas|default:0 }}</span>
+                <span class="kpi__foot">+{{ crescimento.noticias.publ_24h|default:0 }} em 24h · {{ crescimento.noticias.rascunho|default:0 }} rascunho(s)</span>
+            </div>
+        </div>
+    </section>
+
+    {# ========== TRAFEGO ========== #}
+    <section>
+        <h2 class="section-title">Trafego (pageviews)</h2>
+        <div class="grid-kpi-4">
+            <div class="kpi">
+                <span class="kpi__label">Hoje</span>
+                <span class="kpi__value">{{ trafego.page_views_hoje|default:0 }}</span>
+                <span class="kpi__foot">Ontem: {{ trafego.page_views_ontem|default:0 }}</span>
+            </div>
+            <div class="kpi">
+                <span class="kpi__label">Ontem</span>
+                <span class="kpi__value">{{ trafego.page_views_ontem|default:0 }}</span>
+                <span class="kpi__foot">Base de comparacao</span>
+            </div>
+            <div class="kpi">
+                <span class="kpi__label">Ultimos 7d</span>
+                <span class="kpi__value">{{ trafego.page_views_7d|default:0 }}</span>
+                <span class="kpi__foot">Soma da semana</span>
+            </div>
+            <div class="kpi">
+                <span class="kpi__label">Ultimos 30d</span>
+                <span class="kpi__value">{{ trafego.page_views_30d|default:0 }}</span>
+                <span class="kpi__foot">Soma do mes</span>
+            </div>
+        </div>
+    </section>
+
+    {# ========== B2B — Leads da plataforma ========== #}
+    <section>
+        <h2 class="section-title">SaaS B2B — funil de leads</h2>
+        <div class="grid-kpi-3">
+            <div class="kpi">
+                <span class="kpi__label">Leads nos 30d</span>
+                <span class="kpi__value">{{ crescimento.leads_plataforma.recentes_30d|default:0 }}</span>
+                <span class="kpi__foot">{{ crescimento.leads_plataforma.novos|default:0 }} em status "novo"</span>
+            </div>
+            <div class="kpi">
+                <span class="kpi__label">Qualificados</span>
+                <span class="kpi__value">{{ crescimento.leads_plataforma.qualificados|default:0 }}</span>
+                <span class="kpi__foot">Taxa: {{ crescimento.taxa_qualificacao_pct|default:0 }}%</span>
+            </div>
+            <div class="kpi">
+                <span class="kpi__label">Total acumulado</span>
+                <span class="kpi__value">{{ crescimento.leads_plataforma.total|default:0 }}</span>
+                <span class="kpi__foot">Desde o inicio</span>
+            </div>
+        </div>
+    </section>
+
+    {# ========== LISTAS: Noticias + Jobs + Comentarios ========== #}
+    <div style="display:grid; gap:1rem; grid-template-columns: 1fr;">
+
+        <div class="card" id="noticias">
+            <div style="padding:.75rem 1rem; border-bottom:1px solid var(--slate-100); display:flex; align-items:center; justify-content:space-between;">
+                <h3 style="margin:0; font-size:.875rem; font-weight:600; color:var(--slate-700);">Ultimas noticias</h3>
+                <a href="{% url 'superadmin_noticias_list' %}" class="section-row__link">Ver todas</a>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <tbody>
+                    {% for n in listas.ultimas_noticias %}
+                    <tr style="border-top:1px solid var(--slate-100);">
+                        <td style="padding:.55rem .75rem;">
+                            <div style="font-size:.875rem; font-weight:500; color:var(--slate-800);">{{ n.titulo|truncatechars:70 }}</div>
+                            <div style="font-size:.72rem; color:var(--slate-400);">{{ n.criada_em|date:"d/m/Y H:i" }}</div>
+                        </td>
+                        <td style="padding:.55rem .75rem; text-align:right; white-space:nowrap;">
+                            {% if n.status == "published" %}
+                                <span class="badge badge-green">Publicada</span>
+                            {% elif n.status == "draft" %}
+                                <span class="badge badge-yellow">Rascunho</span>
+                            {% else %}
+                                <span class="badge badge-gray">Arquivada</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td style="padding:1.25rem; text-align:center; color:var(--slate-500); font-size:.875rem;">Nenhuma noticia ainda. <a class="section-row__link" href="{% url 'superadmin_artigo_upload' %}">Publicar primeira</a></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" id="jobs">
+            <div style="padding:.75rem 1rem; border-bottom:1px solid var(--slate-100);">
+                <h3 style="margin:0; font-size:.875rem; font-weight:600; color:var(--slate-700);">Ultimos jobs (monitor, ingestao, etc.)</h3>
+            </div>
+            <ul style="margin:0; padding:0; list-style:none;">
+            {% for job in listas.ultimos_jobs %}
+            <li style="padding:.55rem 1rem; border-top:1px solid var(--slate-100); display:flex; justify-content:space-between; gap:.5rem;">
+                <div style="min-width:0; flex:1;">
+                    <div style="font-size:.82rem; font-weight:500; color:var(--slate-700); overflow:hidden; text-overflow:ellipsis;">{{ job.job_name }}</div>
+                    <div style="font-size:.72rem; color:var(--slate-400);">{{ job.horario|date:"d/m H:i" }}</div>
+                </div>
+                <div style="flex-shrink:0;">
+                    {% if job.status == "success" %}
+                        <span class="badge badge-green">ok</span>
+                    {% elif job.status == "failed" %}
+                        <span class="badge badge-red">falhou</span>
+                    {% elif job.status == "partial" %}
+                        <span class="badge badge-yellow">parcial</span>
+                    {% else %}
+                        <span class="badge badge-blue">rodando</span>
+                    {% endif %}
+                </div>
             </li>
             {% empty %}
-            <li class="px-4 py-6 text-center">
-                <p class="text-xs text-slate-500">Nenhum job registrado.</p>
-                <p class="text-[11px] text-slate-400 mt-1">Os jobs aparecem aqui após a primeira execução.</p>
-            </li>
+            <li style="padding:1.25rem; text-align:center; color:var(--slate-500); font-size:.875rem;">Nenhum job registrado.</li>
             {% endfor %}
             </ul>
         </div>
 
+        <div class="card">
+            <div style="padding:.75rem 1rem; border-bottom:1px solid var(--slate-100); display:flex; align-items:center; justify-content:space-between;">
+                <h3 style="margin:0; font-size:.875rem; font-weight:600; color:var(--slate-700);">Comentarios recentes</h3>
+                <a href="{% url 'superadmin_comentarios_list' %}" class="section-row__link">Moderar</a>
+            </div>
+            <div class="table-wrap">
+                <table class="table-stack">
+                    <tbody>
+                    {% for c in listas.comentarios_recentes %}
+                    <tr style="border-top:1px solid var(--slate-100);">
+                        <td data-label="Autor" style="padding:.55rem .75rem; font-size:.82rem; color:var(--slate-700);">{{ c.autor_nome_snapshot|default:c.autor_email_snapshot|truncatechars:25 }}</td>
+                        <td data-label="Artigo" style="padding:.55rem .75rem; font-size:.82rem;"><a style="color:var(--brand-600); text-decoration:none;" target="_blank" href="{{ c.artigo.get_absolute_url }}#comentario-{{ c.pk }}">{{ c.artigo.titulo|truncatechars:30 }}</a></td>
+                        <td data-label="Comentario" style="padding:.55rem .75rem; font-size:.82rem; color:var(--slate-500);">{{ c.corpo|truncatechars:50 }}</td>
+                        <td data-label="Data" style="padding:.55rem .75rem; font-size:.72rem; color:var(--slate-400); white-space:nowrap;">{{ c.criado_em|date:"d/m H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td style="padding:1.25rem; text-align:center; color:var(--slate-500); font-size:.875rem;" colspan="4">Nenhum comentario ainda.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
-
-    <!-- Noticias por categoria -->
-    {% if noticias_por_categoria %}
-    <section>
-        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Noticias por Categoria (publicadas)</h2>
-        <div class="card overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="table-header text-xs text-slate-500 uppercase">
-                    <tr>
-                        <th class="px-4 py-2 text-left">Categoria</th>
-                        <th class="px-4 py-2 text-right">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for row in noticias_por_categoria %}
-                <tr class="border-t border-slate-50">
-                    <td class="px-4 py-2 text-slate-700">{{ row.categoria|default:"(sem categoria)" }}</td>
-                    <td class="px-4 py-2 text-right font-semibold text-slate-800">{{ row.total }}</td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </section>
-    {% endif %}
-
-    {# Widget: Comentarios recentes #}
-    <section class="mb-6">
-        <div class="flex items-center justify-between mb-3">
-            <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-widest">Comentarios recentes</h2>
-            <a href="{% url 'superadmin_comentarios_list' %}" class="text-xs text-brand-600 hover:underline">Ver todos</a>
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-            <div class="card p-3"><div class="text-xs text-slate-500 uppercase">Total</div><div class="text-xl font-bold">{{ total_comentarios }}</div></div>
-            <div class="card p-3"><div class="text-xs text-green-600 uppercase">Publicados</div><div class="text-xl font-bold text-green-700">{{ comentarios_publicados }}</div></div>
-            <div class="card p-3"><div class="text-xs text-red-600 uppercase">Ocultos</div><div class="text-xl font-bold text-red-700">{{ comentarios_ocultos }}</div></div>
-            <div class="card p-3"><div class="text-xs text-blue-600 uppercase">Ultimas 24h</div><div class="text-xl font-bold text-blue-700">{{ comentarios_24h }}</div></div>
-        </div>
-        <div class="card overflow-hidden">
-            <table class="w-full text-sm">
-                <thead class="table-header text-xs text-slate-500 uppercase">
-                    <tr>
-                        <th class="px-4 py-2 text-left">Autor</th>
-                        <th class="px-4 py-2 text-left">Artigo</th>
-                        <th class="px-4 py-2 text-left">Comentario</th>
-                        <th class="px-4 py-2 text-left">Data</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for c in comentarios_recentes %}
-                <tr class="border-t border-slate-50">
-                    <td class="px-4 py-2 text-slate-700">{{ c.autor_nome_snapshot|default:c.autor_email_snapshot|truncatechars:25 }}</td>
-                    <td class="px-4 py-2"><a class="text-brand-600 hover:underline" target="_blank" href="{{ c.artigo.get_absolute_url }}#comentario-{{ c.pk }}">{{ c.artigo.titulo|truncatechars:35 }}</a></td>
-                    <td class="px-4 py-2 text-slate-600">{{ c.corpo|truncatechars:60 }}</td>
-                    <td class="px-4 py-2 text-xs text-slate-500 whitespace-nowrap">{{ c.criado_em|date:"d/m H:i" }}</td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="4" class="px-4 py-6 text-center text-sm text-slate-500">Nenhum comentario ainda.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </section>
 
 </div>
 {% endblock %}

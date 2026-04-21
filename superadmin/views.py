@@ -39,93 +39,8 @@ logger = logging.getLogger(__name__)
 
 class DashboardView(SuperAdminRequiredMixin):
     def get(self, request):
-        agora = timezone.now()
-        ultimas_24h = agora - timedelta(hours=24)
-        ultimos_7d = agora - timedelta(days=7)
-
-        total_noticias = NoticiaPublicada.objects.count()
-        noticias_publicadas = NoticiaPublicada.objects.filter(status="published").count()
-        noticias_draft = NoticiaPublicada.objects.filter(status="draft").count()
-        noticias_24h = NoticiaPublicada.objects.filter(criada_em__gte=ultimas_24h).count()
-
-        total_empresas = Empresa.objects.count()
-        empresas_ativas = Empresa.objects.filter(ativo=True).count()
-
-        total_leads_plataforma = LeadPlataforma.objects.count()
-        leads_novos = LeadPlataforma.objects.filter(status="novo").count()
-        leads_7d = LeadPlataforma.objects.filter(criado_em__gte=ultimos_7d).count()
-
-        total_leads_alertas = LeadAlertaEmail.objects.count()
-        alertas_ativos = LeadAlertaEmail.objects.filter(status="ativo").count()
-
-        # Portal B2C — usuarios cadastrados
-        portal_users_agg = PortalUser.objects.aggregate(
-            total=Count("id"),
-            ativos=Count("id", filter=Q(ativo=True)),
-            recentes_7d=Count("id", filter=Q(criado_em__gte=ultimos_7d)),
-            com_google=Count("id", filter=Q(google_sub__gt="")),
-        )
-        total_portal_users = portal_users_agg["total"] or 0
-        portal_users_ativos = portal_users_agg["ativos"] or 0
-        portal_users_7d = portal_users_agg["recentes_7d"] or 0
-        portal_users_google = portal_users_agg["com_google"] or 0
-
-        ultimas_noticias = (
-            NoticiaPublicada.objects
-            .select_related("fonte")
-            .order_by("-criada_em")[:10]
-        )
-
-        ultimos_jobs = JobExecucao.objects.order_by("-horario")[:5]
-
-        noticias_por_categoria = (
-            NoticiaPublicada.objects
-            .filter(status="published")
-            .values("categoria")
-            .annotate(total=Count("id"))
-            .order_by("-total")[:8]
-        )
-
-        # Comentarios (Portal B2C) — KPIs + 5 mais recentes
-        coment_agg = ComentarioArtigo.objects.aggregate(
-            total=Count("id"),
-            publicados=Count("id", filter=Q(status=ComentarioArtigo.STATUS_PUBLICADO)),
-            ocultos=Count("id", filter=Q(status=ComentarioArtigo.STATUS_OCULTO_ADMIN)),
-            recentes_24h=Count("id", filter=Q(criado_em__gte=ultimas_24h)),
-        )
-        comentarios_recentes = (
-            ComentarioArtigo.objects
-            .filter(status=ComentarioArtigo.STATUS_PUBLICADO)
-            .select_related("artigo", "artigo__modulo")
-            .order_by("-criado_em")[:5]
-        )
-
-        context = {
-            "menu_ativo": "dashboard",
-            "total_noticias": total_noticias,
-            "noticias_publicadas": noticias_publicadas,
-            "noticias_draft": noticias_draft,
-            "noticias_24h": noticias_24h,
-            "total_empresas": total_empresas,
-            "empresas_ativas": empresas_ativas,
-            "total_leads_plataforma": total_leads_plataforma,
-            "leads_novos": leads_novos,
-            "leads_7d": leads_7d,
-            "total_leads_alertas": total_leads_alertas,
-            "alertas_ativos": alertas_ativos,
-            "total_portal_users": total_portal_users,
-            "portal_users_ativos": portal_users_ativos,
-            "portal_users_7d": portal_users_7d,
-            "portal_users_google": portal_users_google,
-            "ultimas_noticias": ultimas_noticias,
-            "ultimos_jobs": ultimos_jobs,
-            "noticias_por_categoria": noticias_por_categoria,
-            "total_comentarios": coment_agg["total"] or 0,
-            "comentarios_publicados": coment_agg["publicados"] or 0,
-            "comentarios_ocultos": coment_agg["ocultos"] or 0,
-            "comentarios_24h": coment_agg["recentes_24h"] or 0,
-            "comentarios_recentes": comentarios_recentes,
-        }
+        from .services.dashboard import build_dashboard_context
+        context = build_dashboard_context()
         return render(request, "superadmin/dashboard.html", context)
 
 
@@ -431,7 +346,7 @@ def _extrair_dados_empresa(post):
 
 class EmpresaCreateView(SuperAdminRequiredMixin):
     def get(self, request):
-        context = {"menu_ativo": "empresas"}
+        context = {"menu_ativo": "empresas", "editando": False, "form_data": {}}
         return render(request, "superadmin/empresa_form.html", context)
 
     def post(self, request):
@@ -449,6 +364,7 @@ class EmpresaCreateView(SuperAdminRequiredMixin):
                 messages.error(request, erro)
             context = {
                 "menu_ativo": "empresas",
+                "editando": False,
                 "form_data": request.POST,
             }
             return render(request, "superadmin/empresa_form.html", context)

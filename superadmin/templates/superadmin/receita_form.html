@@ -1,0 +1,92 @@
+{% extends "superadmin/base.html" %}
+{% block title %}{% if editando %}Editar{% else %}Novo{% endif %} recebimento — Painel NCfly{% endblock %}
+{% block page_title %}{% if editando %}Editar recebimento{% else %}Novo recebimento{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card" style="padding:1rem; max-width:720px;">
+    <form method="post" style="display:grid; gap:.9rem;">
+        {% csrf_token %}
+
+        <div class="grid-form-2">
+            <div>
+                <label for="data">Data do recebimento *</label>
+                <input type="date" id="data" name="data" required
+                    value="{% if recebimento %}{{ recebimento.data|date:'Y-m-d' }}{% else %}{{ form_data.data|default:hoje }}{% endif %}">
+                <small style="font-size:.72rem; color:var(--slate-400);">Dia em que o valor caiu na conta (regime de caixa).</small>
+            </div>
+            <div>
+                <label for="natureza">Natureza *</label>
+                <select id="natureza" name="natureza">
+                    {% for val, label in naturezas %}
+                        <option value="{{ val }}" {% if recebimento and recebimento.natureza == val %}selected{% elif form_data.natureza == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <label for="cliente">Cliente / pagador</label>
+            <input type="text" id="cliente" name="cliente" maxlength="180"
+                value="{% if recebimento %}{{ recebimento.cliente }}{% else %}{{ form_data.cliente|default:'' }}{% endif %}"
+                placeholder="Ex.: Agencia Viagem Feliz LTDA">
+        </div>
+
+        <div class="grid-form-3">
+            <div>
+                <label for="origem">Origem do dinheiro *</label>
+                <select id="origem" name="origem">
+                    {% for val, label in origens %}
+                        <option value="{{ val }}" {% if recebimento and recebimento.origem == val %}selected{% elif form_data.origem == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="valor_bruto">Valor bruto (R$) *</label>
+                <input type="text" inputmode="decimal" id="valor_bruto" name="valor_bruto" required
+                    value="{% if recebimento %}{{ recebimento.valor_bruto }}{% else %}{{ form_data.valor_bruto|default:'' }}{% endif %}"
+                    placeholder="Ex.: 500,00">
+                <small style="font-size:.72rem; color:var(--slate-400);">Base do Simples e da NFS-e.</small>
+            </div>
+            <div>
+                <label for="taxa_adquirente">Taxa adquirente (R$)</label>
+                <input type="text" inputmode="decimal" id="taxa_adquirente" name="taxa_adquirente"
+                    value="{% if recebimento %}{{ recebimento.taxa_adquirente }}{% else %}{{ form_data.taxa_adquirente|default:'' }}{% endif %}"
+                    placeholder="Ex.: 20,50">
+                <small style="font-size:.72rem; color:var(--slate-400);">Apenas informativa — nao reduz o imposto.</small>
+            </div>
+        </div>
+
+        <div>
+            <label for="descricao">Descricao</label>
+            <input type="text" id="descricao" name="descricao" maxlength="240"
+                value="{% if recebimento %}{{ recebimento.descricao }}{% else %}{{ form_data.descricao|default:'' }}{% endif %}"
+                placeholder="Ex.: Assinatura SaaS plano basico abril/2026">
+        </div>
+
+        <div class="grid-form-2">
+            <div>
+                <label for="nfse_emitida">NFS-e ja emitida?</label>
+                <select id="nfse_emitida" name="nfse_emitida">
+                    <option value="0" {% if recebimento and not recebimento.nfse_emitida %}selected{% endif %}>Nao</option>
+                    <option value="1" {% if recebimento and recebimento.nfse_emitida %}selected{% endif %}>Sim</option>
+                </select>
+            </div>
+            <div>
+                <label for="nfse_numero">Numero da NFS-e</label>
+                <input type="text" id="nfse_numero" name="nfse_numero" maxlength="40"
+                    value="{% if recebimento %}{{ recebimento.nfse_numero }}{% else %}{{ form_data.nfse_numero|default:'' }}{% endif %}">
+            </div>
+        </div>
+
+        <div>
+            <label for="observacoes">Observacoes</label>
+            <textarea id="observacoes" name="observacoes" rows="3">{% if recebimento %}{{ recebimento.observacoes }}{% else %}{{ form_data.observacoes|default:'' }}{% endif %}</textarea>
+        </div>
+
+        <div style="display:flex; gap:.5rem; justify-content:flex-end; flex-wrap:wrap;">
+            <a href="{% url 'superadmin_receitas_list' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">{% if editando %}Salvar{% else %}Registrar{% endif %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

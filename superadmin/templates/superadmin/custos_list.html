@@ -1,0 +1,99 @@
+{% extends "superadmin/base.html" %}
+{% block title %}Custos operacionais — Painel NCfly{% endblock %}
+{% block page_title %}Custos operacionais{% endblock %}
+
+{% block content %}
+<div style="display:grid; gap:1rem;">
+
+    <div class="section-row">
+        <h2 class="section-title" style="margin:0;">Filtros</h2>
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
+            <a class="btn btn-primary btn-sm" href="{% url 'superadmin_custo_create' %}">+ Novo custo</a>
+            <a class="btn btn-secondary btn-sm" href="{% url 'superadmin_fechamento_csv' %}{% if mes_filtro %}?mes={{ mes_filtro }}{% endif %}">Exportar CSV</a>
+        </div>
+    </div>
+
+    <form method="get" class="card grid-form-3" style="padding:1rem;">
+        <div>
+            <label for="mes">Mes (YYYY-MM)</label>
+            <input type="month" id="mes" name="mes" value="{{ mes_filtro }}">
+        </div>
+        <div>
+            <label for="categoria">Categoria</label>
+            <select id="categoria" name="categoria">
+                <option value="">Todas</option>
+                {% for val, label in categorias %}
+                    <option value="{{ val }}" {% if categoria_filtro == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </form>
+
+    <div class="grid-kpi-4">
+        <div class="kpi">
+            <span class="kpi__label">Total (BRL)</span>
+            <span class="kpi__value">R$ {{ totais.total|default:0|floatformat:2 }}</span>
+            <span class="kpi__foot">Filtro atual</span>
+        </div>
+        <div class="kpi">
+            <span class="kpi__label">Em BRL</span>
+            <span class="kpi__value">R$ {{ totais.brl|default:0|floatformat:2 }}</span>
+        </div>
+        <div class="kpi">
+            <span class="kpi__label">Em USD (convertido)</span>
+            <span class="kpi__value">R$ {{ totais.usd|default:0|floatformat:2 }}</span>
+        </div>
+        <div class="kpi">
+            <span class="kpi__label">IOF total</span>
+            <span class="kpi__value">R$ {{ totais.iof|default:0|floatformat:2 }}</span>
+        </div>
+    </div>
+
+    <div class="card table-wrap">
+        <table class="table-stack">
+            <thead class="table-header">
+                <tr>
+                    <th style="padding:.6rem .75rem; text-align:left; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Mes</th>
+                    <th style="padding:.6rem .75rem; text-align:left; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Categoria</th>
+                    <th style="padding:.6rem .75rem; text-align:left; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Fornecedor</th>
+                    <th style="padding:.6rem .75rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Moeda</th>
+                    <th style="padding:.6rem .75rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Valor BRL</th>
+                    <th style="padding:.6rem .75rem; text-align:center; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">NF</th>
+                    <th style="padding:.6rem .75rem; text-align:right; font-size:.72rem; text-transform:uppercase; color:var(--slate-500);">Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for c in custos %}
+            <tr style="border-top:1px solid var(--slate-100);">
+                <td data-label="Mes" style="padding:.55rem .75rem; font-size:.82rem; color:var(--slate-700);">{{ c.mes_referencia|date:"Y-m" }}</td>
+                <td data-label="Categoria" style="padding:.55rem .75rem; font-size:.82rem; color:var(--slate-500);">{{ c.get_categoria_display }}</td>
+                <td data-label="Fornecedor" style="padding:.55rem .75rem; font-size:.82rem; color:var(--slate-800); font-weight:500;">
+                    <div style="text-align:right;">
+                        {{ c.fornecedor }}
+                        {% if c.descricao %}<div style="font-size:.72rem; color:var(--slate-400); font-weight:400;">{{ c.descricao|truncatechars:60 }}</div>{% endif %}
+                    </div>
+                </td>
+                <td data-label="Moeda" style="padding:.55rem .75rem; font-size:.82rem; color:var(--slate-500); text-align:right;">{{ c.moeda }}</td>
+                <td data-label="Valor BRL" style="padding:.55rem .75rem; font-size:.82rem; color:var(--slate-800); font-weight:600; text-align:right;">R$ {{ c.valor_brl|floatformat:2 }}</td>
+                <td data-label="NF" style="padding:.55rem .75rem; text-align:center;">
+                    {% if c.tem_invoice %}<span class="badge badge-green">sim</span>{% else %}<span class="badge badge-gray">nao</span>{% endif %}
+                </td>
+                <td class="table-stack__actions" style="padding:.55rem .75rem; text-align:right; white-space:nowrap;">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'superadmin_custo_edit' c.pk %}">Editar</a>
+                    <form method="post" action="{% url 'superadmin_custo_delete' c.pk %}" style="display:inline;" onsubmit="return confirm('Excluir este custo?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" style="padding:1.5rem; text-align:center; color:var(--slate-500); font-size:.875rem;">Nenhum custo cadastrado. <a class="section-row__link" href="{% url 'superadmin_custo_create' %}">Cadastrar o primeiro →</a></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

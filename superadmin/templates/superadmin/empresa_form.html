@@ -31,10 +31,13 @@
                 <div>
                     <label for="tipo_pessoa">Tipo de pessoa</label>
                     <select id="tipo_pessoa" name="tipo_pessoa">
-                        {% with tp=empresa.tipo_pessoa|default:form_data.tipo_pessoa|default:'PJ' %}
-                        <option value="PJ" {% if tp == 'PJ' %}selected{% endif %}>Pessoa Jurídica</option>
-                        <option value="PF" {% if tp == 'PF' %}selected{% endif %}>Pessoa Física</option>
-                        {% endwith %}
+                        {% if editando %}
+                            <option value="PJ" {% if empresa.tipo_pessoa == 'PJ' %}selected{% endif %}>Pessoa Jurídica</option>
+                            <option value="PF" {% if empresa.tipo_pessoa == 'PF' %}selected{% endif %}>Pessoa Física</option>
+                        {% else %}
+                            <option value="PJ" {% if form_data.tipo_pessoa == 'PJ' or not form_data.tipo_pessoa %}selected{% endif %}>Pessoa Jurídica</option>
+                            <option value="PF" {% if form_data.tipo_pessoa == 'PF' %}selected{% endif %}>Pessoa Física</option>
+                        {% endif %}
                     </select>
                 </div>
                 <div>

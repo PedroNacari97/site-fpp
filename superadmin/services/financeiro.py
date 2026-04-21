@@ -9,13 +9,16 @@ from __future__ import annotations
 from datetime import date, timedelta
 from decimal import Decimal
 
+from django.core.cache import cache
 from django.db.models import Count, Q, Sum
+from django.db.models.functions import TruncMonth
 from django.utils import timezone
 
 from onboarding.models import Assinatura, Pagamento
 
 
 STATUS_ASSINATURA_ATIVA = ("trial", "ativa")
+CACHE_TTL_FINANCEIRO = 600  # 10 min — dashboard raramente precisa de tempo real
 
 
 def _start_of_month(ref: date) -> date:
@@ -106,49 +109,72 @@ def calcular_inadimplencia_valor(dias: int = 7) -> Decimal:
     return total or Decimal("0.00")
 
 
+def _meses_recentes(ref: date, n: int) -> list[date]:
+    """Retorna lista com o primeiro dia dos ultimos N meses, em ordem cronologica."""
+    return [_months_back(ref, i) for i in range(n - 1, -1, -1)]
+
+
 def serie_mrr_6m(ref: date | None = None) -> list[dict]:
     """
     Serie historica do MRR nos ultimos 6 meses.
-    Aproximacao: para cada mes, considera as assinaturas que estavam
-    ativas/trial no ultimo dia daquele mes.
+    Para cada mes, considera as assinaturas que estavam ativas/trial no
+    ultimo dia daquele mes. Usa 1 query por mes (6 totais) — cada mes tem
+    filtro diferente entao nao da pra agrupar em 1 so query.
     """
     if ref is None:
         ref = timezone.now().date()
     serie: list[dict] = []
-    for n in range(5, -1, -1):
-        base = _months_back(ref, n)
+    for base in _meses_recentes(ref, 6):
         fim = _end_of_month(base)
-        qs = Assinatura.objects.filter(
+        mrr = Assinatura.objects.filter(
             criado_em__date__lte=fim,
             status__in=STATUS_ASSINATURA_ATIVA,
         ).exclude(
             cancelada_em__date__lte=fim,
-        ).select_related("plano")
-        mrr = qs.aggregate(total=Sum("plano__preco_mensal"))["total"] or Decimal("0.00")
+        ).aggregate(total=Sum("plano__preco_mensal"))["total"] or Decimal("0.00")
         serie.append({"mes": f"{base.year:04d}-{base.month:02d}", "mrr": mrr})
     return serie
 
 
 def serie_pagamentos_6m(ref: date | None = None) -> list[dict]:
-    """Serie de pagamentos confirmados por mes nos ultimos 6 meses."""
+    """Serie de pagamentos confirmados por mes nos ultimos 6 meses.
+
+    Usa TruncMonth + annotate em UMA unica query (antes: 6 queries).
+    """
     if ref is None:
         ref = timezone.now().date()
+    inicio = _start_of_month(_months_back(ref, 5))
+
+    rows = (
+        Pagamento.objects.filter(status="confirmado", criado_em__date__gte=inicio)
+        .annotate(m=TruncMonth("criado_em"))
+        .values("m")
+        .annotate(total=Sum("valor"))
+        .order_by("m")
+    )
+    por_mes = {
+        f"{r['m'].year:04d}-{r['m'].month:02d}": r["total"] or Decimal("0.00")
+        for r in rows
+    }
+
     serie: list[dict] = []
-    for n in range(5, -1, -1):
-        base = _months_back(ref, n)
-        inicio = _start_of_month(base)
-        fim = _end_of_month(base)
-        total = Pagamento.objects.filter(
-            status="confirmado",
-            criado_em__date__gte=inicio,
-            criado_em__date__lte=fim,
-        ).aggregate(total=Sum("valor"))["total"] or Decimal("0.00")
-        serie.append({"mes": f"{base.year:04d}-{base.month:02d}", "total": total})
+    for base in _meses_recentes(ref, 6):
+        chave = f"{base.year:04d}-{base.month:02d}"
+        serie.append({"mes": chave, "total": por_mes.get(chave, Decimal("0.00"))})
     return serie
 
 
-def build_financeiro_dashboard_context() -> dict:
-    """Monta o contexto completo do dashboard financeiro do superadmin."""
+def build_financeiro_dashboard_context(use_cache: bool = True) -> dict:
+    """Monta o contexto completo do dashboard financeiro do superadmin.
+
+    Resultado cacheado por 10 minutos (CACHE_TTL_FINANCEIRO). Pedro recarrega
+    a pagina varias vezes; as series 6m sao caras de calcular.
+    """
+    if use_cache:
+        cached = cache.get("ncadm_financeiro_ctx_v2")
+        if cached is not None:
+            return cached
+
     agora = timezone.now()
     inicio_mes = agora.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     proximos_7d = agora + timedelta(days=7)
@@ -189,7 +215,7 @@ def build_financeiro_dashboard_context() -> dict:
     for item in pagamentos_6m:
         item["pct"] = float((item["total"] / max_pag) * Decimal("100"))
 
-    return {
+    ctx = {
         "menu_ativo": "financeiro",
         "total_assinaturas": sum(status_map.values()),
         "total_trial": status_map.get("trial", 0),
@@ -200,8 +226,8 @@ def build_financeiro_dashboard_context() -> dict:
         "mrr": mrr,
         "pagamentos_confirmados_mes": pagamentos_confirmados_mes,
         "pagamentos_pendentes": pagamentos_pendentes,
-        "trials_expirando": trials_expirando,
-        "ultimos_pagamentos": ultimos_pagamentos,
+        "trials_expirando": list(trials_expirando),
+        "ultimos_pagamentos": list(ultimos_pagamentos),
         "churn_rate_mes": churn["taxa_pct"],
         "churn_canceladas": churn["canceladas"],
         "churn_base": churn["base_inicial"],
@@ -210,3 +236,12 @@ def build_financeiro_dashboard_context() -> dict:
         "mrr_serie_6m": mrr_6m,
         "pagamentos_serie_6m": pagamentos_6m,
     }
+    if use_cache:
+        cache.set("ncadm_financeiro_ctx_v2", ctx, CACHE_TTL_FINANCEIRO)
+    return ctx
+
+
+def invalidar_cache_financeiro() -> None:
+    """Invalida o cache do dashboard financeiro. Chamar apos criar/alterar
+    assinatura ou pagamento."""
+    cache.delete("ncadm_financeiro_ctx_v2")
