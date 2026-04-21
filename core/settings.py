@@ -126,6 +126,9 @@ AUTHENTICATION_BACKENDS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    # Forca host canonico (www.ncfly.com.br) via 301 — antes do whitenoise/CSRF
+    # para que o redirect aconteca o mais cedo possivel sem desperdicar work.
+    "portal.middleware.CanonicalHostMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -538,6 +541,17 @@ LOGOUT_REDIRECT_URL = reverse_lazy("login_custom")
 #   Site.objects.update_or_create(pk=1, defaults={"domain": "ncfly.com.br", "name": "NCfly"})
 # ---------------------------------------------------------------------------
 SITE_ID = 1  # obrigatorio para django-allauth
+
+# ---------------------------------------------------------------------------
+# Host canonico — evita SEO duplicado www vs naked.
+# Em prod: PORTAL_CANONICAL_HOST=www.ncfly.com.br PORTAL_FORCE_CANONICAL_HOST=1
+# Middleware `portal.middleware.CanonicalHostMiddleware` faz 301 do host
+# diferente para o canonico em GET/HEAD.
+# ---------------------------------------------------------------------------
+PORTAL_CANONICAL_HOST = os.environ.get("PORTAL_CANONICAL_HOST", "").strip()
+PORTAL_FORCE_CANONICAL_HOST = os.environ.get(
+    "PORTAL_FORCE_CANONICAL_HOST", ""
+).lower() in ("1", "true", "yes", "on")
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {

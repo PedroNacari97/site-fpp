@@ -115,19 +115,57 @@
         <!-- TOC mobile -->
         <details class="artigo-detalhe-toc-mobile">
             <summary>Sum&aacute;rio do artigo</summary>
-            <nav class="artigo-detalhe-toc-mobile__nav" id="toc-mobile" aria-label="Sumario do artigo"></nav>
+            <nav class="artigo-detalhe-toc-mobile__nav" id="toc-mobile" aria-label="Sumario do artigo">
+                {% if paywall_ativo and paywall_titulos %}
+                <ol class="artigo-detalhe-toc__list artigo-detalhe-toc__list--locked">
+                    {% for titulo in paywall_titulos %}
+                    <li class="artigo-detalhe-toc__item artigo-detalhe-toc__item--locked">
+                        <span class="artigo-detalhe-toc__locked-text">{{ titulo }}</span>
+                    </li>
+                    {% endfor %}
+                </ol>
+                {% endif %}
+            </nav>
         </details>
 
         <!-- Corpo do artigo -->
-        <article class="artigo-detalhe-corpo" id="artigo-corpo">
-            {{ artigo.conteudo|safe }}
+        <article class="artigo-detalhe-corpo{% if paywall_ativo %} artigo-detalhe-corpo--paywalled{% endif %}" id="artigo-corpo">
+            {{ artigo_conteudo_exibido|default:artigo.conteudo|safe }}
         </article>
+
+        {% if paywall_ativo %}
+        <!-- Paywall card (flexible sampling: preview + CTA de cadastro gratis) -->
+        <aside class="artigo-paywall" role="region" aria-label="Continue lendo com conta grátis">
+            <div class="artigo-paywall__card">
+                <div class="artigo-paywall__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
+                </div>
+                <div class="artigo-paywall__body">
+                    <strong class="artigo-paywall__titulo">Continue lendo com conta gr&aacute;tis</strong>
+                </div>
+                <div class="artigo-paywall__actions">
+                    <a href="{% url 'portal_register' %}?next={{ request.path|urlencode }}" class="portal-button portal-button--primary artigo-paywall__cta">Criar conta gr&aacute;tis</a>
+                    <a href="{% url 'portal_login' %}?next={{ request.path|urlencode }}" class="artigo-paywall__link">J&aacute; tenho conta</a>
+                </div>
+            </div>
+        </aside>
+        {% endif %}
 
         <!-- TOC sidebar desktop -->
         <aside class="artigo-detalhe-toc">
             <div class="artigo-detalhe-toc__sticky">
                 <h4>Sum&aacute;rio</h4>
-                <nav id="toc-desktop" aria-label="Sumario do artigo"></nav>
+                <nav id="toc-desktop" aria-label="Sumario do artigo">
+                    {% if paywall_ativo and paywall_titulos %}
+                    <ol class="artigo-detalhe-toc__list artigo-detalhe-toc__list--locked">
+                        {% for titulo in paywall_titulos %}
+                        <li class="artigo-detalhe-toc__item artigo-detalhe-toc__item--locked">
+                            <span class="artigo-detalhe-toc__locked-text">{{ titulo }}</span>
+                        </li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                </nav>
             </div>
         </aside>
 
@@ -238,7 +276,8 @@
     <!-- Comentarios -->
     {% include "portal/partials/comentarios.html" %}
 
-    <!-- Lead capture -->
+    <!-- Lead capture (oculto quando paywall ativo — CTA ja aparece no card) -->
+    {% if not paywall_ativo %}
     <section class="artigo-detalhe-lead">
         <div class="artigo-detalhe-lead__card">
             <div class="artigo-detalhe-lead__copy">
@@ -253,6 +292,7 @@
             </form>
         </div>
     </section>
+    {% endif %}
 
     <!-- Artigos Relacionados -->
     {% if artigos_relacionados %}

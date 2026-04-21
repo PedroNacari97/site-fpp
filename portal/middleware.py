@@ -277,3 +277,59 @@ def models_expression_increment():
     from django.db.models import F
 
     return F("total_visitas") + 1
+
+
+# ----------------------------------------------------------------------------
+# CanonicalHostMiddleware
+# ----------------------------------------------------------------------------
+# Forca um unico hostname canonico (ex: www.ncfly.com.br) via redirect 301
+# permanente. Resolve o problema de SEO "Cópia, o Google escolheu uma página
+# canônica diferente" causado por mesmo conteudo em www e naked.
+#
+# Configuracao via settings:
+#   PORTAL_CANONICAL_HOST = "www.ncfly.com.br"   # host alvo
+#   PORTAL_FORCE_CANONICAL_HOST = True           # liga/desliga (default False)
+#
+# Pula health-checks (Railway/Fastly) e qualquer host que nao esteja em
+# ALLOWED_HOSTS — evita loop e falso positivo durante teste.
+# ----------------------------------------------------------------------------
+
+
+class CanonicalHostMiddleware:
+    """Redireciona 301 para o host canonico configurado em settings.
+
+    - Apenas em GET/HEAD (POST/PUT/DELETE com body redirecionado pode quebrar
+      formularios/webhooks).
+    - Pula /health/ (probes do Railway).
+    - So redireciona se o host atual esta em ALLOWED_HOSTS — assim hosts
+      desconhecidos (testes, ataques) nao sao atendidos com 301.
+    """
+
+    SAFE_METHODS = ("GET", "HEAD")
+    SKIP_PATHS = ("/health/",)
+
+    def __init__(self, get_response):
+        from django.conf import settings
+
+        self.get_response = get_response
+        self.target_host = (getattr(settings, "PORTAL_CANONICAL_HOST", "") or "").lower().strip()
+        self.enabled = bool(
+            getattr(settings, "PORTAL_FORCE_CANONICAL_HOST", False) and self.target_host
+        )
+
+    def __call__(self, request):
+        if self.enabled and request.method in self.SAFE_METHODS:
+            host = request.get_host().lower()
+            # Compara so o nome (ignora porta — em prod nao tem :8000)
+            host_no_port = host.split(":", 1)[0]
+            if host_no_port and host_no_port != self.target_host:
+                if not any(request.path.startswith(p) for p in self.SKIP_PATHS):
+                    from django.http import HttpResponsePermanentRedirect
+
+                    new_url = "{scheme}://{host}{full_path}".format(
+                        scheme="https" if request.is_secure() else "http",
+                        host=self.target_host,
+                        full_path=request.get_full_path(),
+                    )
+                    return HttpResponsePermanentRedirect(new_url)
+        return self.get_response(request)

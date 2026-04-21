@@ -1860,9 +1860,33 @@ def artigo_detalhe(request, modulo_slug, slug):
         return redirect(artigo.get_absolute_url(), permanent=True)
 
     artigo_livre = artigo.pk == _first_free_artigo_id()
-    if not artigo_livre and portal_user is None:
-        login_url = reverse("portal_login")
-        return redirect(f"{login_url}?next={request.get_full_path()}")
+
+    # --- Paywall (flexible sampling) ---
+    # Anonimo sem direito livre recebe preview (4 paragrafos) + paywall card.
+    # Googlebot/Bingbot verificados via FCrDNS recebem corpo completo — asim o
+    # conteudo e indexado, mas o usuario humano precisa se cadastrar para ler
+    # tudo. Sem o redirect antigo (que bloqueava Google de indexar).
+    from .services.paywall import (
+        is_verified_search_bot,
+        truncar_corpo_artigo,
+        extrair_titulos_h2,
+    )
+
+    search_bot_verificado = False
+    if portal_user is None and not artigo_livre:
+        search_bot_verificado = is_verified_search_bot(
+            get_client_ip(request),
+            get_user_agent(request),
+        )
+    paywall_ativo = portal_user is None and not artigo_livre and not search_bot_verificado
+
+    conteudo_exibido = artigo.conteudo
+    paywall_titulos = []
+    if paywall_ativo:
+        conteudo_exibido = truncar_corpo_artigo(artigo.conteudo, paragrafos=4)
+        # Extrai sumario completo do corpo original — usuario anonimo ve os temas
+        # todos do artigo mesmo com paywall ativo (incentivo a cadastrar).
+        paywall_titulos = extrair_titulos_h2(artigo.conteudo)
 
     # --- Registra visita do usuario logado (nao marca como lido automaticamente) ---
     # Decisao de produto: marcacao de "lido" e MANUAL via botao ao fim do artigo.
@@ -1935,6 +1959,9 @@ def artigo_detalhe(request, modulo_slug, slug):
     track_page_view(request.path, request=request, section="artigo_detalhe")
     ctx = {
         "artigo": artigo,
+        "artigo_conteudo_exibido": conteudo_exibido,
+        "paywall_ativo": paywall_ativo,
+        "paywall_titulos": paywall_titulos,
         "videos": videos,
         "artigo_anterior": anterior,
         "artigo_proximo": proximo,
@@ -1950,7 +1977,12 @@ def artigo_detalhe(request, modulo_slug, slug):
         "comentarios_por_pagina": COMENT_POR_PAGINA,
     }
     ctx.update(_build_artigo_seo(request, artigo))
-    return render(request, "portal/artigo_detalhe.html", ctx)
+    response = render(request, "portal/artigo_detalhe.html", ctx)
+    # CDN anti-leak: artigo gated varia por autenticacao/FCrDNS. Desliga cache
+    # compartilhado para nao servir preview ao Googlebot (ou vice-versa).
+    response["Cache-Control"] = "private, no-cache, no-store, must-revalidate"
+    response["Vary"] = "Cookie, User-Agent"
+    return response
 
 
 @require_POST
@@ -2104,6 +2136,17 @@ def _build_artigo_seo(request, artigo):
         "wordCount": word_count,
         "isPartOf": {"@id": f"{base_url}#website"},
     }
+    # Flexible sampling oficial (developers.google.com/search/docs/appearance/paywalled-content):
+    # quando o artigo exige login, marca isAccessibleForFree=false e aponta a
+    # parte paga via cssSelector. Googlebot verificado via FCrDNS recebe o HTML
+    # completo; humanos veem apenas o preview. Sem isso = cloaking.
+    if not artigo.pk == _first_free_artigo_id():
+        article_schema["isAccessibleForFree"] = False
+        article_schema["hasPart"] = {
+            "@type": "WebPageElement",
+            "isAccessibleForFree": False,
+            "cssSelector": ".artigo-detalhe-corpo",
+        }
     if artigo.publicado_em:
         article_schema["datePublished"] = timezone.localtime(artigo.publicado_em).isoformat()
     if artigo.atualizado_em:
